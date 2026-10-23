@@ -1,0 +1,20 @@
+{
+  "name": "@webable/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "postinstall": "wxt prepare",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc -p . --noEmit"
+  },
+  "dependencies": { "@webable/core": "workspace:*", "preact": "10.29.8" },
+  "devDependencies": {
+    "wxt": "0.21.4",
+    "@preact/preset-vite": "2.10.6",
+    "@types/chrome": "0.3.6",
+    "@playwright/test": "1.64.1"
+  }
+}
