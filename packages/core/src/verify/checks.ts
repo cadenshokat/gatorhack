@@ -1,6 +1,7 @@
-// Owner: A2. A2 may add optional fields to these measure types; keep the names.
+// Owner: A2, round 3: T. Optional fields may be added to these measure types; keep the names.
 // Pure verify maths over before/after measurements (research-fitting §9.1–§9.8). The content script measures
-// (verify-dom.ts); this module decides. Thresholds are the brief's exact values.
+// (verify-dom.ts); this module decides. Thresholds are the brief's exact values, plus round 3's text-overlap rule
+// (line boxes of different elements may not newly intersect by more than 4 px²) and the page-column spill rule.
 import type { CheckName, CheckResult, OpKind, OpRecord } from '../types';
 import { contrastTarget } from '../color/contrast';
 
@@ -12,6 +13,11 @@ export interface ElementMeasure {
   scrollW: number; scrollH: number; clientW: number; clientH: number;
   overflowHidden: boolean;
   fontPx: number | null;
+  /**
+   * The element's effective CSS zoom (Element.currentCSSZoom; 1 when none). Font sizes are in the element's own CSS px
+   * and rects in viewport px, so letters-per-line divides by fontPx × cssZoom (the page column zooms the body).
+   */
+  cssZoom?: number;
   color: string | null; background: string | null; contrast: number | null;
   visible: boolean; focusable: boolean; inTabOrder: boolean; tabIndex: number | null;
   textChars: number;
@@ -28,6 +34,10 @@ export interface ElementMeasure {
   fontWeight?: number;
   /** Share of the text's line boxes inside its clip box (§9.1 visFrac), 0..1. */
   visFrac?: number;
+  /** The same share counting only the clip box's top and bottom (text cut at the sides is ignored), 0..1. */
+  visFracY?: number;
+  /** The text's line boxes cut to its clip box: what is drawn (text-overlap compares these when present). */
+  inkLines?: MeasureRect[];
   /** Ellipsis or line-clamp currently cutting text (§9.1 trunc). */
   truncated?: boolean;
   /** Has overflow auto/scroll and content larger than its box. */
@@ -63,6 +73,10 @@ export interface ElementMeasure {
   hitEdgesOK?: boolean;
   hitBoxMin?: number;
   targetPx?: number;
+  /** Stacked on purpose: absolutely positioned or sticky (itself or a near ancestor), e.g. a badge over a card. */
+  stacked?: boolean;
+  /** The part of `rect` inside the element's clip box (what can actually be seen). */
+  visRect?: MeasureRect;
 }
 
 export interface PageMeasure {
@@ -83,6 +97,8 @@ export interface PageMeasure {
   activeIsBody?: boolean;
   /** Layout-shift score observed while the person was reading after the batch. */
   clsWhileReading?: number;
+  /** The page column's box (viewport x), when WebAble holds the page to a column. */
+  column?: { left: number; right: number } | null;
 }
 
 /** A non-rollback finding: drop one element's token (contrast or hit area), keep the op. */
@@ -107,6 +123,63 @@ const inter = (a: MeasureRect, b: MeasureRect): number => {
   return w > 0 && h > 0 ? w * h : 0;
 };
 const pct = (v: number): string => `${Math.round(v * 100)}%`;
+
+/** New text overlap above this many px² fails (round 3). */
+export const TEXT_OVERLAP_PX2 = 4;
+/** Content sticking out of the page column by more than this many px fails. */
+export const COLUMN_SPILL_PX = 8;
+/**
+ * The column may not squeeze running text below this many letters a line (from clearly more): a floated box or a
+ * fixed-width side box keeps its width, and the text beside it pays (lines under about 50 letters slow reading).
+ */
+export const COLUMN_MIN_CPL = 40;
+
+/**
+ * Letters per line of a multi-line text element, from its line boxes: the median width of its lines (the last line
+ * is usually short, so it is left out) over an average letter of half its font size. Null for one-line text.
+ */
+export function lettersPerLine(m: ElementMeasure): number | null {
+  if (!m.lines || m.lines.length < 2 || !m.fontPx) return null;
+  const rows: Array<{ top: number; left: number; right: number }> = [];
+  for (const r of m.lines) {
+    const row = rows.find((x) => Math.abs(x.top - r.y) < Math.max(2, r.h * 0.3));
+    if (row) {
+      row.left = Math.min(row.left, r.x);
+      row.right = Math.max(row.right, r.x + r.w);
+    } else rows.push({ top: r.y, left: r.x, right: r.x + r.w });
+  }
+  if (rows.length < 3) return null;
+  rows.sort((a, b) => a.top - b.top);
+  const spans = rows.slice(0, -1).map((x) => x.right - x.left).sort((a, b) => a - b);
+  const mid = spans[Math.floor(spans.length / 2)] ?? 0;
+  return mid / (0.5 * m.fontPx * (m.cssZoom && m.cssZoom > 0 ? m.cssZoom : 1));
+}
+
+/**
+ * The ink core of one text line box. Range rects span the font's whole ascent and descent, so neighbouring lines in
+ * tight but correct typography (line-height 1) already touch; the core (15% off the top, 10% off the bottom, 1 px off
+ * each side) only meets another core when glyphs really collide.
+ */
+export function lineCore(r: MeasureRect): MeasureRect {
+  const top = r.h * 0.15;
+  const bottom = r.h * 0.1;
+  return { x: r.x + 1, y: r.y + top, w: Math.max(0, r.w - 2), h: Math.max(0, r.h - top - bottom) };
+}
+
+/** Total area (px²) where the line cores of two text elements intersect. */
+export function textInk(a: MeasureRect[], b: MeasureRect[]): number {
+  let sum = 0;
+  for (const r of a) {
+    const cr = lineCore(r);
+    if (cr.w <= 0 || cr.h <= 0) continue;
+    for (const q of b) {
+      const cq = lineCore(q);
+      if (cq.w <= 0 || cq.h <= 0) continue;
+      sum += inter(cr, cq);
+    }
+  }
+  return sum;
+}
 const where = (m: ElementMeasure): string => (m.region ? ` in the ${m.region}` : '');
 const isControl = (m: ElementMeasure): boolean => m.isControl ?? m.focusable;
 
@@ -142,6 +215,11 @@ class Checker {
     }
   }
 
+  /** The batch is the page column alone (a narrower virtual window; see the extension's column op). */
+  get columnOnly(): boolean {
+    return this.batch.length > 0 && this.batch.every((id) => id.startsWith('column'));
+  }
+
   opFor(a: ElementMeasure | undefined): string | undefined {
     const tokens = (a?.opIds ?? []).filter((t) => this.batch.includes(t));
     if (tokens.length === 1) return tokens[0];
@@ -168,16 +246,33 @@ class Checker {
   /* §9.1 */
   clipping(): void {
     let n = 0;
+    // The page column is a narrower window, so the site's own narrower layout is not a cut: a carousel or a sideways
+    // row showing fewer items, a menu folded into a drawer (hidden whole), a headline its CSS shortens with an
+    // ellipsis, one card's text clipped by its fixed-height card (a video placeholder's message, say). What counts is
+    // copy outgrowing a fixed-height box: two or more texts each cut by more than a quarter at the top or bottom.
+    const columnOnly = this.columnOnly;
+    const vis = (m: ElementMeasure): number | null | undefined => (columnOnly ? m.visFracY ?? m.visFrac : m.visFrac);
+    const columnCuts: Array<[ElementMeasure, number, number]> = [];
     for (const [b, a] of this.common) {
       if (b.textChars <= 0 || !b.visible) continue;
       n++;
-      if (a.visFrac != null && b.visFrac != null) {
-        if (a.visFrac < b.visFrac - 0.02) this.fail('clipping', `Text${where(a)} is cut off (${a.id}: ${pct(a.visFrac)} visible, was ${pct(b.visFrac)})`, [a]);
+      const va = vis(a);
+      const vb = vis(b);
+      if (va != null && vb != null) {
+        // Only text that was (nearly) all visible can be newly cut off; a carousel slide that was already mostly
+        // outside its window moving a little is not a cut.
+        if (vb >= 0.9 && va < vb - 0.02) {
+          if (!columnOnly) this.fail('clipping', `Text${where(a)} is cut off (${a.id}: ${pct(va)} visible, was ${pct(vb)})`, [a]);
+          else if (va >= 0.05 && va < 0.75 && b.textChars >= 12) columnCuts.push([a, va, vb]);
+        }
       } else {
         const cut = (m: ElementMeasure): boolean => m.overflowHidden && (m.scrollW > m.clientW + 1 || m.scrollH > m.clientH + 1);
         if (cut(a) && !cut(b)) this.fail('clipping', `Text${where(a)} is cut off by its box (${a.id})`, [a]);
       }
-      if (a.truncated && !b.truncated) this.fail('clipping', `Text${where(a)} is now shortened with an ellipsis (${a.id})`, [a]);
+      if (a.truncated && !b.truncated && !columnOnly) this.fail('clipping', `Text${where(a)} is now shortened with an ellipsis (${a.id})`, [a]);
+    }
+    if (columnCuts.length >= 2) {
+      for (const [a, va, vb] of columnCuts) this.fail('clipping', `Text${where(a)} is cut off (${a.id}: ${pct(va)} visible, was ${pct(vb)})`, [a]);
     }
     for (const [b, a] of this.common) {
       if (!a.scrollable || b.scrollable) continue;
@@ -186,6 +281,56 @@ class Checker {
       else this.soft.push(`A scroll box appeared${where(a)} (${a.id})`);
     }
     this.pass('clipping', `No new clipping (${n} text elements checked)`);
+  }
+
+  /**
+   * Round 3: text drawn over other text. Every visible text element with line boxes, anywhere on the page (not only
+   * in the viewport: the person scrolls), is compared with every other one; a pair fails when the ink cores of their
+   * lines newly intersect by more than 4 px². Pairs inside one another, in different fixed layers, or stacked on
+   * purpose (absolutely positioned or sticky) are skipped.
+   */
+  textOverlap(anc: (id: string) => Set<string>): number {
+    const ink = (m: ElementMeasure): MeasureRect[] => m.inkLines ?? m.lines ?? [];
+    const items = this.common.filter(([b, a]) => a.visible && b.visible && a.textChars > 0 && ink(a).length > 0 && !a.stacked && !b.stacked);
+    const CELL = 64;
+    const grid = new Map<string, number[]>();
+    items.forEach(([, a], i) => {
+      for (const r of ink(a)) {
+        const c = lineCore(r);
+        if (c.w <= 0 || c.h <= 0) continue;
+        for (let gx = Math.floor(c.x / CELL); gx <= Math.floor((c.x + c.w) / CELL); gx++) {
+          for (let gy = Math.floor(c.y / CELL); gy <= Math.floor((c.y + c.h) / CELL); gy++) {
+            const k = `${gx},${gy}`;
+            const cell = grid.get(k);
+            if (cell) { if (cell[cell.length - 1] !== i) cell.push(i); } else grid.set(k, [i]);
+          }
+        }
+      }
+    });
+    const seen = new Set<string>();
+    let found = 0;
+    for (const cell of grid.values()) {
+      for (let x = 0; x < cell.length; x++) {
+        for (let y = x + 1; y < cell.length; y++) {
+          const i = cell[x] as number;
+          const j = cell[y] as number;
+          const key = i < j ? `${i}:${j}` : `${j}:${i}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          const [bi, ai] = items[i] as [ElementMeasure, ElementMeasure];
+          const [bj, aj] = items[j] as [ElementMeasure, ElementMeasure];
+          if ((ai.fixedLayer ?? false) !== (aj.fixedLayer ?? false)) continue;
+          if (anc(ai.id).has(aj.id) || anc(aj.id).has(ai.id)) continue;
+          const inkA = textInk(ink(ai), ink(aj));
+          if (inkA <= TEXT_OVERLAP_PX2) continue;
+          const inkB = ink(bi).length && ink(bj).length ? textInk(ink(bi), ink(bj)) : 0;
+          if (inkA - inkB <= TEXT_OVERLAP_PX2) continue;
+          found++;
+          this.fail('overlap', `Text${where(ai)} is drawn over other text (${ai.id} and ${aj.id}, ${Math.round(inkA - inkB)} px²)`, [ai, aj]);
+        }
+      }
+    }
+    return items.length;
   }
 
   /* §9.2 */
@@ -232,6 +377,7 @@ class Checker {
       if (!s) { s = anc(id); ancCache.set(id, s); }
       return s;
     };
+    const textChecked = this.textOverlap(ancOf);
     for (const cell of grid.values()) {
       for (let x = 0; x < cell.length; x++) {
         for (let y = x + 1; y < cell.length; y++) {
@@ -243,6 +389,10 @@ class Checker {
           const [bi, ai] = items[i] as [ElementMeasure, ElementMeasure];
           const [bj, aj] = items[j] as [ElementMeasure, ElementMeasure];
           if (ancOf(ai.id).has(aj.id) || ancOf(aj.id).has(ai.id)) continue;
+          // Two text elements were compared line by line above.
+          if (ai.textChars > 0 && aj.textChars > 0 && ai.lines?.length && aj.lines?.length) continue;
+          // Stacked on purpose (carousel dots over a slide, a badge over a card).
+          if (ai.stacked || aj.stacked || bi.stacked || bj.stacked) continue;
           // A fixed layer (dialog, cookie bar, chat panel) covers the page by design; compare within a layer only.
           if ((ai.fixedLayer ?? false) !== (aj.fixedLayer ?? false)) continue;
           const ovA = ov(aBoxes[i] as MeasureRect[], aBoxes[j] as MeasureRect[]);
@@ -252,18 +402,52 @@ class Checker {
         }
       }
     }
-    for (const [b, a] of this.common) {
-      if ((a.occluded ?? 0) >= 2 && (b.occluded ?? 0) <= 1 && a.visible) this.fail('overlap', `Text${where(a)} is now covered by something else (${a.id})`, [a]);
+    // The page column re-lays the page out for a narrower window, so a single link landing under another changed
+    // element there is the site's narrower layout meeting it; two or more covered texts still count.
+    const covered = this.common.filter(([b, a]) => (a.occluded ?? 0) >= 2 && (b.occluded ?? 0) <= 1 && a.visible).map(([, a]) => a);
+    if (!this.columnOnly || covered.length >= 2) {
+      for (const a of covered) this.fail('overlap', `Text${where(a)} is now covered by something else (${a.id})`, [a]);
     }
-    this.pass('overlap', `No new overlap (${items.length} boxes checked)`);
+    this.pass('overlap', `No new overlap (${textChecked} text elements line by line, ${items.length} boxes in view)`);
   }
 
-  /* §9.2 horizontal overflow */
+  /* §9.2 horizontal overflow, and (round 3) content sticking out of the page column */
   overflow(): void {
     const ovA = this.after.docScrollW - this.after.viewportW;
     const ovB = this.before.docScrollW - this.before.viewportW;
     if (ovA > 8 && ovB <= 8) this.fail('overflow', `The page now scrolls sideways (by ${Math.round(ovA)} px)`);
-    this.pass('overflow', 'No sideways scrolling');
+    const col = this.after.column;
+    if (col && col.right > col.left) {
+      const vwB = this.before.viewportW;
+      for (const [b, a] of this.common) {
+        if (!a.visible || !b.visible || a.fixedLayer || b.fixedLayer) continue;
+        if (!(a.textChars > 0 || isControl(a) || a.isMedia)) continue;
+        const r = a.visRect ?? a.rect;
+        const rb = b.visRect ?? b.rect;
+        if (r.w < 1 || r.h < 1 || rb.w < 1) continue;
+        // Already off the screen before (skip links, off-canvas menus): not the column's doing.
+        if (rb.x < -1 || rb.x + rb.w > vwB + 1) continue;
+        const left = col.left - r.x;
+        const right = r.x + r.w - col.right;
+        // Full-bleed on both sides is a design choice (calc(50% - 50vw) bands), not a spill.
+        if (left > COLUMN_SPILL_PX && right > COLUMN_SPILL_PX) continue;
+        const spill = Math.max(left, right);
+        if (spill > COLUMN_SPILL_PX) this.fail('overflow', `Content${where(a)} sticks out of the page column (${a.id}, by ${Math.round(spill)} px)`, [a]);
+      }
+      for (const [b, a] of this.common) {
+        if (!a.visible || !b.visible || a.fixedLayer || a.textChars < 80 || isControl(a)) continue;
+        const ca = lettersPerLine(a);
+        const cb = lettersPerLine(b) ?? (b.fontPx && b.lines?.length === 1 ? b.lines[0]!.w / (0.5 * b.fontPx * (b.cssZoom && b.cssZoom > 0 ? b.cssZoom : 1)) : null);
+        if (ca == null || cb == null) continue;
+        // The column is a narrower window: the site's narrower layout setting narrower cards is its design; only a
+        // squeeze to under 25 letters a line counts then.
+        const floor = this.columnOnly ? 25 : COLUMN_MIN_CPL;
+        if (ca < floor && cb >= COLUMN_MIN_CPL && cb >= ca * 1.25) {
+          this.fail('overflow', `Text${where(a)} is squeezed to about ${Math.round(ca)} letters a line by the page column (${a.id}, was ${Math.round(cb)})`, [a]);
+        }
+      }
+    }
+    this.pass('overflow', col ? 'No sideways scrolling; everything fits the page column' : 'No sideways scrolling');
   }
 
   /* §9.3 */
@@ -375,6 +559,13 @@ class Checker {
       byRegion.set(k, list);
     }
     let pairs = 0;
+    const bodyB0 = bodySize(this.before);
+    // A heading raised past running text is the point of the heading ramp (heading_scale), not a swap; a heading
+    // passing display text (a lead headline set in a span, well above body size) still is.
+    const isHeading = (m: ElementMeasure): boolean =>
+      (m.headingLevel != null && m.headingLevel <= 3) || (m.opIds ?? []).some((t) => t.startsWith('heading_scale'));
+    const raisedPastBody = (it: { b: number; m: ElementMeasure }, past: ElementMeasure): boolean =>
+      isHeading(past) && it.m.headingLevel == null && bodyB0 != null && it.b <= bodyB0 * 1.2;
     for (const list of byRegion.values()) {
       list.sort((x, y) => x.b - y.b);
       let p = 0;
@@ -387,7 +578,7 @@ class Checker {
           p++;
         }
         pairs += p;
-        if (best && it.a < best.a - 0.01) {
+        if (best && it.a < best.a - 0.01 && !raisedPastBody(it, best.m)) {
           this.fail('hierarchy', `Text sizes swapped order${where(it.m)} (${it.m.id} is now smaller than ${best.m.id})`, [it.m, best.m]);
         }
       }
@@ -464,14 +655,14 @@ export function runChecks(before: PageMeasure, after: PageMeasure, opIds: string
 
 /** Bisect order per check (§9.8: text map → spacing → measure → gaps → unpin, plus the ops each check can catch). */
 const RISK: Record<CheckName, OpKind[]> = {
-  clipping: ['text_map', 'spacing', 'measure', 'weight', 'targets', 'unpin_sticky', 'page_zoom', 'promote_main'],
-  overlap: ['text_map', 'spacing', 'targets', 'measure', 'unpin_sticky', 'weight', 'promote_main', 'page_zoom'],
-  overflow: ['text_map', 'measure', 'spacing', 'targets', 'weight', 'page_zoom'],
-  hierarchy: ['text_map', 'weight', 'page_zoom'],
+  clipping: ['heading_scale', 'text_map', 'spacing', 'column', 'measure', 'weight', 'targets', 'unpin_sticky', 'page_zoom', 'promote_main'],
+  overlap: ['heading_scale', 'text_map', 'spacing', 'column', 'targets', 'measure', 'unpin_sticky', 'weight', 'promote_main', 'page_zoom'],
+  overflow: ['column', 'heading_scale', 'text_map', 'measure', 'spacing', 'targets', 'weight', 'page_zoom'],
+  hierarchy: ['heading_scale', 'text_map', 'weight', 'page_zoom'],
   contrast: ['contrast', 'dim', 'weight', 'focus_ring', 'text_map'],
-  reachability: ['targets', 'steady_clicks', 'debounce', 'dim', 'unpin_sticky', 'promote_main', 'text_map', 'spacing', 'measure', 'focus_ring'],
-  content_loss: ['text_map', 'spacing', 'measure', 'motion', 'dim', 'unpin_sticky', 'page_zoom'],
-  reading_position: ['page_zoom', 'text_map', 'spacing', 'measure', 'unpin_sticky'],
+  reachability: ['targets', 'steady_clicks', 'debounce', 'dim', 'unpin_sticky', 'promote_main', 'column', 'heading_scale', 'text_map', 'spacing', 'measure', 'focus_ring'],
+  content_loss: ['column', 'heading_scale', 'text_map', 'spacing', 'measure', 'motion', 'dim', 'unpin_sticky', 'page_zoom'],
+  reading_position: ['page_zoom', 'column', 'heading_scale', 'text_map', 'spacing', 'measure', 'unpin_sticky'],
   visual: ['calm_view'],
 };
 

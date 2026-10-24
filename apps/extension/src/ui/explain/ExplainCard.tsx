@@ -1,5 +1,9 @@
-// Owner: P. The explanation card, beside the outlined original (never over it, never instead of it).
-import { useEffect, useRef, useState } from 'preact/hooks';
+// Owner: S (round 3). The explanation card, beside the outlined original (never over it, never instead of it).
+// Wording: "Explained by AI · Checked by Jev against the original". Sentences Jev found the plain version did not
+// cover are shown as the original text. Positions are viewport px; they are divided by the layer's CSS zoom so the
+// card stays beside the passage however the in-page layer is scaled.
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import type { RefObject } from 'preact';
 import type { ExplainResult } from '@webable/core';
 import type { EngineApi, EngineState } from '../../contracts';
 import { fmtCost, fmtMs, fmtP } from '../panel/format';
@@ -37,9 +41,19 @@ export function writerUnavailable(r: ExplainResult): boolean {
   return r.explanation === null && !jevAnswered(r);
 }
 
+/** Every code check and both of Jev's fact checks passed. */
 export function checksPassed(r: ExplainResult): boolean {
   const c = r.checks;
   return Boolean(c && c.numbersKept && c.conditionWordsKept && c.addedFact < 0.5 && c.droppedFact < 0.5);
+}
+
+/** What the card says when there is no plain version (pure; the server's own sentence when it sent one). */
+export function unavailableText(r: ExplainResult): string {
+  const x = r as ExplainExtra & { message?: unknown };
+  if (typeof x.message === 'string' && x.message.trim()) return x.message.trim();
+  return writerUnavailable(r)
+    ? "Couldn't write a plain version right now. The original is below."
+    : "Couldn't check a plain version against the original, so it isn't shown. The original is below.";
 }
 
 function errorText(err: string): string {
@@ -48,6 +62,7 @@ function errorText(err: string): string {
   }
   if (/redact|personal/i.test(err)) return 'This passage still had personal details after redaction, so it was not sent.';
   if (/timeout|timed out|abort/i.test(err)) return 'The explanation took too long. The original text is unchanged.';
+  if (/^(Explain is|Select |This passage)/.test(err)) return err;
   return 'The explanation service is not reachable right now. The original text is unchanged.';
 }
 
@@ -85,71 +100,163 @@ function useAnchor(anchor: Anchor | null): Anchor | null {
   };
 }
 
+/**
+ * The CSS zoom in effect where `ref` sits (Chrome's Element.currentCSSZoom; 1 when nothing is zoomed). A layer that
+ * keeps our UI at a steady physical size may zoom it; fixed positions inside it are multiplied by that zoom.
+ */
+export function useLayerZoom(ref: RefObject<Element>): number {
+  const [k, setK] = useState(1);
+  useLayoutEffect(() => {
+    const el = ref.current?.parentElement as (Element & { currentCSSZoom?: number }) | null | undefined;
+    const z = el && typeof el.currentCSSZoom === 'number' ? el.currentCSSZoom : 1;
+    if (Number.isFinite(z) && z > 0.05 && Math.abs(z - k) > 0.001) setK(z);
+  });
+  return k;
+}
+
+export interface CardPlace {
+  left: number;
+  /** Set when the card hangs from its top edge (beside or below the passage). */
+  top: number | null;
+  /** Set when the card stands on its bottom edge (above the passage). */
+  bottom: number | null;
+  width: number;
+  maxHeight: number;
+  where: 'right' | 'left' | 'below' | 'above' | 'over';
+  /** Scroll the page by this much first to make room below the passage (0: no need). */
+  scrollBy: number;
+}
+
+/**
+ * Where the card goes, in viewport px, never over the passage when there is any other way:
+ * 1. beside it (right, then left) at full width, or at a narrower width of at least `minW`;
+ * 2. below it, or above it, when there is room to read (`minStack`);
+ * 3. otherwise ask to scroll the page so there is room below (only while the passage's top stays in view);
+ * 4. a very tall passage: over its lower part, as a sheet near the bottom.
+ * Kept clear of the pill's corner and of our bottom bars. Pure.
+ */
+export function placeCard(o: {
+  anchor: Anchor | null; vw: number; vh: number; cardW: number; minH: number;
+  pillReserve: number; pillWidth: number; pillSide: 'right' | 'left'; bottomReserve: number;
+  minW?: number; minStack?: number;
+}): CardPlace {
+  const margin = 16;
+  const gap = 16;
+  const a = o.anchor;
+  const fullW = Math.min(o.cardW, o.vw - 2 * margin);
+  const minW = Math.min(fullW, o.minW ?? fullW * 0.7);
+  const minStack = o.minStack ?? 240;
+  const limitFor = (left: number, w: number): number => {
+    const overPill = o.pillSide === 'right' ? left + w > o.vw - o.pillWidth - margin : left < o.pillWidth + margin;
+    return o.vh - Math.max(overPill ? o.pillReserve : margin, o.bottomReserve, margin);
+  };
+  const beside = (where: 'right' | 'left', left: number, w: number): CardPlace => {
+    const bottomLimit = limitFor(left, w);
+    const minH = Math.min(o.minH, bottomLimit - margin);
+    const top = Math.max(margin, Math.min(bottomLimit - minH, a ? a.y : 80));
+    return { left, top, bottom: null, width: w, maxHeight: Math.max(160, bottomLimit - top), where, scrollBy: 0 };
+  };
+  if (!a) return beside('right', (o.vw - fullW) / 2, fullW);
+
+  const roomR = o.vw - margin - (a.x + a.w + gap);
+  const roomL = a.x - gap - margin;
+  if (roomR >= fullW) return beside('right', a.x + a.w + gap, fullW);
+  if (roomL >= fullW) return beside('left', a.x - gap - fullW, fullW);
+  if (Math.max(roomR, roomL) >= minW) {
+    return roomR >= roomL ? beside('right', a.x + a.w + gap, Math.floor(roomR)) : beside('left', margin, Math.floor(roomL));
+  }
+
+  const left = Math.min(Math.max(margin, a.x), o.vw - margin - fullW);
+  const bottomLimit = limitFor(left, fullW);
+  const belowTop = a.y + a.h + gap;
+  const roomBelow = bottomLimit - belowTop;
+  const roomAbove = a.y - gap - margin;
+  if (roomBelow >= minStack) {
+    return { left, top: belowTop, bottom: null, width: fullW, maxHeight: roomBelow, where: 'below', scrollBy: 0 };
+  }
+  if (roomAbove >= minStack) {
+    return { left, top: null, bottom: o.vh - (a.y - gap), width: fullW, maxHeight: roomAbove, where: 'above', scrollBy: 0 };
+  }
+  // Scroll so the card fits below, keeping the passage's first lines in view.
+  const need = minStack - roomBelow;
+  const topSafe = Math.max(margin, o.vh * 0.12);
+  if (need > 0 && a.y - need >= topSafe) {
+    return { left, top: belowTop - need, bottom: null, width: fullW, maxHeight: minStack, where: 'below', scrollBy: Math.ceil(need) };
+  }
+  const sheetH = Math.min(o.minH, Math.max(minStack, (bottomLimit - margin) * 0.5));
+  const top = Math.max(margin, bottomLimit - sheetH);
+  return { left, top, bottom: null, width: fullW, maxHeight: bottomLimit - top, where: 'over', scrollBy: 0 };
+}
+
 interface Props {
   api: EngineApi;
   s: EngineState;
+  /** One design pixel in the layer's CSS px (the chrome's size unit). */
   u: number;
-  /** Space kept free at the bottom right for the pill (px from the viewport bottom). */
-  pillReserve: number;
-  pillWidth: number;
+  /** Space kept free at the bottom for the pill and its stack (px from the viewport bottom). */
+  pillReserve?: number;
+  pillWidth?: number;
   /** Which edge the pill sits on. */
   pillSide?: 'right' | 'left';
   /** Space our own bars take at the bottom (the docked cookie-notice bar), px from the viewport bottom. */
   bottomReserve?: number;
 }
 
-export function ExplainCard({ api, s, u, pillReserve, pillWidth, pillSide = 'right', bottomReserve = 0 }: Props) {
+export function ExplainCard({ api, s, u, pillReserve = 96, pillWidth = 170, pillSide = 'right', bottomReserve = 0 }: Props) {
   const ex = s.explain;
   const a = useAnchor(ex.anchor);
   const [details, setDetails] = useState(false);
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const probe = useRef<HTMLDivElement>(null);
+  const k = useLayerZoom(probe);
 
   const akey = anchorKey(ex.anchor);
   useEffect(() => {
     setDetails(false);
   }, [akey]);
 
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const margin = 16;
-  const gap = 16;
-  const cardW = Math.min(Math.round(420 * u), vw - 2 * margin);
-  let left: number;
-  let top: number;
-  let below = false;
-  if (a && a.x + a.w + gap + cardW <= vw - margin) {
-    left = a.x + a.w + gap;
-    top = a.y;
-  } else if (a && a.x - gap - cardW >= margin) {
-    left = a.x - gap - cardW;
-    top = a.y;
-  } else {
-    below = true;
-    left = a ? Math.min(Math.max(margin, a.x), vw - margin - cardW) : (vw - cardW) / 2;
-    top = a ? a.y + a.h + gap : 80;
-  }
-  // Keep the card clear of the pill when they share the right edge, and give it room to read.
-  const overPill = pillSide === 'right' ? left + cardW > vw - pillWidth - margin : left < pillWidth + margin;
-  const bottomLimit = vh - Math.max(overPill ? pillReserve : margin, bottomReserve);
-  const minH = Math.min(Math.round(420 * u), bottomLimit - margin);
-  if (!below) top = Math.max(margin, Math.min(bottomLimit - minH, top));
-  else top = Math.max(margin, Math.min(bottomLimit - Math.min(minH, 220), top));
-  const maxH = Math.max(160, bottomLimit - top);
+  // Everything below is in viewport px; styles divide by k (the layer's zoom).
+  const place = placeCard({
+    anchor: a,
+    vw: window.innerWidth,
+    vh: window.innerHeight,
+    cardW: Math.round(420 * u * k),
+    minH: Math.round(400 * u * k),
+    minW: Math.round(300 * u * k),
+    minStack: Math.round(240 * u * k),
+    pillReserve,
+    pillWidth,
+    pillSide,
+    bottomReserve,
+  });
+  const px = (v: number) => `${Math.round((v / k) * 100) / 100}px`;
+
+  // No room beside, below or above: scroll the page once (for this passage) so the card fits below it.
+  const scrolledFor = useRef('');
+  useLayoutEffect(() => {
+    if (!place.scrollBy || scrolledFor.current === akey) return;
+    scrolledFor.current = akey;
+    const smooth = !(s.fit?.attention?.motion?.on ?? false) && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    window.scrollBy({ top: place.scrollBy, behavior: smooth ? 'smooth' : 'auto' });
+  });
+  const boxStyle: Record<string, string> = { left: px(place.left), width: px(place.width), maxHeight: px(place.maxHeight) };
+  if (place.top !== null) boxStyle.top = px(place.top);
+  if (place.bottom !== null) boxStyle.bottom = px(place.bottom);
 
   const r = ex.result;
   const answered = r ? jevAnswered(r) : false;
-  const unavailable = r ? writerUnavailable(r) : false;
   const passed = r ? checksPassed(r) : false;
   const plain = r?.explanation ? splitPlain(r.explanation) : [];
   const flagged = r?.showOriginalInstead ?? [];
+  const failed = !!r && (!r.ok || !answered);
 
   return (
     <>
+      <div ref={probe} hidden />
       {a && (
         <div
           class="wa-ex-outline"
           aria-hidden="true"
-          style={{ transform: `translate3d(${Math.round(a.x - 6)}px, ${Math.round(a.y - 6)}px, 0)`, width: `${Math.round(a.w + 12)}px`, height: `${Math.round(a.h + 12)}px` }}
+          style={{ left: px(a.x - 6), top: px(a.y - 6), width: px(a.w + 12), height: px(a.h + 12) }}
         />
       )}
       <section
@@ -157,7 +264,8 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth, pillSide = 'rig
         role="region"
         aria-label="Plain words"
         aria-busy={ex.loading}
-        style={{ left: `${Math.round(left)}px`, top: `${Math.round(top)}px`, width: `${cardW}px`, maxHeight: `${Math.round(maxH)}px` }}
+        data-where={place.where}
+        style={boxStyle}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
             e.stopPropagation();
@@ -167,8 +275,7 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth, pillSide = 'rig
       >
         <header class="wa-ex-head">
           <span class="wa-ex-eyebrow">In plain words</span>
-          {!(r && !r.ok) && <span class="wa-badge">Explained by AI</span>}
-          <button ref={closeRef} class="wa-iconbtn" aria-label="Close explanation" onClick={() => api.closeExplain()}>
+          <button class="wa-iconbtn" aria-label="Close explanation" onClick={() => api.closeExplain()}>
             <IconClose size={15} />
           </button>
         </header>
@@ -178,23 +285,29 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth, pillSide = 'rig
             <span class="wa-shimmer" style={{ width: '92%' }} />
             <span class="wa-shimmer" style={{ width: '78%' }} />
             <span class="wa-shimmer" style={{ width: '85%' }} />
-            <p>Writing a plain version, then Jev checks it against the original.</p>
+            <p>Writing a plain version. Jev then checks it against the original.</p>
           </div>
         ) : ex.error && !r ? (
           <p class="wa-ex-msg" role="status">{errorText(ex.error)}</p>
-        ) : r && (!r.ok || !answered) ? (
+        ) : r && failed ? (
           <div class="wa-ex-body">
-            <p class="wa-ex-msg" role="status">
-              {unavailable
-                ? "Couldn't write a plain version right now. The original is below."
-                : 'No plain version is shown: it did not pass the checks. The original is below.'}
-            </p>
-            {unavailable && s.ai === 'no_credits' && (
+            <p class="wa-ex-msg" role="status">{unavailableText(r)}</p>
+            {writerUnavailable(r) && s.ai === 'no_credits' && (
               <p class="wa-ex-note">AI writing is paused on the server. It comes back on its own.</p>
             )}
             {ex.original && <blockquote class="wa-ex-quote">{ex.original}</blockquote>}
           </div>
         ) : r ? (
+          <>
+          {/* Provenance first, outside the scrolling body, so it is never below the fold of the card. */}
+          <p class={`wa-ex-status ${passed ? 'is-ok' : 'is-warn'}`} role="status">
+            {passed ? <IconCheck size={15} /> : <IconWarn size={15} />}
+            <span>
+              {passed
+                ? 'Explained by AI · Checked by Jev against the original'
+                : 'Explained by AI · It may have missed or changed something. Check the original.'}
+            </span>
+          </p>
           <div class="wa-ex-body">
             {plain.length > 0 ? (
               <ul class="wa-ex-list">
@@ -206,32 +319,18 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth, pillSide = 'rig
               <p class="wa-ex-msg">No plain version is shown. The original text is unchanged.</p>
             )}
 
-            <p class={`wa-ex-check ${passed ? 'is-ok' : 'is-warn'}`} role="status">
-              {passed ? <IconCheck size={15} /> : <IconWarn size={15} />}
-              {passed
-                ? 'Checked against the original'
-                : 'This explanation may have missed or changed something. Check the original.'}
-            </p>
-
             {flagged.length > 0 && (
               <div class="wa-ex-orig">
                 <p class="wa-ex-orig-title">
-                  {flagged.length === 1 ? 'This sentence is shown as written' : 'These sentences are shown as written'}, because Jev
-                  found the plain version did not cover {flagged.length === 1 ? 'it' : 'them'}:
+                  Kept as written: the plain version did not cover {flagged.length === 1 ? 'this sentence' : 'these sentences'}.
                 </p>
-                {flagged.map((t, i) => {
-                  const cov = r.sentences?.find((x) => x.original === t)?.covered;
-                  return (
-                    <blockquote key={i}>
-                      {t}
-                      {typeof cov === 'number' && <span class="wa-ex-cov">covered {fmtP(cov)}</span>}
-                    </blockquote>
-                  );
-                })}
+                {flagged.map((t, i) => (
+                  <blockquote key={i}>{t}</blockquote>
+                ))}
               </div>
             )}
 
-            <button class="wa-link" aria-expanded={details} onClick={() => setDetails(!details)}>
+            <button class="wa-link wa-ex-how" aria-expanded={details} onClick={() => setDetails(!details)}>
               {details ? 'Hide how it was checked' : 'How it was checked'}
             </button>
             {details && (
@@ -251,7 +350,7 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth, pillSide = 'rig
                   </li>
                 </ul>
                 {r.sentences && r.sentences.length > 0 && (
-                  <ol class="wa-ex-cover">
+                  <ol class="wa-ex-cover" aria-label="How well each original sentence is covered">
                     {r.sentences.map((x, i) => (
                       <li key={i}>
                         <span class="wa-ex-cover-text">{x.original}</span>
@@ -264,24 +363,22 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth, pillSide = 'rig
                   </ol>
                 )}
                 <p class="wa-ex-meta">
-                  Written by {r.model} in {fmtMs(r.ms)}. Checked by {r.jev?.model ?? 'Jev'}: {r.jev?.questions ?? 0} answers in{' '}
-                  {fmtMs(r.jev?.wallMs)}, {fmtCost(r.jev?.costUsd ?? 0)}.
+                  Written by {r.model} in {fmtMs(r.ms)} from this passage only, with personal details removed. Checked by{' '}
+                  {r.jev?.model ?? 'Jev'}: {r.jev?.questions ?? 0} answers in {fmtMs(r.jev?.wallMs)}, {fmtCost(r.jev?.costUsd ?? 0)}.
                 </p>
               </div>
             )}
           </div>
+          </>
         ) : null}
 
         <footer class="wa-ex-foot">
           <span>
-            {r && !r.ok
-              ? 'Nothing on the page was changed. The original is the official text.'
-              : 'Explained by AI · The original is the official text.'}
-            {r && r.ok
-              ? ' This passage, with personal details removed, was sent to OpenAI.'
-              : ex.loading
-                ? ' Sending this passage, with personal details removed, to OpenAI.'
-                : ''}
+            {ex.loading && !r
+              ? 'Sending this passage, with personal details removed, to OpenAI.'
+              : r && r.ok
+                ? 'The original on the page is the official text.'
+                : 'Nothing on the page was changed.'}
           </span>
           <button class="wa-btn wa-btn-sm" onClick={() => api.closeExplain()}>
             Close

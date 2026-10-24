@@ -496,3 +496,21 @@ body.has-cookie .chat-panel { max-height: calc(100vh - 198px); }
 .info-main h1 { font-size: 28px; line-height: 34px; font-weight: 600; margin: 6px 0 10px; }
 .info-main p { color: var(--muted); font-size: 15px; line-height: 22px; margin-bottom: 20px; }
 .info-main .btn-teal { display: inline-flex; align-items: center; height: 44px; text-decoration: none; }
+
+/* ------------------------------------------------------------------ narrow tier (≤ 860 px wide)
+   Like real pharmacy sites at tablet width: the header wraps (search on its own row), the menu wraps,
+   the hero grows with its copy instead of clipping it, and the offer rows stack their buttons. */
+@media (max-width: 860px) {
+  .site-header { height: auto; }
+  .header-row { flex-wrap: wrap; row-gap: 10px; padding: 12px 0; }
+  .search { order: 4; flex: 1 1 100%; width: auto; }
+  .site-nav { height: auto; }
+  .nav-list { flex-wrap: wrap; }
+  .nav-menu { top: 100%; }
+  .hero { height: auto; }
+  .hero-track { position: relative; display: grid; }
+  .hero-slide { position: relative; inset: auto; grid-area: 1 / 1; padding: 28px 32px 44px; gap: 20px; }
+  .hero-art { width: 34%; max-width: 220px; height: auto; }
+  .upsell, .membership, .actions { flex-wrap: wrap; }
+  .upsell-btn, .membership-btn { width: auto; padding: 0 20px; }
+}

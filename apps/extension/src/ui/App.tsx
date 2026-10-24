@@ -1,5 +1,12 @@
-// Owner: P. The in-page chrome: pill, panel, Jev Lens, offers, toasts, overlay bar and chips, explain card, and the
+// Owner: P, U. The in-page chrome: pill, panel, Jev Lens, offers, toasts, overlay bar and chips, explain card, and the
 // Calm view host.
+//
+// Steady size: every layer keeps its physical size whatever the page zoom; only the fit's UI scale sizes it.
+// - The chrome layer (pill, panel, offers, toasts, chips, cookie bar, Calm loading screen) is one root with CSS
+//   `zoom: scale ÷ page zoom`: inside it one CSS px is one design pixel and the viewport measures as at 100%.
+// - The Calm view host gets `zoom: 1 ÷ page zoom`, so the view renders at the fit's sizes exactly.
+// - The Lens and the Explain card follow page coordinates, so they stay unzoomed and size with --u (scale ÷ zoom).
+// One corner dock holds the pill and everything that stacks above it, so they can never overlap.
 import { createPortal } from 'preact/compat';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useErrorBoundary, useLayoutEffect, useRef, useState } from 'preact/hooks';
@@ -14,11 +21,13 @@ import { ConsentBar, OverlayChips, OverlayOffer, overlayView, type OverlayView }
 import { Toasts } from './offers/Toasts';
 import { pageOrigin } from './panel/format';
 import { inEditable, shortcutFor } from './panel/keys';
-import { chromeSizing, useEngineState, usePillSpot, useReducedMotion, useTabZoom } from './panel/hooks';
-import { Panel } from './panel/Panel';
+import { dockHeights, planDock } from './panel/dock';
+import { chromeSizing, useEngineState, usePillSpot, useReducedMotion } from './panel/hooks';
+import { columnLabel, Panel, textSizeLabel, textZoomOf } from './panel/Panel';
 import { Pill } from './panel/Pill';
 import { useTodayMeter } from './panel/today';
 import { themeModeFor } from './tokens';
+import { usePageZoom, useViewport } from './zoom';
 
 export interface AppProps {
   api: EngineApi;
@@ -68,26 +77,38 @@ function CalmFallback({ api, s, broken = false }: { api: EngineApi; s: EngineSta
 export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
   const s = useEngineState(api);
   const origin = pageOrigin();
-  const zoom = useTabZoom();
+  const pageZoom = usePageZoom(api);
+  const vp = useViewport();
   const reduce = useReducedMotion(s.fit);
-  const sz = chromeSizing(s.fit, zoom);
+  const sz = chromeSizing(s.fit, pageZoom);
   const mode = themeModeFor(s.fit);
   const today = useTodayMeter(s);
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const stackRef = useRef<HTMLDivElement>(null);
+  const dockRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
+  const mainColRef = useRef<HTMLDivElement>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [explainable, setExplainable] = useState<Explainable | null>(null);
   const [announce, setAnnounce] = useState('');
   const [gone, setGone] = useState<ReadonlySet<string>>(new Set());
-  const [stackTop, setStackTop] = useState<number | null>(null);
-  const [panelChrome, setPanelChrome] = useState(0);
+  const [pillW, setPillW] = useState(150);
+  const [barH, setBarH] = useState(0);
+  const [dockBox, setDockBox] = useState<{ top: number; w: number } | null>(null);
   const announced = useRef(new Set<string>());
+  /** The person just changed the text size or page width: say the new value once it lands (within 4 s). */
+  const adjusting = useRef<{ what: 'text' | 'column'; at: number } | null>(null);
+  const noteAdjust = (what: 'text' | 'column') => {
+    adjusting.current = { what, at: performance.now() };
+  };
 
   const calmOpen = s.calm.open;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const margin = 16 * sz.u;
+  // The chrome layer's units: design pixels. Z converts them to the page's CSS px (and back).
+  const Z = sz.zoom;
+  const vw = vp.w / Z;
+  const vh = vp.h / Z;
+  const M = 16;
+  const GAP = 8;
 
   // Overlays the engine moved out of the way: a docked cookie notice becomes a bar, tucked ones leave a chip.
   const views: OverlayView[] = (s.overlays ?? []).map(overlayView).filter((v) => !gone.has(v.id) && !v.revealed);
@@ -95,37 +116,41 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
   const docked = onPage ? (views.find((v) => v.kind === 'consent' && v.action === 'docked') ?? null) : null;
   const tucked = onPage ? views.filter((v) => v.action === 'tucked') : [];
   const overlayOffer = onPage ? (views.find((v) => v.action === 'offered') ?? null) : null;
-  const barH = Math.max(72 * sz.u, sz.targetPx + 20 * sz.u);
-  const barReserve = docked ? margin + barH + 10 * sz.u : 0;
+  const offer = s.struggle.offers[0] ?? null;
+  const hasItems = !calmOpen && Boolean(offer || overlayOffer || s.toasts.length > 0 || tucked.length > 0);
 
-  const pillW = Math.round(150 * sz.u);
+  const barMinH = Math.max(72, sz.target + 20);
+  const plan = planDock({
+    vw,
+    vh,
+    margin: M,
+    gap: GAP + 2,
+    pillW,
+    pillH: sz.target,
+    hasItems,
+    itemsW: Math.min(360, vw - 2 * M),
+    panelOpen,
+    panelW: Math.min(392, vw - 2 * M),
+    barH: docked ? Math.max(barH, barMinH) : null,
+    barMaxW: 1080,
+  });
+
+  // The dock's corner: bottom right unless a site control sits there (the spot hook works in the page's CSS px).
   const spot = usePillSpot({
     isOurUi,
-    widthPx: pillW,
-    heightPx: Math.round(sz.targetPx),
-    marginPx: Math.round(margin),
-    minBottomPx: Math.round(barReserve),
+    widthPx: Math.round(pillW * Z),
+    heightPx: Math.round(sz.target * Z),
+    marginPx: Math.round(M * Z),
+    minBottomPx: Math.round(plan.minBottom * Z),
     frozen: panelOpen,
-    recheckKey: `${s.showingOriginal}|${calmOpen}|${views.map((v) => `${v.id}:${v.action}`).join(',')}`,
+    recheckKey: `${s.showingOriginal}|${calmOpen}|${views.map((v) => `${v.id}:${v.action}`).join(',')}|${Math.round(Z * 100)}`,
   });
   const side = spot.side;
-  const pillBottom = spot.bottom;
-  // Chips sit on the side their overlay was tucked to: with the pill's stack, or in their own group opposite it.
-  const far: 'left' | 'right' = side === 'right' ? 'left' : 'right';
-  const farChips = tucked.filter((v) => v.edge === far);
-  const nearChips = tucked.filter((v) => v.edge !== far);
-  const stackBottom = pillBottom + sz.targetPx + 12 * sz.u;
-  const panelW = Math.min(392 * sz.u, vw - 32 * sz.u);
-  const roomBeside = vw >= panelW + 360 * sz.u + 64 * sz.u;
-  const stackInset = panelOpen && roomBeside ? margin + panelW + 12 * sz.u : margin;
-  const showStack = !calmOpen && (!panelOpen || roomBeside);
-
-  // The panel body keeps at least 360 screen px when the tab is zoomed. When that does not fit above the pill,
-  // the panel drops down over the pill (it has its own Close).
-  const panelMin = 360 / (zoom > 0 ? zoom : 1) + (panelChrome > 0 ? panelChrome : 190 * sz.u);
-  const panelOverPill = vh - stackBottom - margin < panelMin;
-  const panelBottom = panelOverPill ? (docked ? margin + barH + 6 * sz.u : margin) : stackBottom;
-  const showPill = !calmOpen && !(panelOpen && panelOverPill);
+  const bottom = Math.max(plan.minBottom, spot.bottom / Z);
+  const heights = dockHeights(vh, bottom, M, sz.target, GAP, panelOpen);
+  const showPill = !calmOpen && heights.pillWithPanel;
+  const showItems = hasItems && (!panelOpen || plan.itemsBeside);
+  const itemsMax = panelOpen ? vh - bottom - M : heights.aboveMax;
 
   // Keyboard: never inside text fields, never synthetic events, and the page still receives every key.
   useEffect(() => {
@@ -143,7 +168,11 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
         if (st.calm.open) api.closeCalm();
         else void api.openCalm().catch(() => {});
       } else if (act === 'original') api.showOriginal(!st.showingOriginal);
-      else if (!st.calm.open) {
+      else if (act === 'narrower' || act === 'wider') {
+        if (st.calm.open || st.showingOriginal) return;
+        noteAdjust('column');
+        api.adjustColumn(act === 'narrower' ? -1 : 1);
+      } else if (!st.calm.open) {
         setPanelOpen((open) => {
           if (open) {
             requestAnimationFrame(() => {
@@ -196,7 +225,9 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
     };
   }, [explainOn, isOurUi]);
 
-  // Calm view host: the Calm view renders into its own shadow root; we only show, focus and close it.
+  // Calm view host: the Calm view renders into its own shadow root; we only show, focus, size and close it.
+  // It is zoomed by 1 ÷ page zoom, so it renders at the fit's own sizes (its tokens are computed at zoom 1), and it
+  // gets the viewport in its own units for the few lengths that would otherwise use vw / vh.
   const calmReady = Boolean(s.calm.open && s.calm.spec && s.outline && s.fit);
   const wasCalm = useRef(false);
   useLayoutEffect(() => {
@@ -204,6 +235,10 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
     calmHost.setAttribute('data-mode', mode);
     const has = calmReady && calmMount.childElementCount > 0;
     calmHost.classList.toggle('has-content', has);
+    const cz = String(Math.round((1 / pageZoom) * 10000) / 10000);
+    if (calmHost.style.getPropertyValue('zoom') !== cz) calmHost.style.setProperty('zoom', cz);
+    calmHost.style.setProperty('--wa-vw', `${Math.round(vp.w * pageZoom)}px`);
+    calmHost.style.setProperty('--wa-vh', `${Math.round(vp.h * pageZoom)}px`);
     if (calmReady && !wasCalm.current) {
       const root = calmMount.getRootNode() as ShadowRoot | Document;
       const focused = 'activeElement' in root ? root.activeElement : null;
@@ -239,8 +274,7 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
   }, [s.overlays, gone]);
   const markGone = (id: string) => setGone((g) => new Set([...g, id]));
 
-  // Announce each new offer, docked notice and toast once, politely.
-  const offer = s.struggle.offers[0] ?? null;
+  // Announce each new offer, docked notice and toast once, politely; and the new size after the person changes it.
   const lastToast = s.toasts[s.toasts.length - 1] ?? null;
   const dockedId = docked?.id ?? null;
   useEffect(() => {
@@ -268,46 +302,39 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
       }
     }
   }, [offer, lastToast, dockedId]);
-
-  // "Why this?" grows the offer downward from where its top edge was, and the stack never runs off the screen.
-  const offerKey = offer ? `${offer.kind}|${offer.question}` : '';
-  const whyOpen = useRef(false);
+  const colLabel = columnLabel(s.column);
+  const sizeLabel = textSizeLabel(textZoomOf(s, pageZoom));
   useEffect(() => {
-    whyOpen.current = false;
-    setStackTop(null);
-  }, [offerKey, panelOpen, calmOpen]);
-  const onWhy = (open: boolean) => {
-    whyOpen.current = open;
-    if (!open) {
-      setStackTop(null);
-      return;
-    }
-    const r = stackRef.current?.getBoundingClientRect();
-    if (r) setStackTop(Math.max(margin, r.top));
-  };
-  const stackFloor = Math.max(margin, barReserve);
+    const a = adjusting.current;
+    if (!a) return;
+    adjusting.current = null;
+    if (performance.now() - a.at > 4000) return;
+    setAnnounce(a.what === 'column' ? `Page width: ${colLabel.toLowerCase()}.` : `Text size: ${sizeLabel}.`);
+  }, [colLabel, sizeLabel]);
+
+  // Measure what the layout needs: the pill's width (for the spot probe), and the dock's box in the page's CSS px
+  // (for the Lens and the Explain card, which keep clear of it). The items column scrolls only when it truly does
+  // not fit (a scroller would clip the cards' shadows).
   useLayoutEffect(() => {
-    const el = stackRef.current;
-    if (!el) return;
-    if (stackTop === null) {
-      el.removeAttribute('data-scroll');
-      // Too tall to sit above the pill (a zoomed tab): keep it on screen by letting it slide down over the pill.
-      if (el.scrollHeight > vh - stackBottom - margin + 1) setStackTop(Math.max(margin, vh - stackFloor - el.scrollHeight));
-      return;
+    const p = mainColRef.current?.querySelector<HTMLElement>('.wa-pill');
+    if (p && p.offsetWidth > 0 && Math.abs(p.offsetWidth - pillW) > 1) setPillW(p.offsetWidth);
+    const d = dockRef.current?.getBoundingClientRect();
+    const next = d && d.width > 0 ? { top: Math.round(d.top), w: Math.round(d.width) } : null;
+    if ((next?.top ?? -1) !== (dockBox?.top ?? -1) || (next?.w ?? -1) !== (dockBox?.w ?? -1)) setDockBox(next);
+    // Natural heights (offsetHeight ignores the entry animation's transform, which scrollHeight would count).
+    const el = itemsRef.current;
+    if (el) {
+      const kids = Array.from(el.children) as HTMLElement[];
+      const need = kids.reduce((a, c) => a + c.offsetHeight, 0) + GAP * Math.max(0, kids.length - 1);
+      const scroll = need > itemsMax + 1;
+      if (scroll !== el.hasAttribute('data-scroll')) {
+        if (scroll) {
+          el.setAttribute('data-scroll', 'true');
+          // Start at the bottom: the offer's buttons and the chips sit next to the pill; toasts above can wait.
+          el.scrollTop = el.scrollHeight;
+        } else el.removeAttribute('data-scroll');
+      }
     }
-    if (!whyOpen.current && el.scrollHeight <= vh - stackBottom - margin) {
-      setStackTop(null);
-      return;
-    }
-    const room = vh - stackFloor - stackTop;
-    if (el.scrollHeight > room + 1) {
-      const top = Math.max(margin, vh - stackFloor - el.scrollHeight);
-      if (Math.abs(top - stackTop) > 1) setStackTop(top);
-    }
-    // Scroll inside the stack only when it truly does not fit (a scroller would clip the cards' shadows).
-    const scroll = el.scrollHeight > el.clientHeight + 1;
-    if (scroll) el.setAttribute('data-scroll', 'true');
-    else el.removeAttribute('data-scroll');
   });
 
   const closePanel = () => {
@@ -315,104 +342,128 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
     requestAnimationFrame(() => rootRef.current?.querySelector<HTMLButtonElement>('.wa-pill')?.focus({ preventScroll: true }));
   };
 
-  const vars = { '--u': `${sz.u}px`, '--wa-target': `${Math.round(sz.targetPx)}px` };
-  const inset = `${Math.round(stackInset)}px`;
-  const stackStyle =
-    stackTop === null
-      ? { bottom: `${Math.round(stackBottom)}px`, right: side === 'right' ? inset : 'auto', left: side === 'left' ? inset : 'auto' }
-      : {
-          top: `${Math.round(stackTop)}px`,
-          right: side === 'right' ? inset : 'auto',
-          left: side === 'left' ? inset : 'auto',
-          maxHeight: `${Math.round(vh - stackFloor - stackTop)}px`,
-        };
+  // The page layer (Lens, Explain) keeps clear of the dock and the bar, in the page's CSS px.
+  const dockReserve = dockBox ? Math.max(0, Math.round(vp.h - dockBox.top)) : Math.round((bottom + sz.target) * Z);
+  const dockWidth = dockBox ? dockBox.w : Math.round((pillW + M) * Z);
+  const barReserve = docked ? Math.round((M + Math.max(barH, barMinH) + GAP) * Z) : 0;
+
+  const r2 = (n: number) => `${Math.round(n * 100) / 100}px`;
+  const uiVars = {
+    zoom: String(Math.round(Z * 10000) / 10000),
+    '--u': '1px',
+    '--wa-target': r2(sz.target),
+    '--wa-vw': r2(vw),
+    '--wa-vh': r2(vh),
+  };
+  const pageVars = { '--u': `${sz.u}px`, '--wa-target': `${Math.round(sz.targetPx)}px` };
+  const edge = `${M}px`;
+  const items = showItems ? (
+    <div class="wa-dock-items" ref={itemsRef} data-wa-chrome="" style={{ maxHeight: r2(Math.max(0, itemsMax)) }}>
+      <Toasts api={api} toasts={s.toasts} />
+      {offer && <OfferCard api={api} offer={offer} />}
+      {!offer && overlayOffer && <OverlayOffer api={api} view={overlayOffer} onGone={markGone} />}
+      <OverlayChips api={api} views={tucked} onGone={markGone} />
+    </div>
+  ) : null;
 
   return (
-    <div
-      class="wa-root"
-      ref={rootRef}
-      data-mode={mode}
-      data-motion={reduce ? 'reduce' : 'full'}
-      data-calm={calmOpen ? 'open' : 'closed'}
-      data-calm-open={calmOpen ? '' : undefined}
-      style={vars}
-    >
-      {s.lens.on && !calmOpen && (
-        <Guard name="Jev Lens" resetKey={`${s.lens.on}|${s.understanding ? 1 : 0}`} fallback={null}>
-          <Lens api={api} s={s} reduce={reduce} bottomReserve={Math.round(stackBottom)} />
-        </Guard>
-      )}
+    <>
+      <div
+        class="wa-root"
+        data-layer="page"
+        data-mode={mode}
+        data-motion={reduce ? 'reduce' : 'full'}
+        data-calm={calmOpen ? 'open' : 'closed'}
+        data-calm-open={calmOpen ? '' : undefined}
+        style={pageVars}
+      >
+        {s.lens.on && !calmOpen && (
+          <Guard name="Jev Lens" resetKey={`${s.lens.on}|${s.understanding ? 1 : 0}`} fallback={null}>
+            <Lens api={api} s={s} reduce={reduce} bottomReserve={dockReserve} />
+          </Guard>
+        )}
 
-      {s.explain.open && (
-        <ExplainCard
-          api={api}
-          s={s}
-          u={sz.u}
-          pillReserve={Math.round(stackBottom)}
-          pillWidth={Math.round(170 * sz.u)}
-          pillSide={side}
-          bottomReserve={Math.round(barReserve)}
-        />
-      )}
-      {explainable && !s.explain.open && !calmOpen && (
-        <ExplainAffordance api={api} item={explainable} onDone={() => setExplainable(null)} />
-      )}
+        {s.explain.open && (
+          <ExplainCard
+            api={api}
+            s={s}
+            u={sz.u}
+            pillReserve={dockReserve + Math.round(GAP * Z)}
+            pillWidth={dockWidth}
+            pillSide={side}
+            bottomReserve={barReserve}
+          />
+        )}
+        {explainable && !s.explain.open && !calmOpen && (
+          <ExplainAffordance api={api} item={explainable} onDone={() => setExplainable(null)} />
+        )}
 
-      {s.calm.open && !calmReady && <CalmFallback api={api} s={s} />}
-      {calmReady && s.calm.spec && s.outline && s.fit && (
-        <Guard name="Calm view" resetKey={`${s.calm.source}|${s.calm.spec ? 1 : 0}|${s.calm.open}`} fallback={<CalmFallback api={api} s={s} broken />}>
-          {createPortal(<CalmView api={api} spec={s.calm.spec} outline={s.outline} fit={s.fit} />, calmMount)}
-        </Guard>
-      )}
-
-      {docked && <ConsentBar api={api} view={docked} left={margin} right={margin} bottom={margin} onGone={markGone} />}
-
-      {showStack && farChips.length > 0 && (
-        <div
-          class="wa-stack wa-stack-far"
-          data-side={far}
-          style={{ bottom: `${Math.round(Math.max(margin, barReserve))}px`, [far]: `${Math.round(margin)}px` }}
-        >
-          <OverlayChips api={api} views={farChips} onGone={markGone} />
-        </div>
-      )}
-
-      {showStack && (offer || overlayOffer || s.toasts.length > 0 || nearChips.length > 0) && (
-        <div
-          class="wa-stack"
-          ref={stackRef}
-          data-side={side}
-          data-pinned={stackTop !== null ? 'true' : 'false'}
-          style={stackStyle}
-        >
-          <Toasts api={api} toasts={s.toasts} />
-          {offer && <OfferCard api={api} offer={offer} onWhy={onWhy} />}
-          {!offer && overlayOffer && <OverlayOffer api={api} view={overlayOffer} onGone={markGone} />}
-          <OverlayChips api={api} views={nearChips} onGone={markGone} />
-        </div>
-      )}
-
-      {panelOpen && !calmOpen && (
-        <Panel
-          api={api}
-          s={s}
-          origin={origin}
-          side={side}
-          bottomPx={panelBottom}
-          minHeightPx={panelMin}
-          reduce={reduce}
-          today={today}
-          onClose={closePanel}
-          onChromeHeight={setPanelChrome}
-        />
-      )}
-      {showPill && (
-        <Pill s={s} open={panelOpen} side={side} bottomPx={pillBottom} onToggle={() => (panelOpen ? closePanel() : setPanelOpen(true))} />
-      )}
-
-      <div class="wa-sr" aria-live="polite" role="status">
-        {announce}
+        {calmReady && s.calm.spec && s.outline && s.fit && (
+          <Guard name="Calm view" resetKey={`${s.calm.source}|${s.calm.spec ? 1 : 0}|${s.calm.open}`} fallback={<CalmFallback api={api} s={s} broken />}>
+            {createPortal(<CalmView api={api} spec={s.calm.spec} outline={s.outline} fit={s.fit} />, calmMount)}
+          </Guard>
+        )}
       </div>
-    </div>
+
+      <div
+        class="wa-root"
+        data-layer="ui"
+        ref={rootRef}
+        data-mode={mode}
+        data-motion={reduce ? 'reduce' : 'full'}
+        data-calm={calmOpen ? 'open' : 'closed'}
+        data-calm-open={calmOpen ? '' : undefined}
+        style={uiVars}
+      >
+        {s.calm.open && !calmReady && <CalmFallback api={api} s={s} />}
+
+        {docked && (
+          <ConsentBar
+            api={api}
+            view={docked}
+            left={M}
+            right={M}
+            bottom={M}
+            onGone={markGone}
+            layoutKey={String(Math.round(vw))}
+            onHeight={setBarH}
+          />
+        )}
+
+        {!calmOpen && (showPill || panelOpen || items) && (
+          <div
+            class="wa-dock"
+            ref={dockRef}
+            data-side={side}
+            style={{ bottom: r2(bottom), right: side === 'right' ? edge : 'auto', left: side === 'left' ? edge : 'auto', maxHeight: r2(vh - bottom - M) }}
+          >
+            <div class="wa-dock-col" ref={mainColRef} style={{ maxHeight: r2(vh - bottom - M) }}>
+              {!panelOpen && items}
+              {panelOpen && (
+                <Panel
+                  api={api}
+                  s={s}
+                  origin={origin}
+                  side={side}
+                  maxHeightPx={heights.aboveMax}
+                  pageZoom={pageZoom}
+                  reduce={reduce}
+                  today={today}
+                  onClose={closePanel}
+                  onAdjust={noteAdjust}
+                />
+              )}
+              {showPill && <Pill s={s} open={panelOpen} side={side} onToggle={() => (panelOpen ? closePanel() : setPanelOpen(true))} />}
+            </div>
+            {/* The pill's column comes first so it stays at the screen edge (the dock is a row, reversed on the right). */}
+            {panelOpen && plan.itemsBeside && <div class="wa-dock-col">{items}</div>}
+          </div>
+        )}
+
+        <div class="wa-sr" aria-live="polite" role="status">
+          {announce}
+        </div>
+      </div>
+    </>
   );
 }

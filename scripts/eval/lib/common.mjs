@@ -18,6 +18,24 @@ export const DESKTOP_UA =
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
+ * The device scale factor the run emulates (--dpr). Page zoom is devicePixelRatio ÷ this, and positions the checks
+ * report are in screen px at 1× (CSS px × page zoom), whatever the DPR, so thresholds mean the same at DPR 1 and 2.
+ */
+let BASE_DPR = 1;
+export const baseDpr = () => BASE_DPR;
+export function setBaseDpr(n) {
+  BASE_DPR = Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+/** Path of the branded Google Chrome to drive with --browser chrome (CHROME_PATH overrides). */
+export function chromePath() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  if (process.platform === 'darwin') return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+  if (process.platform === 'win32') return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+  return '/usr/bin/google-chrome';
+}
+
+/**
  * Screenshot the viewport from the compositor surface (CDP Page.captureScreenshot, fromSurface). Headless Chrome's
  * plain screenshot comes out with a blank band at the top after scrolling at 150% zoom; this one does not.
  * Falls back to page.screenshot.

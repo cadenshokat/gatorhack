@@ -1,9 +1,9 @@
-// Owner: P. Explain card, the outline around the original passage, and the "Explain" pill.
+// Owner: S (round 3). Explain card, the outline around the original passage, and the "Explain" pill.
 import { DISPLAY_STACK, u } from '../panel/css-util';
 
 export const explainCss = /* css */ `
 .wa-ex-outline {
-  position: fixed; top: 0; left: 0; z-index: 24; pointer-events: none;
+  position: fixed; z-index: 24; pointer-events: none; box-sizing: border-box;
   border-radius: ${u(10)}; border: ${u(2)} solid var(--c-accent);
   box-shadow: 0 0 0 ${u(4)} var(--c-accent-tint);
   animation: wa-lfade 240ms ease-out both;
@@ -30,12 +30,16 @@ export const explainCss = /* css */ `
 }
 .wa-ex-loading { display: grid; gap: ${u(10)}; padding: ${u(8)} ${u(20)} ${u(14)}; }
 .wa-ex-loading p { margin: ${u(4)} 0 0; font-size: ${u(13.5)}; color: var(--c-ink2); }
-.wa-ex-check { margin: 0; display: flex; align-items: center; gap: ${u(8)}; font-size: ${u(14)}; font-weight: 500; }
-.wa-ex-check svg { flex: none; }
-.wa-ex-check.is-ok { color: var(--c-accent); }
-.wa-ex-check.is-warn { color: var(--c-warn); background: var(--c-warn-tint); padding: ${u(8)} ${u(12)}; border-radius: ${u(12)}; }
+.wa-ex-status {
+  margin: 0 ${u(20)} ${u(8)}; display: flex; align-items: flex-start; gap: ${u(8)};
+  font-size: ${u(13.5)}; font-weight: 500; line-height: 1.4; flex: none;
+}
+.wa-ex-status svg { flex: none; margin-top: ${u(1.5)}; }
+.wa-ex-status.is-ok { color: var(--c-accent); }
+.wa-ex-status.is-warn { color: var(--c-warn); background: var(--c-warn-tint); padding: ${u(8)} ${u(12)}; border-radius: ${u(12)}; margin: 0 ${u(14)} ${u(8)}; }
+.wa-ex-how { justify-self: start; font-size: ${u(13.5)}; }
 .wa-ex-orig { display: grid; gap: ${u(8)}; }
-.wa-ex-orig-title { margin: 0; font-size: ${u(13.5)}; color: var(--c-ink2); }
+.wa-ex-orig-title { margin: 0; font-size: ${u(13.5)}; font-weight: 500; color: var(--c-ink2); }
 .wa-ex-orig blockquote {
   margin: 0; padding: ${u(10)} ${u(14)}; border-radius: ${u(12)}; background: var(--c-canvas);
   border-left: ${u(3)} solid var(--c-line-strong); font-size: ${u(15)}; line-height: 1.5;

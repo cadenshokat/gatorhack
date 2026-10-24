@@ -1,5 +1,8 @@
-// First-screen checks: what a person sees at 1280×720 before scrolling. All positions are reported in screen
-// pixels (CSS px × devicePixelRatio, which includes WebAble's page zoom), so 140 px means 140 px of the screenshot.
+// First-screen checks: what a person sees before scrolling. All positions are reported in screen px at 1× (CSS px ×
+// page zoom, where page zoom = devicePixelRatio ÷ the run's --dpr), so 140 px means 140 px of a DPR-1 screenshot
+// and 280 px of a DPR-2 one.
+import { baseDpr } from './common.mjs';
+import { readingFacts, uiOverSite } from './pagefacts.mjs';
 import { calmFacts, overlaps, uiProbe } from './ui.mjs';
 
 /** Calm view first screen: the heading starts at most this far down (round-2 Calm brief §1). */
@@ -10,7 +13,8 @@ export const CALM_MAX_FILLED = 1;
 const PAGE_SRC = (arg) => {
   const vw = innerWidth;
   const vh = innerHeight;
-  const dpr = devicePixelRatio;
+  // Page zoom: positions below are CSS px × this (screen px at 1×).
+  const dpr = devicePixelRatio / (arg?.baseDpr || 1);
   const norm = (s) =>
     String(s || '')
       .replace(/\s+/g, ' ')
@@ -136,7 +140,7 @@ const PAGE_SRC = (arg) => {
   return {
     vw,
     vh,
-    dpr,
+    dpr: devicePixelRatio,
     zoom: Math.round(dpr * 100) / 100,
     scrollY: Math.round(scrollY),
     h1: h1r ? { top: Math.round(h1r.top * dpr), text: norm(h1.textContent).slice(0, 80) } : null,
@@ -158,17 +162,22 @@ export function mainLabelFrom(report) {
   return null;
 }
 
-/** Page-level facts plus WebAble UI facts for the current view. `kind`: before | after | lens | calm. */
+/**
+ * Page-level facts plus WebAble UI facts for the current view. `kind`: before | after | task | lens | calm.
+ * before, after and task also get reading facts (zoom, body and heading sizes, column, overflow, overlapping text).
+ */
 export async function measureView(page, kind, opts = {}) {
   const out = { kind };
   const probe = kind === 'before' ? null : await uiProbe(page);
   try {
-    out.page = await page.evaluate(PAGE_SRC, { mainLabel: opts.mainLabel ?? null, pill: probe?.pill ?? null });
+    out.page = await page.evaluate(PAGE_SRC, { mainLabel: opts.mainLabel ?? null, pill: probe?.pill ?? null, baseDpr: baseDpr() });
   } catch (e) {
     out.error = (e instanceof Error ? e.message : String(e)).split('\n')[0];
     return out;
   }
+  if (kind === 'before' || kind === 'after' || kind === 'task') out.reading = await readingFacts(page);
   if (probe) {
+    const zoom = (probe.dpr || 1) / baseDpr();
     out.ui = {
       lens: probe.lens,
       panel: probe.panel,
@@ -176,8 +185,13 @@ export async function measureView(page, kind, opts = {}) {
       pill: probe.pill
         ? { x: Math.round(probe.pill.x), y: Math.round(probe.pill.y), w: Math.round(probe.pill.w), h: Math.round(probe.pill.h) }
         : null,
+      // Physical size of the pill: CSS px × page zoom (it should stay the same whatever the zoom).
+      pillScreenH: probe.pill ? Math.round(probe.pill.h * zoom) : null,
+      pillScreenW: probe.pill ? Math.round(probe.pill.w * zoom) : null,
       floatOverlaps: overlaps(probe.floats ?? [], 16).map((p) => p.join(' × ')),
       floats: (probe.floats ?? []).map((f) => f.t || f.cls).slice(0, 8),
+      floatRects: (probe.floats ?? []).slice(0, 12).map((f) => ({ x: Math.round(f.x), y: Math.round(f.y), w: Math.round(f.w), h: Math.round(f.h), t: f.t || f.cls })),
+      overSite: kind === 'after' || kind === 'task' ? await uiOverSite(page, probe.floats ?? []) : [],
     };
     if (kind === 'lens') {
       const chips = probe.chips ?? [];
@@ -201,7 +215,7 @@ export async function measureView(page, kind, opts = {}) {
 /** Calm facts in screen px with pass/fail against the round-2 first-screen rules. */
 export function summarizeCalm(c) {
   if (!c?.open) return { open: false, error: c?.error ?? null };
-  const k = c.dpr || 1;
+  const k = (c.dpr || 1) / baseDpr();
   const px = (v) => (typeof v === 'number' ? Math.round(v * k) : null);
   const floor = c.dockTop != null ? c.dockTop : c.vh;
   const h1Top = px(c.h1?.top);

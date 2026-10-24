@@ -1,9 +1,8 @@
-// Owner: P. Mounts the in-page chrome: a <webable-ui> host on documentElement, a closed shadow root,
+// Owner: P, U. Mounts the in-page chrome: a <webable-ui> host on documentElement, a closed shadow root,
 // and one popover="manual" layer in the top layer (above any page z-index). The layer ignores the pointer;
 // only our controls take clicks, so the page underneath keeps working.
 import { h, render } from 'preact';
 import type { EngineApi } from '../contracts';
-import { ask } from '../engine/bus';
 import { App } from './App';
 import { baseCss } from './base.css';
 import { explainCss } from './explain/explain.css';
@@ -87,46 +86,23 @@ export function mountUi(api: EngineApi): () => void {
     'all: initial; display: block; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 2147483647; pointer-events: none;';
   const shadow = host.attachShadow({ mode: shadowMode() });
 
-  // Theme tokens from D1, rebuilt when the fit changes.
+  // Theme tokens from D1, rebuilt when the fit changes. Lengths are computed at zoom 1: the Calm view host is CSS-zoomed
+  // by 1 ÷ page zoom (App does that), so the view renders at the fit's own sizes whatever the page zoom.
   const tokensSheet = sheet('');
   let themeKey = '';
-  let zoom = 1;
   const updateTokens = () => {
     const st = api.getState();
     const mode: ThemeMode = themeModeFor(st.fit);
-    const key = `${st.fit?.createdAt ?? 'none'}|${st.fit?.text?.bodyPx ?? ''}|${st.fit?.text?.override ?? ''}|${st.fit?.targets?.minPx ?? ''}|${mode}|${zoom}`;
+    const key = `${st.fit?.createdAt ?? 'none'}|${st.fit?.text?.bodyPx ?? ''}|${st.fit?.text?.override ?? ''}|${st.fit?.targets?.minPx ?? ''}|${mode}`;
     if (key === themeKey || !tokensSheet) return;
     themeKey = key;
     try {
-      tokensSheet.replaceSync(tokensToCss(tokensFor(st.fit, mode, { zoom }), ':host'));
+      tokensSheet.replaceSync(tokensToCss(tokensFor(st.fit, mode, { zoom: 1 }), ':host'));
     } catch {
       /* D1 tokens not ready: our chrome uses its own fallbacks */
     }
   };
   updateTokens();
-  // Calm view lengths divide by the tab zoom (the tailor may zoom the tab); re-read it when the page resizes.
-  let zoomTimer = 0;
-  const readZoom = () => {
-    let p: Promise<unknown>;
-    try {
-      p = ask<unknown>({ type: 'getZoom' }, 2500);
-    } catch {
-      return;
-    }
-    p.then((r) => {
-      const z = typeof r === 'number' ? r : typeof (r as { factor?: unknown } | null)?.factor === 'number' ? (r as { factor: number }).factor : NaN;
-      if (Number.isFinite(z) && z > 0.2 && z < 6 && z !== zoom) {
-        zoom = z;
-        updateTokens();
-      }
-    }).catch(() => {});
-  };
-  const onResize = () => {
-    window.clearTimeout(zoomTimer);
-    zoomTimer = window.setTimeout(readZoom, 250);
-  };
-  readZoom();
-  window.addEventListener('resize', onResize, { passive: true });
 
   const chromeCss = [rootCss, CALM_HOST_CSS, lensCss, offersCss, explainCss].join('\n');
   adopt(shadow, [tokensSheet, sheet(chromeCss)], chromeCss);
@@ -234,8 +210,6 @@ export function mountUi(api: EngineApi): () => void {
 
   const unmount = () => {
     window.clearInterval(keepOnTop);
-    window.clearTimeout(zoomTimer);
-    window.removeEventListener('resize', onResize);
     calmObserver.disconnect();
     offState();
     render(null, appRoot);

@@ -21,7 +21,7 @@ import { Calm, type CalmCtx } from './context';
 import { Dock } from './Dock';
 import * as I from './icons';
 import { LeadBand } from './Lead';
-import { tickNow, useCalmStyles, useDomVersion, useEngineState, useReducedMotion, useZoom } from './live';
+import { tickNow, useCalmStyles, useDomVersion, useEngineState, useReducedMotion } from './live';
 import { type Block, isShown, keyOf, newCtx, pagePopups, readBlocks, textOf } from './model';
 import { useOutcome } from './outcome';
 import { type CalmPlan, buildPlan } from './plan';
@@ -76,7 +76,8 @@ function useChromeRules(rootRef: { current: HTMLElement | null }): void {
 export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOutline; fit: FitProfile }): JSX.Element {
   const { api, spec, outline, fit } = props;
   const state = useEngineState(api);
-  const zoom = useZoom();
+  // The Calm host is CSS-zoomed by 1 ÷ page zoom (App), so the view lays out as at 100%: its lengths need no division.
+  const zoom = 1;
   const version = useDomVersion();
   const sysReduce = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);

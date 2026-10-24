@@ -1,10 +1,11 @@
 // Is the generative model usable right now? It is the only optional part of WebAble: Jev and the local layouts
 // work without it. No key: 'off'. OpenAI says the account has no credits (insufficient_quota,
 // credit_balance_exhausted, a billing limit) or rejects the key (401): 'no_credits' for AI_BLOCK_MS (10 min),
-// after which the next request (or the background probe in openai.ts) tries again. Our own spend cap: 'no_credits'.
+// after which the next request (or the background probe in openai.ts) tries again. Our own daily spend cap
+// (OPENAI_BUDGET_USD per local day): 'no_credits' until midnight.
 // A plain rate limit (429 rate_limit_exceeded) is transient and changes nothing.
 import { AI_BLOCK_MS, OPENAI_BUDGET_USD, openAiKey } from './config';
-import { openAiSpentUsd } from './stats';
+import { openAiSpentTodayUsd } from './stats';
 
 export type AiStatus = 'on' | 'off' | 'no_credits';
 export type AiBlockReason = 'no_credits' | 'key_rejected';
@@ -56,7 +57,11 @@ export function aiStatus(now = Date.now()): AiStatus {
 export function aiState(now = Date.now()): AiState {
   const lastCheck = lastCheckAt ? new Date(lastCheckAt).toISOString() : null;
   if (!openAiKey()) return { status: 'off', reason: 'no_key', since: null, retryAt: null, lastCheck };
-  if (openAiSpentUsd() >= OPENAI_BUDGET_USD) return { status: 'no_credits', reason: 'budget', since: null, retryAt: null, lastCheck };
+  if (openAiSpentTodayUsd(now) >= OPENAI_BUDGET_USD) {
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    return { status: 'no_credits', reason: 'budget', since: null, retryAt: midnight.toISOString(), lastCheck };
+  }
   if (blockReason && now < blockedUntil) {
     return {
       status: 'no_credits',
@@ -109,7 +114,7 @@ export function resetAiState(): void {
 export function aiSentence(s: AiState = aiState()): string {
   if (s.status === 'on') return 'AI layouts on.';
   if (s.reason === 'no_key') return 'AI layouts off: no OpenAI key on this server. Jev and the local layouts still work.';
-  if (s.reason === 'budget') return "AI layouts off: this server's spending cap is reached. Jev and the local layouts still work.";
+  if (s.reason === 'budget') return "AI layouts off: today's spending cap on this server is reached. Jev and the local layouts still work; AI comes back tomorrow.";
   if (s.reason === 'key_rejected') return 'AI layouts off: OpenAI did not accept the key. Trying again in a few minutes.';
   return 'AI layouts off: no credits. Jev and the local layouts still work; trying again in a few minutes.';
 }

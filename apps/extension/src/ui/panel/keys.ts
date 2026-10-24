@@ -1,7 +1,9 @@
 // Owner: P. The demo keyboard shortcuts: Alt+Shift+L Jev Lens, Alt+Shift+C Calm view, Alt+Shift+O original page,
-// Alt+Shift+W the panel. Alt+J stays as an older Lens alias. They never fire while focus is in a text field.
+// Alt+Shift+W the panel, Alt+Shift+[ and Alt+Shift+] page width narrower and wider. Alt+J stays as an older Lens
+// alias. They never fire while focus is in a text field. Keys are matched by `code` (the physical key), so the
+// brackets work whatever character Option+Shift types on a Mac.
 
-export type ShortcutAction = 'lens' | 'calm' | 'original' | 'panel';
+export type ShortcutAction = 'lens' | 'calm' | 'original' | 'panel' | 'narrower' | 'wider';
 
 type KeyLike = Pick<KeyboardEvent, 'altKey' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'code'>;
 
@@ -17,6 +19,10 @@ export function shortcutFor(e: KeyLike): ShortcutAction | null {
       return 'original';
     case 'KeyW':
       return 'panel';
+    case 'BracketLeft':
+      return 'narrower';
+    case 'BracketRight':
+      return 'wider';
     default:
       return null;
   }

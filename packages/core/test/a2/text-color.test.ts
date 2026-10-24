@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { DEMO_FITS } from '../../src/fit/derive';
-import { compressiveExponent, mapFontSize, planTextScale } from '../../src/text/scale';
+import { compressiveExponent, mapFontSize, planPageZoom, stepZoom } from '../../src/text/scale';
 import { contrastRatio, contrastTarget, liftToRatio, parseColor, relativeLuminance, toOklch, type Rgba } from '../../src/color/contrast';
 import { rng } from './fixtures';
 
@@ -10,31 +10,42 @@ const C = (s: string): Rgba => {
   return c;
 };
 
-describe('planTextScale', () => {
+describe('planPageZoom (round 3: zoom carries size, no residual map)', () => {
   test('a default fit changes nothing; small gaps (≤ 1.15×) change nothing', () => {
-    expect(planTextScale(DEMO_FITS.typical, 12)).toEqual({ zoom: 1, residual: 1, exponent: 1, targetBodyPx: 12 });
-    expect(planTextScale(DEMO_FITS.rosa, 22).zoom).toBe(1);
-    expect(planTextScale(DEMO_FITS.rosa, 20)).toEqual({ zoom: 1, residual: 1, exponent: 1, targetBodyPx: 20 });
+    expect(planPageZoom(DEMO_FITS.typical, 12)).toMatchObject({ zoom: 1, capped: false });
+    expect(planPageZoom(DEMO_FITS.rosa, 22).zoom).toBe(1);
+    expect(planPageZoom(DEMO_FITS.rosa, 20).zoom).toBe(1);
   });
 
-  test('zoom first, snapped down to a Chrome preset, residual to the text map', () => {
-    const p = planTextScale(DEMO_FITS.rosa, 15); // k = 1.467
-    expect(p.zoom).toBe(1.25);
-    expect(p.residual).toBeCloseTo(22 / (15 * 1.25), 3);
-    expect(p.targetBodyPx * p.zoom).toBeCloseTo(22, 1);
-    expect(p.exponent).toBeCloseTo(compressiveExponent(p.residual), 3);
+  test('the smallest Chrome preset that reaches 93% of the person\'s size', () => {
+    expect(planPageZoom(DEMO_FITS.rosa, 15).zoom).toBe(1.5); // 22.5 px
+    expect(planPageZoom(DEMO_FITS.rosa, 13).zoom).toBe(1.75); // 22.75 px (1.5 would leave 19.5 px)
+    expect(planPageZoom(DEMO_FITS.rosa, 14).zoom).toBe(1.5); // 21 px is within 93%
+    expect(planPageZoom(DEMO_FITS.reader, 16).zoom).toBe(1.5); // 24 px
+    expect(planPageZoom(DEMO_FITS.reader, 12)).toMatchObject({ zoom: 2, capped: false, effectiveBodyPx: 24 });
+  });
 
-    expect(planTextScale(DEMO_FITS.reader, 12)).toMatchObject({ zoom: 2, residual: 1 });
-    const narrow = planTextScale(DEMO_FITS.reader, 12, { viewportW: 1280 }); // zMax 1.6
-    expect(narrow.zoom).toBe(1.5);
-    expect(narrow.targetBodyPx * narrow.zoom).toBeCloseTo(24, 1);
+  test('no viewport-width cap any more; capped at 200% (250% for large print) and says by how much', () => {
+    const p = planPageZoom(DEMO_FITS.reader, 10);
+    expect(p).toMatchObject({ zoom: 2, capped: true, shortPx: 4 });
+    const large = { ...DEMO_FITS.reader, text: { ...DEMO_FITS.reader.text, bodyPx: 32, largePrint: true } };
+    expect(planPageZoom(large, 13).zoom).toBe(2.5);
   });
 
   test('the person\'s own zoom is respected and never lowered; override wins', () => {
-    expect(planTextScale(DEMO_FITS.reader, 16, { ownZoom: 1.25 })).toMatchObject({ zoom: 1.5, residual: 1 });
-    expect(planTextScale(DEMO_FITS.reader, 16, { ownZoom: 1.75 }).zoom).toBe(1.75);
+    expect(planPageZoom(DEMO_FITS.reader, 16, { ownZoom: 1.25 }).zoom).toBe(1.5);
+    expect(planPageZoom(DEMO_FITS.reader, 16, { ownZoom: 1.75 }).zoom).toBe(1.75);
     const over = { ...DEMO_FITS.typical, text: { ...DEMO_FITS.typical.text, override: 30 } };
-    expect(planTextScale(over, 15).zoom).toBe(2);
+    expect(planPageZoom(over, 15).zoom).toBe(2);
+  });
+
+  test('A−/A+ steps move one Chrome preset from the fit\'s zoom', () => {
+    expect(planPageZoom(DEMO_FITS.rosa, 15, { step: 1 })).toMatchObject({ zoom: 1.75, fitZoom: 1.5, step: 1 });
+    expect(planPageZoom(DEMO_FITS.rosa, 15, { step: -2 }).zoom).toBe(1.1);
+    expect(planPageZoom(DEMO_FITS.typical, 16, { step: 1 }).zoom).toBe(1.1);
+    expect(stepZoom(2.5, 1)).toBe(2.5); // the person's ceiling
+    expect(stepZoom(1.3, 1)).toBe(1.5); // a custom level starts at its nearest preset
+    expect(stepZoom(0.5, -1)).toBe(0.5);
   });
 });
 

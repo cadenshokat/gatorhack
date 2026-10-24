@@ -6,6 +6,8 @@
 // - `calmChromeCss`: rules for the in-page chrome's shadow root while the Calm view is open (the WebAble pill and the
 //   floating chips hide). Keyed on `[data-calm-open]` on `.wa-root` (or the host), and on the open Calm host itself.
 // Tokens are CSS custom properties `--wa-*` from tokens.ts; the Calm view sets fit-sized values inline on its root.
+// The Calm host is CSS-zoomed by 1 ÷ page zoom, where vw / vh no longer match the screen: viewport lengths use
+// --wa-vw / --wa-vh (the viewport in the view's own px, set on the host), with vw / vh only as fallbacks.
 import { tokensFor, tokensToCss } from './tokens';
 
 /** Pills, cards and small shared pieces. `s` is a scope prefix ('' for the whole shadow root, '.wa-calm ' for the view). */
@@ -121,7 +123,7 @@ ${C} .wa-provchip__dot{flex:none;width:9px;height:9px;border-radius:50%;backgrou
 ${C} .wa-provchip[data-loading] .wa-provchip__dot{animation:wa-pulse 1.4s ease-in-out infinite}
 ${C} .wa-provchip__src{display:inline-block;animation:wa-swap .2s ease-out both}
 ${C} .wa-aiready{min-height:var(--wa-chip-h)!important;white-space:nowrap;animation:wa-in .25s ease-out both}
-${C} .wa-popover{position:absolute;z-index:8;top:calc(100% + 10px);left:0;width:min(440px,calc(100vw - 32px));
+${C} .wa-popover{position:absolute;z-index:8;top:calc(100% + 10px);left:0;width:min(440px,calc(var(--wa-vw,100vw) - 32px));
   display:flex;flex-direction:column;gap:16px;padding:22px 24px;border-radius:22px;background:var(--wa-raised);color:var(--wa-ink);
   font-weight:var(--wa-w-body);white-space:normal;box-shadow:var(--wa-shadow-float),inset 0 0 0 var(--wa-edge) var(--wa-edge-color);
   animation:wa-in .18s ease-out both}
@@ -138,7 +140,7 @@ ${C} .wa-pbar[data-tone=risk] .wa-pbar__fill{background:var(--wa-warning)}
 
 /* ---------- page column and the first band ---------- */
 ${C} .wa-page{display:block;padding:var(--wa-top-pad) var(--wa-side-pad) calc(var(--wa-band-gap)*1.2)}
-${C}[data-docked] .wa-page{min-height:calc(100vh - var(--wa-strip-h) - var(--wa-dock-h))}
+${C}[data-docked] .wa-page{min-height:calc(var(--wa-vh,100vh) - var(--wa-strip-h) - var(--wa-dock-h))}
 ${C} .wa-page:focus{outline:none}
 ${C} .wa-col{max-width:var(--wa-col-max);margin:0 auto}
 ${C} .wa-stack{display:flex;flex-direction:column;gap:var(--wa-gap)}
@@ -299,7 +301,7 @@ ${C} .wa-well img{display:block;width:100%;height:100%;min-width:0;min-height:0;
 ${C} .wa-well[data-fit=cover]{padding:0}
 ${C} .wa-well[data-fit=cover] img{width:100%;height:100%;max-width:none;max-height:none;object-fit:cover}
 ${C} .wa-figure{display:flex;flex-direction:column;gap:8px}
-${C} .wa-figure img{border-radius:var(--wa-r-media);max-height:min(62vh,560px);width:auto;object-fit:contain;background:var(--wa-well)}
+${C} .wa-figure img{border-radius:var(--wa-r-media);max-height:min(calc(var(--wa-vh,100vh) * .62),560px);width:auto;object-fit:contain;background:var(--wa-well)}
 ${C} .wa-figure--icon img{max-height:96px;background:transparent}
 ${C} .wa-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,calc(var(--wa-tile-min)*.8)),1fr));gap:var(--wa-card-gap)}
 ${C} .wa-gallery .wa-well{aspect-ratio:1/1}
@@ -346,7 +348,7 @@ ${C} .wa-dock__in{max-width:var(--wa-col-max);margin:0 auto;display:flex;align-i
 ${C} .wa-dock__ctx{flex:1 1 auto;min-width:0;color:var(--wa-ink-2);font-weight:var(--wa-w-ctl);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 ${C} .wa-dock__btns{flex:none;display:flex;align-items:center;gap:12px}
 ${C} .wa-dock .wa-primary{margin:0;position:relative;gap:0}
-${C} .wa-dock .wa-primary__hint{position:absolute;right:0;bottom:calc(100% + 12px);width:max-content;max-width:min(420px,70vw);text-align:right;
+${C} .wa-dock .wa-primary__hint{position:absolute;right:0;bottom:calc(100% + 12px);width:max-content;max-width:min(420px,calc(var(--wa-vw,100vw) * .7));text-align:right;
   padding:8px 14px;border-radius:12px;background:var(--wa-raised);color:var(--wa-ink);box-shadow:var(--wa-shadow-float),inset 0 0 0 var(--wa-edge) var(--wa-edge-color)}
 ${C} .wa-dock .wa-primary__hint:empty{display:none}
 ${C} .wa-dock .wa-btn--primary,${C} .wa-dock .wa-btn--done{width:auto;min-width:280px;padding-inline:max(28px,calc(var(--wa-pill-pad)*1.4))}
@@ -436,7 +438,7 @@ ${C} .wa-linkgrid .wa-btn--link:hover{color:var(--wa-ink)}
 
 /* ---------- product ---------- */
 ${C} .wa-buy{display:grid;gap:var(--wa-card-gap);align-items:start}
-${C} .wa-buy__media .wa-well{aspect-ratio:1/1;border-radius:var(--wa-r-panel);max-height:32vh;margin-inline:auto}
+${C} .wa-buy__media .wa-well{aspect-ratio:1/1;border-radius:var(--wa-r-panel);max-height:calc(var(--wa-vh,100vh) * .32);margin-inline:auto}
 ${C} .wa-buy__info{display:flex;flex-direction:column;gap:var(--wa-gap)}
 ${C} .wa-buy__price{font-size:var(--wa-f-big);font-weight:600;font-variant-numeric:tabular-nums}
 ${C} .wa-buy__opts{display:flex;flex-direction:column;gap:var(--wa-gap)}

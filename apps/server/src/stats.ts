@@ -1,5 +1,8 @@
 // Running totals for /v1/stats. Jev `calls`, `decisions`, tokens and $ count real (live) decision calls only;
 // answers served from the cache and connection warm-ups are counted separately.
+import { readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { median, round } from './util';
 
 const WINDOW = 200;
@@ -84,7 +87,47 @@ export function recordJevError(): void {
   jev.errors++;
 }
 
+/** Local calendar day, e.g. '2026-10-24' (the daily budget resets at local midnight). */
+export function dayKey(now = Date.now()): string {
+  const d = new Date(now);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** Generative spend per local day (only today and yesterday are kept). */
+const spentByDay = new Map<string, number>();
+
+/**
+ * Today's spend survives a server restart (a small JSON file in the OS temp folder; WEBABLE_SPEND_FILE='' turns it
+ * off). Tests never read or write it.
+ */
+const SPEND_FILE = process.env.VITEST ? '' : (process.env.WEBABLE_SPEND_FILE ?? join(tmpdir(), 'webable-openai-spend.json'));
+
+function loadSpend(): void {
+  if (!SPEND_FILE) return;
+  try {
+    const j = JSON.parse(readFileSync(SPEND_FILE, 'utf8')) as { day?: unknown; usd?: unknown };
+    if (j.day === dayKey() && typeof j.usd === 'number' && Number.isFinite(j.usd) && j.usd >= 0) spentByDay.set(j.day, j.usd);
+  } catch {
+    // no file yet, or unreadable: start the day at $0
+  }
+}
+
+function saveSpend(day: string): void {
+  if (!SPEND_FILE) return;
+  try {
+    writeFileSync(SPEND_FILE, JSON.stringify({ day, usd: round(spentByDay.get(day) ?? 0, 6) }));
+  } catch {
+    // best effort
+  }
+}
+loadSpend();
+
 export function recordOpenAiCall(c: { model: string; inputTokens: number; cachedTokens: number; outputTokens: number; costUsd: number; ms: number }): void {
+  const day = dayKey();
+  spentByDay.set(day, (spentByDay.get(day) ?? 0) + c.costUsd);
+  if (spentByDay.size > 2) for (const k of [...spentByDay.keys()].sort().slice(0, spentByDay.size - 2)) spentByDay.delete(k);
+  saveSpend(day);
   openai.calls++;
   openai.inputTokens += c.inputTokens;
   openai.cachedTokens += c.cachedTokens;
@@ -103,8 +146,19 @@ export function recordOpenAiError(): void {
   openai.errors++;
 }
 
+/** Generative spend since this server started. */
 export function openAiSpentUsd(): number {
   return openai.costUsd;
+}
+
+/** Generative spend today (local day); the daily budget is checked against this. */
+export function openAiSpentTodayUsd(now = Date.now()): number {
+  return spentByDay.get(dayKey(now)) ?? 0;
+}
+
+/** For tests: forget today's spend. */
+export function resetDailySpend(): void {
+  spentByDay.clear();
 }
 
 export function recordRoute(route: string, status: number, ms: number): void {
@@ -143,6 +197,7 @@ export function statsSnapshot() {
       cachedTokens: openai.cachedTokens,
       outputTokens: openai.outputTokens,
       costUsd: round(openai.costUsd, 5),
+      todayUsd: round(openAiSpentTodayUsd(), 5),
       byModel: Object.fromEntries(
         Object.entries(openai.byModel).map(([k, v]) => [
           k,

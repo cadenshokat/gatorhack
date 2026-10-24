@@ -249,21 +249,24 @@ function openSections(c: LayoutCandidate): number {
 }
 
 /**
- * Highest composite wins (ties within 0.03 go to the higher fit Score, then fewer open sections); risk >= 0.80 is
- * rejected; with no judged candidate left the instant heuristic layout stays.
+ * Highest composite wins (layouts within 0.03 of the best go to the higher fit Score, then fewer open sections);
+ * risk >= 0.80 is rejected; with no judged candidate left the instant heuristic layout stays.
  */
 export function chooseCandidate(cands: LayoutCandidate[]): { chosen: LayoutCandidate['name']; autoApply: boolean } {
   const ok = cands.filter((c) =>
     typeof c.composite === 'number' && typeof c.pHides === 'number' && typeof c.pEasier === 'number' && c.pHides < JUDGE.rejectHides);
   if (ok.length === 0) return { chosen: 'heuristic', autoApply: false };
-  const sorted = [...ok].sort((a, b) => {
-    const d = (b.composite ?? 0) - (a.composite ?? 0);
-    if (Math.abs(d) > JUDGE.tie) return d;
+  // Ties are measured against the best composite (a pairwise "within 0.03" comparator is not transitive, so a sort
+  // could put a layout 0.05 below the best first). Among those tied with the best: higher fit Score, then fewer
+  // open sections, then the higher composite, then the earlier candidate.
+  const best = Math.max(...ok.map((c) => c.composite ?? 0));
+  const tied = ok.filter((c) => best - (c.composite ?? 0) <= JUDGE.tie + 1e-9);
+  const sorted = [...tied].sort((a, b) => {
     const fd = (b.fitScore ?? 0) - (a.fitScore ?? 0);
     if (fd !== 0) return fd;
     const od = openSections(a) - openSections(b);
     if (od !== 0) return od;
-    return d;
+    return (b.composite ?? 0) - (a.composite ?? 0);
   });
   const w = sorted[0]!;
   return { chosen: w.name, autoApply: (w.pEasier ?? 0) >= JUDGE.autoEasier && (w.pHides ?? 1) < JUDGE.autoHidesBelow };

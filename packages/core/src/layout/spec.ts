@@ -600,6 +600,75 @@ class Repairer {
     }
   }
 
+  /**
+   * Ads and upsells inside an open part of the page go to the end. A model often lists the page's whole main
+   * region, so the flu-shot upsell and the membership banner inside the form would stay open with the task. Each
+   * such part moves to a folded section of its own kind, and the region it sat in dissolves into its other
+   * children. Only whole containers or buttons with Jev's advertising or recommendations role move; never a
+   * protected part, the primary action or anything holding it, a field, or a link inside running text.
+   */
+  liftAds(): void {
+    const adRole = (id: string): 'advertising' | 'recommendations' | null => {
+      const r = this.roles[id] ?? this.ix.nodes.get(id)?.jevRole;
+      return r === 'advertising' || r === 'recommendations' ? r : null;
+    };
+    const kindOk = (id: string): boolean => {
+      const k = this.kind(id) as OutlineKind;
+      return CONTAINER_KINDS.has(k) || k === 'button' || k === 'media';
+    };
+    const movable = (id: string): boolean => {
+      if (!adRole(id) || !kindOk(id) || id === this.pa) return false;
+      const sub = [id, ...this.ix.descendants(id)];
+      if (this.pa != null && sub.includes(this.pa)) return false;
+      return !sub.some((d) => this.protection(d) != null);
+    };
+    const HOME_ROLES: ReadonlySet<FitSection['role']> = new Set(['ads', 'promo', 'related']);
+    const homeFor = (r: 'advertising' | 'recommendations'): FitSection => {
+      const role: FitSection['role'] = r === 'advertising' ? 'ads' : 'related';
+      const have = this.sections.find((x) => x.role === role && x.state !== 'open');
+      if (have) return have;
+      const n = newSection({
+        label: r === 'advertising' ? 'Offers' : 'Related items', role, layout: 'row_list', emphasis: 'quiet',
+        state: r === 'advertising' ? 'end_drawer' : 'collapsed', why: r === 'advertising' ? 'advertising' : 'promotion',
+      });
+      const drawer = this.sections.findIndex((x) => x.label === DRAWER_LABEL);
+      if (drawer < 0) this.sections.push(n); else this.sections.splice(drawer, 0, n);
+      return n;
+    };
+    for (const sec of [...this.sections]) {
+      if (sec.state !== 'open' || HOME_ROLES.has(sec.role) || CONTENT_EXEMPT.has(sec.role)) continue;
+      const moved: string[] = [];
+      for (const listed of [...sec.nodes]) {
+        if (!sec.nodes.includes(listed)) continue;
+        // The outermost ad parts under (or at) this listed node, in page order.
+        const picks: string[] = [];
+        for (const d of [listed, ...this.ix.descendants(listed)]) {
+          if (picks.some((p) => p === d || this.ix.isAncestor(p, d))) continue;
+          const at = this.listedAt(d);
+          if (d !== listed && at != null && at !== sec) continue; // already placed elsewhere
+          if (movable(d)) picks.push(d);
+        }
+        for (const id of picks) {
+          if (id === listed && sec.nodes.length === 1) {
+            if (sec.role === 'primary') continue;
+            // The whole section is the ad: fold the section itself instead of emptying it.
+            const r = adRole(id);
+            sec.state = r === 'advertising' ? 'end_drawer' : 'collapsed';
+            sec.role = r === 'advertising' ? 'ads' : 'related';
+            sec.emphasis = 'quiet';
+            sec.why = r === 'advertising' ? 'advertising' : 'promotion';
+            moved.push(id);
+            continue;
+          }
+          this.lift(id, homeFor(adRole(id) as 'advertising' | 'recommendations'));
+          moved.push(id);
+        }
+        if (sec.state !== 'open') break;
+      }
+      if (moved.length) this.log('ads_lifted', `moved ${moved.map((id) => this.name(id)).slice(0, 4).join(', ')}${moved.length > 4 ? ', …' : ''} out of ${sec.label} to the end`);
+    }
+  }
+
   clampToFit(): void {
     const lim = this.limits;
     if (!lim) return;
@@ -830,7 +899,8 @@ class Repairer {
  * 4. protected nodes (help, consent, alerts, required/filled fields, safety text) forced open, or lifted
  *    into the top bar / an open Help, Cookies, Notice or Safety section;
  * 5. exactly one primary section, open, holding the primary action;
- * 6. ads to the end drawer; with `opts.fit`: open-section, list and form-step limits;
+ * 6. ads to the end drawer, including ads and upsells listed inside an open part (their region dissolves into its
+ *    other children); with `opts.fit`: open-section, list and form-step limits;
  * 7. form steps in page order, consent last, ≤ 8 fields per step; one lead; buy_box only on product pages;
  *    ≤ 6 strip items, ≤ 12 sections, ≤ 40 nodes per section where the outline allows.
  */
@@ -843,6 +913,7 @@ export function repairSpec(spec: FitSpec, outline: PageOutline, opts: RepairOpti
   r.cover();
   r.fixPrimarySection();
   r.foldAds();
+  r.liftAds();
   r.clampToFit();
   r.protect();
   r.fixFormSteps();

@@ -38,8 +38,13 @@ export const EXPLAIN_MESSAGES: Readonly<Record<ExplainError, string>> = Object.f
   check_unavailable: "Couldn't check a plain version against the original right now, so it isn't shown. The original is below.",
 });
 
-/** ExplainResult plus the card's extra parts (terms, unclear), a one-word verdict and, on failure, why. */
+/**
+ * ExplainResult plus the card's extra parts (terms, unclear), a one-word verdict and, on failure, why. `passage` is
+ * the text the model actually saw (after the server's own redaction): the extension aligns it with the original to
+ * put personal details back for display, since a second redaction pass can replace words the first one kept.
+ */
 export type ExplainResponse = ExplainResult & {
+  passage?: string;
   plain: string[];
   terms: Array<{ term: string; meaning: string }>;
   unclear: string[];
@@ -102,7 +107,8 @@ async function explainChecked(passage: string, sentences: string[], opts: { fres
     log('explain: no explanation', { error: llm.error });
     return unavailable('llm_unavailable', llm.error, llm.model, llm.ms);
   }
-  const { plain, terms, unclear } = llm.data;
+  const { plain, terms } = llm.data;
+  const unclear = llm.data.unclear.filter((u) => !mentionsRedaction(u));
   const explanation = plain.join('\n');
   const nk = numbersKept(passage, explanation);
   const ck = conditionWordsKept(passage, explanation);
@@ -136,6 +142,7 @@ async function explainChecked(passage: string, sentences: string[], opts: { fres
   });
   return {
     ok: true,
+    passage,
     explanation,
     sentences: sentences.map((original, i) => ({ original, covered: covered[i]! })),
     checks: { numbersKept: nk, conditionWordsKept: ck, addedFact: check.addedFact, droppedFact: check.droppedFact },
@@ -148,6 +155,14 @@ async function explainChecked(passage: string, sentences: string[], opts: { fres
     unclear,
     verdict: flagged ? 'check_original' : 'checked',
   };
+}
+
+/**
+ * An "unclear" note about our own redaction ("[name] placeholders hide the agency names") is not about the passage:
+ * the reader sees the details restored, so the note would only confuse.
+ */
+export function mentionsRedaction(note: string): boolean {
+  return /\[[a-z ]+\]|placeholder|redact|hidden (?:name|detail|number)|removed (?:detail|name|number)/i.test(note);
 }
 
 export function registerExplain(app: Hono): void {

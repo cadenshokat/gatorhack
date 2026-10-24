@@ -124,14 +124,24 @@ export const PROBE_SRC = `(roots, arg) => {
     if (r.y + r.h < 0 || r.y > vh || r.x + r.w < 0 || r.x > vw) continue;
     chips.push({ ...r, t: label(el).slice(0, 60) });
   }
-  const floatSels = ['.wa-pill', '.wa-floatchip', '.wa-offer-chip', '.wa-offer', '.wa-toast', '.wa-ochip', '[class*="overlay-chip"]', '.wa-cbar', '[class*="consent-bar"]', '.wa-ex-pill'];
+  // Floating pieces of WebAble's own UI: the pill, overlay and AI chips, toasts, offers, the consent bar. Known
+  // classes first, then anything else small and position: fixed in our roots (a stack item a later build added).
+  const floatSels = ['.wa-pill', '.wa-floatchip', '.wa-offer-chip', '.wa-offer', '.wa-toast', '.wa-ochip', '[class*="overlay-chip"]', '[class*="aichip"]', '[class*="ai-chip"]', '.wa-cbar', '[class*="consent-bar"]', '.wa-ex-pill', '[data-wa-float]'];
+  const notFloat = '.wa-calm, .wa-panel, .wa-lens, .wa-lcard, .wa-ex, [aria-label^="Jev Lens"], [role="dialog"]';
   const fseen = new Set();
   const floats = [];
-  for (const s of floatSels) for (const el of all(s)) {
-    if (fseen.has(el) || !shown(el)) continue;
-    if ([...fseen].some((p) => p.contains(el) || el.contains(p))) continue;
+  const addFloat = (el, cls) => {
+    if (fseen.has(el) || !shown(el)) return;
+    if ([...fseen].some((p) => p.contains(el) || el.contains(p))) return;
     fseen.add(el);
-    floats.push({ ...rect(el), cls: s, t: label(el).slice(0, 60) });
+    floats.push({ ...rect(el), cls, t: label(el).slice(0, 60) });
+  };
+  for (const s of floatSels) for (const el of all(s)) if (!el.closest(notFloat) || el.matches('.wa-ex-pill')) addFloat(el, s);
+  for (const el of all('*')) {
+    if (fseen.has(el) || el.closest(notFloat) || getComputedStyle(el).position !== 'fixed' || !shown(el)) continue;
+    const r = rect(el);
+    if (r.w * r.h > 0.2 * vw * vh || r.w < 12 || r.h < 12) continue;
+    addFloat(el, 'fixed');
   }
   const offerEl = first(['.wa-offer', '[data-wa-offer]', '.wa-offer-chip']);
   const exEl = first(['.wa-ex', '[data-wa-explain]']);

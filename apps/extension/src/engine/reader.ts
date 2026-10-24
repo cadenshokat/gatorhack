@@ -8,9 +8,9 @@
 //  - an id -> Element map (WeakRef) and Element -> id (WeakMap).
 // Never reads input values (only whether a field is empty), never sends hostnames, never writes to the DOM.
 
-import { allowlistWords, uiLabel } from '@webable/core';
+import { allowlistWords, bodySizeFromBlocks, uiLabel } from '@webable/core';
 import type {
-  ElementEvidence, LocalFacts, OutlineKind, OutlineNode, PageDigest, PageOutline, Zone,
+  BodyBlock, ElementEvidence, LocalFacts, OutlineKind, OutlineNode, PageDigest, PageOutline, Zone,
 } from '@webable/core';
 import { isOurUi } from '../ui/mount';
 
@@ -84,6 +84,20 @@ export interface ControlSample {
   fixed: boolean;
 }
 
+export interface BodyInfo {
+  px: number;
+  source: string;
+  /** Blocks and characters the median was taken over. */
+  blocks: number;
+  chars: number;
+  /** CSS font shorthand of the most typical body block (for measuring). */
+  font: string;
+  /** Average character width of that text at body size, CSS px at 100% zoom. */
+  charPx: number;
+  /** The most typical body block (local only). */
+  el: Element | null;
+}
+
 export interface BusyInfo {
   elementCount: number;
   controls: number;
@@ -102,6 +116,8 @@ export interface ReadResult {
   local: LocalFacts;
   nodes: Map<string, NodeInfo>;
   pageBodyPx: number;
+  /** Round 3: how the body size was found, the body text's font, and its average character width (CSS px). */
+  body: BodyInfo;
   busy: BusyInfo;
   sensitive: boolean;
   /** Webmail and similar: no explain, no generative layout. */
@@ -629,6 +645,7 @@ export class PageReader {
     const t0 = performance.now();
     const vw = document.documentElement.clientWidth || innerWidth;
     const vh = document.documentElement.clientHeight || innerHeight;
+    const frameW = pageFrame().width;
     const sx = scrollX;
     const sy = scrollY;
     const docH = Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight ?? 0, vh);
@@ -704,7 +721,7 @@ export class PageReader {
       const pageX = rect.left + sx;
       const pageY = rect.top + sy;
       const position = cs.position;
-      const selfFixed = position === 'fixed' || (position === 'sticky' && rect.top <= 2 && rect.width >= 0.6 * vw);
+      const selfFixed = position === 'fixed' || (position === 'sticky' && rect.top <= 2 && rect.width >= 0.6 * frameW);
       const fixed = ctx.fixed || selfFixed;
       if (!fixed && (rect.right + sx < 0 || rect.bottom + sy < 0)) continue;
       if (cs.animationName && cs.animationName !== 'none' && cs.animationIterationCount === 'infinite') animated++;
@@ -876,7 +893,7 @@ export class PageReader {
       }
 
       // Sticky header and footer bars for the tailor (never consent notices or dialogs).
-      if (selfFixed && rect.width >= 0.6 * vw && (rect.top <= 2 || rect.bottom >= vh - 2) && rect.height >= 24
+      if (selfFixed && rect.width >= 0.6 * frameW && (rect.top <= 2 || rect.bottom >= vh - 2) && rect.height >= 24
         && !CONSENT_CLASS.test(cwStr) && role !== 'dialog' && role !== 'alertdialog' && tag !== 'DIALOG') {
         stickyBars.push(el);
       }
@@ -929,12 +946,10 @@ export class PageReader {
       outlineNodes.push(d.node);
     }
 
-    // Page body size: char-weighted median of running text in main (fall back to all running text, then 16).
-    const bodyText = (t: TextSample) => !t.control && t.headingLevel === null && !t.iconFont;
-    const pageBodyPx = weightedMedian(texts.filter((t) => t.running && t.inMain && bodyText(t)))
-      ?? weightedMedian(texts.filter((t) => t.running && bodyText(t)))
-      ?? weightedMedian(texts.filter(bodyText))
-      ?? 16;
+    // Page body size (round 3): char-weighted median over paragraph-like blocks in main, leaving out footers, legal and
+    // fine print, consent, chat, promotions, asides and one-line metadata (core bodySizeFromBlocks).
+    const bodyInfo = measureBody(texts);
+    const pageBodyPx = bodyInfo.px;
 
     // Element count: separate items a person sees (not structural wrappers).
     const elementCount = kept.filter((d) => d.info.kind !== 'region' && d.info.kind !== 'list').length;
@@ -1001,6 +1016,7 @@ export class PageReader {
       local,
       nodes,
       pageBodyPx: Math.round(pageBodyPx * 10) / 10,
+      body: bodyInfo,
       busy,
       sensitive,
       privatePage: PRIVATE_HOSTS.test(location.hostname),
@@ -1314,9 +1330,22 @@ function roleHintForRegion(el: Element, tag: string, role: string, lm: string | 
   return 'region';
 }
 
+/**
+ * The box the page is laid out in, in viewport px: the page column when WebAble holds the page to one (a narrower
+ * virtual window drawn centred), else the whole viewport. In-flow content and sticky bars live in it; fixed layers
+ * still span the window. Width heuristics ("a full-width bar", "the left rail") compare with it.
+ */
+export function pageFrame(): { left: number; width: number } {
+  const vw = document.documentElement.clientWidth || innerWidth;
+  if (document.documentElement.hasAttribute('data-wa-col') && document.body) {
+    const r = document.body.getBoundingClientRect();
+    if (r.width > 0 && r.width < vw) return { left: r.left, width: r.width };
+  }
+  return { left: 0, width: vw };
+}
+
 /** The box that decides an element's zone: the outermost fixed ancestor, or the nearest column-sized ancestor. */
 function zoneRectOf(el: Element, fixed: boolean, own: { x: number; y: number; w: number; h: number }): { x: number; y: number; w: number; h: number } {
-  const vw = document.documentElement.clientWidth || innerWidth;
   const box = (e: Element) => {
     const r = e.getBoundingClientRect();
     return { x: Math.round(r.left + scrollX), y: Math.round(r.top + scrollY), w: Math.round(r.width), h: Math.round(r.height) };
@@ -1338,7 +1367,7 @@ function zoneRectOf(el: Element, fixed: boolean, own: { x: number; y: number; w:
   let d = 0;
   while (n && n !== document.body && d < 8) {
     const r = n.getBoundingClientRect();
-    if (r.width >= 240) return r.width <= 0.98 * vw ? box(n) : own;
+    if (r.width >= 240) return r.width <= 0.98 * pageFrame().width ? box(n) : own;
     n = n.parentElement;
     d++;
   }
@@ -1372,10 +1401,14 @@ function zoneOf(
   if (info.landmark === 'banner' || (bands.headerBottom > 0 && own.y + own.h <= bands.headerBottom + 4)) return 'header_band';
   if (info.landmark === 'navigation' && own.y < bands.headerBottom + 80 && own.y < vh * 0.4) return 'header_band';
   if (info.landmark === 'contentinfo' || own.y >= bands.footerTop - 4) return 'footer_band';
-  if (r.w >= 0.85 * vw) return 'full_width_mid';
-  const cx = r.x + r.w / 2 - sx;
-  if (cx < 0.28 * vw && r.x + r.w - sx <= 0.42 * vw) return 'left_rail';
-  if (cx > 0.68 * vw && r.x - sx >= 0.55 * vw) return 'right_rail';
+  // In-flow content lives in the page frame (the page column, when WebAble holds the page to one).
+  const f = pageFrame();
+  const fw = f.width > 0 ? f.width : vw;
+  if (r.w >= 0.85 * fw) return 'full_width_mid';
+  const fx = r.x - sx - f.left;
+  const cx = fx + r.w / 2;
+  if (cx < 0.28 * fw && fx + r.w <= 0.42 * fw) return 'left_rail';
+  if (cx > 0.68 * fw && fx >= 0.55 * fw) return 'right_rail';
   return 'center_column';
 }
 
@@ -1596,17 +1629,110 @@ function evidenceLabel(n: NodeInfo, all: Draft[]): string {
   }
 }
 
-function weightedMedian(samples: TextSample[]): number | null {
-  if (!samples.length) return null;
-  const sorted = [...samples].sort((a, b) => a.fontPx - b.fontPx);
-  const total = sorted.reduce((s, t) => s + t.chars, 0);
-  if (total <= 0) return null;
-  let acc = 0;
-  for (const t of sorted) {
-    acc += t.chars;
-    if (acc >= total / 2) return t.fontPx;
+/* ------------------------------------------------------------------ */
+/* Page body size (round 3)                                            */
+/* ------------------------------------------------------------------ */
+
+const BLOCK_TAGS = new Set(['P', 'LI', 'DD', 'DT', 'BLOCKQUOTE', 'TD', 'TH', 'FIGCAPTION']);
+const FOOTER_WORDS = /(^|[-_\s])(footer|site-?footer|colophon|global-?footer)([-_\s]|$)/;
+const LEGAL_WORDS = /(fine-?print|small-?print|legal|disclaimer|disclosure|footnote|copyright|terms|smallprint|fineprint)/;
+const PROMO_CLASS = /(^|[-_\s])(promo|promos|promotion|upsell|membership|advert|advertisement|sponsor|sponsored|marketing|newsletter|subscribe|coupon|deal|deals|offer|offers|carousel|slider|slideshow|swiper|teaser|banner)([-_\s]|$)/;
+const ASIDE_CLASS = /(^|[-_\s])(sidebar|side-?bar|rail|aside|related|recommend|recommended|trending)([-_\s]|$)/;
+const NAV_CLASS = /(^|[-_\s])(nav|navbar|menu|breadcrumb|breadcrumbs|pagination|tabs)([-_\s]|$)/;
+
+/** Why the element (or an ancestor) is not running body text, or null. Cached per element. */
+function notBodyReason(el: Element, cache: Map<Element, string | null>): string | null {
+  const path: Element[] = [];
+  let n: Element | null = el;
+  let reason: string | null = null;
+  while (n && n !== document.body && n !== document.documentElement) {
+    if (cache.has(n)) {
+      reason = cache.get(n) ?? null;
+      break;
+    }
+    path.push(n);
+    const tag = n.tagName;
+    const role = (n.getAttribute('role') ?? '').toLowerCase();
+    const words = `${n.id} ${typeof n.className === 'string' ? n.className : ''}`.toLowerCase();
+    if (tag === 'FOOTER' || role === 'contentinfo' || FOOTER_WORDS.test(words)) reason = 'footer';
+    else if (tag === 'SMALL' || LEGAL_WORDS.test(words)) reason = 'legal';
+    else if (CONSENT_CLASS.test(words)) reason = 'consent';
+    else if (CHAT_CLASS.test(words)) reason = 'chat';
+    else if (tag === 'ASIDE' || role === 'complementary' || ASIDE_CLASS.test(words)) reason = 'aside';
+    else if (tag === 'NAV' || role === 'navigation' || role === 'menu' || NAV_CLASS.test(words)) reason = 'nav';
+    else if (tag === 'DIALOG' || role === 'dialog' || role === 'alertdialog') reason = 'dialog';
+    else if (PROMO_CLASS.test(words) || /carousel/i.test(n.getAttribute('aria-roledescription') ?? '')) reason = 'promo';
+    else if (getComputedStyle(n).position === 'fixed') reason = 'overlay';
+    if (reason) break;
+    n = n.parentElement;
   }
-  return sorted[sorted.length - 1]?.fontPx ?? null;
+  for (const x of path) cache.set(x, reason);
+  return reason;
+}
+
+let bodyCanvas: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null | undefined;
+function measureCtx(): CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null {
+  if (bodyCanvas !== undefined) return bodyCanvas;
+  try {
+    bodyCanvas = new OffscreenCanvas(8, 8).getContext('2d');
+  } catch {
+    bodyCanvas = null;
+  }
+  return bodyCanvas;
+}
+
+const SAMPLE_PROSE = 'Select the prescriptions you want to refill, choose how you would like to get them, and review your order.';
+
+/**
+ * The page's body text: blocks of running text (a whole <p>, <li>, <td>… counts its inline links and bold words;
+ * other elements count their own text) with the reasons they are not body text, then core's char-weighted median.
+ */
+export function measureBody(texts: TextSample[]): BodyInfo {
+  const cache = new Map<Element, string | null>();
+  const counted = new Set<Element>();
+  const blocks: Array<BodyBlock & { el: Element; t: TextSample }> = [];
+  for (const t of texts) {
+    if (t.iconFont || t.opacity < 0.5) continue;
+    const el = t.el;
+    const owner = el.parentElement?.closest('p, li, dd, dt, blockquote, td, th, figcaption') ?? null;
+    if (owner && counted.has(owner)) continue; // already counted with its paragraph
+    const block = BLOCK_TAGS.has(el.tagName);
+    const chars = block ? Math.min(5000, collapse(el.textContent ?? '').length) : t.chars;
+    if (block) counted.add(el);
+    let excluded: string | null = null;
+    if (t.control) excluded = 'control';
+    else if (t.headingLevel !== null) excluded = 'heading';
+    else if (t.clipRisk) excluded = 'metadata';
+    else excluded = notBodyReason(el, cache);
+    blocks.push({ fontPx: t.fontPx, chars, inMain: t.inMain, excluded, el, t });
+  }
+  const fallback = document.body ? parseFloat(getComputedStyle(document.body).fontSize) : 16;
+  const size = bodySizeFromBlocks(blocks, Number.isFinite(fallback) ? fallback : 16);
+  // The most typical block at that size: its font and average character width size the page column.
+  const atSize = blocks
+    .filter((b) => !b.excluded && Math.abs(b.fontPx - size.px) < 0.6 && b.chars >= 20)
+    .sort((a, b) => Number(b.inMain) - Number(a.inMain) || b.chars - a.chars);
+  const pick = atSize[0] ?? null;
+  const el = pick?.el ?? document.body ?? null;
+  let font = '';
+  let charPx = size.px * 0.5;
+  if (el) {
+    const cs = getComputedStyle(el);
+    font = `${cs.fontStyle} ${cs.fontWeight} ${size.px}px ${cs.fontFamily}`;
+    const ctx = measureCtx();
+    const sample = pick ? collapse(el.textContent ?? '').slice(0, 400) : '';
+    const text = sample.length >= 40 ? sample : SAMPLE_PROSE;
+    if (ctx) {
+      try {
+        ctx.font = font;
+        const w = ctx.measureText(text).width / text.length;
+        if (w > 0 && Number.isFinite(w)) charPx = Math.round(w * 100) / 100;
+      } catch {
+        /* keep the estimate */
+      }
+    }
+  }
+  return { px: size.px, source: size.source, blocks: size.blocks, chars: size.chars, font, charPx, el: pick?.el ?? null };
 }
 
 function redactPath(p: string): string {

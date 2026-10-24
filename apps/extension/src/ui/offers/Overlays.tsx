@@ -114,26 +114,38 @@ function afterPaint(fn: () => void): void {
 interface BarProps {
   api: EngineApi;
   view: OverlayView;
+  /** Insets from the viewport edges, in the layer's CSS px. */
   left: number;
   right: number;
   bottom: number;
   onGone: (id: string) => void;
+  /** Changes when the room for the bar changes (viewport width): measure the row again. */
+  layoutKey?: string;
+  /** Reports the bar's height (layer CSS px) so the corner dock can sit above it. */
+  onHeight?: (px: number) => void;
 }
 
 /** The short bar a docked cookie notice becomes. It never answers for the person. */
-export function ConsentBar({ api, view, left, right, bottom, onGone }: BarProps) {
+export function ConsentBar({ api, view, left, right, bottom, onGone, layoutKey = '', onHeight }: BarProps) {
+  const barRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
   const [compact, setCompact] = useState(false);
-  const key = `${view.id}|${view.choices.map((c) => c.label).join('|')}|${Math.round(left)}|${Math.round(right)}`;
+  const lastH = useRef(0);
+  const key = `${view.id}|${view.choices.map((c) => c.label).join('|')}|${Math.round(left)}|${Math.round(right)}|${layoutKey}`;
 
-  // One row only: if the site's choices do not fit, show "Show the choices" instead.
+  // One row only: if the site's choices do not fit beside the sentence, show "Show the choices" instead. The sentence
+  // never shrinks under the buttons, so a row that does not fit always overflows and is caught here.
   useLayoutEffect(() => {
     setCompact(false);
   }, [key]);
   useLayoutEffect(() => {
     const row = rowRef.current;
-    if (!row || compact) return;
-    if (row.scrollWidth > row.clientWidth + 1) setCompact(true);
+    if (row && !compact && row.scrollWidth > row.clientWidth + 1) setCompact(true);
+    const h = barRef.current?.offsetHeight ?? 0;
+    if (h > 0 && Math.abs(h - lastH.current) > 0.5) {
+      lastH.current = h;
+      onHeight?.(h);
+    }
   });
 
   const bringBack = () => {
@@ -151,8 +163,11 @@ export function ConsentBar({ api, view, left, right, bottom, onGone }: BarProps)
   return (
     <div
       class="wa-cbar"
+      ref={barRef}
       role="region"
       aria-label="Cookie notice from this site"
+      data-compact={showChoices ? '' : undefined}
+      data-wa-chrome=""
       style={{ left: `${Math.round(left)}px`, right: `${Math.round(right)}px`, bottom: `${Math.round(bottom)}px` }}
     >
       <div class="wa-cbar-row" ref={rowRef}>
@@ -160,6 +175,7 @@ export function ConsentBar({ api, view, left, right, bottom, onGone }: BarProps)
           <IconShield size={18} />
         </span>
         <p class="wa-cbar-text">This site asks about cookies.</p>
+        {!showChoices && <span class="wa-cbar-gap" aria-hidden="true" />}
         {showChoices ? (
           <button class="wa-btn wa-cbar-btn" onClick={bringBack}>
             Show the choices

@@ -230,16 +230,45 @@ export async function respondJson(p: JsonCall): Promise<LlmResult<unknown>> {
         effort = 'low';
         continue;
       }
+      const timedOut = e instanceof OpenAI.APIConnectionTimeoutError;
+      // A dropped connection (a reused socket the other side had closed, a reset) fails before any work was billed:
+      // try once more on a fresh connection, as the Jev client does.
+      if (attempt === 0 && !timedOut && isConnectionDrop(e)) {
+        log('openai retry', { tag: p.tag, model: p.model, why: connectionDetail(e), ms });
+        continue;
+      }
       recordOpenAiError();
       const blocked = noteFailure(e, p.tag);
       if (blocked) return { ok: false, model: p.model, ms, costUsd: 0, error: blocked };
-      const kind = e instanceof OpenAI.APIConnectionTimeoutError ? 'timeout' : status ? `http_${status}` : 'network';
-      // A 400 explains a request-shape problem (schema, parameter); it never echoes the prompt, so keep a short excerpt.
-      log('openai error', { tag: p.tag, model: p.model, kind, ms, detail: status === 400 ? msg.replace(/\s+/g, ' ').slice(0, 200) : undefined });
+      const kind = timedOut ? 'timeout' : status ? `http_${status}` : 'network';
+      // A 400 explains a request-shape problem (schema, parameter); it never echoes the prompt, so keep a short
+      // excerpt. A network failure logs its error class and socket code only.
+      const detail = status === 400 ? msg.replace(/\s+/g, ' ').slice(0, 200) : !status ? connectionDetail(e) : undefined;
+      log('openai error', { tag: p.tag, model: p.model, kind, ms, detail });
       return { ok: false, model: p.model, ms, costUsd: 0, error: kind };
     }
   }
   return { ok: false, model: p.model, ms: round(performance.now() - t0), costUsd: 0, error: 'unreachable' };
+}
+
+/** A connection that failed or dropped before an answer (not a timeout, not an HTTP status). */
+export function isConnectionDrop(e: unknown): boolean {
+  if (e instanceof OpenAI.APIConnectionTimeoutError) return false;
+  if (e instanceof OpenAI.APIConnectionError) return true;
+  return e instanceof TypeError && /fetch failed|terminated|socket|ECONNRESET|EPIPE/i.test(`${e.message} ${String((e as { cause?: unknown }).cause ?? '')}`);
+}
+
+/** Error class and socket codes only (never a request or response body). */
+export function connectionDetail(e: unknown): string {
+  const parts: string[] = [];
+  let cur: unknown = e;
+  for (let i = 0; i < 4 && cur && typeof cur === 'object'; i++) {
+    const x = cur as { name?: unknown; code?: unknown; constructor?: { name?: string } };
+    const name = typeof x.name === 'string' ? x.name : x.constructor?.name;
+    parts.push([name, typeof x.code === 'string' ? x.code : null].filter(Boolean).join(':'));
+    cur = (cur as { cause?: unknown }).cause;
+  }
+  return parts.filter(Boolean).join('<').slice(0, 120) || 'unknown';
 }
 
 /* ------------------------------------------------------------------ */
@@ -275,7 +304,7 @@ export async function layoutCandidates(
         schema,
         maxOutputTokens: 2_000,
         timeoutMs: LLM_TIMEOUT_MS,
-        cacheKey: 'wa-fitspec-v1',
+        cacheKey: 'wa-fitspec-v2',
         tag: `layout/${stance}`,
       });
       done.push({ stance, result });
@@ -328,7 +357,7 @@ export function startDeepLayout(key: string, fitText: string, outlineText: strin
     schema,
     maxOutputTokens: 4_000,
     timeoutMs: DEEP_TIMEOUT_MS,
-    cacheKey: 'wa-fitspec-v1',
+    cacheKey: 'wa-fitspec-v2',
     tag: 'layout/deep',
   })
     .then((r) => {
@@ -369,7 +398,7 @@ export async function explainPassage(passage: string): Promise<LlmResult<Explain
       schema: EXPLAIN_SCHEMA,
       maxOutputTokens: 1_000,
       timeoutMs: EXPLAIN_TIMEOUT_MS,
-      cacheKey: 'wa-explain-v1',
+      cacheKey: 'wa-explain-v2',
       tag: 'explain',
     });
     spent += r.costUsd;

@@ -7,7 +7,7 @@ import type { AiState } from '../ai';
 import { OPENAI_BUDGET_USD } from '../config';
 import { jevCacheInfo, jevHealth } from '../jev';
 import { deepEnabled } from '../openai';
-import { openAiSpentUsd, statsSnapshot } from '../stats';
+import { openAiSpentTodayUsd, statsSnapshot } from '../stats';
 import { round } from '../util';
 
 /** HealthStatus plus details the popup, panel and eval harness can show. `openai` is kept for older readers. */
@@ -17,7 +17,8 @@ export interface HealthResponse extends HealthStatus {
   aiDetail: Omit<AiState, 'status'> & { sentence: string };
   /** true only when AI is 'on'. */
   openai: boolean;
-  layouts: { local: true; schema: boolean; deep: boolean; budgetLeftUsd: number };
+  /** budgetLeftUsd: what is left of today's generative budget (OPENAI_BUDGET_USD a day). */
+  layouts: { local: true; schema: boolean; deep: boolean; budgetLeftUsd: number; budgetPerDayUsd: number };
   version: string;
 }
 
@@ -35,9 +36,10 @@ export function health(): HealthResponse {
       local: true,
       schema: !!fitSpecJsonSchema && Object.keys(fitSpecJsonSchema).length > 0,
       deep: deepEnabled(),
-      budgetLeftUsd: round(Math.max(0, OPENAI_BUDGET_USD - openAiSpentUsd()), 4),
+      budgetLeftUsd: round(Math.max(0, OPENAI_BUDGET_USD - openAiSpentTodayUsd()), 4),
+      budgetPerDayUsd: OPENAI_BUDGET_USD,
     },
-    version: 'webable-server.2',
+    version: 'webable-server.3',
   };
 }
 

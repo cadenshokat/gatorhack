@@ -59,6 +59,11 @@ export interface EngineState {
   textStep: number;
   /** The tab's current page zoom (1 = 100%). In-page UI divides by it so it stays the same physical size. */
   pageZoom: number;
+  /**
+   * The zoom text is shown at. Equal to pageZoom, except with the page column on: the column is a narrower virtual
+   * window, the tab's zoom is raised by screen ÷ column and the body is drawn back down by the same factor.
+   */
+  textZoom?: number;
 }
 
 export interface EngineApi {

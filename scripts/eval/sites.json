@@ -15,6 +15,14 @@
   ],
   "real": [
     {
+      "name": "cnn-home",
+      "url": "https://www.cnn.com/",
+      "note": "Wide news home page: at high zoom it fills the screen edge to edge (Caden's 3.webp). Survey and ad chips at the bottom right. A fresh profile gets a Legal Terms gate: the harness hides it for the shots (never clicks Agree).",
+      "settleMs": 7000,
+      "evalHide": ["Legal Terms and Privacy"],
+      "evalHideBlocks": [["DRM System Not Supported", "Help Center"]]
+    },
+    {
       "name": "drugs-metformin",
       "url": "https://www.drugs.com/metformin.html",
       "note": "186 controls, 74% under 24 px; 403 to the HeadlessChrome user agent.",

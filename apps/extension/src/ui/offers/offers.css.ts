@@ -1,20 +1,43 @@
-// Owner: P. Offer card, collapsed offer chip, toasts, the docked cookie-notice bar and the "Show" chips.
+// Owner: P, U. The corner dock, offer card, collapsed offer chip, toasts, the docked cookie-notice bar and the "Show" chips.
 import { DISPLAY_STACK, target, u } from '../panel/css-util';
 
 export const offersCss = /* css */ `
-.wa-stack {
+/* ---------- the corner dock: one column for the pill and everything that stacks above it ----------
+   It sits in the zoomed chrome layer, so lengths are design pixels and --wa-vw / --wa-vh are the viewport in design
+   pixels. Bottom to top: pill, overlay chips, the offer, toasts. Nothing overlaps: they are flex items with 8 px gaps.
+   With the panel open, the panel takes the column above the pill and the rest moves beside it (or waits). */
+.wa-dock {
   position: fixed; z-index: 41;
-  width: min(${u(360)}, calc(100vw - ${u(32)}));
-  max-height: calc(100dvh - ${u(32)});
-  display: flex; flex-direction: column; align-items: flex-end; gap: ${u(10)};
+  display: flex; flex-direction: row-reverse; align-items: flex-end; gap: ${u(12)};
   pointer-events: none;
-  transition: right 220ms cubic-bezier(.2,.8,.3,1), left 220ms cubic-bezier(.2,.8,.3,1);
+  transition: bottom 260ms cubic-bezier(.3,.7,.4,1);
 }
-.wa-stack[data-side="left"] { align-items: flex-start; }
-.wa-stack[data-scroll="true"] { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; border-radius: ${u(24)}; }
-.wa-stack > * { pointer-events: auto; flex: none; }
+.wa-dock[data-side="left"] { flex-direction: row; }
+.wa-dock-col {
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; gap: ${u(8)};
+  min-height: 0; pointer-events: none;
+}
+.wa-dock[data-side="left"] .wa-dock-col { align-items: flex-start; }
+.wa-dock-items {
+  display: flex; flex-direction: column; align-items: flex-end; gap: ${u(8)};
+  width: min(${u(360)}, calc(var(--wa-vw, 100vw) - ${u(32)}));
+  flex: 0 1 auto; min-height: 0; pointer-events: none;
+}
+.wa-dock[data-side="left"] .wa-dock-items { align-items: flex-start; }
+.wa-dock-items > * { pointer-events: auto; flex: none; }
+/* Only on very short screens: the items become a frosted tray that scrolls (a bare scroller would cut the cards'
+   shadows off in a hard line). */
+.wa-dock-items[data-scroll="true"] {
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  padding: ${u(8)}; border-radius: ${u(28)};
+  background: color-mix(in srgb, var(--c-canvas) 72%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: inset 0 0 0 ${u(1)} rgba(0,0,0,.06);
+}
+.wa-dock-col > .wa-pill, .wa-dock-col > .wa-panel { pointer-events: auto; }
 
 .wa-offer {
+  display: flex; flex-direction: column;
   width: 100%; padding: ${u(18)} ${u(18)} ${u(12)};
   border-radius: ${u(24)}; background: var(--c-raised); color: var(--c-ink);
   box-shadow: var(--c-shadow-float), inset 0 0 0 ${u(0.5)} rgba(0,0,0,.08);
@@ -28,10 +51,11 @@ export const offersCss = /* css */ `
 .wa-offer-fact { margin: ${u(6)} 0 0; font-size: ${u(14.5)}; color: var(--c-ink2); }
 .wa-offer-btns { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: ${u(8)}; margin-top: ${u(14)}; }
 .wa-offer-btns .wa-btn { width: 100%; height: 100%; white-space: normal; text-align: center; padding: ${u(6)} ${u(12)}; line-height: 1.2; }
-.wa-offer-links { display: flex; justify-content: space-between; gap: ${u(8)}; margin-top: ${u(6)}; }
+.wa-offer-links { display: flex; justify-content: space-between; gap: ${u(8)}; margin-top: ${u(6)}; order: 2; }
 .wa-link-quiet { color: var(--c-ink2); }
 .wa-link[disabled] { color: var(--c-ink); cursor: default; text-decoration: none; }
 .wa-offer-why {
+  order: 1;
   margin-top: ${u(8)}; padding: ${u(12)} ${u(14)}; border-radius: ${u(16)};
   background: var(--c-canvas); font-size: ${u(13.5)}; color: var(--c-ink); display: grid; gap: ${u(8)};
   border: ${u(1)} solid var(--c-edge);
@@ -53,6 +77,7 @@ export const offersCss = /* css */ `
 .wa-offer-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .wa-toasts { display: flex; flex-direction: column; align-items: flex-end; gap: ${u(8)}; width: 100%; }
+.wa-dock[data-side="left"] .wa-toasts { align-items: flex-start; }
 .wa-toast {
   display: flex; align-items: center; gap: ${u(10)}; max-width: 100%;
   padding: ${u(8)} ${u(8)} ${u(8)} ${u(14)}; border-radius: 999px;
@@ -89,9 +114,11 @@ export const offersCss = /* css */ `
   background: var(--c-tonal); color: var(--c-ink2);
 }
 .wa-cbar-text {
-  margin: 0; flex: 1 1 auto; min-width: ${u(150)};
+  margin: 0; flex: 0 0 auto; min-width: 0;
   font-family: ${DISPLAY_STACK}; font-size: ${u(16)}; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap;
 }
+.wa-cbar[data-compact] .wa-cbar-text { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+.wa-cbar-gap { flex: 1 1 0; min-width: 0; }
 .wa-cbar-choices { display: flex; align-items: center; gap: ${u(8)}; flex: none; }
 .wa-cbar-btn { flex: none; background: var(--c-tonal); color: var(--c-ink); font-weight: 500; }
 .wa-cbar-read { flex: none; display: inline-flex; align-items: center; gap: ${u(4)}; white-space: nowrap; min-height: ${target()}; padding: 0 ${u(8)}; }

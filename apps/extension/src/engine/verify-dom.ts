@@ -1,4 +1,4 @@
-// Owner: C1. Hard DOM checks after every batch of ops; a failing op is reversed.
+// Owner: C1, round 3: T. Hard DOM checks after every batch of ops; a failing op is reversed.
 //
 // Pipeline (research-fitting §9): snapshot B over a fixed probe set -> apply -> settle (2 rAF + fonts) ->
 // restore the reading anchor -> snapshot A -> core runChecks(B, A) -> attribute the failure (core attribute(),
@@ -10,6 +10,9 @@
 //    out of both snapshots;
 //  - a control or text only counts as covered when what covers it is something WebAble changed
 //    (a site's own cookie banner covering more after zoom is not our doing).
+// Round 3: text lines are measured for every probed text element (the core compares their ink anywhere on the page,
+// not only in the viewport), with the clip box and the page column, and an op that can drop single elements
+// (heading_scale) drops the failing ones before the whole op is reversed.
 
 import { attribute, runChecks, specCoverage } from '@webable/core';
 import type {
@@ -51,6 +54,20 @@ export interface SnapshotContext {
    * script can fold a help link into a menu a moment after the zoom batch was checked).
    */
   guardOps?: Op[];
+  /**
+   * Checks this batch does not roll back for (page zoom: the site's own narrow layout clipping a headline or folding a
+   * menu link is what the browser's zoom always does; sideways scrolling and text drawn over text still roll back).
+   * Their findings are kept as soft notes.
+   */
+  ignore?: CheckName[];
+}
+
+export interface ProbeOptions {
+  /**
+   * Probe the whole page's main text and headings, not only the band around the viewport (text, spacing, heading and
+   * column batches: the person scrolls, and 1.webp's overlaps were below the first screen).
+   */
+  wide?: boolean;
 }
 
 interface Fail {
@@ -64,6 +81,8 @@ export interface VerifyOutcome {
   checks: CheckResult[];
   reversed: Array<{ op: Op; result: CheckResult }>;
   dropped: number;
+  /** Single elements an op left out because they failed a check (the op itself stayed). */
+  droppedEls: Array<{ op: Op; count: number; result: CheckResult }>;
   ms: number;
   soft: string[];
 }
@@ -81,8 +100,11 @@ const FOCUSABLE = 'a[href], button, input:not([type="hidden"]), select, textarea
 const CONTROL = 'a[href], button, input:not([type="hidden"]), select, textarea, summary, [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="tab"], [role="menuitem"], [role="switch"]';
 const HELP_NAME = /\b(help|contact|support|chat|call|faq|questions?|pharmacist|customer (service|care)|feedback)\b/i;
 const CONSENT_BOX = '[class*="cookie" i], [id*="cookie" i], [class*="consent" i], [id*="consent" i], [id*="onetrust" i], [id*="CybotCookiebot" i], [class*="gdpr" i]';
-/** For help and consent failures, these op kinds are reverted first, in this order (eval P2.12). */
-const GUARD_ORDER: OpKind[] = ['page_zoom', 'text_map'];
+/**
+ * For help and consent failures, these op kinds are reverted first, in this order (eval P2.12). Round 3: an earlier
+ * zoom is no longer reverted for a later batch's help failure (zoom carries size; see the controller's ZOOM_IGNORES).
+ */
+const GUARD_ORDER: OpKind[] = ['column', 'page_zoom', 'heading_scale'];
 
 function sleepMs(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
@@ -103,20 +125,20 @@ function waitResize(cap = 700): Promise<void> {
 
 /** Which op kinds can plausibly cause each failure (fallback attribution when core is unavailable). */
 const CAUSES: Record<CheckName, OpKind[]> = {
-  clipping: ['text_map', 'spacing', 'weight', 'measure', 'targets', 'unpin_sticky', 'page_zoom'],
-  overlap: ['text_map', 'spacing', 'targets', 'measure', 'unpin_sticky', 'weight', 'page_zoom'],
+  clipping: ['heading_scale', 'column', 'spacing', 'weight', 'measure', 'targets', 'unpin_sticky', 'page_zoom'],
+  overlap: ['heading_scale', 'column', 'spacing', 'targets', 'measure', 'unpin_sticky', 'weight', 'page_zoom'],
   contrast: ['contrast', 'dim'],
-  reachability: ['targets', 'promote_main', 'unpin_sticky', 'dim', 'text_map', 'page_zoom'],
-  content_loss: ['text_map', 'measure', 'spacing', 'unpin_sticky', 'page_zoom'],
-  hierarchy: ['text_map'],
-  overflow: ['text_map', 'measure', 'spacing', 'targets', 'weight', 'page_zoom'],
+  reachability: ['targets', 'promote_main', 'unpin_sticky', 'dim', 'column', 'page_zoom'],
+  content_loss: ['column', 'heading_scale', 'measure', 'spacing', 'unpin_sticky', 'page_zoom'],
+  hierarchy: ['heading_scale', 'weight'],
+  overflow: ['column', 'heading_scale', 'measure', 'spacing', 'targets', 'weight', 'page_zoom'],
   reading_position: [],
   visual: [],
 };
 
 const PLAIN: Record<CheckName, string> = {
   clipping: 'it cut off text',
-  overlap: 'it made things overlap',
+  overlap: 'it made text overlap',
   contrast: 'it made text harder to read',
   reachability: 'it covered or faded a control',
   content_loss: 'it hid some text',
@@ -195,8 +217,14 @@ function intersect(a: Rect, b: Rect): Rect | null {
   return r > x && bt > y ? { x, y, w: r - x, h: bt - y } : null;
 }
 
-/** Clip box: intersection of ancestors' padding boxes that clip (≤ 6 levels or the nearest scroller). */
-function clipBox(el: Element, fixed: boolean, vw: number, vh: number): Rect | null {
+/**
+ * Clip box: intersection of ancestors' padding boxes that clip (≤ 6 levels or the nearest scroller). For text being
+ * cut, a scroll container clips only on the axes it cannot scroll: a horizontal strip (overflow-x: auto,
+ * overflow-y: hidden) cuts text vertically, but items further along it are one scroll away, not lost. With `paint`,
+ * the box is what is drawn on screen now (used for content sticking out of the page column).
+ */
+function clipBox(el: Element, fixed: boolean, vw: number, vh: number, paint = false): Rect | null {
+  const BIG = 1e7;
   let box: Rect | null = fixed ? { x: 0, y: 0, w: vw, h: vh } : null;
   let n = el.parentElement;
   let d = 0;
@@ -204,14 +232,24 @@ function clipBox(el: Element, fixed: boolean, vw: number, vh: number): Rect | nu
     const cs = getComputedStyle(n);
     const ox = cs.overflowX;
     const oy = cs.overflowY;
-    const clips = ox === 'hidden' || ox === 'clip' || oy === 'hidden' || oy === 'clip' || cs.contain.includes('paint');
-    const scroller = ox === 'auto' || ox === 'scroll' || oy === 'auto' || oy === 'scroll';
-    if (clips || scroller) {
+    const scrollX = ox === 'auto' || ox === 'scroll';
+    const scrollY = oy === 'auto' || oy === 'scroll';
+    // `paint`: what is drawn on screen right now (a scroller clips its content's painting on every axis).
+    const clipX = (paint && scrollX) || (!scrollX && (ox === 'hidden' || ox === 'clip' || cs.contain.includes('paint')));
+    const clipY = (paint && scrollY) || (!scrollY && (oy === 'hidden' || oy === 'clip' || cs.contain.includes('paint')));
+    if (clipX || clipY) {
       const r = n.getBoundingClientRect();
-      const pad: Rect = { x: r.left + n.clientLeft, y: r.top + n.clientTop, w: n.clientWidth, h: n.clientHeight };
-      if (clips) box = box ? intersect(box, pad) ?? { x: pad.x, y: pad.y, w: 0, h: 0 } : pad;
-      if (scroller) break;
+      // client* are in the box's own CSS px; rects in viewport px (the page column zooms the body).
+      const z = cssZoomOf(n);
+      const pad: Rect = {
+        x: clipX ? r.left + n.clientLeft * z : -BIG,
+        y: clipY ? r.top + n.clientTop * z : -BIG,
+        w: clipX ? n.clientWidth * z : 2 * BIG,
+        h: clipY ? n.clientHeight * z : 2 * BIG,
+      };
+      box = box ? intersect(box, pad) ?? { x: pad.x, y: pad.y, w: 0, h: 0 } : pad;
     }
+    if (scrollX || scrollY) break;
     n = n.parentElement;
     d++;
   }
@@ -220,6 +258,38 @@ function clipBox(el: Element, fixed: boolean, vw: number, vh: number): Rect | nu
 
 function rectOf(r: DOMRect): Rect {
   return { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) };
+}
+
+/** Line boxes keep a tenth of a pixel: rounding left and width separately can invent 1 px overlaps between neighbours. */
+function lineRectOf(r: DOMRect): Rect {
+  const t = (v: number) => Math.round(v * 10) / 10;
+  return { x: t(r.left), y: t(r.top), w: t(r.width), h: t(r.height) };
+}
+
+/** Absolutely positioned or sticky, itself or within 3 ancestors: stacked over other content on purpose. */
+function isStacked(el: Element): boolean {
+  let n: Element | null = el;
+  let d = 0;
+  while (n && d < 4 && n !== document.body && n !== document.documentElement) {
+    const p = getComputedStyle(n).position;
+    if (p === 'absolute' || p === 'sticky') return true;
+    n = n.parentElement;
+    d++;
+  }
+  return false;
+}
+
+/** The element's effective CSS zoom (the page column zooms the body); 1 when none or unsupported. */
+function cssZoomOf(el: Element): number {
+  const z = (el as Element & { currentCSSZoom?: number }).currentCSSZoom;
+  return typeof z === 'number' && Number.isFinite(z) && z > 0 ? z : 1;
+}
+
+/** The page column's box in viewport x, when WebAble holds the page to one. */
+function columnBox(): { left: number; right: number } | null {
+  if (!document.documentElement.hasAttribute('data-wa-col') || !document.body) return null;
+  const r = document.body.getBoundingClientRect();
+  return r.width > 0 ? { left: Math.round(r.left), right: Math.round(r.right) } : null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -237,14 +307,21 @@ export class Verifier {
     this.host = host;
   }
 
-  /** Fixed probe set: controls, text and headings in the viewport plus half a screen, op targets, clip ancestors, help. */
-  probe(read: ReadResult | null, extra: Element[] = []): Element[] {
+  /**
+   * Fixed probe set: controls, text and headings in the viewport plus half a screen, op targets, clip ancestors, help.
+   * `wide` adds the main region's text and headings down the whole page (text overlap anywhere the person scrolls).
+   */
+  probe(read: ReadResult | null, extra: Element[] = [], opts: ProbeOptions = {}): Element[] {
     const vh = document.documentElement.clientHeight || innerHeight;
     const lo = -0.5 * vh;
     const hi = 1.5 * vh;
     const inBand = (el: Element) => {
       const r = el.getBoundingClientRect();
       return r.bottom >= lo && r.top <= hi && r.width > 0 && r.height > 0;
+    };
+    const shown = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
     };
     const set = new Set<Element>();
     const add = (el: Element | null | undefined) => {
@@ -272,6 +349,24 @@ export class Verifier {
         if (!n.el.isConnected) continue;
         if (n.help && (n.kind === 'link' || n.kind === 'button')) add(n.el);
         if ((n.kind === 'heading' || n.kind === 'image') && inBand(n.el)) add(n.el);
+      }
+      if (opts.wide) {
+        // The rest of the page: main text, headings and main controls below (or above) the band.
+        let more = 0;
+        for (const t of read.texts) {
+          if (more >= 700) break;
+          if (!t.inMain || set.has(t.el) || !t.el.isConnected || !shown(t.el)) continue;
+          add(t.el);
+          more++;
+        }
+        for (const n of read.nodes.values()) {
+          if (more >= 900) break;
+          if (!n.inMain || set.has(n.el) || !n.el.isConnected) continue;
+          if (n.kind !== 'heading' && n.kind !== 'button' && n.kind !== 'link' && n.kind !== 'image') continue;
+          if (!shown(n.el)) continue;
+          add(n.el);
+          more++;
+        }
       }
     } else {
       for (const el of Array.from(document.querySelectorAll(CONTROL)).slice(0, 400)) {
@@ -367,6 +462,7 @@ export class Verifier {
     let focusable = 0;
     let anchor: PageMeasure['readingAnchor'] = null;
     let occlusionBudget = 160;
+    const column = columnBox();
     // Whether an element sits in a position: fixed layer (a dialog, a cookie bar, a chat panel). Such layers cover
     // the page by design, so their boxes are compared only with boxes in the same layer.
     const fixedCache = new Map<Element, boolean>();
@@ -432,6 +528,7 @@ export class Verifier {
         clientH: connected ? el.clientHeight : 0,
         overflowHidden: !!cs && (cs.overflowX === 'hidden' || cs.overflowX === 'clip' || cs.overflowY === 'hidden' || cs.overflowY === 'clip'),
         fontPx,
+        cssZoom: connected ? cssZoomOf(el) : 1,
         color: cs ? cs.color : null,
         background,
         contrast,
@@ -478,6 +575,12 @@ export class Verifier {
         m.isMedia = tag === 'IMG' || tag === 'VIDEO' || tag === 'CANVAS' || tag === 'svg' || tag === 'SVG';
         m.dimmed = !!el.closest('[data-wa-dim]');
         m.contrastOp = el.hasAttribute('data-wa-c');
+        if (visible) m.stacked = isStacked(el);
+        if (visible && column) {
+          const clip = clipBox(el, m.fixedLayer ?? false, vw, vh, true);
+          const own = rectOf(r);
+          m.visRect = clip ? intersect(own, clip) ?? { x: own.x, y: own.y, w: 0, h: 0 } : own;
+        }
 
         // Text lines (for overlap) and the visible share inside the clip box (for clipping).
         if (textNodes.length && visible) {
@@ -486,7 +589,7 @@ export class Verifier {
             const range = document.createRange();
             range.selectNodeContents(t);
             for (const lr of Array.from(range.getClientRects()).slice(0, 8)) {
-              if (lr.width * lr.height >= 1) lines.push(rectOf(lr));
+              if (lr.width * lr.height >= 1) lines.push(lineRectOf(lr));
             }
           }
           if (lines.length) {
@@ -496,14 +599,23 @@ export class Verifier {
             if (clip) {
               let total = 0;
               let inside = 0;
+              let insideY = 0;
               for (const l of lines) {
                 const a = l.w * l.h;
                 total += a;
                 const i = intersect(l, clip);
                 if (i) inside += i.w * i.h;
+                // Vertical cut only (a carousel showing fewer cards in a narrower window is a sideways cut).
+                insideY += l.w * Math.max(0, Math.min(l.y + l.h, clip.y + clip.h) - Math.max(l.y, clip.y));
               }
               m.visFrac = total > 0 ? Math.round((inside / total) * 1000) / 1000 : 1;
-            } else m.visFrac = 1;
+              m.visFracY = total > 0 ? Math.round((insideY / total) * 1000) / 1000 : 1;
+              // Only ink that is drawn can collide: a card's one-line headline running under the next card is clipped.
+              m.inkLines = lines.slice(0, 12).map((l) => intersect(l, clip)).filter((l): l is Rect => !!l && l.w * l.h >= 1);
+            } else {
+              m.visFrac = 1;
+              m.visFracY = 1;
+            }
             // Paint occlusion, counted only when what covers the text is something WebAble changed.
             if (inViewport && occlusionBudget > 0) {
               occlusionBudget--;
@@ -559,6 +671,7 @@ export class Verifier {
       readingAnchor: anchor,
       activeId: active ? idOfProbe.get(active) ?? null : null,
       activeIsBody: !active || active === document.body,
+      column,
     };
     if (ctx.contrastFloor) measure.contrastFloor = ctx.contrastFloor;
     this.lastEls = els;
@@ -589,15 +702,16 @@ export class Verifier {
     this.restoreAnchor(before);
     const snapCtx = (): SnapshotContext => ({ ...ctx, ops: ctx.ops ?? batch });
     let after = this.snapshot(probe, snapCtx());
-    let ev = this.evaluate(before, after, batch.filter((o) => o.active));
+    let ev = this.evaluate(before, after, batch.filter((o) => o.active), ctx.ignore);
     const reversed: VerifyOutcome['reversed'] = [];
+    const droppedEls: VerifyOutcome['droppedEls'] = [];
     const tried = new Map<string, Set<Op>>();
     const unresolved = new Set<string>();
     const keyOf = (f: Fail) => `${f.result.name}|${[...f.ids].sort().join(',')}`;
     const stillFails = (f: Fail, fails: Fail[]) => fails.some((g) => g.result.name === f.result.name
       && (f.ids.length === 0 ? g.ids.length === 0 : g.ids.some((id) => f.ids.includes(id))));
 
-    for (let round = 0; round < 8; round++) {
+    for (let round = 0; round < 14; round++) {
       const f = ev.fails.find((x) => !unresolved.has(keyOf(x)));
       if (!f) break;
       const key = keyOf(f);
@@ -617,19 +731,39 @@ export class Verifier {
       }
       seen.add(op);
       const result: CheckResult = { name: f.result.name, pass: false, detail: f.result.detail, opId: op.rec.id };
+      // An op that can leave single elements out (heading_scale) drops the failing ones first; the op stays if
+      // that clears the failure.
+      if (op.rec.kind === 'heading_scale' && op.drop) {
+        const own = this.ownedBy(op, f.ids);
+        if (own.length) {
+          for (const el of own) op.drop(el);
+          await settle();
+          after = this.snapshot(probe, snapCtx());
+          const next = this.evaluate(before, after, batch.filter((o) => o.active), ctx.ignore);
+          if (!stillFails(f, next.fails)) {
+            const prev = droppedEls.find((d) => d.op === op);
+            if (prev) prev.count += own.length;
+            else droppedEls.push({ op, count: own.length, result });
+            seen.delete(op);
+            ev = next;
+            continue;
+          }
+          ev = next;
+        }
+      }
       await revert(op, result);
       // Sites that fold their menu with a debounced resize handler need longer to unfold it again.
-      if (op.rec.kind === 'page_zoom') await waitResize().then(() => sleepMs(guarded ? 1000 : 350));
+      if (op.rec.kind === 'page_zoom' || op.rec.kind === 'column') await waitResize().then(() => sleepMs(guarded ? 1000 : 350));
       await settle();
       after = this.snapshot(probe, snapCtx());
-      const next = this.evaluate(before, after, batch.filter((o) => o.active));
+      const next = this.evaluate(before, after, batch.filter((o) => o.active), ctx.ignore);
       if (stillFails(f, next.fails) && reapply) {
         // Not the cause: put it back exactly as it was.
         await reapply(op);
-        if (op.rec.kind === 'page_zoom') await waitResize().then(() => sleepMs(350));
+        if (op.rec.kind === 'page_zoom' || op.rec.kind === 'column') await waitResize().then(() => sleepMs(350));
         await settle();
         after = this.snapshot(probe, snapCtx());
-        ev = this.evaluate(before, after, batch.filter((o) => o.active));
+        ev = this.evaluate(before, after, batch.filter((o) => o.active), ctx.ignore);
         continue;
       }
       reversed.push({ op, result });
@@ -645,7 +779,27 @@ export class Verifier {
     const checks: CheckResult[] = [...ev.results.filter((r) => r.pass || !ev.fails.some((f) => f.result === r))];
     for (const f of ev.fails) checks.push({ name: f.result.name, pass: false, detail: `${f.result.detail} (not caused by one change; left as is)` });
     for (const r of reversed) checks.push(r.result);
-    return { checks, reversed, dropped, ms: Math.round(performance.now() - t0), soft: ev.soft };
+    return { checks, reversed, dropped, droppedEls, ms: Math.round(performance.now() - t0), soft: ev.soft };
+  }
+
+  /** Elements of `op` behind the failing ids (the element itself, or within 4 levels above or below it). */
+  private ownedBy(op: Op, ids: string[]): Element[] {
+    const depth = (outer: Element, inner: Element): number => {
+      let d = 0;
+      let n: Element | null = inner;
+      while (n && n !== outer && d < 5) {
+        n = n.parentElement;
+        d++;
+      }
+      return n === outer ? d : Infinity;
+    };
+    const out = new Set<Element>();
+    for (const id of ids) {
+      const el = this.lastEls.get(id);
+      if (!el) continue;
+      for (const o of op.elements) if (o === el || depth(o, el) <= 4 || depth(el, o) <= 4) out.add(o);
+    }
+    return [...out];
   }
 
   /** Probe expanded hit areas; returns how many element tokens were dropped. */
@@ -657,7 +811,11 @@ export class Verifier {
       const el = p.el;
       if (!el.isConnected) continue;
       const r = el.getBoundingClientRect();
-      const box = { l: r.left - p.padX + 1, t: r.top - p.padY + 1, r: r.right + p.padX - 1, b: r.bottom + p.padY - 1 };
+      // Pads are in the element's own CSS px; rects in viewport px (the page column zooms the body).
+      const z = cssZoomOf(el);
+      const px = p.padX * z;
+      const py = p.padY * z;
+      const box = { l: r.left - px + 1, t: r.top - py + 1, r: r.right + px - 1, b: r.bottom + py - 1 };
       if (box.l < 0 || box.t < 0 || box.r > vw || box.b > vh) continue; // only what is on screen
       const pts: Array<[number, number]> = [];
       if (p.padX) pts.push([box.l, (box.t + box.b) / 2], [box.r, (box.t + box.b) / 2]);
@@ -676,7 +834,7 @@ export class Verifier {
 
   /* -------------------------------------------------------------- */
 
-  private evaluate(before: Snapshot, after: Snapshot, active: Op[]): { results: CheckResult[]; fails: Fail[]; soft: string[] } {
+  private evaluate(before: Snapshot, after: Snapshot, active: Op[], ignore: CheckName[] = []): { results: CheckResult[]; fails: Fail[]; soft: string[] } {
     const fails: Fail[] = [];
     const soft: string[] = [];
     const B = this.withoutVolatile(before.measure);
@@ -684,6 +842,17 @@ export class Verifier {
     let results: CheckResult[] = [];
     try {
       results = runChecks(B, A, active.map((o) => o.rec.id));
+      if (ignore.length) {
+        // Findings this batch does not roll back for become soft notes; the check itself reads as passed.
+        const kept: CheckResult[] = [];
+        for (const r of results) {
+          if (!r.pass && ignore.includes(r.name)) {
+            soft.push(r.detail);
+            if (!kept.some((k) => k.name === r.name)) kept.push({ name: r.name, pass: true, detail: `${passDetail(r.name)} (the site's own layout at this size is left as the site made it)` });
+          } else kept.push(r);
+        }
+        results = kept.filter((r, i) => r.pass ? kept.findIndex((k) => k.name === r.name && k.pass) === i : true);
+      }
       for (const r of results) {
         if (!r.pass) fails.push({ result: r, ids: idsIn(r.detail), local: false });
         else if (r.detail.startsWith('soft:')) soft.push(r.detail.slice(5).trim());
@@ -772,7 +941,7 @@ export class Verifier {
         }
       }
     }
-    if (inv.length) fails.push({ result: { name: 'hierarchy', pass: false, detail: `Text sizes swapped order (${inv.slice(0, 4).join(', ')})` }, ids: inv, kinds: ['text_map'], local: true });
+    if (inv.length) fails.push({ result: { name: 'hierarchy', pass: false, detail: `Text sizes swapped order (${inv.slice(0, 4).join(', ')})` }, ids: inv, kinds: ['heading_scale'], local: true });
     void before;
     void after;
     return fails;

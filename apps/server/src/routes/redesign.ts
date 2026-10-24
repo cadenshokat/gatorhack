@@ -41,20 +41,46 @@ interface CandidateSet {
 }
 
 const candidateCache = new TtlLru<CandidateSet>(100, REDESIGN_CACHE_TTL_MS);
+
+/** The model's raw layouts for one page structure (ids, kinds, nesting, places, roles), before repair. */
+interface ModelWave {
+  raws: Array<{ name: LayoutCandidate['name']; data: unknown; model: string }>;
+  ms: number;
+  costUsd: number;
+  complete: boolean;
+}
+const modelCache = new TtlLru<ModelWave>(100, REDESIGN_CACHE_TTL_MS);
+
+/**
+ * Key for reusing the model's layouts: the page's structure and Jev's roles, not its words. The same page loaded
+ * again differs in small ways (a carousel on another slide, a cart count, the chat open), which changed the full
+ * key and paid for three new layouts each time ($0.05-0.12, measured). Specs hold ids and enums only, so the same
+ * structure takes the same layouts; they are repaired against, and judged on, the current outline every time.
+ */
+export function structureKey(outline: PageOutline, fit: FitSummaryForModel, roles: Record<string, Role>): string {
+  const shape = outline.nodes.map((n) => [n.id, n.kind, n.level ?? 0, n.parent ?? '', n.landmark ?? '', n.zone ?? '', n.jevRole ?? '', n.protected ? 1 : 0]);
+  return hashOf('layout-structure.v1', LAYOUT_MODEL, shape, outline.pageTypeHint ?? '', fit, roles);
+}
 const resultCache = new TtlLru<{ result: RedesignResponse; deep: boolean }>(100, REDESIGN_CACHE_TTL_MS);
 
 function schemaReady(): boolean {
   return !!fitSpecJsonSchema && typeof fitSpecJsonSchema === 'object' && Object.keys(fitSpecJsonSchema).length > 0;
 }
 
-/** Validate a model's spec against the contract schema, then repair it against the outline. */
-function toCandidate(name: LayoutCandidate['name'], data: unknown, outline: PageOutline, model: string): LayoutCandidate | null {
+/**
+ * Validate a model's spec against the contract schema, then repair it against the outline with Jev's roles (help,
+ * consent and ads are recognised the same way as for the local layouts). Like the local variants, the fit's
+ * open-section limits are left to Jev's judgment, so the stances stay distinct.
+ */
+export function toCandidate(
+  name: LayoutCandidate['name'], data: unknown, outline: PageOutline, model: string, roles: Record<string, Role> = {},
+): LayoutCandidate | null {
   const parsed = FitSpecSchema.safeParse(data);
   if (!parsed.success) {
     log('redesign: spec failed the schema', { candidate: name, issues: parsed.error.issues.length });
     return null;
   }
-  const { spec, repairs } = repairSpec(parsed.data, outline);
+  const { spec, repairs } = repairSpec(parsed.data, outline, { roles });
   return { name, spec, repairs: [sourceTag('ai', model), ...repairs] };
 }
 
@@ -109,10 +135,12 @@ function countSources(cands: SourcedCandidate[]): Record<CandidateSource, number
   return out;
 }
 
-async function makeCandidates(outline: PageOutline, roles: Record<string, Role>, fit: FitSummaryForModel, deepKey: string, mode: Mode): Promise<CandidateSet> {
+async function makeCandidates(
+  outline: PageOutline, roles: Record<string, Role>, fit: FitSummaryForModel, deepKey: string, mode: Mode, fresh = false,
+): Promise<CandidateSet> {
   let heuristic: LayoutCandidate;
   try {
-    const { spec, repairs } = repairSpec(heuristicSpec(outline, roles, fit), outline);
+    const { spec, repairs } = repairSpec(heuristicSpec(outline, roles, fit), outline, { roles });
     heuristic = { name: 'heuristic', spec, repairs: [sourceTag('heuristic', 'the instant layout'), ...repairs] };
   } catch (e) {
     log('redesign: heuristic failed', { error: errorMessage(e).slice(0, 120) });
@@ -139,23 +167,35 @@ async function makeCandidates(outline: PageOutline, roles: Record<string, Role>,
 
   const fitText = fitToText(fit);
   const outlineText = outlineToText(trimOutline(outline));
-  const t1 = performance.now();
   if (startDeepLayout(deepKey, fitText, outlineText, fitSpecJsonSchema)) log('redesign: deep layout started in the background');
-  const raw = await layoutCandidates(fitText, outlineText, fitSpecJsonSchema);
-  llm.ms = round(performance.now() - t1);
+  const { value: wave, fromCache } = await modelCache.getOrMake(
+    structureKey(outline, fit, roles),
+    async (): Promise<ModelWave> => {
+      const t1 = performance.now();
+      const raw = await layoutCandidates(fitText, outlineText, fitSpecJsonSchema);
+      const raws = raw.flatMap((r) => (r.result.ok ? [{ name: (r.stance === 'deep' ? 'deep' : r.stance) as LayoutCandidate['name'], data: r.result.data, model: r.result.model }] : []));
+      return {
+        raws,
+        ms: round(performance.now() - t1),
+        costUsd: round(raw.reduce((a, r) => a + r.result.costUsd, 0), 6),
+        complete: raws.length > 0,
+      };
+    },
+    { fresh, keep: (w) => w.complete },
+  );
+  llm.ms = fromCache ? 0 : wave.ms;
+  llm.costUsd = fromCache ? 0 : wave.costUsd;
+  if (fromCache) log('redesign: model layouts reused for the same page structure', { layouts: wave.raws.length });
   let fromModel = 0;
-  for (const r of raw) {
-    llm.costUsd += r.result.costUsd;
-    if (!r.result.ok) continue;
-    const name = r.stance === 'deep' ? 'deep' : r.stance;
-    const cand = toCandidate(name, r.result.data, outline, r.result.model);
+  for (const r of wave.raws) {
+    const cand = toCandidate(r.name, r.data, outline, r.model, roles);
     if (cand) {
       cands.push(cand);
       fromModel++;
     }
   }
-  llm.costUsd = round(llm.costUsd, 6);
   if (!fromModel) llm.model = `${LAYOUT_MODEL} (no answer)`;
+  else if (fromCache) llm.model = `${LAYOUT_MODEL} (same page, reused)`;
   return { cands, llm, complete: fromModel > 0 };
 }
 
@@ -177,14 +217,14 @@ export async function redesign(
   const cachedResult = opts.fresh ? undefined : resultCache.get(key);
   if (cachedResult && (cachedResult.deep || !deep)) return { result: cachedResult.result, cache: 'hit' };
 
-  const { value: set } = await candidateCache.getOrMake(key, () => makeCandidates(outline, roles, fit, deepKey, mode), {
+  const { value: set } = await candidateCache.getOrMake(key, () => makeCandidates(outline, roles, fit, deepKey, mode, opts.fresh), {
     fresh: opts.fresh,
     keep: (s) => s.complete,
   });
   let cands = set.cands.map((c) => ({ ...c, repairs: [...c.repairs] }));
   const llm = { ...set.llm };
   if (deep) {
-    const d = toCandidate('deep', deep.data, outline, deep.model);
+    const d = toCandidate('deep', deep.data, outline, deep.model, roles);
     if (d) cands.push(d);
   }
 
@@ -227,6 +267,8 @@ export async function redesign(
   log('redesign', {
     mode,
     candidates: ordered.map((c) => `${c.source === 'local' ? 'local:' : c.source === 'ai' ? 'ai:' : ''}${c.name}`).join(','),
+    // Repairs on each model layout (beyond its source line): a rising count means the prompt and the page disagree.
+    aiRepairs: ordered.filter((c) => c.source === 'ai').map((c) => `${c.name}=${Math.max(0, c.repairs.length - 1)}`).join(',') || undefined,
     chosen: `${candidateSource(winner)}:${winner.name}`,
     composite: winner.composite !== undefined ? round(winner.composite, 2) : undefined,
     autoApply,

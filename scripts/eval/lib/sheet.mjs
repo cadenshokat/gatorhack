@@ -1,12 +1,101 @@
-// Contact sheet for one eval run: before | after | lens | calm per site, plus the numbers that matter.
+// Contact sheet for one eval run: before | after | after at the task | lens | calm per site, plus the numbers that
+// matter, including the reading facts (zoom, text hierarchy, column, overflow, overlapping text, UI collisions).
 import { escapeHtml as h, median } from './common.mjs';
+import { RAMP, columnVerdict, headingVerdicts } from './pagefacts.mjs';
 
 const SHOTS = [
   ['before', 'Before (paused)'],
-  ['after', 'After (fitted)'],
+  ['after', 'After (fitted, top)'],
+  ['task', 'After · at the main task'],
   ['lens', 'Jev Lens'],
   ['calm', 'Calm view'],
 ];
+
+const pct = (z) => (typeof z === 'number' && Number.isFinite(z) ? `${Math.round(z * 100)}%` : '—');
+const num = (x, d = 2) => (typeof x === 'number' && Number.isFinite(x) ? x.toFixed(d) : '—');
+
+/** Reading facts for one site, compact: what the console line, the chips, the tiles and summary.json use. */
+export function readingSummary(r) {
+  const fs = r.firstScreen ?? {};
+  const b = fs.before?.reading && !fs.before.reading.error ? fs.before.reading : null;
+  const a = fs.after?.reading && !fs.after.reading.error ? fs.after.reading : null;
+  const t = fs.task?.reading && !fs.task.reading.error ? fs.task.reading : null;
+  if (!a) return null;
+  const col = columnVerdict(a, r.engine?.column ?? null);
+  const flowAfter = Math.max(a.overlap?.flow ?? 0, t?.overlap?.flow ?? 0);
+  const flowBefore = b?.overlap?.flow ?? null;
+  const ui = fs.after?.ui ?? null;
+  const uiTask = fs.task?.ui ?? null;
+  return {
+    zoom: typeof a.textZoom === 'number' && Math.abs((a.bodyZoom ?? 1) - 1) > 0.005 ? a.textZoom : typeof r.tabZoom === 'number' ? r.tabZoom : a.zoom,
+    tabZoom: typeof r.tabZoom === 'number' ? r.tabZoom : a.zoom,
+    zoomFromDpr: a.zoom,
+    body: { before: b?.body?.css ?? null, after: a.body?.css ?? null, screen: a.body?.screen ?? null, basis: a.body?.basis ?? null },
+    spacing: {
+      wordBefore: b?.body?.wordEm ?? null,
+      wordAfter: a.body?.wordEm ?? null,
+      letterBefore: b?.body?.letterPx ?? null,
+      letterAfter: a.body?.letterPx ?? null,
+      lineBefore: b?.body?.lineHeight ?? null,
+      lineAfter: a.body?.lineHeight ?? null,
+    },
+    headings: headingVerdicts(b, a),
+    column: {
+      held: !!col.held,
+      width: col.width ?? null,
+      marginL: a.column?.marginL ?? null,
+      marginR: a.column?.marginR ?? null,
+      centred: col.centred ?? null,
+      pageSides: col.pageSides ?? null,
+      escapes: a.column?.escapeCount ?? 0,
+      tone: col.tone,
+      source: col.source ?? null,
+      engine: r.engine?.column ?? null,
+    },
+    overflow: { px: a.overflow?.px ?? null, scroll: !!a.overflow?.scroll, culprits: a.overflow?.culprits ?? [] },
+    overlaps: {
+      before: flowBefore,
+      after: flowAfter,
+      added: flowBefore == null ? flowAfter : Math.max(0, flowAfter - flowBefore),
+      positionedAfter: Math.max(a.overlap?.positioned ?? 0, t?.overlap?.positioned ?? 0),
+      truncated: !!a.overlap?.truncated,
+    },
+    spills: {
+      before: b?.overlap?.spill ?? null,
+      after: Math.max(a.overlap?.spill ?? 0, t?.overlap?.spill ?? 0),
+      added: Math.max(0, Math.max(a.overlap?.spill ?? 0, t?.overlap?.spill ?? 0) - (b?.overlap?.spill ?? 0)),
+    },
+    ui: {
+      overlaps: [...new Set([...(ui?.floatOverlaps ?? []), ...(uiTask?.floatOverlaps ?? [])])],
+      overSite: [...(ui?.overSite ?? []), ...(uiTask?.overSite ?? [])],
+      pillScreenH: ui?.pillScreenH ?? null,
+    },
+  };
+}
+
+/** One console line of reading facts. */
+export function readingLine(r) {
+  const x = readingSummary(r);
+  if (!x) return '';
+  const hs = Object.entries(x.headings)
+    .map(([k, v]) => `${k} ${num(v.before)}→${num(v.after)}×`)
+    .join(' ');
+  const col = x.column.held ? `column ${x.column.width} px (${x.column.marginL}/${x.column.marginR}, ${x.column.source})` : 'full width';
+  const uiBad = x.ui.overlaps.length + x.ui.overSite.filter((o) => o.siteFixed).length;
+  return [
+    `zoom ${pct(x.zoom)}${Math.abs((x.tabZoom ?? x.zoom) - x.zoom) > 0.01 ? ` (tab ${pct(x.tabZoom)})` : ''}`,
+    `body ${x.body.before ?? '—'}→${x.body.after ?? '—'} css px`,
+    hs || 'no headings',
+    col,
+    `overflow ${x.overflow.px ?? '—'} px`,
+    `text overlaps ${x.overlaps.before ?? '—'}→${x.overlaps.after}${x.overlaps.positionedAfter ? ` (+${x.overlaps.positionedAfter} positioned)` : ''}`,
+    `text out of its box ${x.spills.before ?? '—'}→${x.spills.after}`,
+    `UI collisions ${uiBad}`,
+    x.ui.pillScreenH ? `pill ${x.ui.pillScreenH} px tall` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
 
 const fmtMs = (ms) => (typeof ms === 'number' && Number.isFinite(ms) ? (ms >= 1000 ? `${(ms / 1000).toFixed(2)} s` : `${Math.round(ms)} ms`) : '—');
 const fmtUsd = (x) => (typeof x === 'number' && Number.isFinite(x) ? `$${x < 0.01 ? x.toFixed(5) : x.toFixed(4)}` : '—');
@@ -38,6 +127,7 @@ export function siteMetrics(r) {
     redesign: rep?.redesign ?? null,
     struggleLevel: rep?.struggle?.level ?? null,
     errors: [...(r.errors ?? []), ...(Array.isArray(rep?.errors) ? rep.errors.map((e) => `report: ${e}`) : [])],
+    reading: readingSummary(r),
   };
 }
 
@@ -84,16 +174,126 @@ function firstScreenChips(r) {
   return out.join('');
 }
 
+/** Reading chips for one site: zoom, body and heading sizes, the column, overflow, overlapping text, UI collisions. */
+function readingChips(r, meta = {}) {
+  const x = readingSummary(r);
+  const a = r.firstScreen?.after?.reading;
+  if (!x || !a) return a?.error ? chip('Reading facts', a.error, 'bad') : '';
+  const out = [];
+  out.push(chip('Page zoom', pct(x.zoom), '', `Chrome tab zoom; devicePixelRatio says ${pct(x.zoomFromDpr)}`));
+  const target = meta.fitTextPx ?? null;
+  out.push(
+    chip(
+      'Body text',
+      `${x.body.before ?? '—'} → ${x.body.after ?? '—'} px · ${x.body.screen ?? '—'} on screen`,
+      target && x.body.screen ? (x.body.screen >= target - 1 ? 'good' : 'warn') : '',
+      `CSS px, then screen px at 1× (CSS × zoom)${target ? `; the fit asks for ${target} px` : ''} · char-weighted median of ${x.body.basis ?? '—'}`,
+    ),
+  );
+  const s2 = x.spacing;
+  const wordAdded = (s2.wordAfter ?? 0) - (s2.wordBefore ?? 0);
+  const letterAdded = (s2.letterAfter ?? 0) - (s2.letterBefore ?? 0);
+  out.push(
+    chip(
+      'Word / letter spacing',
+      `${num(s2.wordBefore)} → ${num(s2.wordAfter)} em · ${num(s2.letterBefore, 1)} → ${num(s2.letterAfter, 1)} px`,
+      wordAdded > 0.02 || letterAdded > 0.3 ? 'bad' : 'good',
+      `running text; line height ${num(s2.lineBefore)} → ${num(s2.lineAfter)} × font size (normal counts as —)`,
+    ),
+  );
+  const hs = Object.entries(x.headings);
+  for (const [k, v] of hs) {
+    const fact = a.headings?.[k];
+    out.push(
+      chip(
+        `${k.toUpperCase()} ÷ body`,
+        `${num(v.before)} → ${num(v.after)}×`,
+        v.tone,
+        `minimum ramp ${v.ramp}× · ${fact?.n ?? 0} heading(s), ${fact?.css ?? '—'} px, weight ${fact?.weight ?? '—'} · “${fact?.text ?? ''}”`,
+      ),
+    );
+  }
+  if (!hs.length) out.push(chip('Headings', 'none found', 'warn', 'no visible h1–h3 in the main content'));
+  const c = x.column;
+  const ce = c.engine ? ` · engine: ${c.engine.on ? `on, ${c.engine.widthPx ?? '—'} px` : 'off'}` : '';
+  if (c.held) {
+    const why = [
+      c.centred ? 'centred' : 'off-centre',
+      c.pageSides ? 'page colour at the sides' : 'something else at the sides',
+      c.escapes ? `${c.escapes} box(es) escape the column` : 'nothing escapes',
+    ].join(' · ');
+    out.push(chip('Column', `${c.width} px · sides ${c.marginL} / ${c.marginR} · ${c.source}`, c.tone, `${why}${ce}`));
+  } else {
+    out.push(chip('Column', 'full width', c.tone, `content ${a.column?.content?.width ?? '—'} of ${a.column?.viewport ?? '—'} px${ce}`));
+  }
+  const o = x.overflow;
+  out.push(
+    chip(
+      'Sideways scroll',
+      o.scroll ? `${o.px} px` : o.px ? `none (${o.px} px clipped)` : 'none',
+      o.scroll ? 'bad' : 'good',
+      o.culprits.map((q) => `${q.what} → ${q.right} px`).join('; '),
+    ),
+  );
+  const ov = x.overlaps;
+  const pairs = (a.overlap?.pairs ?? []).filter((p) => p.kind === 'flow').slice(0, 4).map((p) => `“${p.a}” × “${p.b}”`).join('; ');
+  out.push(
+    chip(
+      'Text overlaps',
+      `${ov.before ?? '—'} → ${ov.after}`,
+      ov.added > 0 ? 'bad' : ov.after > 0 ? 'warn' : 'good',
+      `${pairs || 'none'}${ov.positionedAfter ? ` · ${ov.positionedAfter} more involve positioned boxes` : ''}${ov.truncated ? ' · page sampled' : ''}`,
+    ),
+  );
+  const sp = x.spills;
+  const spList = (a.overlap?.spills ?? []).filter((q) => q.kind === 'flow').slice(0, 4).map((q) => `“${q.text}” ${q.px} px ${q.dir} its ${q.where}`).join('; ');
+  out.push(chip('Text out of its box', `${sp.before ?? '—'} → ${sp.after}`, sp.added > 0 ? 'bad' : sp.after > 0 ? 'warn' : 'good', spList || 'none'));
+  const fixedUnder = x.ui.overSite.filter((q) => q.siteFixed);
+  out.push(chip('UI overlaps', `${x.ui.overlaps.length}`, x.ui.overlaps.length ? 'bad' : 'good', x.ui.overlaps.join('; ')));
+  out.push(
+    chip(
+      'UI over site controls',
+      `${fixedUnder.length} fixed · ${x.ui.overSite.length - fixedUnder.length} in page`,
+      fixedUnder.length ? 'bad' : x.ui.overSite.length ? 'warn' : 'good',
+      x.ui.overSite.map((q) => `${q.ours} over “${q.site}”${q.siteFixed ? ' (fixed)' : ''}`).join('; '),
+    ),
+  );
+  if (x.ui.pillScreenH) out.push(chip('Pill', `${x.ui.pillScreenH} px tall`, '', 'physical size at 1× (CSS px × page zoom); should not change with zoom'));
+  return out.join('');
+}
+
+/** Red boxes over overlapping text, dashed lines at the content edges; drawn over the screenshot, not into the page. */
+function marks(r, key) {
+  const rd = r.firstScreen?.[key]?.reading;
+  if (!rd || rd.error || !rd.cssW || !rd.cssH) return '';
+  const X = (v) => `${((100 * v) / rd.cssW).toFixed(2)}%`;
+  const Y = (v) => `${((100 * v) / rd.cssH).toFixed(2)}%`;
+  // The stored boxes are glyph cores (cap height to baseline); pad them back out so the outline frames the text.
+  const boxes = (rd.overlap?.boxes ?? [])
+    .map((b) => {
+      const pad = Math.max(2, b.h * 0.35);
+      return `<span class="ovl ovl-${h(b.kind)}" style="left:${X(b.x - pad)};top:${Y(b.y - pad)};width:${X(b.w + 2 * pad)};height:${Y(b.h + 2 * pad)}"></span>`;
+    })
+    .join('');
+  let lines = '';
+  const c = rd.column;
+  if (key !== 'before' && c?.content && (c.narrowed || (c.marginL >= 48 && c.marginR >= 48))) {
+    const z = rd.zoom || 1;
+    lines = [c.content.left, c.content.right].map((v) => `<span class="colline" style="left:${X(v / z)}"></span>`).join('');
+  }
+  return boxes || lines ? `<span class="marks" aria-hidden="true">${lines}${boxes}</span>` : '';
+}
+
 function shotCell(r, key, label) {
   const file = r.shots?.[key];
   const sub = r.shotNotes?.[key] ? `<span class="shot-note">${h(r.shotNotes[key])}</span>` : '';
   if (!file) {
     return `<figure class="shot missing"><div class="shot-empty">${h(r.shotErrors?.[key] ?? 'Not captured')}</div><figcaption>${h(label)}${sub}</figcaption></figure>`;
   }
-  return `<figure class="shot"><a href="${h(file)}" target="_blank" rel="noopener"><img src="${h(file)}" alt="${h(`${r.name}: ${label}`)}" loading="lazy"></a><figcaption>${h(label)}${sub}</figcaption></figure>`;
+  return `<figure class="shot"><a class="shot-frame" href="${h(file)}" target="_blank" rel="noopener"><img src="${h(file)}" alt="${h(`${r.name}: ${label}`)}" loading="lazy">${marks(r, key)}</a><figcaption>${h(label)}${sub}</figcaption></figure>`;
 }
 
-function siteCard(r) {
+function siteCard(r, meta = {}) {
   const m = siteMetrics(r);
   const phaseTone = m.phase === 'error' ? 'bad' : m.phase === 'understood' || m.phase === 'calm' ? 'good' : 'warn';
   const chips = [
@@ -133,6 +333,7 @@ function siteCard(r) {
   </header>
   <div class="chips">${chips}</div>
   <div class="chips chips-first"><span class="chips-label">First screen</span>${firstScreenChips(r)}</div>
+  <div class="chips chips-first"><span class="chips-label">Reading</span>${readingChips(r, meta)}</div>
   <div class="shots">${SHOTS.map(([k, label]) => shotCell(r, k, label)).join('')}</div>
   <div class="details">
     <details${ledger.length ? ' open' : ''}><summary>What WebAble did (${ledger.length})</summary>${ledgerHtml}</details>
@@ -212,6 +413,15 @@ export function renderSheet(meta, results, extra = {}) {
   const mainSeen = results.filter((r) => r.firstScreen?.after?.page?.main?.inView && !r.firstScreen.after.page.main.coveredBy).length;
   const calmOk = results.filter((r) => r.firstScreen?.calm?.calm?.h1Ok && r.firstScreen.calm.calm.taskOk).length;
   const calmN = results.filter((r) => r.firstScreen?.calm?.calm?.open).length;
+  const rs = ms.map((m) => m.reading).filter(Boolean);
+  const added = rs.reduce((a2, x) => a2 + (x.overlaps.added ?? 0), 0);
+  const spilled = rs.reduce((a2, x) => a2 + (x.spills.added ?? 0), 0);
+  const hier = rs.filter((x) => Object.keys(x.headings).length);
+  const hierOk = hier.filter((x) => Object.values(x.headings).every((v) => v.tone === 'good')).length;
+  const zoomed = rs.filter((x) => (x.zoom ?? 1) > 1.05);
+  const colOk = zoomed.filter((x) => x.column.held && x.column.tone === 'good').length;
+  const colOurs = zoomed.filter((x) => x.column.source === 'WebAble' || x.column.source === 'narrowed body').length;
+  const uiBad = rs.filter((x) => x.ui.overlaps.length || x.ui.overSite.some((q) => q.siteFixed)).length;
   const tiles = !results.length ? '' : [
     ['Sites', `${results.length}`, `${understood} reached “understood”`],
     ['Jev decisions', `${sum('decisions')}`, `${sum('jevCalls')} calls · ${sum('jevQuestions')} questions`],
@@ -220,13 +430,18 @@ export function renderSheet(meta, results, extra = {}) {
     ['Changes', `${sum('opsApplied')} applied`, `${sum('opsReversed')} reversed by checks`],
     ['Problems', `${ms.reduce((a, m) => a + m.errors.length, 0)} errors`, `${ms.reduce((a, m) => a + m.checksFailed.length, 0)} checks failed`],
     ['First screen', `${mainSeen} of ${results.length}`, `main action in view · Calm first screen right on ${calmOk} of ${calmN}`],
+    ['Text overlaps added', `${added}`, `${rs.filter((x) => x.overlaps.added > 0).length} of ${rs.length} pages · line boxes of different text crossing`],
+    ['Text out of its box', `${spilled} added`, `${rs.filter((x) => x.spills.added > 0).length} of ${rs.length} pages · text grown past a fixed box`],
+    ['Headings', `${hierOk} of ${hier.length}`, `pages where every heading level kept its ratio to body text, or rose to the ramp (h1 ${RAMP.h1}×, h2 ${RAMP.h2}×, h3 ${RAMP.h3}×)`],
+    ['Column', `${colOk} of ${zoomed.length}`, `zoomed pages held to a centred column with page-coloured sides (${colOurs} by WebAble)`],
+    ['UI collisions', `${uiBad}`, 'pages where WebAble’s floating UI overlaps itself or a fixed site control'],
   ]
     .map(([k, v, s]) => `<div class="tile"><p class="tile-k">${h(k)}</p><p class="tile-v">${h(v)}</p><p class="tile-s">${h(s)}</p></div>`)
     .join('');
   const metaLine = [
     `Fit: ${meta.fit}`,
-    `Viewport: ${meta.viewport.width} × ${meta.viewport.height}`,
-    meta.browser ? `Browser: ${meta.browser}` : null,
+    `Viewport: ${meta.viewport.width} × ${meta.viewport.height}${meta.dpr && meta.dpr !== 1 ? ` @${meta.dpr}x` : ''}`,
+    meta.browser ? `Browser: ${meta.browser}${meta.loadedVia ? ` (extension via ${meta.loadedVia})` : ''}` : null,
     meta.extensionId ? `Extension: ${meta.extensionId}` : 'Extension: not loaded',
     meta.server ? `Server: ${meta.server}` : null,
     `Took ${fmtMs(meta.durationMs)}`,
@@ -248,8 +463,7 @@ export function renderSheet(meta, results, extra = {}) {
   main { max-width: 1440px; margin: 0 auto; padding: 40px 24px 80px; }
   h1 { font-size: 34px; font-weight: 600; letter-spacing: -.4px; margin: 0 0 6px; }
   .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 13px; margin-bottom: 24px; }
-  .tiles { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; margin-bottom: 28px; }
-  @media (max-width: 1000px) { .tiles { grid-template-columns: repeat(3, 1fr); } }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 28px; }
   .tile { background: var(--card); border-radius: 14px; padding: 14px 16px; }
   .tile p { margin: 0; }
   .tile-k { font-size: 12px; color: var(--muted); }
@@ -270,10 +484,19 @@ export function renderSheet(meta, results, extra = {}) {
   .chip.good { border-color: #BFE3C4; background: #F1FAF2; } .chip.good .chip-v { color: var(--good); }
   .chip.warn { border-color: #F0D97A; background: #FFFBEB; } .chip.warn .chip-v { color: var(--warn); }
   .chip.bad { border-color: #F5C2BD; background: #FEF3F2; } .chip.bad .chip-v { color: var(--bad); }
-  .shots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-  @media (max-width: 1000px) { .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .shots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 1200px) { .shots { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 800px) { .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .shot { margin: 0; }
+  .shot-frame { position: relative; display: block; }
   .shot img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--line); background: #fafafa; }
+  .marks { position: absolute; inset: 1px; pointer-events: none; overflow: hidden; border-radius: 8px; }
+  .ovl { position: absolute; border: 2px solid #E5484D; background: rgba(229, 72, 77, .08); border-radius: 3px; }
+  .ovl-positioned { border-color: #F5A524; background: rgba(245, 165, 36, .08); }
+  .ovl-spill { border-color: #8E4EC6; background: none; border-style: dashed; }
+  .colline { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px dashed rgba(0, 113, 227, .7); }
+  body.no-marks .marks { display: none; }
+  .marks-toggle { font-size: 13px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; margin: -12px 0 20px; }
   .shot a:hover img { border-color: var(--blue); }
   .shot figcaption { margin-top: 6px; font-size: 12px; font-weight: 600; display: flex; flex-direction: column; }
   .shot-note { font-weight: 400; color: var(--muted); }
@@ -319,10 +542,11 @@ export function renderSheet(meta, results, extra = {}) {
   <h1>WebAble eval · ${h(meta.run)}</h1>
   <div class="meta">${metaLine}</div>
   ${tiles ? `<section class="tiles" aria-label="Totals">${tiles}</section>` : ''}
+  ${results.length ? '<label class="marks-toggle"><input type="checkbox" checked onchange="document.body.classList.toggle(\'no-marks\', !this.checked)"> Mark overlapping text (red: in flow, amber: positioned boxes), text out of its box (purple) and the column edges (blue) on the screenshots</label>' : ''}
   <nav class="toc" aria-label="Sections">${extra.fitting ? '<a href="#fitting">Fitting flow</a>' : ''}${extra.interact ? '<a href="#interact">Interactions</a>' : ''}${results.map((r) => `<a href="#${h(r.slug)}">${h(r.name)}</a>`).join('')}</nav>
   ${interactSection(extra.interact)}
   ${fittingSection(extra.fitting)}
-  ${results.map(siteCard).join('\n')}
+  ${results.map((r) => siteCard(r, meta)).join('\n')}
 </main>
 </body>
 </html>

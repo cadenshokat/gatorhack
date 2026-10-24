@@ -96,7 +96,22 @@ export async function requestExplain(text: string, pageKind: string, sensitive: 
     throw err;
   }
   if (!isExplainResult(res)) throw new ExplainError('no_answer');
-  return restoreExplainResult(res, passage, redacted);
+  return restoreFromAnswer(res, passage, redacted);
+}
+
+/**
+ * Put personal details back, aligning the original with the text the model actually saw. The server redacts once
+ * more and says what it sent (`passage`); a second pass can replace words the first one kept ("Florida's" became
+ * "[name]'s"), so aligning with our own redaction alone would leave those placeholders on screen. Falls back to our
+ * own redaction when the server's text cannot be aligned. Pure.
+ */
+export function restoreFromAnswer(res: ExplainResult, original: string, redacted: string): ExplainResult {
+  const sent = (res as ExplainResult & { passage?: unknown }).passage;
+  if (typeof sent === 'string' && sent && sent !== redacted) {
+    const spans = alignRedaction(original, sent);
+    if (spans && spans.length) return restoreExplainResult(res, original, sent);
+  }
+  return restoreExplainResult(res, original, redacted);
 }
 
 /* ------------------------------------------------------------------ */
@@ -139,12 +154,21 @@ function plausible(token: string, value: string): boolean {
   return true;
 }
 
+/** Curly quotes and apostrophes to straight ones (one character for one). */
+function foldQuotes(s: string): string {
+  return s.replace(/[‘’‚‛ʼ′]/g, "'").replace(/[“”„‟″]/g, '"');
+}
+
 /**
  * Map each placeholder in `redacted` back to the text it replaced in `original`, or null when the two cannot be
  * aligned with certainty (then nothing is restored). Pure.
  */
-export function alignRedaction(original: string, redacted: string): RedactionSpan[] | null {
-  if (original === redacted) return [];
+export function alignRedaction(originalText: string, redactedText: string): RedactionSpan[] | null {
+  if (originalText === redactedText) return [];
+  // Curly and straight quotes compare equal (redaction may write "[name]'s" for "Florida’s"). The fold maps one
+  // character to one, so positions in the folded original are positions in the real one.
+  const original = foldQuotes(originalText);
+  const redacted = foldQuotes(redactedText);
   const toks: Array<{ token: string; at: number }> = [];
   const lits: string[] = [];
   let last = 0;
@@ -173,7 +197,7 @@ export function alignRedaction(original: string, redacted: string): RedactionSpa
       end = original.indexOf(lit, pos + 1);
     }
     if (end <= pos) return null;
-    const value = original.slice(pos, end);
+    const value = originalText.slice(pos, end);
     if (!plausible(tk.token, value)) return null;
     spans.push({
       token: tk.token,

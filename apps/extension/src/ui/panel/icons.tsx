@@ -3,13 +3,17 @@ import type { JSX } from 'preact';
 
 type IconProps = { size?: number; class?: string };
 
+// Sizes are design pixels: `--u` is one design pixel (1px inside the zoomed chrome layer, scale ÷ page zoom in the
+// layers that are not zoomed), so icons keep their physical size at any page zoom like the text beside them.
 function Svg(props: IconProps & { children: JSX.Element | JSX.Element[] }) {
   const s = props.size ?? 16;
+  const len = `calc(${s} * var(--u, 1px))`;
   return (
     <svg
       class={props.class}
       width={s}
       height={s}
+      style={{ width: len, height: len }}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

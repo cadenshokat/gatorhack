@@ -7,7 +7,6 @@
 // against the cached rects.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { EngineApi, EngineState } from '../../contracts';
-import { ask } from '../../engine/bus';
 import { fmtCost, fmtCount, fmtMs, fmtTokens, jevTotals } from '../panel/format';
 import { Card } from './Card';
 import { CLASS_WEIGHT, lensItems, mergedChip, type LensClass, type LensItem } from './display';
@@ -15,6 +14,7 @@ import { ClassIcon, IChevronRight, IClose, IDiamond, IRule } from './icons';
 import { cellRegions, chipBudget, placeChips, rectsPath, type ChipPlan, type PlaceItem, type Rect } from './place';
 import { compareRule, plainRule } from './rule';
 import { Sheet, type RowStatus } from './Sheet';
+import { usePageZoom } from '../zoom';
 import type { TodayMeter } from './today';
 
 interface Props {
@@ -49,37 +49,6 @@ const RULE_WEIGHT = 5.5;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const f2 = (p: number) => clamp(p, 0, 1).toFixed(2);
-
-function useZoom(): number {
-  const [z, setZ] = useState(1);
-  useEffect(() => {
-    let alive = true;
-    let t = 0;
-    const read = () => {
-      let p: Promise<unknown>;
-      try {
-        p = ask<unknown>({ type: 'getZoom' }, 2500);
-      } catch {
-        return;
-      }
-      p.then((v) => {
-        if (alive && typeof v === 'number' && Number.isFinite(v) && v > 0.2 && v < 6) setZ(v);
-      }).catch(() => {});
-    };
-    read();
-    const onResize = () => {
-      window.clearTimeout(t);
-      t = window.setTimeout(read, 200);
-    };
-    window.addEventListener('resize', onResize, { passive: true });
-    return () => {
-      alive = false;
-      window.clearTimeout(t);
-      window.removeEventListener('resize', onResize);
-    };
-  }, []);
-  return z;
-}
 
 /** A number that counts up (600 ms, ease-out) to its target: from 0 on entry (`key`), from where it was on updates. */
 function useCount(target: number, key: number, reduce: boolean): number {
@@ -164,7 +133,8 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const answered = s.decisions.length > 0;
   const asking = !answered && Boolean(s.digest) && (s.phase === 'reading' || s.phase === 'tailored');
-  const zoom = useZoom();
+  // The same page-zoom reading as the rest of our UI (the engine's, confirmed with the tab's).
+  const zoom = usePageZoom(api);
   const bodyPx = s.fit?.text?.override ?? s.fit?.text?.bodyPx ?? 16;
   // One design pixel in CSS px: chips keep their physical size at any tab zoom, a little larger for large text.
   const scale = clamp(bodyPx / 18, 1, 1.25) / (zoom > 0 ? zoom : 1);
@@ -365,8 +335,13 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
     const ruleRect: Rect | null = L.ruleOn && L.rule.mainId && status.get(L.rule.mainId) !== 'hidden' ? rects.get(L.rule.mainId) ?? null : null;
     const chrome: Rect[] = [];
     const host = rootRef.current;
-    for (const ch of Array.from(host?.parentElement?.children ?? [])) {
-      if (ch === host || ch.classList.contains('wa-sr')) continue;
+    // The rest of our chrome lives in the zoomed chrome layer (pill, panel, offers, chips, the cookie bar): each part
+    // is marked data-wa-chrome. Its rects come back in page CSS px like everything here. Siblings in our own layer
+    // (the Explain card) count too.
+    const scope = host?.getRootNode();
+    const marked = scope && 'querySelectorAll' in scope ? Array.from((scope as ShadowRoot).querySelectorAll('[data-wa-chrome]')) : [];
+    for (const ch of [...marked, ...Array.from(host?.parentElement?.children ?? [])]) {
+      if (ch === host || ch.classList.contains('wa-sr') || ch.contains(host ?? null)) continue;
       const b = ch.getBoundingClientRect();
       if (b.width < 2 || b.height < 2 || b.width * b.height > vw * vh * 0.5) continue;
       chrome.push({ x: b.left, y: b.top, w: b.width, h: b.height });

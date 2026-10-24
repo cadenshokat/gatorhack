@@ -54,6 +54,7 @@ export function defaultFit(): FitProfile {
     // Population priors until the person's own baselines exist (live signals compare with these).
     baselines: { searchSecMedian: null, slipRate: 0.02, repeatRate: 0.01, missRate: 0.04 },
     calibration: { version: 'default', durationSec: 0, skipped: [] },
+    layout: { column: 'auto' },
   };
 }
 
@@ -91,7 +92,8 @@ function demoReader(): FitProfile {
     contrast: { band: 'S', floor: 15 },
     polarity: { value: 'none', stated: null },
     weight: { floor: 600 },
-    spacing: { lineHeight: 1.8, wordEm: 0.16, letterEm: 0 },
+    // Word and letter spacing stay at the site's own (0 added) unless a future explicit setting asks for them.
+    spacing: { lineHeight: 1.8, wordEm: 0, letterEm: 0 },
     measure: { targetCpl: 66, maxCpl: 75, minCpl: 13 },
     targets: { minPx: 44, conf: 0.55 },
     clicks: { steady: { on: false, windowMs: 300, radiusPx: 9 }, debounce: false },
@@ -455,9 +457,11 @@ export function deriveFit(raw: FittingRaw): FitProfile {
   }
   const floor = band === 'S' ? 15 : band === 'M' ? 7 : 4.5;
   const weightFloor = band === 'S' ? 600 : band === 'M' ? 500 : 400;
+  // Word and letter spacing are never added by default: stretched word gaps broke real pages (round 3), and the
+  // evidence for them is a subset benefit only (research-fitting §8.3). Only a future explicit setting sets them.
   const spacing = {
     lineHeight: band === 'S' || text.largePrint ? 1.8 : band === 'M' ? 1.6 : 1.5,
-    wordEm: band === 'S' || text.largePrint ? 0.16 : 0,
+    wordEm: 0,
     letterEm: 0,
   };
 
@@ -505,6 +509,7 @@ export function deriveFit(raw: FittingRaw): FitProfile {
       missRate: r2(missRate ?? base.baselines.missRate),
     },
     calibration: { version: FIT_VERSION, durationSec: Math.max(0, Math.round(raw.durationSec ?? 0)), skipped },
+    layout: { column: 'auto' },
   };
 }
 

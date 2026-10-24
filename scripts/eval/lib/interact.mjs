@@ -5,7 +5,7 @@
 // against either build. Never presses anything on a real site that could submit or buy: use it on demo pages.
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { shoot, sleep, slug } from './common.mjs';
+import { baseDpr, shoot, sleep, slug } from './common.mjs';
 import { health as fetchHealth } from './server.mjs';
 import { mainLabelFrom, measureView, summarizeCalm } from './firstscreen.mjs';
 import { calmFacts, clickRect, pressKey, uiClick, uiFind, uiProbe, waitUi } from './ui.mjs';
@@ -46,7 +46,8 @@ export async function runInteract({ context, runDir, site, ext, health = null, s
     return s;
   };
   const check = (name, ok, detail = '') => ({ name, ok: ok === null ? null : !!ok, detail });
-  const dpr = () => page.evaluate(() => devicePixelRatio).catch(() => 1);
+  /** Page zoom (devicePixelRatio ÷ the run's --dpr). */
+  const dpr = () => page.evaluate(() => devicePixelRatio).then((d) => d / baseDpr()).catch(() => 1);
   const fittedMarks = () =>
     page
       .evaluate(() => ({
@@ -517,7 +518,7 @@ export async function runInteract({ context, runDir, site, ext, health = null, s
       const back = await backOk();
       await step('Back to fitted', {
         facts: { ...back.m, calm: back.calm },
-        checks: [check('Fit comes back', back.ok, `${back.calm ? 'Calm view again · ' : ''}zoom ${back.m.dpr}, ${back.m.marks} marks`)],
+        checks: [check('Fit comes back', back.ok, `${back.calm ? 'Calm view again · ' : ''}zoom ${back.m.dpr / baseDpr()}, ${back.m.marks} marks`)],
       });
     }
   } catch (e) {

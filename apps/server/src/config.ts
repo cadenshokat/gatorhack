@@ -35,7 +35,10 @@ export const AI_BLOCK_MS = num('AI_BLOCK_MS', 10 * 60_000);
 export const AI_PROBE_MODEL = process.env.AI_PROBE_MODEL ?? 'gpt-6-luna';
 export const DEEP_CACHE_TTL_MS = num('DEEP_CACHE_TTL_MS', 6 * 60 * 60_000);
 export const REDESIGN_CACHE_TTL_MS = num('REDESIGN_CACHE_TTL_MS', 30 * 60_000);
-/** Hard stop for generative spend in one server process; past it, layouts fall back to the heuristic. */
+/**
+ * Daily cap on generative spend (OpenAI), per local calendar day. Past it, AI is off until midnight: layouts are
+ * judged from the local candidates and Explain says it cannot write a plain version. Jev spend is not counted here.
+ */
 export const OPENAI_BUDGET_USD = num('OPENAI_BUDGET_USD', 5);
 /** 'priority' is OpenAI's Fast tier (measured 3.4 s vs 5.0 s p50 for gpt-6-sol). */
 export const OPENAI_SERVICE_TIER: 'priority' | 'default' = process.env.OPENAI_SERVICE_TIER === 'default' ? 'default' : 'priority';

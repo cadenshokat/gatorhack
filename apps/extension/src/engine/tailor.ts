@@ -1,20 +1,19 @@
-// Owner: C1. Page-level ops from the fit, and element ops from Jev's decisions.
+// Owner: C1, round 3: T. Page-level ops from the fit, and element ops from Jev's decisions.
 //
-// Rules (research-fitting §8, research-engineering §9):
+// Rules (research-fitting §8, research-engineering §9, round 3):
 //  - every op is a named function with bounded parameters, an id and a revert;
 //  - style goes through constructed stylesheets in document.adoptedStyleSheets plus data-wa-* tokens on elements;
 //    all reads happen before all writes;
-//  - text grows with tab zoom first (never lowering the person's own zoom), then one monotone map applied per
-//    computed size bucket (never per-element floors);
+//  - zoom carries size; CSS carries structure: text grows with tab zoom only (never lowering the person's own zoom),
+//    so the site's own heading ratios hold; no per-element font-size changes except raising weak headings to a
+//    minimum ramp; line spacing only where the site's line-height is relative; long lines are held to a page column;
 //  - nothing is hidden, nothing moves (except unpinning a tall sticky header), ARIA, names, focus order and keyboard
 //    handling are never touched, and no url() appears in any CSS.
 
-import {
-  CHROME_ZOOM_PRESETS, contrastRatio, liftToRatio, mapFontSize, parseColor, planTextScale,
-} from '@webable/core';
-import type { FitProfile, LedgerEntry, OpKind, OpRecord } from '@webable/core';
+import { contrastRatio, liftToRatio, parseColor, planHeadingScale, planPageZoom } from '@webable/core';
+import type { FitProfile, HeadingSample, LedgerEntry, OpKind, OpRecord, ZoomPlan } from '@webable/core';
 import type { ReadResult, TextSample } from './reader';
-import { collapse, parseRgb, ratio as wcagRatio, visibleTextOf } from './reader';
+import { parseRgb, ratio as wcagRatio, visibleTextOf } from './reader';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -47,6 +46,12 @@ export interface Op {
   undo?(): void | Promise<void>;
 }
 
+/** The column op: an Op that can follow zoom and window changes. */
+export interface ColumnOp extends Op {
+  spec: ColumnSpec;
+  setWidth(widthPx: number, zoom: number): void;
+}
+
 export interface TailorHost {
   ask<T>(req: import('@webable/core').BgRequest): Promise<T>;
   zoomInfo(): Promise<{ factor: number; personChanged: boolean }>;
@@ -54,17 +59,25 @@ export interface TailorHost {
   idOf(el: Element): string;
   /** Called by behaviour ops (debounce, steady clicks) when they act, for the ledger detail. */
   onBehaviour?(kind: 'steady' | 'debounce'): void;
+  /** Called after a zoom op set the tab's zoom (state.pageZoom). */
+  onZoom?(factor: number): void;
+  /** The window's width in screen px (CSS px × the tab's zoom). */
+  screenWidth?(): number;
+  /**
+   * Draw the page column at scale k (1 = no column): the tab's zoom becomes the text zoom ÷ k. Resolves, after the
+   * resize, with the k in effect (Chrome's zoom stops at 500%).
+   */
+  columnScale?(k: number): Promise<number>;
 }
 
-export interface TextPlan {
-  ownZoom: number;
-  zoom: number; // the zoom WebAble will use (>= own)
-  residual: number;
-  exponent: number;
-  pageBodyPx: number;
-  targetBodyPx: number; // CSS px of body text after the residual map
-  effectiveBodyPx: number; // what the person sees, in px at 100%
-  wasBodyPx: number;
+/** The page column the column op holds the page to. */
+export interface ColumnSpec {
+  /** Width in screen px (CSS px at 100% zoom). */
+  widthPx: number;
+  /** The zoom the CSS width was computed for. */
+  zoom: number;
+  /** 'auto' follows the fit; 'person' is a width the person chose. */
+  mode: 'auto' | 'person';
 }
 
 /* ------------------------------------------------------------------ */
@@ -186,44 +199,8 @@ function record(kind: OpKind, scope: OpRecord['scope'], targets: Element[], reas
 }
 
 /* ------------------------------------------------------------------ */
-/* Fallback maths (used only if the core module is unavailable)        */
+/* Colour helpers (core first, a local fallback if it is unavailable)  */
 /* ------------------------------------------------------------------ */
-
-const ZOOM_STEPS = [1.1, 1.25, 1.5, 1.75, 2];
-
-function snapDown(z: number): number {
-  let best = 1;
-  for (const p of ZOOM_STEPS) if (p <= z + 1e-6) best = p;
-  return best;
-}
-
-function expOf(k: number): number {
-  return Math.min(1, Math.max(0.2, 1 - 0.48 * Math.log2(Math.max(k, 1))));
-}
-
-function localPlan(fit: FitProfile, b: number): { zoom: number; residual: number; exponent: number; targetBodyPx: number } {
-  const F = fit.text.override ?? fit.text.bodyPx;
-  const k = F / Math.max(b, 1);
-  const zoom = k > 1.15 ? snapDown(Math.min(k, 2)) : 1;
-  const residual = Math.max(1, k / zoom);
-  return { zoom, residual, exponent: expOf(residual), targetBodyPx: b * residual };
-}
-
-function localMap(s: number, b: number, F: number, e: number): number {
-  const k = F / Math.max(b, 1);
-  const out = s >= b ? F * (s / b) ** e : Math.min(F, s * k);
-  return Math.max(s, out);
-}
-
-function safeMap(s: number, b: number, F: number, e: number): number {
-  try {
-    const v = mapFontSize(s, b, F, e);
-    if (Number.isFinite(v) && v > 0) return Math.max(s, v);
-  } catch {
-    /* fall through */
-  }
-  return localMap(s, b, F, e);
-}
 
 function rgbaOf(css: string): { r: number; g: number; b: number; a: number } | null {
   const local = parseRgb(css);
@@ -459,10 +436,13 @@ function planPads(
       }
     }
   };
+  // Sizes in the page's own CSS px: the page column draws the body at a CSS zoom, and hit areas are set in its units.
+  const zb = (document.body as (HTMLElement & { currentCSSZoom?: number }) | null)?.currentCSSZoom;
+  const u = typeof zb === 'number' && zb > 0 && Number.isFinite(zb) ? zb : 1;
   for (const el of neighbours) {
     const r = el.getBoundingClientRect();
     if (r.width <= 0 || r.height <= 0) continue;
-    const b = { l: r.left + scrollX, t: r.top + scrollY, r: r.right + scrollX, b: r.bottom + scrollY, el };
+    const b = { l: (r.left + scrollX) / u, t: (r.top + scrollY) / u, r: (r.right + scrollX) / u, b: (r.bottom + scrollY) / u, el };
     boxes.push(b);
     put(b);
   }
@@ -470,10 +450,10 @@ function planPads(
   for (const el of targets) {
     const r = el.getBoundingClientRect();
     if (r.width <= 0 || r.height <= 0) continue;
-    if (Math.min(r.width, r.height) >= T) continue;
+    if (Math.min(r.width, r.height) / u >= T) continue;
     const ex = canExpand(el);
     if (!ex.ok) continue;
-    const me = { l: r.left + scrollX, t: r.top + scrollY, r: r.right + scrollX, b: r.bottom + scrollY };
+    const me = { l: (r.left + scrollX) / u, t: (r.top + scrollY) / u, r: (r.right + scrollX) / u, b: (r.bottom + scrollY) / u };
     const reach = T / 2 + 24;
     let gapX = Infinity;
     let gapY = Infinity;
@@ -505,8 +485,8 @@ function planPads(
     const want = (side: number) => Math.max(0, (T - side) / 2);
     const cap = (gap: number) => (gap === Infinity ? 24 : Math.max(0, Math.floor(gap / 2) - 1));
     const even = (v: number) => Math.max(0, Math.min(24, Math.floor(v / 2) * 2));
-    const padX = even(Math.min(want(r.width), cap(gapX), 24));
-    const padY = even(Math.min(want(r.height), cap(gapY), 24));
+    const padX = even(Math.min(want(r.width / u), cap(gapX), 24));
+    const padY = even(Math.min(want(r.height / u), cap(gapY), 24));
     if (padX === 0 && padY === 0) continue;
     out.push({ el, padX, padY, needsPosition: ex.needsPosition });
   }
@@ -542,63 +522,53 @@ export class Tailor {
     this.host = host;
   }
 
-  /* ---------------- text plan and zoom ---------------- */
+  /* ---------------- page zoom ---------------- */
 
-  /** `currentZoom` is the tab's zoom right now (innerWidth is measured at it); `ownZoom` is the person's own. */
-  planText(fit: FitProfile, pageBodyPx: number, ownZoom: number, personChanged: boolean, currentZoom: number = ownZoom): TextPlan {
-    let base: { zoom: number; residual: number; exponent: number; targetBodyPx: number };
+  /**
+   * The zoom for this page: core planPageZoom (smallest Chrome preset that brings body text to the person's size,
+   * capped at 200% / 250%), plus the person's own A−/A+ steps on this site. When the person changed the zoom
+   * themselves after WebAble set it, their choice wins.
+   */
+  planZoom(fit: FitProfile, pageBodyPx: number, ownZoom: number, personChanged: boolean, step = 0): ZoomPlan {
+    let plan: ZoomPlan;
     try {
-      base = planTextScale(fit, pageBodyPx);
-      if (![base.zoom, base.residual, base.exponent, base.targetBodyPx].every((v) => Number.isFinite(v) && v > 0)) {
-        base = localPlan(fit, pageBodyPx);
-      }
+      plan = planPageZoom(fit, pageBodyPx, { ownZoom, step });
     } catch {
-      base = localPlan(fit, pageBodyPx);
+      plan = {
+        zoom: ownZoom, fitZoom: ownZoom, ownZoom, cap: 2, capped: false, step: 0, bodyPx: pageBodyPx,
+        targetPx: fit.text.override ?? fit.text.bodyPx, effectiveBodyPx: Math.round(pageBodyPx * ownZoom * 10) / 10, shortPx: 0,
+      };
     }
-    const total = Math.max(1, base.zoom * base.residual);
-    // Keep the desktop layout: zMax = clamp(width at 100% / 800, 1, 2).
-    const widthAt100 = (document.documentElement.clientWidth || innerWidth) * currentZoom;
-    const zMax = Math.min(2, Math.max(1, widthAt100 / 800));
-    let zoom = Math.min(base.zoom, snapDown(zMax) >= 1.1 ? snapDown(zMax) : 1);
-    if (!isPreset(zoom)) zoom = snapDown(zoom);
-    // Never lower the person's own zoom; when they changed it themselves, their choice wins.
-    if (personChanged || zoom <= ownZoom + 0.005) zoom = ownZoom;
-    const residual = Math.max(1, total / zoom);
-    const exponent = residual === base.residual ? base.exponent : expOf(residual);
-    const targetBodyPx = pageBodyPx * residual;
-    return {
-      ownZoom,
-      zoom,
-      residual,
-      exponent,
-      pageBodyPx,
-      targetBodyPx,
-      effectiveBodyPx: Math.round(targetBodyPx * zoom * 10) / 10,
-      wasBodyPx: Math.round(pageBodyPx * ownZoom * 10) / 10,
-    };
+    if (personChanged && !step) {
+      plan = { ...plan, zoom: ownZoom, effectiveBodyPx: Math.round(pageBodyPx * ownZoom * 10) / 10 };
+    }
+    return plan;
   }
 
-  zoomOp(plan: TextPlan): Op | null {
-    if (plan.zoom <= plan.ownZoom + 0.005) return null;
+  zoomOp(plan: ZoomPlan, fromZoom: number = plan.ownZoom): Op | null {
+    if (Math.abs(plan.zoom - fromZoom) < 0.005) return null;
     const host = this.host;
+    const shown = Math.round(plan.bodyPx * plan.zoom);
     const op: Op = {
-      rec: record('page_zoom', 'page', [], `zoom ${pct(plan.zoom)} (own ${pct(plan.ownZoom)}) for body ${plan.pageBodyPx} px`, host.idOf),
+      rec: record('page_zoom', 'page', [], `zoom ${pct(plan.zoom)} (own ${pct(plan.ownZoom)}) for body ${plan.bodyPx} px, target ${plan.targetPx} px${plan.step ? `, ${plan.step > 0 ? '+' : ''}${plan.step} step` : ''}`, host.idOf),
       elements: [],
       risk: 1,
       active: false,
       persistent: true,
-      source: 'fit',
-      title: `Zoomed this page to ${pct(plan.zoom)} (was ${pct(plan.ownZoom)})`,
-      detail: 'Page zoom grows text, buttons and images together, so the layout keeps its proportions.',
+      source: plan.step ? 'person' : 'fit',
+      title: `Zoomed this page to ${pct(plan.zoom)} (was ${pct(fromZoom)})`,
+      detail: `Body text is ${shown} px here${plan.step ? '' : ` (your size is ${Math.round(plan.targetPx)} px)`}. Zoom grows text, headings, buttons and images together, so the page keeps its own proportions.`,
       async apply() {
         await host.ask<number>({ type: 'setZoom', factor: plan.zoom });
         op.active = true;
+        host.onZoom?.(plan.zoom);
       },
       async revert() {
         op.active = false;
         const info = await host.zoomInfo().catch(() => ({ factor: plan.zoom, personChanged: false }));
         if (info.personChanged) return; // the person's own choice wins
-        await host.ask<number>({ type: 'setZoom', factor: plan.ownZoom });
+        await host.ask<number>({ type: 'setZoom', factor: fromZoom });
+        host.onZoom?.(fromZoom);
       },
     };
     return op;
@@ -606,14 +576,16 @@ export class Tailor {
 
   /* ---------------- batch 1: fit ops (reads only; nothing applied here) ---------------- */
 
-  planFitOps(fit: FitProfile, read: ReadResult, plan: TextPlan): Op[] {
+  /**
+   * `column`: the page is held to a column, which keeps line length page-wide; the per-paragraph measure op then stays
+   * off (it limits some paragraphs and skips others in flex or grid boxes, which gives a ragged, uneven edge).
+   */
+  planFitOps(fit: FitProfile, read: ReadResult, opts: { column?: boolean } = {}): Op[] {
     const ops: Op[] = [];
     const live = read.texts.filter((t) => t.el.isConnected);
-    const tm = this.textMapOp(live, plan);
-    if (tm) ops.push(tm);
     const sp = this.spacingOp(fit, live);
     if (sp) ops.push(sp);
-    const ms = this.measureOp(fit, live, tm ? plan : null);
+    const ms = opts.column ? null : this.measureOp(fit, live);
     if (ms) ops.push(ms);
     const wt = this.weightOp(fit, live);
     if (wt) ops.push(wt);
@@ -633,94 +605,11 @@ export class Tailor {
     return ops;
   }
 
-  /** text_map: residual scale through mapFontSize, per computed size bucket, in the main region only. */
-  textMapOp(texts: TextSample[], plan: TextPlan): Op | null {
-    if (plan.residual <= 1.02) return null;
-    const b = plan.pageBodyPx;
-    const F = plan.targetBodyPx;
-    const e = plan.exponent;
-    const samples = texts.filter((t) => t.inMain && !t.iconFont);
-    if (!samples.length) return null;
-    // A single-line box that cuts its text with an ellipsis (or nowrap) is pinned at its own size, unless every box
-    // of that kind has room for the larger text right now: pinning it while smaller text grows would swap their order.
-    const mapped = (t: TextSample): number => {
-      const s0 = Math.round(t.fontPx * 2) / 2;
-      return Math.max(s0, Math.round(safeMap(s0, b, F, e) * 2) / 2);
-    };
-    const roomToGrow = (t: TextSample): boolean => {
-      const el = t.el as HTMLElement;
-      const cs = getComputedStyle(el);
-      const clamp = cs.getPropertyValue('-webkit-line-clamp');
-      if ((clamp && clamp !== 'none') || cs.position === 'absolute') return false;
-      if (!(cs.textOverflow === 'ellipsis' || cs.whiteSpace === 'nowrap')) return false;
-      if (el.scrollHeight > el.clientHeight + 1 || el.clientWidth <= 0) return false;
-      const ratio = mapped(t) / Math.max(1, t.fontPx);
-      return el.scrollWidth * ratio <= el.clientWidth - 2;
-    };
-    const riskySigs = new Set<string>();
-    const bySig = new Map<string, TextSample[]>();
-    for (const t of samples) if (t.clipRisk) bySig.set(t.sig, [...(bySig.get(t.sig) ?? []), t]);
-    for (const [sig, ts] of bySig) if (!ts.every(roomToGrow)) riskySigs.add(sig);
-    // Text that stays at its own size must not be overtaken by text that was clearly smaller (the hierarchy
-    // check's rule): smaller sizes grow at most up to the pinned size. The cap rises with size, so the map stays
-    // monotone and nothing shrinks.
-    const pinned = [...new Set(samples.filter((t) => riskySigs.has(t.sig)).map((t) => Math.round(t.fontPx * 2) / 2))].sort((x, y) => x - y);
-    const capFor = (sz: number): number => pinned.find((p) => sz * 1.05 < p) ?? Infinity;
-    const buckets = new Map<string, { px: number; idx: number }>();
-    const writes: Array<[Element, string, string]> = [];
-    const lh: Element[] = [];
-    let grown = 0;
-    for (const t of samples) {
-      const s = Math.round(t.fontPx * 2) / 2;
-      const keep = riskySigs.has(t.sig);
-      let px: number;
-      if (keep) px = s; // pinned at its own size so inherited growth cannot reach it
-      else {
-        // One monotone map for every size (s >= b: F'(s/b)^e; s < b: min(F', s k)), so no two texts swap order.
-        px = Math.max(s, Math.min(capFor(s), Math.round(safeMap(s, b, F, e) * 2) / 2));
-      }
-      const key = `${s}|${px}`;
-      let bucket = buckets.get(key);
-      if (!bucket) {
-        bucket = { px, idx: buckets.size };
-        buckets.set(key, bucket);
-      }
-      writes.push([t.el, 'data-wa-tm', String(bucket.idx)]);
-      if (px > s + 0.25) grown++;
-      if (!keep && t.lineHeightPx !== null && t.lineHeightPx < 1.2 * px) lh.push(t.el);
-    }
-    if (!grown) return null;
-    const rules: string[] = [];
-    for (const { px, idx } of buckets.values()) rules.push(`${sel('data-wa-tm', String(idx))} { font-size: ${px}px !important; }`);
-    rules.push(`${sel('data-wa-lh')} { line-height: 1.35 !important; }`);
-    const layer = this.sheets;
-    const sheet = layer.make(rules.join('\n'));
-    const els = writes.map((w) => w[0]);
-    const op: Op = {
-      rec: record('text_map', 'page', els, `residual ${plan.residual.toFixed(2)}, exponent ${plan.exponent.toFixed(2)}, ${buckets.size} size buckets`, this.host.idOf),
-      elements: els,
-      risk: 9,
-      active: false,
-      persistent: false,
-      source: 'fit',
-      title: `Text is ${round1(plan.effectiveBodyPx)} px here (was ${round1(plan.wasBodyPx)} px)`,
-      detail: `Main text grew by one smooth scale (×${plan.residual.toFixed(2)}${plan.zoom > plan.ownZoom ? ` on top of ${pct(plan.zoom)} zoom` : ''}); headings stay larger than body text.`,
-      apply() {
-        setTokens(writes);
-        setTokens(lh.map((el) => [el, 'data-wa-lh', ''] as [Element, string, string]));
-        layer.attach(sheet);
-        op.active = true;
-      },
-      revert() {
-        layer.detach(sheet);
-        clearTokens(els, ['data-wa-tm', 'data-wa-lh']);
-        op.active = false;
-      },
-    };
-    return op;
-  }
-
-  /** spacing: line height and word spacing on prose in main, never above WCAG 1.4.12 values. */
+  /**
+   * spacing: line height (capped at WCAG 1.4.12's 1.5) on running-text blocks in main whose line-height is relative
+   * (a number) or 'normal'. Fixed px line-heights are never touched: the box around them was sized for them. Word and
+   * letter spacing apply only when the fit explicitly asks (0 by default).
+   */
   spacingOp(fit: FitProfile, texts: TextSample[]): Op | null {
     const L = Math.min(1.5, fit.spacing.lineHeight);
     const W = Math.min(0.16, Math.max(0, fit.spacing.wordEm));
@@ -729,14 +618,19 @@ export class Tailor {
     const riskySigs = new Set(texts.filter((t) => t.clipRisk).map((t) => t.sig));
     const els: Element[] = [];
     const paras: Element[] = [];
+    const seen = new Set<Element>();
     for (const t of texts) {
-      if (!t.inMain || t.control || t.iconFont || riskySigs.has(t.sig)) continue;
+      if (!t.inMain || t.control || t.iconFont || riskySigs.has(t.sig) || t.headingLevel !== null || !t.running) continue;
+      if (seen.has(t.el)) continue;
+      seen.add(t.el);
       const tag = t.el.tagName;
       if (tag === 'PRE' || tag === 'CODE' || tag === 'KBD' || tag === 'SAMP') continue;
-      if (!(t.running || t.headingLevel !== null)) continue;
       if (t.el.closest('nav, button, [role="tab"], [role="tablist"], [role="menu"], [role="navigation"]')) continue;
-      const ratio = t.lineHeightPx !== null ? t.lineHeightPx / t.fontPx : 1.2;
+      const rel = relativeLineHeight(t.el);
+      if (rel === null) continue; // fixed px (or unknown): leave it
+      const ratio = rel === 'normal' ? 1.2 : rel;
       if (ratio >= L - 0.02 && W <= 0 && Lt <= 0) continue;
+      if (!fluidHeight(t.el, 2)) continue;
       els.push(t.el);
       if (tag === 'P') {
         const mb = parseFloat(getComputedStyle(t.el).marginBottom);
@@ -752,14 +646,14 @@ ${sel('data-wa-pg')} { margin-block-end: 1em !important; }`;
     const layer = this.sheets;
     const sheet = layer.make(css);
     const op: Op = {
-      rec: record('spacing', 'page', els, `line height ${L}${W ? `, word ${W}em` : ''}${Lt ? `, letter ${Lt}em` : ''}`, this.host.idOf),
+      rec: record('spacing', 'page', els, `line height ${L} on ${els.length} blocks with relative line height${W ? `, word ${W}em` : ''}${Lt ? `, letter ${Lt}em` : ''}`, this.host.idOf),
       elements: els,
       risk: 8,
       active: false,
       persistent: false,
       source: 'fit',
       title: `Lines in paragraphs are spaced ${L}×${W ? ' with a little more room between words' : ''}`,
-      detail: 'Only paragraphs and headings in the main part of the page; buttons, tabs and menus are left as they are.',
+      detail: 'Only paragraphs in the main part of the page whose spacing can grow; buttons, headings, tabs and menus are left as they are.',
       apply() {
         setTokens(els.map((el) => [el, 'data-wa-sp', ''] as [Element, string, string]));
         setTokens(paras.map((el) => [el, 'data-wa-pg', ''] as [Element, string, string]));
@@ -775,8 +669,302 @@ ${sel('data-wa-pg')} { margin-block-end: 1em !important; }`;
     return op;
   }
 
+  /* ---------------- headings: a minimum ramp where the site's hierarchy is weak ---------------- */
+
+  /**
+   * heading_scale: h1–h3 headings in main whose size is too close to body text are raised to the minimum ramp
+   * (core planHeadingScale: h1 ≥ 1.75×, h2 ≥ 1.4×, h3 ≥ 1.2× body, weight ≥ 600). Zoom keeps the site's ratios, so CSS
+   * px compare directly. Only headings in boxes that grow with their content; never shrinks; a heading that fails a
+   * check is dropped on its own (`drop`), the rest stay.
+   */
+  headingScaleOp(read: ReadResult, bodyPx: number): Op | null {
+    interface Head { el: Element; level: number; texts: TextSample[] }
+    const heads = new Map<Element, Head>();
+    for (const n of read.nodes.values()) {
+      if (n.kind !== 'heading' || !n.inMain || !n.el.isConnected || this.host.isOurUi(n.el)) continue;
+      const level = n.headingLevel ?? 9;
+      if (level > 3) continue;
+      heads.set(n.el, { el: n.el, level, texts: [] });
+    }
+    if (!heads.size) return null;
+    for (const t of read.texts) {
+      if (t.headingLevel === null || !t.el.isConnected) continue;
+      let n: Element | null = t.el;
+      for (let d = 0; n && d < 6; d++, n = n.parentElement) {
+        const h = heads.get(n);
+        if (h) {
+          h.texts.push(t);
+          break;
+        }
+      }
+    }
+    // Sizes as the page sets them now: the page column narrows the window, so the site may have switched to the type
+    // scale it uses at that width since the page was read.
+    const liveCache = new Map<Element, number>();
+    const live = (t: TextSample): number => {
+      let v = liveCache.get(t.el);
+      if (v === undefined) {
+        v = parseFloat(getComputedStyle(t.el).fontSize);
+        if (!(Number.isFinite(v) && v > 0)) v = t.fontPx;
+        liveCache.set(t.el, v);
+      }
+      return v;
+    };
+    // Sizes of text in main set well above body size (other heading levels, lead headlines in spans): a raised
+    // heading stays under the next larger one, so the site's visual order holds (the verifier's hierarchy check).
+    const display = new Set<number>();
+    for (const t of read.texts) {
+      if (!t.inMain || !t.el.isConnected || t.chars < 3) continue;
+      const v = live(t);
+      if (v > bodyPx * 1.2 + 0.25) display.add(Math.round(v * 4) / 4);
+    }
+    const ceilOf = (f: number): number | null => {
+      let c: number | null = null;
+      for (const v of display) if (v > f + 0.25 && (c === null || v < c)) c = v;
+      return c;
+    };
+    const samples: HeadingSample[] = [];
+    const byId = new Map<string, Head>();
+    for (const h of heads.values()) {
+      if (!h.texts.length || h.texts.some((t) => t.clipRisk || t.iconFont)) continue;
+      const sizes = new Map<number, number>();
+      for (const t of h.texts) sizes.set(live(t), (sizes.get(live(t)) ?? 0) + t.chars);
+      const top = [...sizes.entries()].sort((a, b) => b[1] - a[1])[0];
+      if (!top) continue;
+      const fontPx = top[0];
+      const main = h.texts.filter((t) => Math.abs(live(t) - fontPx) < 0.5);
+      const weight = Math.min(...main.map((t) => t.weight));
+      const chars = h.texts.reduce((a, t) => a + t.chars, 0);
+      if (!headingFluid(h.el, main.map((t) => t.el))) continue;
+      const id = this.host.idOf(h.el);
+      byId.set(id, h);
+      samples.push({ id, level: h.level, fontPx, weight, chars, ceilPx: ceilOf(fontPx) });
+    }
+    let changes: ReturnType<typeof planHeadingScale> = [];
+    try {
+      changes = planHeadingScale(samples, bodyPx);
+    } catch {
+      changes = [];
+    }
+    if (!changes.length) return null;
+    const buckets = new Map<string, number>();
+    const rules: string[] = [];
+    const writes: Array<[Element, string, string]> = [];
+    const groups = new Map<Element, Element[]>();
+    for (const c of changes) {
+      const h = byId.get(c.id);
+      if (!h) continue;
+      const group: Element[] = [];
+      const targets = h.texts.filter((t) => Math.abs(live(t) - c.fromPx) < 0.5);
+      const els = new Map<Element, TextSample | null>(targets.map((t) => [t.el, t] as const));
+      // The heading element itself too, so text inherited from it grows with it.
+      if (!els.has(h.el) && Math.abs(parseFloat(getComputedStyle(h.el).fontSize) - c.fromPx) < 0.5) els.set(h.el, null);
+      for (const [el, t] of els) {
+        const lhPx = t ? t.lineHeightPx : (() => { const v = parseFloat(getComputedStyle(el).lineHeight); return Number.isFinite(v) ? v : null; })();
+        const fixLh = relativeLineHeight(el) === null && lhPx !== null && lhPx < 1.15 * c.toPx;
+        const key = `${c.toPx}|${c.weight ?? ''}|${fixLh ? 1 : 0}`;
+        let idx = buckets.get(key);
+        if (idx === undefined) {
+          idx = buckets.size;
+          buckets.set(key, idx);
+          const decl = [`font-size: ${c.toPx}px !important;`];
+          if (c.weight) decl.push(`font-weight: ${c.weight} !important;`);
+          if (fixLh) decl.push('line-height: 1.2 !important;');
+          rules.push(`${sel('data-wa-hs', String(idx))} { ${decl.join(' ')} }`);
+        }
+        writes.push([el, 'data-wa-hs', String(idx)]);
+        group.push(el);
+      }
+      for (const el of group) groups.set(el, group);
+    }
+    if (!writes.length) return null;
+    const layer = this.sheets;
+    const sheet = layer.make(rules.join('\n'));
+    const els = writes.map((w) => w[0]);
+    const levels = [...new Set(changes.map((c) => c.level))].sort();
+    const op: Op = {
+      rec: record('heading_scale', 'page', els, `${changes.length} headings raised against body ${bodyPx} px (levels ${levels.join(', ')})`, this.host.idOf),
+      elements: els,
+      risk: 9,
+      active: false,
+      persistent: false,
+      source: 'fit',
+      title: `Made ${changes.length} heading${changes.length === 1 ? '' : 's'} larger so ${changes.length === 1 ? 'it stands' : 'they stand'} out from the text`,
+      detail: 'Page titles are at least 1.75×, section headings 1.4× and smaller headings 1.2× the size of body text, in semibold. Headings that already stood out were left as they are.',
+      apply() {
+        setTokens(writes.filter(([el]) => op.elements.includes(el)));
+        layer.attach(sheet);
+        op.active = true;
+      },
+      revert() {
+        layer.detach(sheet);
+        clearTokens(els, ['data-wa-hs']);
+        op.active = false;
+      },
+      drop(el: Element) {
+        const group = groups.get(el) ?? [el];
+        clearTokens(group, ['data-wa-hs']);
+        op.elements = op.elements.filter((x) => !group.includes(x));
+        if (!op.elements.length) {
+          layer.detach(sheet);
+          op.active = false;
+          op.rec.status = 'reversed';
+        }
+      },
+    };
+    return op;
+  }
+
+  /* ---------------- the page column ---------------- */
+
+  /**
+   * column: the page in a narrower virtual window, centred, with the page's own background at the sides (Caden's
+   * 2.webp, where he narrowed the window by hand).
+   *
+   * A narrower body alone squeezes the layout the site made for the whole window (its media queries, `vw` units and
+   * scripts still see the full width), which breaks rigid layouts. So the column narrows what the site sees instead:
+   * the tab's zoom rises by 1/k (k = column ÷ screen width), which narrows the CSS viewport to the column's CSS width,
+   * and the body is laid out exactly that wide and drawn at k with CSS `zoom`, so text stays the person's size. Media
+   * queries, `vw` units, `innerWidth` and the body's own layout all agree on one width, and the site picks the layout
+   * it made for it, as it does in a narrower window. Fixed and sticky layers keep the whole window; WebAble's own UI
+   * sits outside <body>, so it keeps its size. `setWidth` follows window and zoom changes without a new op.
+   */
+  columnOp(spec: ColumnSpec): ColumnOp {
+    const layer = this.sheets;
+    const host = this.host;
+    const bg = pageBackground();
+    const body = document.body;
+    // The body's own side margins, unless they centre it (auto): the virtual window keeps them.
+    let marginX = 0;
+    if (body) {
+      const bcs = getComputedStyle(body);
+      const isAuto = (prop: string): boolean => {
+        try {
+          const v = body.computedStyleMap?.().get(prop);
+          return !!v && typeof (v as { value?: unknown }).value === 'string' && (v as { value: string }).value === 'auto';
+        } catch {
+          return false;
+        }
+      };
+      if (!isAuto('margin-left')) marginX += parseFloat(bcs.marginLeft) || 0;
+      if (!isAuto('margin-right')) marginX += parseFloat(bcs.marginRight) || 0;
+    }
+    let current = { ...spec };
+    let k = 1;
+    const kFor = (widthPx: number): number => {
+      const sw = host.screenWidth?.() ?? (document.documentElement.clientWidth || innerWidth);
+      return sw > 0 ? Math.min(1, Math.max(0.4, widthPx / sw)) : 1;
+    };
+    const cssFor = (scale: number): string => {
+      // In the body's own (zoomed) units, 100vw is the CSS viewport; take off the scrollbar and the site's margins.
+      const sbw = Math.max(0, Math.round((innerWidth - document.documentElement.clientWidth) * 100) / 100);
+      const sub = Math.round((sbw + marginX) * 100) / 100;
+      const z = Math.round(scale * 10000) / 10000;
+      // left/right 0 centre a body that a scroll lock made position: fixed; they do nothing to a static body.
+      const lines = [
+        `html${sel('data-wa-col')} > body { zoom: ${z} !important; width: ${sub > 0 ? `calc(100vw - ${sub}px)` : '100vw'} !important; ` +
+          'margin-left: auto !important; margin-right: auto !important; left: 0 !important; right: 0 !important; box-sizing: border-box !important; }',
+      ];
+      if (bg) lines.push(`html${sel('data-wa-col')} { background-color: ${bg} !important; }`);
+      return lines.join('\n');
+    };
+    const sheet = layer.make('');
+    const cssPx = Math.round(spec.widthPx / (spec.zoom > 0 ? spec.zoom : 1));
+    const op: ColumnOp = {
+      rec: record('column', 'page', body ? [body] : [], `${spec.widthPx} px column (${cssPx} CSS px at ${pct(spec.zoom)})${spec.mode === 'person' ? ', set by you' : ''}`, this.host.idOf),
+      elements: body ? [body] : [],
+      risk: 7,
+      active: false,
+      persistent: true,
+      source: spec.mode === 'person' ? 'person' : 'fit',
+      title: `Held the page to a ${spec.widthPx} px column so lines stay a readable length`,
+      detail: 'The site lays itself out for that width, as in a narrower window, and the page keeps its own background at the sides. Narrower, Wider and Full width are in the WebAble panel.',
+      spec: current,
+      async apply() {
+        const want = kFor(current.widthPx);
+        k = host.columnScale ? await host.columnScale(want) : 1;
+        sheet.replaceSync(cssFor(k));
+        document.documentElement.setAttribute('data-wa-col', '');
+        layer.attach(sheet);
+        op.active = true;
+      },
+      async revert() {
+        layer.detach(sheet);
+        document.documentElement.removeAttribute('data-wa-col');
+        op.active = false;
+        k = 1;
+        if (host.columnScale) await host.columnScale(1);
+      },
+      setWidth(widthPx: number, zoom: number) {
+        current = { ...current, widthPx, zoom };
+        op.spec = current;
+        const want = kFor(widthPx);
+        const write = () => {
+          try {
+            sheet.replaceSync(cssFor(k));
+          } catch {
+            /* keep the last width */
+          }
+        };
+        if (op.active && host.columnScale && Math.abs(want - k) > 0.004) {
+          void host.columnScale(want).then((got) => {
+            k = got;
+            if (op.active) write();
+          });
+        } else write();
+      },
+    };
+    return op;
+  }
+
+  /**
+   * Letters per line of the page's running text as drawn now: the char-weighted median over paragraphs in main
+   * (≥ 160 characters, 3+ lines), from their line boxes and the font's average letter width. Null when the page has
+   * too little running text to say (a news front page, a form).
+   */
+  measureCpl(read: ReadResult): number | null {
+    const ctx = this.canvas();
+    if (!ctx) return null;
+    const rows: Array<[number, number]> = [];
+    const seen = new Set<Element>();
+    for (const t of read.texts) {
+      if (!t.inMain || !t.running || t.control || t.chars < 160 || !t.el.isConnected || seen.has(t.el)) continue;
+      seen.add(t.el);
+      const sample = visibleTextOf(t.el, 300);
+      if (sample.length < 80) continue;
+      const cs = getComputedStyle(t.el);
+      ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const z = (t.el as Element & { currentCSSZoom?: number }).currentCSSZoom;
+      const charW = (ctx.measureText(sample).width / sample.length) * (typeof z === 'number' && z > 0 ? z : 1);
+      if (!(charW > 0)) continue;
+      const range = document.createRange();
+      range.selectNodeContents(t.el);
+      const tops = new Map<number, [number, number]>();
+      for (const r of Array.from(range.getClientRects())) {
+        if (r.width < 4 || r.height < 4) continue;
+        const k = Math.round(r.top / 4);
+        const cur = tops.get(k);
+        tops.set(k, cur ? [Math.min(cur[0], r.left), Math.max(cur[1], r.right)] : [r.left, r.right]);
+      }
+      const widths = [...tops.entries()].sort((a, b) => a[0] - b[0]).slice(0, -1).map(([, [l, rr]]) => rr - l);
+      if (widths.length < 2) continue;
+      widths.sort((a, b) => a - b);
+      rows.push([(widths[Math.floor(widths.length / 2)] ?? 0) / charW, t.chars]);
+      if (rows.length >= 40) break;
+    }
+    if (rows.length < 2) return null;
+    rows.sort((a, b) => a[0] - b[0]);
+    const total = rows.reduce((a, x) => a + x[1], 0);
+    let acc = 0;
+    for (const [cpl, w] of rows) {
+      acc += w;
+      if (acc >= total / 2) return Math.round(cpl);
+    }
+    return null;
+  }
+
   /** measure: max-inline-size on running-text blocks in main that are wider than maxCpl. */
-  measureOp(fit: FitProfile, texts: TextSample[], plan: TextPlan | null): Op | null {
+  measureOp(fit: FitProfile, texts: TextSample[]): Op | null {
     const { targetCpl, maxCpl } = fit.measure;
     if (!(maxCpl > 0) || !(targetCpl > 0)) return null;
     const ctx = this.canvas();
@@ -802,9 +990,7 @@ ${sel('data-wa-pg')} { margin-block-end: 1em !important; }`;
       ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
       const avg = ctx.measureText(sample).width / sample.length;
       if (!(avg > 0)) continue;
-      // After the text map the font is larger by s'/s; characters widen by the same factor.
-      const scale = plan ? safeMap(t.fontPx, plan.pageBodyPx, plan.targetBodyPx, plan.exponent) / t.fontPx : 1;
-      const charW = avg * Math.max(1, scale);
+      const charW = avg;
       const cpl = r.width / charW;
       if (cpl <= maxCpl) continue;
       const width = Math.max(13 * charW, Math.round((targetCpl * charW) / 8) * 8);
@@ -1266,13 +1452,23 @@ ${sel('data-wa-pg')} { margin-block-end: 1em !important; }`;
   /** unpin_sticky: a sticky or fixed top bar taller than 20% of the screen scrolls away (never consent or dialogs). */
   unpinOp(read: ReadResult): Op | null {
     const vh = document.documentElement.clientHeight || innerHeight;
-    const bars = read.stickyBars.filter((el) => {
+    const live = read.stickyBars.filter((el) => {
       if (!el.isConnected) return false;
       const r = el.getBoundingClientRect();
       return r.top <= 2 && r.height > 0 && r.bottom < vh * 0.6;
     });
+    // A bar inside another bar is the same bar (a header and its inner row): keep the outermost.
+    const bars = live.filter((el) => !live.some((o) => o !== el && o.contains(el)));
     if (!bars.length) return null;
-    const covered = bars.reduce((s, el) => s + el.getBoundingClientRect().height, 0);
+    // Screen covered: the union of the bars' vertical extents (stacked bars add up, overlapping ones do not).
+    const spans = bars.map((el) => el.getBoundingClientRect()).map((r) => [Math.max(0, r.top), Math.min(vh, r.bottom)] as [number, number]).sort((a, b) => a[0] - b[0]);
+    let covered = 0;
+    let end = -Infinity;
+    for (const [top, bottom] of spans) {
+      const from = Math.max(top, end);
+      if (bottom > from) covered += bottom - from;
+      end = Math.max(end, bottom);
+    }
     if (covered <= 0.2 * vh) return null;
     const writes: Array<[Element, string, string]> = bars.map((el) => [el, 'data-wa-unpin', getComputedStyle(el).position === 'fixed' ? 'f' : 's']);
     const layer = this.sheets;
@@ -1401,39 +1597,6 @@ ${sel('data-wa-unpin', 'f')} { position: absolute !important; }`);
     }, Math.max(200, ms));
   }
 
-  /* ---------------- marking late content with existing tokens ---------------- */
-
-  /** Give newly added text the same size bucket as existing text of the same computed size (no new CSS). */
-  markLateText(op: Op, added: Element[], texts: TextSample[]): number {
-    if (!op.active || op.rec.kind !== 'text_map') return 0;
-    const bySize = new Map<number, string>();
-    for (const el of op.elements) {
-      const v = el.getAttribute('data-wa-tm');
-      if (v === null) continue;
-      const t = texts.find((x) => x.el === el);
-      if (t) bySize.set(Math.round(t.fontPx * 2) / 2, v);
-    }
-    let n = 0;
-    const writes: Array<[Element, string, string]> = [];
-    for (const root of added) {
-      const list = [root, ...Array.from(root.querySelectorAll('*')).slice(0, 400)];
-      for (const el of list) {
-        if (el.hasAttribute('data-wa-tm') || this.host.isOurUi(el)) continue;
-        let direct = '';
-        for (let c = el.firstChild; c; c = c.nextSibling) if (c.nodeType === 3) direct += (c as Text).data;
-        if (!collapse(direct)) continue;
-        const s = Math.round(parseFloat(getComputedStyle(el).fontSize) * 2) / 2;
-        const bucket = bySize.get(s);
-        if (bucket === undefined) continue;
-        writes.push([el, 'data-wa-tm', bucket]);
-        op.elements.push(el);
-        n++;
-      }
-    }
-    setTokens(writes);
-    return n;
-  }
-
   private canvas(): CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null {
     if (this.canvasCtx) return this.canvasCtx;
     try {
@@ -1445,14 +1608,87 @@ ${sel('data-wa-unpin', 'f')} { position: absolute !important; }`);
   }
 }
 
-function isPreset(z: number): boolean {
-  return CHROME_ZOOM_PRESETS.some((p) => Math.abs(p - z) < 0.001);
-}
-
 function pct(z: number): string {
   return `${Math.round(z * 100)}%`;
 }
 
-function round1(v: number): number {
-  return Math.round(v);
+/** The element's line-height when it is relative (a number, or 'normal'); null when it is a fixed length. */
+export function relativeLineHeight(el: Element): number | 'normal' | null {
+  try {
+    const v = (el as HTMLElement).computedStyleMap?.().get('line-height');
+    if (!v) return null;
+    if (v instanceof CSSKeywordValue) return v.value === 'normal' ? 'normal' : null;
+    if (v instanceof CSSUnitValue && v.unit === 'number') return v.value;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** The element and `levels` ancestors grow with their content (height and max-height are auto / none). */
+export function fluidHeight(el: Element, levels: number): boolean {
+  let n: Element | null = el;
+  for (let d = 0; n && d <= levels && n !== document.body && n !== document.documentElement; d++) {
+    try {
+      const m = (n as HTMLElement).computedStyleMap?.();
+      if (!m) return false;
+      const h = m.get('height');
+      const mh = m.get('max-height');
+      if (!(h instanceof CSSKeywordValue && h.value === 'auto')) return false;
+      if (!(mh instanceof CSSKeywordValue && mh.value === 'none')) return false;
+    } catch {
+      return false;
+    }
+    n = n.parentElement;
+  }
+  return true;
+}
+
+/** A heading whose box grows with its text: not positioned out of flow, no fixed height near it, no nowrap. */
+function headingFluid(heading: Element, textEls: Element[]): boolean {
+  for (const el of [heading, ...textEls]) {
+    const cs = getComputedStyle(el);
+    if (cs.whiteSpace === 'nowrap' || cs.whiteSpace === 'pre') return false;
+  }
+  let n: Element | null = heading;
+  for (let d = 0; n && d < 3 && n !== document.body; d++, n = n.parentElement) {
+    const p = getComputedStyle(n).position;
+    if (p === 'absolute' || p === 'fixed' || p === 'sticky') return false;
+  }
+  return fluidHeight(heading, 3) && textEls.every((el) => el === heading || fluidHeight(el, 0));
+}
+
+/**
+ * The colour to paint beside the column. When the root or body has a background, the canvas already shows it
+ * (CSS background propagation), so nothing is added. When both are transparent and a full-width wrapper carries the
+ * page's colour, the sides get that colour, so a dark site does not get white margins.
+ */
+function pageBackground(): string | null {
+  const opaque = (c: string) => {
+    const p = parseRgb(c);
+    return !!p && p.a > 0.01;
+  };
+  const html = getComputedStyle(document.documentElement);
+  if (opaque(html.backgroundColor) || html.backgroundImage !== 'none') return null;
+  const body = document.body;
+  if (!body) return null;
+  const bcs = getComputedStyle(body);
+  if (opaque(bcs.backgroundColor) || bcs.backgroundImage !== 'none') return null;
+  const vw = document.documentElement.clientWidth || innerWidth;
+  const docH = Math.max(document.documentElement.scrollHeight, body.scrollHeight, 1);
+  let level: Element[] = Array.from(body.children);
+  for (let depth = 0; depth < 3 && level.length; depth++) {
+    let next: Element[] = [];
+    for (const child of level.slice(0, 40)) {
+      const cs = getComputedStyle(child);
+      if (cs.position === 'fixed' || cs.display === 'none' || child.tagName === 'WEBABLE-UI') continue;
+      const r = child.getBoundingClientRect();
+      if (r.width < 0.8 * vw || r.height < 0.4 * docH) continue;
+      if (opaque(cs.backgroundColor)) return cs.backgroundColor;
+      next = Array.from(child.children);
+      break;
+    }
+    level = next;
+  }
+  return null;
 }

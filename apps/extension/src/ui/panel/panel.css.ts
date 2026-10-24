@@ -1,5 +1,8 @@
-// Owner: P. Root theme bridge, shared controls, pill and panel styles.
+// Owner: P, U. Root theme bridge, shared controls, pill and panel styles.
 // Colours read D1's tokens (var(--wa-ink) …, set on :host by mount.ts) and fall back to the Showroom values.
+// Two roots share these rules: the chrome layer (data-layer="ui": pill, panel, dock, cookie bar), which is CSS-zoomed
+// so one CSS px is one design pixel at any page zoom (--u is 1px there), and the page layer (data-layer="page": Lens,
+// Explain), which follows page coordinates and sizes with --u = scale ÷ page zoom.
 import { DISPLAY_STACK, FONT_STACK, target, u } from './css-util';
 
 export const rootCss = /* css */ `
@@ -170,9 +173,9 @@ export const rootCss = /* css */ `
   padding: 0 ${u(5)}; margin-left: ${u(6)}; line-height: 1.5; vertical-align: 1px;
 }
 
-/* ---------- pill ---------- */
+/* ---------- pill (the bottom of the corner dock) ---------- */
 .wa-pill {
-  position: fixed; right: ${u(16)}; z-index: 40;
+  position: relative; flex: none;
   appearance: none; display: inline-flex; align-items: center; gap: ${u(9)};
   height: ${target()}; min-width: ${target()}; padding: 0 ${u(16)} 0 ${u(14)};
   border-radius: 999px; border: ${u(1)} solid var(--c-edge);
@@ -180,10 +183,9 @@ export const rootCss = /* css */ `
   -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
   box-shadow: var(--c-shadow-float), inset 0 0 0 ${u(0.5)} rgba(0,0,0,0.06);
   font-family: ${DISPLAY_STACK}; font-size: ${u(15)}; font-weight: 600; letter-spacing: -0.01em;
-  cursor: pointer; pointer-events: auto;
-  transition: bottom 260ms cubic-bezier(.3,.7,.4,1), transform 160ms ease, box-shadow 160ms ease;
+  white-space: nowrap; cursor: pointer; pointer-events: auto;
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
-.wa-pill[data-side="left"] { right: auto; left: ${u(16)}; }
 .wa-pill:hover { transform: translateY(${u(-1)}); }
 .wa-pill[aria-expanded="true"] { background: var(--c-raised); }
 .wa-pill-count {
@@ -198,10 +200,10 @@ export const rootCss = /* css */ `
 .wa-dot[data-state="working"] { background: var(--c-accent); animation: wa-breathe 1.4s ease-in-out infinite; }
 @keyframes wa-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
 
-/* ---------- panel ---------- */
+/* ---------- panel (in the corner dock, above the pill) ---------- */
 .wa-panel {
-  position: fixed; right: ${u(16)}; z-index: 39;
-  width: min(${u(392)}, calc(100vw - ${u(32)}));
+  position: relative; flex: 0 1 auto; min-height: 0;
+  width: min(${u(392)}, calc(var(--wa-vw, 100vw) - ${u(32)}));
   display: flex; flex-direction: column;
   border-radius: ${u(28)}; border: ${u(1)} solid var(--c-edge);
   background: var(--c-sheet); color: var(--c-ink);
@@ -211,7 +213,7 @@ export const rootCss = /* css */ `
   animation: wa-rise 220ms cubic-bezier(.2,.8,.3,1);
   transform-origin: bottom right;
 }
-.wa-panel[data-side="left"] { right: auto; left: ${u(16)}; transform-origin: bottom left; }
+.wa-panel[data-side="left"] { transform-origin: bottom left; }
 @keyframes wa-rise { from { opacity: 0; transform: translateY(${u(10)}) scale(.98); } to { opacity: 1; transform: none; } }
 .wa-panel-head { display: flex; align-items: flex-start; gap: ${u(12)}; padding: ${u(16)} ${u(16)} ${u(10)} ${u(20)}; }
 .wa-panel-title { flex: 1; min-width: 0; }
@@ -255,6 +257,36 @@ export const rootCss = /* css */ `
   border-radius: ${u(14)}; background: var(--c-canvas); color: var(--c-ink2); font-size: ${u(13)}; line-height: 1.4;
 }
 .wa-ailine-icon { flex: none; display: grid; place-items: center; width: ${u(22)}; height: ${u(22)}; border-radius: 999px; background: var(--c-tonal); color: var(--c-ink2); margin-top: ${u(-1)}; }
+
+/* ---------- this page: text size and page width ---------- */
+.wa-pagectl { display: grid; gap: ${u(14)}; padding: ${u(14)} ${u(14)} ${u(14)}; }
+.wa-prow { display: grid; gap: ${u(8)}; }
+.wa-prow-head { display: flex; align-items: baseline; justify-content: space-between; gap: ${u(8)}; padding: 0 ${u(4)}; }
+.wa-prow-title { font-size: ${u(15)}; font-weight: 600; color: var(--c-ink); }
+.wa-prow-val { font-size: ${u(14)}; color: var(--c-ink2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wa-seg {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: ${u(4)};
+  padding: ${u(4)}; border-radius: 999px; background: var(--c-tonal);
+  border: ${u(1)} solid var(--c-edge);
+}
+.wa-segbtn {
+  appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: ${u(6)};
+  min-height: max(${u(40)}, calc(var(--wa-target, 44px) - ${u(8)})); min-width: 0; padding: 0 ${u(10)};
+  border: 0; border-radius: 999px; background: transparent; color: var(--c-ink);
+  font-size: ${u(14.5)}; font-weight: 500; line-height: 1.15; white-space: nowrap;
+  cursor: pointer; pointer-events: auto;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+.wa-segbtn:hover:not([disabled]) { background: var(--c-raised); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.wa-segbtn:active:not([disabled]) { background: var(--c-hover); }
+.wa-segbtn[disabled] { color: var(--c-ink2); opacity: .5; cursor: default; }
+.wa-segbtn[aria-pressed="true"] { background: var(--c-raised); color: var(--c-ink); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1), 0 0 0 ${u(1)} var(--c-edge); }
+.wa-root[data-mode="dark"] .wa-segbtn:hover:not([disabled]), .wa-root[data-mode="dark"] .wa-segbtn[aria-pressed="true"] { background: var(--c-hover); box-shadow: none; }
+.wa-root[data-mode="max"] .wa-segbtn[aria-pressed="true"] { background: var(--c-ink); color: var(--c-raised); }
+.wa-glyph { font-family: ${DISPLAY_STACK}; font-weight: 700; letter-spacing: -0.02em; display: inline-flex; align-items: baseline; }
+.wa-glyph-s { font-size: .8em; }
+.wa-glyph-l { font-size: 1.1em; }
+.wa-prow-note { margin: 0; padding: 0 ${u(4)}; font-size: ${u(12.5)}; color: var(--c-ink2); }
 
 /* ---------- Jev counter ---------- */
 .wa-counter { display: grid; grid-template-columns: repeat(3, 1fr); gap: ${u(4)}; }

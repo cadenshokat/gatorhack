@@ -26,7 +26,7 @@ import type {
 import type { Op, SheetLayer } from './tailor';
 import { makeOpRecord } from './tailor';
 import {
-  CHAT_CLASS, CONSENT_CLASS, accessibleName, classWordsOf, collapse, iframeKindOf, linkTargetOf, safeUiLabel, visibleTextOf,
+  CHAT_CLASS, CONSENT_CLASS, accessibleName, classWordsOf, collapse, iframeKindOf, linkTargetOf, pageFrame, safeUiLabel, visibleTextOf,
 } from './reader';
 import { sleep } from './nav';
 
@@ -371,7 +371,7 @@ export class OverlayManager {
     if (!root || getComputedStyle(root).position !== 'fixed') return false;
     const { vw, vh } = viewport();
     const r = root.getBoundingClientRect();
-    const topBar = r.top <= 4 && r.width >= 0.8 * vw && r.height <= 0.3 * vh;
+    const topBar = r.top <= 4 && r.width >= 0.8 * Math.min(vw, pageFrame().width) && r.height <= 0.3 * vh;
     return !topBar;
   }
 
@@ -505,7 +505,7 @@ export class OverlayManager {
         chain.push(n);
       } else if (cs.position === 'sticky') {
         const r = n.getBoundingClientRect();
-        const stuck = (r.top <= 2 || r.bottom >= vh - 2) && r.width >= 0.6 * vw;
+        const stuck = (r.top <= 2 || r.bottom >= vh - 2) && r.width >= 0.6 * Math.min(vw, pageFrame().width);
         if (stuck) {
           root = n;
           chain.push(n);
@@ -682,7 +682,8 @@ export class OverlayManager {
     const iframe = root.querySelector('iframe');
     const ifKind = iframe ? iframeKindOf(iframe.getAttribute('src') ?? '') : null;
     const area = (box.r - box.l) * (box.b - box.t);
-    const full = box.r - box.l >= 0.8 * vw;
+    // Full width of the page: the page column when WebAble holds the page to one (its header spans the column).
+    const full = box.r - box.l >= 0.8 * Math.min(vw, pageFrame().width);
     const atTop = box.t <= 4;
     const atBottom = box.b >= vh - 4;
 
@@ -696,6 +697,12 @@ export class OverlayManager {
     const hasField = !!root.querySelector('input[type="text"], textarea, [contenteditable="true"], [role="textbox"]');
     if (ifKind === 'chat_widget' || ((CHAT_CLASS.test(wordStr) || /\b(chat|assistant|messag(e|ing)|live help)\b/i.test(name)) && (hasField || !!iframe || area >= 0.05 * vw * vh))) {
       return { kind: 'chat', modal, alertdialog, name };
+    }
+    // The site's own header bar first: a pinned top bar that holds the site's navigation, banner or search is its
+    // header even when an ad slot inside it says "Ad Feedback" (cnn.com), so it scrolls away and is never tucked.
+    if (!modal && full && atTop && box.b - box.t <= 0.35 * vh
+      && (root.matches('header, [role="banner"], nav') || !!root.querySelector('header, [role="banner"], nav, [role="navigation"], [role="search"]'))) {
+      return { kind: 'header', modal, alertdialog, name };
     }
     if (SURVEY_RE.test(all) || ifKind === 'survey') return { kind: 'survey', modal, alertdialog, name };
     if (NEWSLETTER_RE.test(all)) return { kind: 'newsletter', modal, alertdialog, name };
@@ -1031,9 +1038,12 @@ export class OverlayManager {
       if (had) root.setAttribute(ATTR, had);
       const v = viewport();
       const gap = 16;
-      const t = edge === 'bottom' ? `0 ${px(v.vh - r.t + gap)}px`
-        : edge === 'top' ? `0 ${-px(r.b + gap)}px`
-          : edge === 'right' ? `${px(v.vw - r.l + gap)}px 0` : `${-px(r.r + gap)}px 0`;
+      // Rects are in viewport px; `translate` is in the overlay's own CSS px, which the page column zooms.
+      const cz = (root as Element & { currentCSSZoom?: number }).currentCSSZoom;
+      const u = typeof cz === 'number' && cz > 0 && Number.isFinite(cz) ? cz : 1;
+      const t = edge === 'bottom' ? `0 ${px((v.vh - r.t + gap) / u)}px`
+        : edge === 'top' ? `0 ${-px((r.b + gap) / u)}px`
+          : edge === 'right' ? `${px((v.vw - r.l + gap) / u)}px 0` : `${-px((r.r + gap) / u)}px 0`;
       const sel = `[${ATTR}="${value}"][${ATTR}="${value}"]`;
       return `${sel} { translate: ${t} !important; transition: none !important; }\n${sel}:focus-within { translate: none !important; }`;
     };
@@ -1098,6 +1108,13 @@ export class OverlayManager {
   private async tuck(
     rec: Rec, item: { facts: OverlayFacts; jev: { reason: string } }, why: string, fromChat?: string, pressed = false,
   ): Promise<void> {
+    // Never move the site's own header off screen: a layer that holds its navigation, banner or search (an ad slot
+    // inside a pinned header says "Ad Feedback" on cnn.com) at most scrolls away with the page.
+    if (rec.kind !== 'chat' && rec.root.querySelector('nav, [role="navigation"], [role="banner"], [role="search"], header')) {
+      rec.kind = 'header';
+      if (item.facts.edge === 'top') await this.unpin(rec, item, 'it holds the site\'s header');
+      return;
+    }
     const before = item.facts.coverage;
     const ad = rec.kind === 'promo_bar' && item.facts.advertising >= 0.9;
     const noun = ad ? 'ad bar' : NOUN[rec.kind];
@@ -1436,7 +1453,7 @@ export class OverlayManager {
       const cs = this.style(el, cache);
       if (cs.position !== 'fixed' && cs.position !== 'sticky') continue;
       const r = el.getBoundingClientRect();
-      if (r.width < 0.6 * vw || r.height < 16 || r.height > 0.4 * vh) continue;
+      if (r.width < 0.6 * Math.min(vw, pageFrame().width) || r.height < 16 || r.height > 0.4 * vh) continue;
       if (r.top <= 2 && r.bottom > 0) top = Math.max(top, r.bottom);
     }
     top = Math.round(top);
