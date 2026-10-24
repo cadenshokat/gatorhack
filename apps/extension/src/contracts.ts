@@ -2,8 +2,8 @@
 // The engine owns all state; the UI subscribes and calls the actions below.
 
 import type {
-  CheckResult, ElementDecision, ExplainResult, FitProfile, FitSpec, LedgerEntry, Offer, OfferKind,
-  OpRecord, PageDigest, PageOutline, PageUnderstanding, RedesignResult, Settings, StruggleJudgment,
+  CheckResult, ElementDecision, ExplainResult, FitProfile, FitSpec, HealthStatus, LedgerEntry, Offer, OfferKind,
+  OpRecord, OverlayAction, PageDigest, PageOutline, PageUnderstanding, RedesignResult, Settings, StruggleJudgment,
   StruggleKind, VisualVerdict,
 } from '@webable/core';
 
@@ -51,6 +51,8 @@ export interface EngineState {
     error: string | null;
   };
   showingOriginal: boolean;
+  overlays: OverlayAction[];
+  ai: HealthStatus['ai'];
 }
 
 export interface EngineApi {
@@ -72,4 +74,6 @@ export interface EngineApi {
   explainSelection(text: string, anchor: { x: number; y: number; w: number; h: number }): Promise<void>;
   closeExplain(): void;
   openFitting(): void;
+  /** Undo one overlay action (restores the overlay; remembers 'leave' for this site and kind). */
+  restoreOverlay(id: string): void;
 }

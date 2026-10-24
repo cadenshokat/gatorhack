@@ -174,6 +174,65 @@ export interface PageUnderstanding {
   mainPick: { id: string | 'none'; p: number; probs: Record<string, number> };
   metrics: JevMetrics;
   cached: boolean;
+  /** Metrics of the first (uncached) read of this digest, so a cached view can say what the live read cost. */
+  firstRead?: JevMetrics;
+}
+
+/* ------------------------------------------------------------------ */
+/* Overlays that cover the task (round 2: "make room")                 */
+/* ------------------------------------------------------------------ */
+
+export type OverlayKind = 'consent' | 'chat' | 'survey' | 'newsletter' | 'promo_bar' | 'warning' | 'modal' | 'header' | 'other';
+
+/** Structure-only evidence about one overlay (labels redacted like ElementEvidence). */
+export interface OverlayEvidence {
+  id: string;
+  kind_hint: OverlayKind;
+  label: string;
+  position: string; // 'bottom right corner', 'bottom band'
+  size: string; // '360 x 520 px, covers 25% of the screen'
+  opened_by_itself: boolean;
+  class_words: string[];
+  iframe_kind?: string;
+}
+
+export interface OverlayButtonEvidence {
+  id: string;
+  tag: string;
+  label: string;
+  visible_text: string;
+  position_in_overlay: string; // 'top right corner'
+  size: string;
+  class_words: string[];
+  link_target?: 'same page' | 'this website' | 'another website';
+  form_submit?: boolean;
+  aria_expanded?: boolean;
+}
+
+export interface OverlayCloseResult {
+  pick: string | 'none';
+  pFwd: number;
+  pRev: number;
+  sideEffect: number; // P(pressing it does more than minimise/close)
+  accept: boolean; // min(pFwd,pRev) >= 0.90 and sideEffect <= 0.20 and code vetoes passed
+  metrics: JevMetrics;
+}
+
+export interface OverlayAction {
+  id: string; // overlay id
+  kind: OverlayKind;
+  action: 'minimised' | 'docked' | 'tucked' | 'unpinned' | 'kept' | 'offered' | 'left';
+  coverageBefore: number; // 0..1 of the viewport
+  coverageAfter: number;
+  opId?: string;
+  detail: string;
+}
+
+/** AI availability as the server sees it. */
+export interface HealthStatus {
+  ok: boolean;
+  jev: { warm: boolean; model: string };
+  ai: 'on' | 'off' | 'no_credits';
 }
 
 export type Verdict = 'protect' | 'fold' | 'keep' | 'promote' | 'keep_popup';
@@ -377,7 +436,7 @@ export interface VisualVerdict {
 export type OpKind =
   | 'page_zoom' | 'text_map' | 'spacing' | 'contrast' | 'weight' | 'measure' | 'targets'
   | 'steady_clicks' | 'debounce' | 'motion' | 'dim' | 'promote_main' | 'unpin_sticky'
-  | 'focus_ring' | 'calm_view';
+  | 'focus_ring' | 'calm_view' | 'unobstruct';
 
 export interface OpRecord {
   id: string;
@@ -428,8 +487,10 @@ export interface TabReport {
 /* ------------------------------------------------------------------ */
 
 export type BgRequest =
-  | { type: 'understand'; digest: PageDigest }
+  | { type: 'understand'; digest: PageDigest; noCache?: boolean }
   | { type: 'struggle'; signals: StruggleSignals }
+  | { type: 'overlayClose'; overlay: OverlayEvidence; candidates: OverlayButtonEvidence[] }
+  | { type: 'health' }
   | { type: 'redesign'; outline: PageOutline; fit: FitSummaryForModel; roles: Record<string, Role> }
   | { type: 'explain'; req: ExplainRequest }
   | { type: 'visualVerify'; controls: string[]; help: string[]; mainLabel: string | null; phase: 'before' | 'after' }

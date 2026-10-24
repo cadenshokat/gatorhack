@@ -79,6 +79,7 @@ const OP_NOUN: Record<OpKind, string> = {
   unpin_sticky: 'the unpinned top bar',
   focus_ring: 'the focus ring',
   calm_view: 'the calm layout',
+  unobstruct: 'the moved overlay',
 };
 
 const OFFER_TOAST: Record<OfferKind, string> = {
@@ -173,6 +174,8 @@ function initialState(): EngineState {
     toasts: [],
     explain: { open: false, loading: false, anchor: null, original: null, result: null, error: null },
     showingOriginal: false,
+    overlays: [],
+    ai: 'on',
   };
 }
 
@@ -1717,6 +1720,9 @@ export function createController(): Controller {
     },
     openFitting: () => {
       void askExt<unknown>({ type: 'openFitting' }).catch((err: unknown) => addError(plainError(err)));
+    },
+    restoreOverlay: () => {
+      // Round 2 (engine package) implements overlay handling.
     },
   };
 

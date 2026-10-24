@@ -324,6 +324,8 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
       return { ok: true };
     case 'health':
       return health();
+    case 'overlayClose':
+      return post('/v1/overlay-close', { overlay: req.overlay, candidates: req.candidates }, 8000);
     case 'setFit':
       return setFit(req.fit);
     case 'setSettings':
