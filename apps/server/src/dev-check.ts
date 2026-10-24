@@ -1,0 +1,130 @@
+// pnpm --filter @webable/server check:live [--url http://127.0.0.1:41741] [--skip redesign,explain] [--visual] [--fresh]
+// Sends the Alderra fixtures through the real routes and prints metrics. Uses the running server when it answers
+// on /health, otherwise the same app in-process. Never prints keys or page text beyond the fixture's own labels.
+import type { ExplainResult, PageUnderstanding, RedesignResult, StruggleJudgment, VisualVerdict } from '@webable/core';
+import { PORT } from './config';
+import { FIXTURE_DIGEST, FIXTURE_FIT, FIXTURE_OUTLINE, FIXTURE_PASSAGE, FIXTURE_ROLES, FIXTURE_SIGNALS, fixtureVisual } from './fixtures';
+
+const args = process.argv.slice(2);
+const flag = (name: string) => args.includes(`--${name}`);
+const opt = (name: string) => {
+  const i = args.indexOf(`--${name}`);
+  return i >= 0 ? args[i + 1] : undefined;
+};
+const base = opt('url') ?? `http://127.0.0.1:${PORT}`;
+const skip = new Set((opt('skip') ?? '').split(',').filter(Boolean));
+const fresh = flag('fresh');
+
+type Fetcher = (path: string, init?: RequestInit) => Promise<Response>;
+
+async function pickFetcher(): Promise<{ fetcher: Fetcher; mode: string }> {
+  try {
+    const r = await fetch(`${base}/health`, { signal: AbortSignal.timeout(1_000) });
+    if (r.ok || r.status === 503) return { fetcher: (p, init) => fetch(`${base}${p}`, init), mode: `server at ${base}` };
+  } catch {
+    // not running: fall through
+  }
+  const { createApp } = await import('./app');
+  const app = createApp();
+  return { fetcher: async (p, init) => app.request(p, init), mode: 'in-process (no server answered)' };
+}
+
+const ms = (n: number | null | undefined) => (n === null || n === undefined ? '-' : `${Math.round(n)} ms`);
+const usd = (n: number) => `$${n.toFixed(n < 0.01 ? 5 : 4)}`;
+const p2 = (n: number | null | undefined) => (n === null || n === undefined ? '-' : n.toFixed(2));
+
+let failures = 0;
+
+async function post<T>(f: Fetcher, path: string, body: unknown): Promise<{ data: T; ms: number; cache: string | null } | null> {
+  const t0 = performance.now();
+  const r = await f(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(fresh ? { 'X-WebAble-Fresh': '1' } : {}) },
+    body: JSON.stringify(body),
+  });
+  const took = performance.now() - t0;
+  const text = await r.text();
+  if (!r.ok) {
+    failures++;
+    console.log(`  FAILED ${r.status}: ${text.slice(0, 400)}`);
+    return null;
+  }
+  return { data: JSON.parse(text) as T, ms: took, cache: r.headers.get('x-webable-cache') };
+}
+
+async function main(): Promise<void> {
+  const { fetcher, mode } = await pickFetcher();
+  console.log(`WebAble live check · ${mode}${fresh ? ' · fresh (cache skipped)' : ''}`);
+
+  const health = await (await fetcher('/health')).json();
+  console.log('\n/health', JSON.stringify(health));
+
+  console.log(`\nPOST /v1/understand  (${FIXTURE_DIGEST.elements.length} elements)`);
+  const u = await post<PageUnderstanding>(fetcher, '/v1/understand', { digest: FIXTURE_DIGEST });
+  if (u) {
+    const m = u.data.metrics;
+    console.log(`  ${m.questions} decisions in ${m.calls} call(s) · wall ${ms(m.wallMs)} · server ${ms(m.serverMs)} · ${m.inputTokens} tokens · ${usd(m.costUsd)} · ${m.model}${u.data.cached ? ' · cached' : ''} · route ${ms(u.ms)}`);
+    const main = u.data.mainPick;
+    console.log(`  main action: ${main.id} (p ${p2(main.p)})`);
+    for (const e of u.data.elements) {
+      const label = FIXTURE_DIGEST.elements.find((d) => d.id === e.id)?.label.slice(0, 44) ?? '';
+      console.log(`  ${e.id.padEnd(4)} ${e.role.padEnd(16)} ${p2(e.roleP)}  task ${p2(e.task)}  main ${p2(e.main)}  help ${p2(e.help)}  ${label}`);
+    }
+  }
+
+  console.log('\nPOST /v1/struggle');
+  const s = await post<StruggleJudgment>(fetcher, '/v1/struggle', { signals: FIXTURE_SIGNALS });
+  if (s) {
+    const kinds = Object.entries(s.data.kinds)
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, v]) => `${k} ${p2(v)}`)
+      .join(' · ');
+    console.log(`  level ${p2(s.data.level)} · ${kinds}`);
+    console.log(`  ${s.data.metrics.questions} questions · ${ms(s.data.metrics.wallMs)} · ${usd(s.data.metrics.costUsd)}`);
+  }
+
+  if (!skip.has('redesign')) {
+    console.log(`\nPOST /v1/redesign  (${FIXTURE_OUTLINE.nodes.length} outline nodes)`);
+    const r = await post<RedesignResult>(fetcher, '/v1/redesign', { outline: FIXTURE_OUTLINE, fit: FIXTURE_FIT, roles: FIXTURE_ROLES });
+    if (r) {
+      const d = r.data;
+      console.log(`  chosen ${d.chosen} · autoApply ${d.autoApply} · llm ${d.llm.model} ${ms(d.llm.ms)} ${usd(d.llm.costUsd)} · judge ${d.judge.questions} q ${ms(d.judge.wallMs)} ${usd(d.judge.costUsd)} · route ${ms(r.ms)} · cache ${r.cache ?? '-'}`);
+      for (const c of d.candidates) {
+        const open = c.spec.sections.filter((x) => x.state === 'open').length;
+        console.log(`  ${c.name.padEnd(9)} easier ${p2(c.pEasier)} hides ${p2(c.pHides)} fit ${p2(c.fitScore)} composite ${p2(c.composite)} · ${c.spec.sections.length} sections (${open} open) · primary ${c.spec.primary_action ?? '-'} · ${c.repairs.length} repairs`);
+      }
+    }
+  }
+
+  if (!skip.has('explain')) {
+    console.log('\nPOST /v1/explain');
+    const e = await post<ExplainResult & { verdict?: string; terms?: unknown[] }>(fetcher, '/v1/explain', { req: FIXTURE_PASSAGE });
+    if (e) {
+      const d = e.data;
+      console.log(`  ok ${d.ok} · verdict ${d.verdict ?? '-'} · ${d.model} ${ms(d.ms)} · numbers kept ${d.checks.numbersKept} · conditions kept ${d.checks.conditionWordsKept} · added ${p2(d.checks.addedFact)} · dropped ${p2(d.checks.droppedFact)}`);
+      console.log(`  Jev check ${d.jev.questions} q · ${ms(d.jev.wallMs)} · ${usd(d.jev.costUsd)} · ${d.showOriginalInstead.length} sentence(s) shown as original`);
+      for (const x of d.sentences) console.log(`    covered ${p2(x.covered)}  ${x.original.slice(0, 80)}`);
+      if (d.explanation) console.log(`  explanation:\n    ${d.explanation.split('\n').join('\n    ')}`);
+    }
+  }
+
+  if (flag('visual')) {
+    console.log('\nPOST /v1/verify-visual  (synthetic 1280x800 blocks; plumbing only)');
+    const v = await post<VisualVerdict>(fetcher, '/v1/verify-visual', await fixtureVisual());
+    if (v) {
+      const d = v.data;
+      console.log(`  rollback ${d.rollback} · controls ${p2(d.keepsControls)} · help ${p2(d.keepsHelp)} · clipped ${p2(d.clipped)} · faint ${p2(d.faint)} · main ${p2(d.mainVisible)}`);
+      console.log(`  ${d.metrics.questions} q · ${ms(d.metrics.wallMs)} · ${d.metrics.inputTokens} tokens · ${usd(d.metrics.costUsd)}`);
+    }
+  }
+
+  const stats = await (await fetcher('/v1/stats')).json();
+  console.log('\n/v1/stats', JSON.stringify({ jev: stats.jev, openai: { calls: stats.openai.calls, costUsd: stats.openai.costUsd, errors: stats.openai.errors }, totalUsd: stats.totalUsd }));
+  console.log(failures ? `\n${failures} step(s) failed.` : '\nAll steps answered.');
+  process.exit(failures ? 1 : 0);
+}
+
+main().catch((e: unknown) => {
+  console.error('live check crashed:', e instanceof Error ? e.message : String(e));
+  process.exit(1);
+});
