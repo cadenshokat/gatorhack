@@ -247,6 +247,7 @@ function initialState(): EngineState {
     column: { on: false, widthPx: null, minPx: 720, maxPx: 1600 },
     textStep: 0,
     pageZoom: 1,
+    passive: null,
     textZoom: 1,
   };
 }
@@ -2523,6 +2524,9 @@ export function createController(): Controller {
     },
     restoreOverlay: (id) => overlays.restore(id),
     adjustColumn: (step) => personAction(() => adjustColumn(step)),
+    passiveFeedback: () => {
+      // Round 4 (passive fit package) implements this.
+    },
     adjustText: (step) => personAction(() => adjustText(step)),
   };
 

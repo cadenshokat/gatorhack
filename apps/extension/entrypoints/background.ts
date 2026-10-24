@@ -343,6 +343,12 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
       const t = req.tabId ?? tabId ?? (await activeTabId());
       return t === undefined ? null : getReport(t);
     }
+    case 'getPassive':
+    case 'passiveEvidence':
+    case 'passiveFeedback':
+    case 'attribute':
+      // Round 4 (passive fit package) implements these.
+      return null;
     default: {
       const never: never = req;
       throw new BgError('refused', `Unknown request ${(never as { type?: string }).type ?? ''}`);

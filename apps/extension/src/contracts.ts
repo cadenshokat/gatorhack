@@ -3,7 +3,7 @@
 
 import type {
   CheckResult, ElementDecision, ExplainResult, FitProfile, FitSpec, HealthStatus, LedgerEntry, Offer, OfferKind,
-  OpRecord, OverlayAction, PageDigest, PageOutline, PageUnderstanding, RedesignResult, Settings, StruggleJudgment,
+  OpRecord, OverlayAction, PageDigest, PageOutline, PageUnderstanding, PassiveFitState, FitDimension, RedesignResult, Settings, StruggleJudgment,
   StruggleKind, VisualVerdict,
 } from '@webable/core';
 
@@ -59,6 +59,8 @@ export interface EngineState {
   textStep: number;
   /** The tab's current page zoom (1 = 100%). In-page UI divides by it so it stays the same physical size. */
   pageZoom: number;
+  /** Round 4: what WebAble has learned about the person's needs (null until loaded). */
+  passive: PassiveFitState | null;
   /**
    * The zoom text is shown at. Equal to pageZoom, except with the page column on: the column is a narrower virtual
    * window, the tab's zoom is raised by screen ÷ column and the body is drawn back down by the same factor.
@@ -91,4 +93,6 @@ export interface EngineApi {
   adjustColumn(step: -1 | 0 | 1 | 'off'): void;
   /** Text size: one zoom preset smaller or larger than the fit, remembered per site. */
   adjustText(step: -1 | 1): void;
+  /** Round 4: the person corrects a learned need ('not_right' lowers it, 'forget' clears it, 'confirm' locks it). */
+  passiveFeedback(dim: FitDimension, action: 'not_right' | 'forget' | 'confirm'): void;
 }

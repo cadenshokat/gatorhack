@@ -508,6 +508,10 @@ export type BgRequest =
   | { type: 'struggle'; signals: StruggleSignals }
   | { type: 'overlayClose'; overlay: OverlayEvidence; candidates: OverlayButtonEvidence[] }
   | { type: 'health' }
+  | { type: 'getPassive' }
+  | { type: 'passiveEvidence'; items: PassiveEvidence[] }
+  | { type: 'passiveFeedback'; dim: FitDimension; action: 'not_right' | 'forget' | 'confirm' }
+  | { type: 'attribute'; question: AttributionQuestion }
   | { type: 'redesign'; outline: PageOutline; fit: FitSummaryForModel; roles: Record<string, Role> }
   | { type: 'explain'; req: ExplainRequest }
   | { type: 'visualVerify'; controls: string[]; help: string[]; mainLabel: string | null; phase: 'before' | 'after' }
@@ -534,3 +538,81 @@ export const DEFAULT_SETTINGS: Settings = {
   explain: true,
   serverOrigin: SERVER_ORIGIN,
 };
+
+/* ------------------------------------------------------------------ */
+/* Round 4: the passive fit ("learns the need, never the cause")       */
+/* ------------------------------------------------------------------ */
+
+/** Functional needs WebAble learns. Never a condition, cause, age or diagnosis. */
+export type FitDimension =
+  | 'text_size' | 'contrast' | 'targets' | 'steady_clicks' | 'motion' | 'clutter' | 'reading_support' | 'colors';
+
+/** One piece of evidence about a need, described as something that happened on a page or something the person chose. */
+export interface PassiveEvidence {
+  dim: FitDimension;
+  /** Log-odds weight (positive = more likely needed). Code computes it; Jev only answers attribution questions. */
+  weight: number;
+  /** Plain words about the page or the person's action: 'You zoomed in to 150% on cvs.com'. */
+  what: string;
+  site?: string; // hostname only
+  at: string; // ISO time
+  layer: 'now' | 'usual';
+  /** For text_size: the size the evidence points to (CSS px of body text). */
+  value?: number;
+}
+
+export interface DimensionBelief {
+  dim: FitDimension;
+  /** P(this need applies), after decay. */
+  p: number;
+  /** For text_size the comfortable body px; for targets the hit-area px; otherwise null. */
+  value: number | null;
+  source: 'setting' | 'warmup' | 'learned' | 'person' | 'default';
+  /** 'apply' (>= 0.9, applied with Undo), 'offer' (0.7-0.9), 'ask' (0.4-0.7, at most weekly), 'none'. */
+  action: 'apply' | 'offer' | 'ask' | 'none';
+  /** One plain sentence in the person's own actions: 'Text is larger because you zoomed in on 4 sites this week.' */
+  explanation: string;
+  evidence: PassiveEvidence[]; // most recent first, capped
+  locked: boolean; // the person set it explicitly
+  sites: number; // distinct sites with evidence
+  days: number; // distinct days with evidence
+  updatedAt: string;
+}
+
+/** What the person already chose in Chrome and the OS (read at install and on change; no questions). */
+export interface BrowserSettings {
+  defaultFontPx: number | null;
+  minFontPx: number | null;
+  defaultZoom: number | null;
+  siteZooms: Array<{ site: string; zoom: number }>;
+  reducedMotion: boolean;
+  contrastMore: boolean;
+  forcedColors: boolean;
+  colorScheme: 'light' | 'dark';
+  reducedTransparency: boolean;
+  languages: string[];
+  pointer: 'fine' | 'coarse' | 'none';
+  anyHover: boolean;
+}
+
+export interface PassiveFitState {
+  v: 'passive.1';
+  settings: BrowserSettings | null;
+  beliefs: Record<FitDimension, DimensionBelief>;
+  updatedAt: string;
+}
+
+/** A question only Jev's calibrated judgment can answer about attribution (never about the person's body). */
+export interface AttributionQuestion {
+  kind: 'zoom_reason' | 'pause_reason' | 'miss_reason';
+  /** Code-computed, structure-only evidence (no page text beyond interface labels). */
+  evidence: Record<string, string | number | boolean>;
+}
+
+export interface AttributionAnswer {
+  kind: AttributionQuestion['kind'];
+  /** e.g. zoom_reason: { text: 0.82, image: 0.10, layout: 0.05, other: 0.03 } */
+  probs: Record<string, number>;
+  top: string;
+  metrics: JevMetrics;
+}
