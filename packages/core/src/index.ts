@@ -14,3 +14,5 @@ export * from './color/contrast';
 export * from './layout/spec';
 export * from './layout/heuristic';
 export * from './verify/checks';
+export * from './jev/overlay';
+export * from './layout/variants';
