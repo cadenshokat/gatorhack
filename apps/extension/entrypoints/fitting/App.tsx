@@ -3,7 +3,7 @@
 
 import { DEMO_FITS, type FitProfile, type InputClass } from '@webable/core';
 import type { JSX } from 'preact';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { SENTENCES, type Sentence } from './content/sentences';
 import { captureEnv, type Env } from './logic/env';
 import { planFinding } from './logic/finding';
@@ -18,6 +18,7 @@ import type { ScreenProps, SentenceSource } from './screens/types';
 import { PointerChoice, Welcome, type DemoName } from './screens/Welcome';
 import { Done, YourFit, type FitOrigin } from './screens/YourFit';
 import { ActionBar, FitSlip, PART_LABEL, PARTS, PauseOverlay, TopBar, type Part, type RulerState, type SlipLine } from './ui/chrome';
+import { Btn } from './ui/common';
 
 type StepId = 'welcome' | 'pointer' | 'R1' | 'R2' | 'express' | 'R3' | 'R4' | 'R4q' | 'P1' | 'F1' | 'F2' | 'F3' | 'fit' | 'done';
 type Mode = 'full' | 'quick' | 'listen';
@@ -83,6 +84,9 @@ export function App(): JSX.Element {
   const [, force] = useState(0);
   const [chromeScale, setChromeScale] = useState(1);
   const [vw, setVw] = useState(() => window.innerWidth);
+  const [vh, setVh] = useState(() => window.innerHeight);
+  /** The fit as edited on "Your fit" (steppers), so the Save in the top bar saves what is on screen. */
+  const draft = useRef<FitProfile | null>(null);
   const lastActivity = useRef(performance.now());
   const started = useRef(false);
 
@@ -106,6 +110,11 @@ export function App(): JSX.Element {
   /* ---------------- boot ---------------- */
 
   useEffect(() => {
+    try {
+      history.scrollRestoration = 'manual';
+    } catch {
+      /* not supported */
+    }
     const e = captureEnv(SENTENCES.map((s) => s.text).join(' '));
     setEnv(e);
     raw.inputClass = e.coarse ? 'touch' : 'mouse';
@@ -125,6 +134,13 @@ export function App(): JSX.Element {
       }
     }
   }, []);
+
+  /* ---------------- every step starts at the top ---------------- */
+
+  // A new screen never inherits the last one's scroll: its heading and instruction must be in view.
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
 
   /* ---------------- presses, activity, visibility ---------------- */
 
@@ -275,7 +291,10 @@ export function App(): JSX.Element {
   };
 
   useEffect(() => {
-    const onResize = () => setVw(window.innerWidth);
+    const onResize = () => {
+      setVw(window.innerWidth);
+      setVh(window.innerHeight);
+    };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
@@ -353,6 +372,9 @@ export function App(): JSX.Element {
 
   if (!env) return <div class="fx-app" />;
 
+  // Short once the chrome has grown: the same 820 px rule as a 1280 × 720 projector, in unscaled px.
+  const short = vh / chromeScale <= 820;
+
   const screenProps: ScreenProps = {
     raw,
     env,
@@ -425,6 +447,7 @@ export function App(): JSX.Element {
           done={raw.done}
           reducedMotion={env.reducedMotion}
           saving={saving}
+          onChange={(f) => (draft.current = f)}
           onSave={(f) => void onSave(f)}
           onRestart={restart}
         />
@@ -443,8 +466,18 @@ export function App(): JSX.Element {
   }
 
   return (
-    <div class="fx-app">
-      <TopBar ruler={ruler} title={step === 'fit' ? 'Your fit' : undefined} />
+    <div class={`fx-app ${short ? 'is-short' : ''}`}>
+      <TopBar
+        ruler={ruler}
+        title={step === 'fit' ? 'Your fit' : undefined}
+        action={
+          step === 'fit' && fit ? (
+            <Btn kind="primary" class="fx-btn-top" onClick={() => void onSave(draft.current ?? fit)} disabled={saving}>
+              {saving ? 'Saving…' : 'Save my fit'}
+            </Btn>
+          ) : undefined
+        }
+      />
       <main class={`fx-main ${wide ? 'is-wide' : ''} ${step === 'fit' ? 'is-fit' : ''}`} key={step}>
         {body}
       </main>

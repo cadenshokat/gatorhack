@@ -1,12 +1,33 @@
-// Owner: D2. Popup data: settings and fit in chrome.storage.local, this tab's report in chrome.storage.session,
+// Owner: P. Popup data: settings and fit in chrome.storage.local, this tab's report in chrome.storage.session,
 // and the local server's /health. The popup is an extension page, so it reads storage directly.
 import { DEFAULT_SETTINGS, type FitProfile, type Settings, type TabReport } from '@webable/core';
 import { askExt, type HealthInfo } from '../../src/engine/bus';
 
+export type AiState = 'on' | 'off' | 'no_credits';
+
+/** The server's HealthStatus as the popup reads it (older servers only say `openai: boolean`). */
 export interface Health {
   ok: boolean;
   jev?: { warm?: boolean; model?: string };
+  ai?: AiState;
   openai?: boolean;
+}
+
+function aiFrom(body: { ai?: unknown; openai?: unknown }): AiState | undefined {
+  if (body.ai === 'on' || body.ai === 'off' || body.ai === 'no_credits') return body.ai;
+  if (typeof body.openai === 'boolean') return body.openai ? 'on' : 'off';
+  return undefined;
+}
+
+function healthFrom(body: unknown, okDefault: boolean): Health {
+  const b = (body && typeof body === 'object' ? body : {}) as { ok?: unknown; jev?: unknown; ai?: unknown; openai?: unknown };
+  const j = b.jev && typeof b.jev === 'object' ? (b.jev as { warm?: unknown; model?: unknown }) : null;
+  return {
+    ok: typeof b.ok === 'boolean' ? b.ok : okDefault,
+    jev: j ? { warm: Boolean(j.warm), model: typeof j.model === 'string' ? j.model : undefined } : undefined,
+    ai: aiFrom(b),
+    openai: typeof b.openai === 'boolean' ? b.openai : undefined,
+  };
 }
 
 export interface TodayMeter {
@@ -92,27 +113,30 @@ export async function readReport(tabId: number | null): Promise<TabReport | null
   }
 }
 
-/** Server status via the background's `health`; a direct fetch if the worker cannot answer. */
+/**
+ * Server status. The popup is an extension page with host access to the local server, so it asks /health
+ * directly (that answer carries the AI state); if that fails, it asks through the background worker.
+ */
 export async function checkHealth(serverOrigin: string, timeoutMs = 2500): Promise<Health | null> {
-  try {
-    const h = await askExt<HealthInfo>({ type: 'health' }, timeoutMs + 1000);
-    if (h && typeof h === 'object' && typeof h.ok === 'boolean') {
-      if (!h.ok && h.error && !h.jev) return null; // the worker reached nothing
-      return { ok: h.ok, jev: h.jev, openai: h.openai };
-    }
-  } catch {
-    /* fall through to a direct check */
-  }
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     const res = await fetch(`${serverOrigin.replace(/\/$/, '')}/health`, { signal: ctl.signal, cache: 'no-store' });
-    if (!res.ok) return { ok: false };
-    const body = (await res.json()) as Partial<Health>;
-    return { ok: Boolean(body.ok), jev: body.jev, openai: body.openai };
+    const body: unknown = await res.json().catch(() => null);
+    return healthFrom(body, res.ok);
   } catch {
-    return null;
+    /* fall through to the worker */
   } finally {
     clearTimeout(t);
   }
+  try {
+    const h = await askExt<HealthInfo>({ type: 'health' }, timeoutMs + 1000);
+    if (h && typeof h === 'object' && typeof h.ok === 'boolean') {
+      if (!h.ok && h.error && !h.jev) return null; // the worker reached nothing either
+      return healthFrom(h, h.ok);
+    }
+  } catch {
+    /* nothing answered */
+  }
+  return null;
 }

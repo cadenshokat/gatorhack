@@ -1,4 +1,4 @@
-// Owner: D1. Design tokens sized from the person's fit.
+// Owner: C. Design tokens sized from the person's fit.
 //
 // Visual language: apple.com / Google Store ("Showroom"): light by default, white cards on #F5F5F7, three heading sizes far
 // apart at weight 600, pill buttons, one blue action colour, fern only for WebAble's own controls.
@@ -45,6 +45,12 @@ export interface CalmMetrics {
   pillPad: number;
   fieldPad: number;
   stripH: number;
+  /** First band: page top padding, title → orientation line, line → task. */
+  topPad: number;
+  leadGap: number;
+  taskGap: number;
+  fieldGap: number;
+  dockH: number;
   check: number; // checkbox / radio visual size
   row: number; // minimum row height in grouped lists
   colMax: number; // single task column width
@@ -65,7 +71,7 @@ interface Palette {
   ink: string; ink2: string; line: string; lineStrong: string;
   action: string; onAction: string; actionHover: string; link: string; badge: string;
   accent: string; onAccent: string; accentHover: string; accentTint: string;
-  warning: string; warningTint: string; focus: string; selection: string; glass: string;
+  warning: string; warningTint: string; success: string; successTint: string; focus: string; selection: string; glass: string;
   shadowCard: string; shadowLift: string; shadowFloat: string;
   edge: number; // card and control edge width in px
   edgeColor: string;
@@ -77,7 +83,7 @@ const LIGHT: Palette = {
   ink: '#1D1D1F', ink2: '#5E5E63', line: '#D2D2D7', lineStrong: '#86868B',
   action: '#0071E3', onAction: '#FFFFFF', actionHover: '#0077ED', link: '#0066CC', badge: '#B64400',
   accent: '#2D6A3E', onAccent: '#FFFFFF', accentHover: '#22552F', accentTint: '#E4EFE6',
-  warning: '#7A4800', warningTint: '#FAEFD9', focus: '#0071E3', selection: '#B3D7FF',
+  warning: '#7A4800', warningTint: '#FAEFD9', success: '#1E7B3C', successTint: '#E3F1E7', focus: '#0071E3', selection: '#B3D7FF',
   glass: 'rgba(255,255,255,.72)',
   shadowCard: '0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.06)',
   shadowLift: '0 2px 4px rgba(0,0,0,.05), 0 12px 32px rgba(0,0,0,.10)',
@@ -90,7 +96,7 @@ const DARK: Palette = {
   ink: '#F5F5F7', ink2: '#A1A1A6', line: '#38383A', lineStrong: '#8E8E93',
   action: '#0071E3', onAction: '#FFFFFF', actionHover: '#0077ED', link: '#2997FF', badge: '#FF9F45',
   accent: '#8FCB9B', onAccent: '#0F1A12', accentHover: '#A9D9B2', accentTint: '#1B2B1F',
-  warning: '#F2B75E', warningTint: '#2E2412', focus: '#2997FF', selection: '#1F4E85',
+  warning: '#F2B75E', warningTint: '#2E2412', success: '#6FD08C', successTint: '#12301C', focus: '#2997FF', selection: '#1F4E85',
   glass: 'rgba(22,22,23,.78)',
   shadowCard: NO_SHADOW, shadowLift: NO_SHADOW, shadowFloat: '0 12px 40px rgba(0,0,0,.6)',
   edge: 0, edgeColor: 'transparent', scheme: 'dark',
@@ -115,9 +121,9 @@ const MAX_LIGHT: Palette = {
   canvas: '#FFFFFF', raised: '#FFFFFF', tonal: '#F0F0F0', hover: '#E2E2E2', press: '#D4D4D4', well: '#FFFFFF',
   ink: '#000000', ink2: '#000000', line: '#000000', lineStrong: '#000000',
   action: '#0040DD', onAction: '#FFFFFF', actionHover: '#0033B8', link: '#0040DD', badge: '#8A2E00',
-  accent: '#1F4D2B', onAccent: '#FFFFFF', accentHover: '#163A20', accentTint: '#E4EFE6',
-  warning: '#5C3600', warningTint: '#FAEFD9', focus: '#000000', selection: '#B3D7FF',
-  glass: 'rgba(255,255,255,.97)',
+  accent: '#1F4D2B', onAccent: '#FFFFFF', accentHover: '#163A20', accentTint: '#FFFFFF',
+  warning: '#5C3600', warningTint: '#FFFFFF', success: '#0B5A26', successTint: '#FFFFFF', focus: '#000000', selection: '#B3D7FF',
+  glass: '#FFFFFF',
   shadowCard: NO_SHADOW, shadowLift: NO_SHADOW, shadowFloat: NO_SHADOW,
   edge: 2, edgeColor: '#000000', scheme: 'light',
 };
@@ -126,9 +132,9 @@ const MAX_DARK: Palette = {
   canvas: '#000000', raised: '#000000', tonal: '#1A1A1A', hover: '#2A2A2A', press: '#333333', well: '#1A1A1A',
   ink: '#FFFFFF', ink2: '#FFFFFF', line: '#FFFFFF', lineStrong: '#FFFFFF',
   action: '#6CB4FF', onAction: '#000000', actionHover: '#8AC4FF', link: '#6CB4FF', badge: '#FFB366',
-  accent: '#A9D9B2', onAccent: '#000000', accentHover: '#C2E6CA', accentTint: '#1B2B1F',
-  warning: '#F2B75E', warningTint: '#2E2412', focus: '#FFFFFF', selection: '#1F4E85',
-  glass: 'rgba(0,0,0,.96)',
+  accent: '#A9D9B2', onAccent: '#000000', accentHover: '#C2E6CA', accentTint: '#000000',
+  warning: '#F2B75E', warningTint: '#000000', success: '#7FE09A', successTint: '#000000', focus: '#FFFFFF', selection: '#1F4E85',
+  glass: '#000000',
   shadowCard: NO_SHADOW, shadowLift: NO_SHADOW, shadowFloat: NO_SHADOW,
   edge: 2, edgeColor: '#FFFFFF', scheme: 'dark',
 };
@@ -213,10 +219,15 @@ export function calmMetrics(fit: FitProfile | null, opts: TokenOptions = {}): Ca
     headGap: Math.max(20, 1.25 * F) * (airy ? 1 : 0.85),
     cardGap: airy ? Math.max(20, F) : Math.max(16, 0.75 * F),
     cardPad: airy ? Math.max(20, 1.25 * F) : Math.max(16, F),
-    panelPad: airy ? Math.max(28, 1.6 * F) : Math.max(22, 1.3 * F),
+    panelPad: Math.max(24, 1.25 * F),
     pillPad: Math.max(20, 1.25 * F),
     fieldPad: Math.max(14, 0.8 * F),
     stripH: Math.max(56, T + 12),
+    topPad: Math.max(16, 0.75 * F),
+    leadGap: 0.35 * F,
+    taskGap: Math.max(20, F),
+    fieldGap: Math.max(24, 1.25 * F),
+    dockH: Math.max(T, 52, Math.round(F * 2.55)) + 26,
     check: clamp(Math.round(Math.max(26, F * 1.25, T * 0.5)), 26, 44),
     row: Math.max(T, 64, Math.round(F * 3)),
     colMax: clamp(Math.round(40 * F), 720, 1040),
@@ -238,7 +249,8 @@ export function tokensFor(fit: FitProfile | null, mode: ThemeMode, opts: TokenOp
     ink: p.ink, 'ink-2': p.ink2, line: p.line, 'line-strong': p.lineStrong,
     action: p.action, 'on-action': p.onAction, 'action-hover': p.actionHover, link: p.link, badge: p.badge,
     accent: p.accent, 'on-accent': p.onAccent, 'accent-hover': p.accentHover, 'accent-tint': p.accentTint,
-    warning: p.warning, 'warning-tint': p.warningTint, focus: p.focus, selection: p.selection, glass: p.glass,
+    warning: p.warning, 'warning-tint': p.warningTint, success: p.success, 'success-tint': p.successTint,
+    focus: p.focus, selection: p.selection, glass: p.glass,
     'shadow-card': p.shadowCard, 'shadow-lift': p.shadowLift, 'shadow-float': p.shadowFloat,
     edge: px(p.edge), 'edge-color': p.edgeColor, 'ctl-edge': px(Math.max(1, p.edge)),
     scheme: p.scheme,
@@ -251,11 +263,13 @@ export function tokensFor(fit: FitProfile | null, mode: ThemeMode, opts: TokenOp
     'word-sp': `${m.wordEm}em`, 'letter-sp': `${m.letterEm}em`, measure: `${m.measureCh}ch`,
     // size and space
     t: px(m.T), ctl: px(m.ctl), 'primary-h': px(m.primaryH), 'pill-pad': px(m.pillPad), 'field-pad': px(m.fieldPad),
-    'strip-h': px(m.stripH), 'band-gap': px(m.bandGap), 'head-gap': px(m.headGap), 'card-gap': px(m.cardGap),
+    'strip-h': px(m.stripH), 'top-pad': px(m.topPad), 'lead-gap': px(m.leadGap), 'task-gap': px(m.taskGap),
+    'field-gap': px(m.fieldGap), 'dock-h': px(m.dockH), 'band-gap': px(m.bandGap), 'head-gap': px(m.headGap), 'card-gap': px(m.cardGap),
     'card-pad': px(m.cardPad), 'panel-pad': px(m.panelPad), check: px(m.check), row: px(m.row),
     'col-max': px(m.colMax), 'page-max': px(1280), 'tile-min': px(m.tileMin), 'side-pad': px(Math.max(24, m.F)),
     'r-card': px(22), 'r-panel': px(28), 'r-media': px(16), 'r-field': px(14), 'r-small': px(10), 'r-pill': '999px',
-    gap: px(Math.max(10, m.F * 0.6)), 'gap-s': px(Math.max(6, m.F * 0.35)), hair: px(1), ring: px(3),
+    gap: px(Math.max(10, m.F * 0.6)), 'gap-s': px(Math.max(6, m.F * 0.35)), hair: px(1),
+    ring: px(mode === 'max' ? 3 : 3), 'chip-h': px(Math.max(40, 1.8 * m.F)), 'f-big': px(1.25 * m.F),
   };
 }
 

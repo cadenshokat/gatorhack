@@ -32,7 +32,14 @@ export const RE = {
   related: /\b(also viewed|you may also like|you might also like|related|recommended|recommendations|customers also|similar|more like this|trending|popular|frequently bought)\b/,
   nav: /\b(menu|navigation|breadcrumb|breadcrumbs|categories|departments|skip to)\b/,
   legal: /\b(terms|privacy|legal|copyright|cookie policy|accessibility statement|©)\b/,
-  consentField: /\b(agree|terms|consent|privacy|accept|confirm that)\b/,
+  consentField: /\b(agree|terms|consent|privacy|accept|confirm that|certify)\b/,
+  /** Chat widgets and their controls (only counted inside overlays: a "Chat with a caseworker" link in a page stays help). */
+  chat: /\b(chat|chats|chatbot|live chat|virtual assistant|assistant|live agent|messenger|send message|message us|talk to us)\b/,
+  /** Popups that matter for the task (a session about to end), as opposed to surveys and promotions. */
+  warning: /\b(session|time ?out|timed out|expir\w*|warning|error|errors|signed out|sign you out|security|urgent|emergency|alert)\b/,
+  /** Fields that sign up for mail or search the site: never the page's main form. */
+  newsletter: /\b(newsletter|newsletters|subscribe|subscription|inbox|deals|tips|updates|sign up for|stay in touch|stay informed)\b/,
+  logo: /\blogo\b/,
 } as const;
 
 export const lower = (s: string | undefined): string => (s ?? '').toLowerCase();
@@ -134,13 +141,47 @@ export function outlineProtection(ix: OutlineIndex, id: string, roles: Record<st
   const label = lower(n.label);
   const control = CONTROL_KINDS.has(n.kind);
   if (role === 'consent_notice' || (RE.consent.test(label) && looksLikeBanner(n))) return 'consent';
+  // A chat widget is one help channel: the widget stays reachable, its own controls (minimise, send) are never lifted.
+  const chat = chatRoot(ix, id);
+  if (chat) return chat === id ? 'help' : null;
+  // Inside a survey, promotion or picker overlay nothing is protected by itself (the overlay's own role decides).
+  const ov = overlayRoot(ix, id);
+  const plainOverlay = !!ov && !isWarningOverlay(ix, ov, roles) && !consentOverlay(ix, ov, roles);
+  if (plainOverlay && role !== 'help_contact') return null;
   if (role === 'help_contact' || (ACTION_KINDS.has(n.kind) && RE.help.test(label))) return 'help';
-  if (n.kind === 'notice') return 'alert';
+  if (n.kind === 'notice') return emptyNotice(ix, id) ? null : 'alert';
   if (FIELD_KINDS.has(n.kind) && n.protected) return 'field';
   if (!control && RE.safety.test(label)) return 'safety';
   if (!control && underSafetyHeading(ix, id)) return 'safety';
-  if (n.protected) return 'protected';
+  if (n.protected) {
+    // Header, footer and menu containers are "protected" only because a help link sits inside; that link
+    // carries its own protection, so the container may fold.
+    const zone = n.zone ?? '';
+    const lm = lower(n.landmark);
+    const chrome = zone === 'header_band' || zone === 'footer_band' || lm === 'navigation' || lm === 'contentinfo' || lm === 'banner';
+    if (chrome) return null;
+    return 'protected';
+  }
   return null;
+}
+
+function consentOverlay(ix: OutlineIndex, root: string, roles: Record<string, Role>): boolean {
+  const n = ix.nodes.get(root);
+  if (!n) return false;
+  if ((roles[root] ?? n.jevRole) === 'consent_notice') return true;
+  return RE.consent.test(subtreeLabels(ix, root, 12));
+}
+
+/** A notice with no words of its own and nothing inside (an empty live region, a hidden validation slot). */
+function emptyNotice(ix: OutlineIndex, id: string): boolean {
+  const n = ix.nodes.get(id);
+  if (!n) return true;
+  const words = (s: string): boolean => /[a-z0-9]/i.test(s.replace(/·/g, ''));
+  if (words(n.label) || n.shape) return false;
+  return !ix.descendants(id).some((d) => {
+    const x = ix.nodes.get(d);
+    return !!x && (words(x.label) || !!x.shape || x.kind !== 'text');
+  });
 }
 
 /** Cookie wording counts as a consent notice only on banners, notices and their controls, not in articles. */
@@ -152,6 +193,60 @@ function looksLikeBanner(n: OutlineNode): boolean {
 /** True when one of the two nearest ancestors holds form fields (the control sits in a form). */
 export function inFormContext(ix: OutlineIndex, id: string): boolean {
   return ix.ancestors(id).slice(0, 2).some((a) => ix.descendants(a).some((d) => FIELD_KINDS.has(ix.kind(d) as OutlineKind)));
+}
+
+/** The outermost ancestor-or-self that sits in an overlay zone (a dialog, a corner widget, a bottom banner). */
+export function overlayRoot(ix: OutlineIndex, id: string): string | null {
+  let top: string | null = null;
+  for (const x of [id, ...ix.ancestors(id)]) {
+    if ((ix.nodes.get(x)?.zone ?? '').startsWith('overlay') || lower(ix.nodes.get(x)?.landmark) === 'dialog') top = x;
+  }
+  return top;
+}
+
+function subtreeLabels(ix: OutlineIndex, id: string, max = 60): string {
+  return [id, ...ix.descendants(id).slice(0, max)].map((d) => ix.label(d)).join(' · ');
+}
+
+/** The chat widget a node belongs to (the overlay that holds a chat), or null. */
+export function chatRoot(ix: OutlineIndex, id: string): string | null {
+  const root = overlayRoot(ix, id);
+  if (!root) return null;
+  const n = ix.nodes.get(root);
+  if (!n) return null;
+  if (ACTION_KINDS.has(n.kind) || n.kind === 'media') return RE.chat.test(ix.label(root)) ? root : null;
+  return RE.chat.test(subtreeLabels(ix, root)) ? root : null;
+}
+
+/** An overlay that warns about the task (session about to end, an error), so it must stay in view. */
+export function isWarningOverlay(ix: OutlineIndex, root: string, roles: Record<string, Role> = {}): boolean {
+  const n = ix.nodes.get(root);
+  if (!n) return false;
+  const role = roles[root] ?? n.jevRole;
+  if (role === 'consent_notice' || role === 'advertising' || role === 'recommendations') return false;
+  if (chatRoot(ix, root) === root) return false;
+  // The overlay's own name, its headings and its notices say what it is about.
+  const named = [root, ...ix.descendants(root).filter((d) => ix.kind(d) === 'heading' || ix.kind(d) === 'notice')];
+  return RE.warning.test(named.map((d) => ix.label(d)).join(' · '));
+}
+
+/** Field that searches the site or signs up for mail (never the page's main form). */
+export function isSideField(ix: OutlineIndex, id: string, roles: Record<string, Role> = {}): boolean {
+  const n = ix.nodes.get(id);
+  if (!n || !FIELD_KINDS.has(n.kind)) return false;
+  const role = roles[id] ?? n.jevRole;
+  if (role === 'search' || RE.search.test(lower(n.label)) || /\bsearch\b/.test(lower(n.shape)) || lower(n.landmark) === 'search') return true;
+  if (chatRoot(ix, id)) return true;
+  const near = [id, ...ix.ancestors(id).slice(0, 3)].map((a) => ix.label(a)).join(' · ');
+  if (RE.newsletter.test(near)) return true;
+  const zone = n.zone ?? '';
+  return zone === 'footer_band' || zone === 'header_band';
+}
+
+/** Nearest region or list holding a field (its fieldset), else its parent. */
+export function fieldGroup(ix: OutlineIndex, id: string): string | null {
+  for (const a of ix.ancestors(id)) if (CONTAINER_KINDS.has(ix.kind(a) as OutlineKind)) return a;
+  return ix.parent(id);
 }
 
 /** Text that follows a Warnings / Safety / Important heading among its siblings, until the next heading. */
@@ -205,8 +300,11 @@ export function primaryActionScore(ix: OutlineIndex, id: string, roles: Record<s
   const label = lower(n.label);
   if (RE.help.test(label) || RE.consent.test(label)) return null;
   let s = 0;
+  // A headline that happens to contain "save" or "apply" is not an action: action words count on short labels only.
+  const short = label.split(/\s+/).filter(Boolean).length <= 6;
   if (role === 'action_button') s += 2;
-  if (RE.action.test(label)) s += 3;
+  if (RE.action.test(label) && short) s += 3;
+  if (!short && n.kind === 'link') s -= 2;
   if (RE.notAction.test(label)) s -= 4;
   if (n.kind === 'button') s += 1;
   if (zone === 'center_column' || zone === 'full_width_mid' || lm === 'main') s += 1;
@@ -282,7 +380,9 @@ const LABEL_RULES: Array<[RegExp, SectionLabel]> = [
   [/\b(safety|warnings?|important|side effects|caution)\b/, 'Safety information'],
   [/\b(help|contact|support)\b/, 'Help'],
   [/\b(options?|sizes?|colou?rs?|choose|select|prescriptions?|items to)\b/, 'Choose options'],
-  [/\b(address|postcode|zip)\b/, 'Address'],
+  [/\b(date of birth|birth ?date|dob|your name|first name|last name|full name)\b/, 'Your details'],
+  // "Email address" and "web address" are not a postal address.
+  [/(?<!\b(?:e-?mail|web|ip|internet)\s)\baddress\b|\b(postcode|zip|street|city|apartment)\b/, 'Address'],
   [/\b(date|time|schedule|appointment)\b/, 'Date'],
   [/\b(payment|billing|card)\b/, 'Billing'],
   [/\b(your details|personal|about you|contact details|your information)\b/, 'Your details'],

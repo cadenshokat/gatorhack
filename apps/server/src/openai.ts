@@ -1,17 +1,20 @@
 // OpenAI Responses API: layout candidates (LAYOUT_MODEL, no reasoning, 3 stances in parallel, strict FitSpec
 // schema, 12 s), an optional background deep layout (DEEP_LAYOUT_MODEL) cached for the next visit, and
 // plain-language explanations (EXPLAIN_MODEL). The models only ever return data that we validate.
+// When OpenAI says the account has no credits (or rejects the key), every call is skipped for AI_BLOCK_MS and a
+// one-token probe checks again when the block ends (ai.ts), so the product picks AI up again on its own.
 import OpenAI from 'openai';
 import { DEEP_LAYOUT_MODEL, EXPLAIN_MODEL, LAYOUT_MODEL } from '@webable/core';
+import { aiBlockedUntil, aiState, aiStatus, classifyOpenAiFailure, markAiBlocked, markAiWorking } from './ai';
 import {
-  DEEP_CACHE_TTL_MS, DEEP_ENABLED, DEEP_TIMEOUT_MS, EXPLAIN_TIMEOUT_MS, LAYOUT_WAVE_MS, LLM_TIMEOUT_MS, OPENAI_BUDGET_USD,
+  AI_PROBE_MODEL, DEEP_CACHE_TTL_MS, DEEP_ENABLED, DEEP_TIMEOUT_MS, EXPLAIN_TIMEOUT_MS, LAYOUT_WAVE_MS, LLM_TIMEOUT_MS,
   OPENAI_SERVICE_TIER, openAiKey,
 } from './config';
 import { TtlLru } from './lru';
 import {
   EXPLAIN_INSTRUCTIONS, EXPLAIN_SCHEMA, LAYOUT_INSTRUCTIONS, layoutInput, type ExplainOutput, type Stance,
 } from './prompts';
-import { openAiSpentUsd, recordOpenAiCall, recordOpenAiError } from './stats';
+import { recordOpenAiCall, recordOpenAiError } from './stats';
 import { errorMessage, log, round } from './util';
 
 export const EXPLAIN_FALLBACK_MODEL = 'gpt-6-luna';
@@ -42,9 +45,89 @@ function getClient(): OpenAI | null {
   return client;
 }
 
+/** True when a generative call could succeed right now (a key, credits, under the spend cap). */
 export function openAiAvailable(): boolean {
-  return openAiKey() !== null;
+  return aiStatus() === 'on';
 }
+
+/* ------------------------------------------------------------------ */
+/* Availability: block on "no credits", probe again when the block ends */
+/* ------------------------------------------------------------------ */
+
+let watching = false;
+let retryTimer: NodeJS.Timeout | null = null;
+
+function scheduleRetry(minMs = 1_000): void {
+  if (!watching) return;
+  if (retryTimer) clearTimeout(retryTimer);
+  const wait = Math.max(minMs, aiBlockedUntil() - Date.now() + 250);
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    void probeAi('retry');
+  }, wait);
+  retryTimer.unref();
+}
+
+/** A provider failure that means "no credits" or "key rejected" blocks AI; returns the reason, or null. */
+function noteFailure(e: unknown, tag: string): 'no_credits' | 'key_rejected' | null {
+  if (!(e instanceof OpenAI.APIError)) return null;
+  const reason = classifyOpenAiFailure({ status: e.status ?? null, code: e.code ?? null, type: e.type ?? null, message: e.message });
+  if (!reason) return null;
+  const changed = markAiBlocked(reason);
+  const s = aiState();
+  if (changed) log('ai off', { reason, tag, status: e.status ?? null, code: e.code ?? null, retryAt: s.retryAt });
+  else log('ai still off', { reason, tag, retryAt: s.retryAt });
+  scheduleRetry();
+  return reason;
+}
+
+function noteSuccess(tag: string): void {
+  if (markAiWorking()) log('ai on again', { tag });
+}
+
+/**
+ * The smallest billable call (16 output tokens on the cheapest model, about $0.00001): tells "no credits" from
+ * "on". Never throws. Transient failures (network, a plain rate limit) leave the status as it is.
+ */
+export async function probeAi(why: string): Promise<ReturnType<typeof aiStatus>> {
+  const c = getClient();
+  if (!c) return aiStatus();
+  const t0 = performance.now();
+  try {
+    const resp = await c.responses.create(
+      { model: AI_PROBE_MODEL, input: 'Reply with the word ok.', max_output_tokens: 16, store: false },
+      { timeout: 8_000, maxRetries: 0 },
+    );
+    const u = resp.usage;
+    const costUsd = costOf(AI_PROBE_MODEL, resp.service_tier ?? null, u?.input_tokens ?? 0, u?.input_tokens_details?.cached_tokens ?? 0, u?.output_tokens ?? 0);
+    recordOpenAiCall({
+      model: AI_PROBE_MODEL, inputTokens: u?.input_tokens ?? 0, cachedTokens: u?.input_tokens_details?.cached_tokens ?? 0,
+      outputTokens: u?.output_tokens ?? 0, costUsd, ms: round(performance.now() - t0),
+    });
+    noteSuccess(`probe/${why}`);
+    log('ai probe', { why, status: 'on', ms: round(performance.now() - t0) });
+  } catch (e) {
+    const reason = noteFailure(e, `probe/${why}`);
+    const status = e instanceof OpenAI.APIError ? e.status : undefined;
+    if (!reason) log('ai probe', { why, status: 'unchanged', reason: status ? `http_${status}` : 'network', ms: round(performance.now() - t0) });
+    // Still blocked and the check itself failed (network): look again in a minute, not in a loop.
+    if (!reason && aiBlockedUntil() > 0) scheduleRetry(60_000);
+  }
+  return aiStatus();
+}
+
+/** Probe once at boot and again whenever a block ends. Returns a stop function. */
+export function startAiWatch(): () => void {
+  watching = true;
+  if (openAiKey()) void probeAi('boot');
+  else log('ai off', { reason: 'no_key' });
+  return () => {
+    watching = false;
+    if (retryTimer) clearTimeout(retryTimer);
+    retryTimer = null;
+  };
+}
+
 
 export interface LlmOk<T> {
   ok: true;
@@ -65,6 +148,9 @@ export interface LlmFail {
 }
 
 export type LlmResult<T> = LlmOk<T> | LlmFail;
+
+/** LlmFail errors that mean the account is unusable right now (no call was made, or OpenAI refused the account). */
+export const UNAVAILABLE_ERRORS: ReadonlySet<string> = new Set(['no_key', 'budget', 'no_credits', 'key_rejected', 'unavailable']);
 
 function costOf(model: string, tier: string | null, input: number, cached: number, output: number): number {
   const p = PRICE[model] ?? [5, 0.5, 30];
@@ -90,9 +176,10 @@ interface JsonCall {
 export async function respondJson(p: JsonCall): Promise<LlmResult<unknown>> {
   const c = getClient();
   if (!c) return { ok: false, model: p.model, ms: 0, costUsd: 0, error: 'no_key' };
-  if (openAiSpentUsd() >= OPENAI_BUDGET_USD) {
-    log('openai budget reached; skipping', { tag: p.tag, budget: OPENAI_BUDGET_USD });
-    return { ok: false, model: p.model, ms: 0, costUsd: 0, error: 'budget' };
+  const avail = aiState();
+  if (avail.status !== 'on') {
+    // No credits, key rejected or our spend cap: no call until the block ends (then it is tried again).
+    return { ok: false, model: p.model, ms: 0, costUsd: 0, error: avail.reason ?? 'unavailable' };
   }
   let effort: 'none' | 'low' = EFFORT[p.model] ?? 'none';
   const t0 = performance.now();
@@ -121,6 +208,7 @@ export async function respondJson(p: JsonCall): Promise<LlmResult<unknown>> {
       const costUsd = costOf(p.model, tier, input, cached, output);
       recordOpenAiCall({ model: p.model, inputTokens: input, cachedTokens: cached, outputTokens: output, costUsd, ms });
       log('openai', { tag: p.tag, model: p.model, ms, in: input, cached, out: output, tier, usd: costUsd.toFixed(5), status: resp.status });
+      noteSuccess(p.tag);
 
       const refused = resp.output.some((o) => o.type === 'message' && o.content.some((part) => part.type === 'refusal'));
       if (refused) return { ok: false, model: p.model, ms, costUsd, error: 'refusal' };
@@ -143,6 +231,8 @@ export async function respondJson(p: JsonCall): Promise<LlmResult<unknown>> {
         continue;
       }
       recordOpenAiError();
+      const blocked = noteFailure(e, p.tag);
+      if (blocked) return { ok: false, model: p.model, ms, costUsd: 0, error: blocked };
       const kind = e instanceof OpenAI.APIConnectionTimeoutError ? 'timeout' : status ? `http_${status}` : 'network';
       // A 400 explains a request-shape problem (schema, parameter); it never echoes the prompt, so keep a short excerpt.
       log('openai error', { tag: p.tag, model: p.model, kind, ms, detail: status === 400 ? msg.replace(/\s+/g, ' ').slice(0, 200) : undefined });
@@ -289,7 +379,8 @@ export async function explainPassage(passage: string): Promise<LlmResult<Explain
       last = { ok: false, model, ms: r.ms, costUsd: spent, error: 'bad_shape' };
     } else {
       last = { ...r, costUsd: spent };
-      if (r.error === 'no_key' || r.error === 'budget') break;
+      // The account cannot answer at all: the fallback model would fail the same way.
+      if (UNAVAILABLE_ERRORS.has(r.error)) break;
     }
   }
   return last ?? { ok: false, model: EXPLAIN_MODEL, ms: 0, costUsd: spent, error: 'unknown' };

@@ -74,17 +74,37 @@ export function roleLabel(role: Role | string | null | undefined): string {
   return (ROLE_LABEL as Record<string, string>)[role] ?? String(role).replace(/_/g, ' ');
 }
 
+/**
+ * One set of Jev numbers for the whole chrome, so the Lens header and the panel always agree.
+ *
+ * The headline is the page read: Jev's understanding of this page (one set of parallel calls). When that read was
+ * replayed from the server's cache, the headline numbers are those of the first live read (`firstRead`) and
+ * `viewUsd` is $0. `sinceLoad` adds every other Jev call this page made (struggle checks, layout judge, visual
+ * check, explain), with cached answers counted as decisions but never as cost.
+ */
 export interface JevTotals {
-  /** Typed answers Jev returned on this page (one per question). */
+  /** Typed answers in the page read (one per question). */
   decisions: number;
+  /** Calls in the page read, all sent in parallel. */
   calls: number;
+  /** What the page read cost when Jev answered it live (the first read's cost when this view came from cache). */
   costUsd: number;
   inputTokens: number;
-  /** Wall time of the page-understanding call (the headline number), else the latest call. */
+  /** Wall time of the page read as the extension saw it (the first read's when cached). */
   headlineMs: number | null;
+  /** Jev's own server time for the page read (from x-envoy-upstream-service-time). */
   serverMs: number | null;
   model: string;
+  /** The page read came from the server's cache. */
   cached: boolean;
+  /** When cached: the metrics of the first live read of this page (null if the server did not send them). */
+  firstRead: JevMetrics | null;
+  /** What this view spent on the page read: $0 when it came from cache. */
+  viewUsd: number;
+  /** Wall time of this view's cached read, when the server reported it separately from the first read. */
+  viewMs: number | null;
+  /** Every Jev call since this page loaded, the page read included. */
+  sinceLoad: { decisions: number; calls: number; costUsd: number; inputTokens: number };
 }
 
 function num(v: unknown): number {
@@ -107,28 +127,52 @@ export function jevMetricsList(s: EngineState): JevMetrics[] {
 }
 
 export function jevTotals(s: EngineState): JevTotals {
-  const list = jevMetricsList(s);
-  let decisions = 0;
-  let calls = 0;
-  let costUsd = 0;
-  let inputTokens = 0;
-  for (const m of list) {
-    decisions += num(m.questions);
-    calls += num(m.calls);
-    costUsd += num(m.costUsd);
-    inputTokens += num(m.inputTokens);
+  const u = s.understanding;
+  const cached = Boolean(u?.cached);
+  const own = u?.metrics ?? null;
+  // A cached view reports the first live read as its headline; this view's own read cost nothing.
+  const fr = cached && u?.firstRead && typeof u.firstRead === 'object' ? u.firstRead : null;
+  const head = fr ?? own;
+  const sinceLoad = { decisions: 0, calls: 0, costUsd: 0, inputTokens: 0 };
+  for (const m of jevMetricsList(s)) {
+    // A cached page read reports 0 calls and $0 for itself (plus any live reads of items that appeared later).
+    sinceLoad.decisions += num(m.questions);
+    sinceLoad.calls += num(m.calls);
+    sinceLoad.costUsd += num(m.costUsd);
+    sinceLoad.inputTokens += num(m.inputTokens);
   }
-  const head = s.understanding?.metrics ?? list[list.length - 1] ?? null;
   return {
-    decisions,
-    calls,
-    costUsd,
-    inputTokens,
+    decisions: num(own?.questions) || num(head?.questions),
+    calls: num(head?.calls),
+    costUsd: num(head?.costUsd),
+    inputTokens: num(head?.inputTokens),
     headlineMs: head ? num(head.wallMs) : null,
-    serverMs: head && typeof head.serverMs === 'number' ? head.serverMs : null,
-    model: head?.model || 'jev-1.14.0',
-    cached: Boolean(s.understanding?.cached),
+    serverMs: head && typeof head.serverMs === 'number' && Number.isFinite(head.serverMs) ? head.serverMs : null,
+    model: head?.model || own?.model || 'jev-1.14.0',
+    cached,
+    firstRead: fr,
+    viewUsd: num(own?.costUsd),
+    viewMs: fr && own ? num(own.wallMs) : null,
+    sinceLoad,
   };
+}
+
+/** "187 decisions · 619 ms": the page read, the same words in the Lens header and the panel. */
+export function fmtPageRead(t: JevTotals): string {
+  return `${fmtCount(t.decisions)} decisions · ${fmtMs(t.headlineMs)}`;
+}
+
+/** "from cache · first read 619 ms, $0.0034 · this view $0", or null for a live read. */
+export function fmtCacheNote(t: JevTotals): string | null {
+  if (!t.cached) return null;
+  const first = t.firstRead || t.headlineMs != null ? `first read ${fmtMs(t.headlineMs)}, ${fmtCost(t.costUsd)}` : 'first read earlier';
+  return `from cache · ${first} · this view ${fmtCost(t.viewUsd)}`;
+}
+
+/** "227 since load" when this page made more Jev calls than the page read, else null. */
+export function fmtSinceLoad(t: JevTotals): string | null {
+  if (t.sinceLoad.decisions <= t.decisions) return null;
+  return `${fmtCount(t.sinceLoad.decisions)} since load`;
 }
 
 /** Plain copy for the engine phase, about the page, never about the person. */

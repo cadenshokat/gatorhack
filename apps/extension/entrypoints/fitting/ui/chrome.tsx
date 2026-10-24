@@ -89,7 +89,7 @@ export function Ruler(props: { state: RulerState }): JSX.Element {
   );
 }
 
-export function TopBar(props: { ruler: RulerState | null; title?: string }): JSX.Element {
+export function TopBar(props: { ruler: RulerState | null; title?: string; action?: JSX.Element }): JSX.Element {
   const r = props.ruler;
   const partIdx = r?.part ? PARTS.indexOf(r.part) + 1 : 0;
   return (
@@ -113,7 +113,7 @@ export function TopBar(props: { ruler: RulerState | null; title?: string }): JSX
           </>
         ) : null}
       </div>
-      <div class="fx-top-right" />
+      <div class="fx-top-right">{props.action ?? null}</div>
     </header>
   );
 }

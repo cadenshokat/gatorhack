@@ -1,4 +1,4 @@
-// Owner: D2. Explain card, the outline around the original passage, and the "Explain" pill.
+// Owner: P. Explain card, the outline around the original passage, and the "Explain" pill.
 import { DISPLAY_STACK, u } from '../panel/css-util';
 
 export const explainCss = /* css */ `
@@ -21,7 +21,13 @@ export const explainCss = /* css */ `
 .wa-ex-list { margin: 0; padding: 0 0 0 ${u(18)}; display: grid; gap: ${u(8)}; font-size: ${u(17)}; line-height: 1.55; }
 .wa-ex-list li::marker { color: var(--c-accent); }
 .wa-ex-msg { margin: 0; padding: ${u(4)} ${u(20)} ${u(10)}; font-size: ${u(15)}; color: var(--c-ink); }
-.wa-ex-body .wa-ex-msg { padding: 0; }
+.wa-ex-body .wa-ex-msg { padding: 0; font-weight: 500; }
+.wa-ex-note { margin: ${u(-4)} 0 0; font-size: ${u(13)}; color: var(--c-ink2); }
+.wa-ex-quote {
+  margin: 0; padding: ${u(12)} ${u(16)}; border-radius: ${u(14)}; background: var(--c-canvas);
+  border-left: ${u(3)} solid var(--c-line-strong); font-size: ${u(15.5)}; line-height: 1.55; color: var(--c-ink);
+  max-height: ${u(320)}; overflow-y: auto; overscroll-behavior: contain;
+}
 .wa-ex-loading { display: grid; gap: ${u(10)}; padding: ${u(8)} ${u(20)} ${u(14)}; }
 .wa-ex-loading p { margin: ${u(4)} 0 0; font-size: ${u(13.5)}; color: var(--c-ink2); }
 .wa-ex-check { margin: 0; display: flex; align-items: center; gap: ${u(8)}; font-size: ${u(14)}; font-weight: 500; }

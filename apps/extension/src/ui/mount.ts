@@ -1,4 +1,4 @@
-// Owner: D2. Mounts the in-page chrome: a <webable-ui> host on documentElement, a closed shadow root,
+// Owner: P. Mounts the in-page chrome: a <webable-ui> host on documentElement, a closed shadow root,
 // and one popover="manual" layer in the top layer (above any page z-index). The layer ignores the pointer;
 // only our controls take clicks, so the page underneath keeps working.
 import { h, render } from 'preact';
@@ -180,7 +180,20 @@ export function mountUi(api: EngineApi): () => void {
   render(h(App, { api, isOurUi, calmHost, calmMount }), appRoot);
 
   // Keep the theme in step with the fit, and the Calm host's pointer state in step with its content.
-  const offState = api.subscribe(() => updateTokens());
+  // `data-calm="open"` on both hosts (and `data-calm-open` on <webable-ui> and .wa-root) lets any stylesheet, ours
+  // or the Calm view's, key on the Calm view being open.
+  const markCalm = () => {
+    const isOpen = api.getState().calm.open;
+    const open = isOpen ? 'open' : 'closed';
+    if (host.getAttribute('data-calm') !== open) host.setAttribute('data-calm', open);
+    if (calmHost.getAttribute('data-calm') !== open) calmHost.setAttribute('data-calm', open);
+    host.toggleAttribute('data-calm-open', isOpen);
+  };
+  markCalm();
+  const offState = api.subscribe(() => {
+    updateTokens();
+    markCalm();
+  });
   const calmObserver = new MutationObserver(() => {
     calmHost.classList.toggle('has-content', calmHost.classList.contains('is-open') && calmMount.childElementCount > 0);
   });

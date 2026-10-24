@@ -6,6 +6,9 @@
 //   pnpm eval                          demo pages, rosa fit
 //   pnpm eval --sites all --fit reader demo pages + real sites
 //   pnpm eval --only alderra-refill --headed
+//   pnpm eval --fitting                the fitting flow, every screen, with layout checks
+//   pnpm eval --interact               panel, Lens, Explain, offer, Calm steps, Confirm, Original on Alderra
+//   pnpm eval --sites all --interact --fitting   everything into one contact sheet
 //   pnpm eval --check                  page checks only, no extension
 //
 // It starts the WebAble server for the run if it is not already running, and stops it afterwards.
@@ -15,17 +18,27 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { runDemoChecks } from './check-demo.mjs';
 import {
-  DESKTOP_UA, EXT_DIR, ROOT, SERVER_ORIGIN, browserTarget, loadCore, loadPlaywright, parseViewport, sleep, slug, stamp,
+  DESKTOP_UA, EXT_DIR, ROOT, SERVER_ORIGIN, browserTarget, loadCore, loadPlaywright, parseViewport, shoot, sleep, slug, stamp,
 } from './lib/common.mjs';
+import { mainLabelFrom, measureView } from './lib/firstscreen.mjs';
+import { runFitting } from './lib/fitting.mjs';
+import { runInteract } from './lib/interact.mjs';
 import { ensureServer, health } from './lib/server.mjs';
 import { renderSheet, siteMetrics } from './lib/sheet.mjs';
+import { uiProbe } from './lib/ui.mjs';
 
 const HELP = `WebAble eval harness
 
   pnpm eval [options]
 
-  --sites demo|real|all   which sites from scripts/eval/sites.json (default: demo)
+  --sites demo|real|all|none  which sites from scripts/eval/sites.json (default: demo, or none when
+                          --fitting / --interact is given without --sites or --only)
   --only <names>          comma-separated site names, e.g. alderra-refill,drugs-metformin
+  --fitting               also run the fitting flow and screenshot every screen (R1 pressed Larger once)
+  --larger <n>            how many times to press Larger on the first fitting screen (default: 1)
+  --interact              also drive one demo page: panel, Lens, Explain, offer, Calm steps, Confirm, Original
+  --interact-site <name>  the page for --interact (default: alderra-refill)
+  --struggle <seconds>    how long --interact tries near-misses before giving up on an offer (default: 75)
   --fit rosa|typical|reader   demo fit to set (default: rosa)
   --viewport WxH          window size (default: 1280x720)
   --headed                show the browser
@@ -39,10 +52,17 @@ const HELP = `WebAble eval harness
 const PHASE_RANK = { idle: 0, reading: 1, tailored: 2, understood: 3, calm: 4 };
 const rank = (p) => (p && p in PHASE_RANK ? PHASE_RANK[p] : -1);
 
+// `pnpm eval -- --sites all` passes a lone "--" first; drop it so the flags after it still count.
+const argv = process.argv.slice(2);
+while (argv[0] === '--') argv.shift();
+
 let opt;
+let explicitSites = false;
 try {
-  opt = parseArgs({
+  const parsed = parseArgs({
+    args: argv,
     allowNegative: true,
+    tokens: true,
     options: {
       sites: { type: 'string', default: 'demo' },
       only: { type: 'string' },
@@ -54,9 +74,16 @@ try {
       out: { type: 'string' },
       server: { type: 'boolean', default: true },
       check: { type: 'boolean', default: false },
+      fitting: { type: 'boolean', default: false },
+      larger: { type: 'string', default: '1' },
+      interact: { type: 'boolean', default: false },
+      'interact-site': { type: 'string', default: 'alderra-refill' },
+      struggle: { type: 'string', default: '75' },
       help: { type: 'boolean', short: 'h', default: false },
     },
-  }).values;
+  });
+  opt = parsed.values;
+  explicitSites = parsed.tokens.some((t) => t.kind === 'option' && (t.name === 'sites' || t.name === 'only'));
 } catch (e) {
   console.error(`${e instanceof Error ? e.message : e}\n\n${HELP}`);
   process.exit(2);
@@ -79,10 +106,17 @@ function pickSites() {
     if (missing.length) throw new Error(`Unknown site(s): ${missing.join(', ')}. Known: ${everything.map((s) => s.name).join(', ')}`);
     return picked;
   }
+  if ((opt.fitting || opt.interact) && !explicitSites) return [];
+  if (opt.sites === 'none') return [];
   if (opt.sites === 'demo') return demo;
   if (opt.sites === 'real') return real;
   if (opt.sites === 'all') return everything;
-  throw new Error(`--sites must be demo, real or all (got "${opt.sites}").`);
+  throw new Error(`--sites must be demo, real, all or none (got "${opt.sites}").`);
+}
+
+function allSites() {
+  const all = JSON.parse(readFileSync(path.join(ROOT, 'scripts/eval/sites.json'), 'utf8'));
+  return [...(all.demo ?? []).map((s) => ({ ...s, group: 'demo' })), ...(all.real ?? []).map((s) => ({ ...s, group: 'real' }))];
 }
 
 /* ------------------------------------------------------------------ extension control through the service worker */
@@ -166,7 +200,15 @@ async function evalSite(ctx, site) {
   const res = {
     name: site.name, slug: id, group: site.group, url: site.url, finalUrl: null, note: site.note ?? '',
     shots: {}, shotNotes: {}, shotErrors: {}, errors: [], phases: {}, msToUnderstood: null, calmAuto: false,
-    report: null, pageErrors: 0,
+    report: null, pageErrors: 0, firstScreen: {},
+  };
+  /** First-screen facts for one view; never lets a measuring problem stop the run. */
+  const measure = async (kind, mainLabel) => {
+    try {
+      res.firstScreen[kind] = await measureView(page, kind, { mainLabel });
+    } catch (e) {
+      res.firstScreen[kind] = { kind, error: errText(e) };
+    }
   };
   const settleMs = Number(site.settleMs) || (site.group === 'real' ? 6000 : 4000);
   const local = site.url.startsWith(SERVER_ORIGIN);
@@ -219,7 +261,7 @@ async function evalSite(ctx, site) {
     const file = `${id}/${key}.png`;
     try {
       await page.mouse.move(-20, -20).catch(() => {});
-      await page.screenshot({ path: path.join(runDir, file), timeout: 20_000 });
+      await shoot(page, path.join(runDir, file));
       res.shots[key] = file;
       if (note) res.shotNotes[key] = note;
     } catch (e) {
@@ -272,6 +314,7 @@ async function evalSite(ctx, site) {
     await sleep(settleMs);
     res.phases.before = (await getReport())?.phase ?? null;
     await shot('before', res.phases.before && res.phases.before !== 'idle' ? `phase ${res.phases.before} (expected idle)` : '');
+    await measure('before', null);
 
     // 2) After: enabled, fitted. Wait for Jev's decisions (phase >= understood) or 15 s.
     await ext.setSettings({ pausedOrigins: [] }, core.DEFAULT_SETTINGS);
@@ -288,22 +331,37 @@ async function evalSite(ctx, site) {
     if (!w.ok) res.errors.push(`timing: no "understood" phase within 15 s (last phase: ${w.report?.phase ?? 'no report'})`);
 
     // Calm view may open by itself (structureLevel 2 on a busy page). Capture it, then close it for "after".
+    let mainLabel = mainLabelFrom(rep);
     if (rep?.phase === 'calm') {
       res.calmAuto = true;
       await waitForCalmLayout(calmSeenAt ?? navAt);
       rep = await getReport();
+      mainLabel = mainLabelFrom(rep) ?? mainLabel;
       await shot('calm', calmNote(rep, 'opened by itself'));
+      await measure('calm', mainLabel);
       await press('Alt+Shift+KeyC');
-      await sleep(900);
+      // The pill and the overlay bar settle about 2 s after Calm view closes (the pill moves only when it is sure).
+      await sleep(2200);
       rep = await getReport();
     }
     await shot('after', rep ? `phase ${rep.phase}${res.calmAuto ? ' · Calm view closed for this shot' : ''}` : 'no report');
+    mainLabel = mainLabelFrom(rep) ?? mainLabel;
+    res.mainLabel = mainLabel;
+    await measure('after', mainLabel);
 
-    // 3) Jev Lens (Alt+J), then off again.
-    await press('Alt+KeyJ');
+    // 3) Jev Lens (Alt+Shift+L; Alt+J on round-1 builds), then off again.
+    const lensOn = async () => (await uiProbe(page)).lens;
+    let lensKey = 'Alt+Shift+KeyL';
+    await press(lensKey);
     await sleep(1500);
+    if (!(await lensOn())) {
+      lensKey = 'Alt+KeyJ';
+      await press(lensKey);
+      await sleep(1500);
+    }
     await shot('lens');
-    await press('Alt+KeyJ');
+    await measure('lens', mainLabel);
+    await press(lensKey);
     await sleep(500);
 
     // 4) Calm view (Alt+Shift+C) if it did not open by itself.
@@ -315,6 +373,7 @@ async function evalSite(ctx, site) {
       await waitForCalmLayout(openedAt);
       rep = await getReport();
       await shot('calm', c.ok ? calmNote(rep) : 'Calm view did not open');
+      if (c.ok) await measure('calm', mainLabel);
       await press('Alt+Shift+KeyC');
       await sleep(400);
     }
@@ -343,7 +402,9 @@ async function main() {
   const fit = core.DEMO_FITS?.[opt.fit];
   if (!fit) throw new Error(`Unknown fit "${opt.fit}". Use rosa, typical or reader.`);
   const sites = pickSites();
-  if (!sites.length) throw new Error('No sites selected.');
+  if (!sites.length && !opt.fitting && !opt.interact) throw new Error('No sites selected.');
+  const interactSite = opt.interact ? allSites().find((s) => s.name === opt['interact-site']) : null;
+  if (opt.interact && !interactSite) throw new Error(`Unknown --interact-site "${opt['interact-site']}".`);
   const viewport = parseViewport(opt.viewport);
   const extDir = path.resolve(opt.ext ?? EXT_DIR);
   if (!existsSync(path.join(extDir, 'manifest.json'))) {
@@ -352,7 +413,8 @@ async function main() {
   const run = `${stamp()}-${opt.fit}`;
   const runDir = path.resolve(opt.out ?? path.join(ROOT, 'eval-output', run));
   mkdirSync(runDir, { recursive: true });
-  log(`WebAble eval · ${sites.length} site(s) · fit ${opt.fit} · ${viewport.width}×${viewport.height}`);
+  const extras = [opt.fitting ? 'fitting flow' : null, opt.interact ? `interactions on ${opt['interact-site']}` : null].filter(Boolean);
+  log(`WebAble eval · ${sites.length} site(s)${extras.length ? ` + ${extras.join(' + ')}` : ''} · fit ${opt.fit} · ${viewport.width}×${viewport.height}`);
   log(`Output: ${runDir}`);
 
   let server = { started: false, stop: async () => {}, health: null };
@@ -364,7 +426,7 @@ async function main() {
   }
   const h = server.health ?? (await health());
   const serverLine = h
-    ? `${server.started ? 'started for this run' : 'already running'}${h.jev ? ` · Jev ${h.jev.model ?? ''}${h.jev.warm ? ' warm' : ' cold'}` : ''}${typeof h.openai === 'boolean' ? ` · OpenAI ${h.openai ? 'on' : 'off'}` : ''}`
+    ? `${server.started ? 'started for this run' : 'already running'}${h.jev ? ` · Jev ${h.jev.model ?? ''}${h.jev.warm ? ' warm' : ' cold'}` : ''}${typeof h.ai === 'string' ? ` · AI layouts ${h.ai === 'no_credits' ? 'off (no credits)' : h.ai}` : typeof h.openai === 'boolean' ? ` · OpenAI ${h.openai ? 'on' : 'off'}` : ''}`
     : 'not running';
   log(`Server: ${serverLine}`);
 
@@ -388,6 +450,8 @@ async function main() {
   process.on('SIGTERM', onSignal);
 
   const results = [];
+  let fitting = null;
+  let interact = null;
   let extensionId = null;
   let browserVersion = null;
   try {
@@ -421,6 +485,18 @@ async function main() {
     await sleep(1600);
     for (const p of context.pages()) if (!p.__webableEvalKeep) await p.close().catch(() => {});
 
+    if (opt.fitting && !interrupted) {
+      log('\n→ fitting flow');
+      const t0 = Date.now();
+      fitting = await runFitting({ context, extensionId, runDir, larger: Math.max(0, Number(opt.larger) || 0), log });
+      fitting.fit = await ext.evaluate(async () => (await chrome.storage.local.get('fit')).fit ?? null).catch(() => null);
+      const bad = fitting.screens.filter((x) => !x.ok).length;
+      log(`  ${fitting.screens.length} screens · ${bad} with problems · ${fitting.seconds ?? '—'} s to "Your fit" · ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+      // The fitting saved a measured fit: put the demo fit back for the pages.
+      await ext.setFit(fit);
+      await sleep(600);
+    }
+
     for (const site of sites) {
       if (interrupted) break;
       log(`\n→ ${site.name}  ${site.url}`);
@@ -431,26 +507,42 @@ async function main() {
       for (const e of m.errors.slice(0, 4)) log(`    ! ${e}`);
       results.push(r);
     }
+
+    if (opt.interact && interactSite && !interrupted) {
+      log(`\n→ interactions on ${interactSite.name}`);
+      const t0 = Date.now();
+      await ext.setSettings({ enabled: true, lens: false, pausedOrigins: [] }, core.DEFAULT_SETTINGS);
+      interact = await runInteract({ context, runDir, site: interactSite, ext, health: h, struggleSeconds: Math.max(10, Number(opt.struggle) || 75), log });
+      const bad = interact.steps.filter((x) => !x.ok).length;
+      log(`  ${interact.steps.length} steps · ${bad} with a failed check · ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+      for (const e of interact.errors.slice(0, 4)) log(`    ! ${e}`);
+    }
   } finally {
     const meta = {
       run, fit: opt.fit, viewport, extensionId, browser: browserVersion, server: serverLine, durationMs: Date.now() - startedAt,
       sites: opt.only ?? opt.sites,
     };
-    if (results.length) {
-      writeFileSync(path.join(runDir, 'index.html'), renderSheet(meta, results));
+    if (results.length || fitting || interact) {
+      writeFileSync(path.join(runDir, 'index.html'), renderSheet(meta, results, { fitting, interact }));
       const summary = {
         ...meta,
         results: results.map((r) => ({
           name: r.name, url: r.url, finalUrl: r.finalUrl, status: r.status ?? null, phases: r.phases, msToUnderstood: r.msToUnderstood,
-          calmAuto: r.calmAuto, shots: r.shots, shotErrors: r.shotErrors, pageErrors: r.pageErrors, ...siteMetrics(r),
+          calmAuto: r.calmAuto, shots: r.shots, shotErrors: r.shotErrors, pageErrors: r.pageErrors, mainLabel: r.mainLabel ?? null,
+          firstScreen: r.firstScreen, ...siteMetrics(r),
         })),
+        fitting,
+        interact,
       };
       writeFileSync(path.join(runDir, 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`);
     }
     await cleanup();
   }
   log(`\nContact sheet: ${path.join(runDir, 'index.html')}`);
-  const problems = results.filter((r) => siteMetrics(r).errors.length > 0 || !r.shots.after).length;
+  const problems =
+    results.filter((r) => siteMetrics(r).errors.length > 0 || !r.shots.after).length +
+    (fitting ? fitting.screens.filter((x) => !x.ok).length + fitting.errors.length : 0) +
+    (interact ? interact.steps.filter((x) => !x.ok).length + interact.errors.length : 0);
   return problems ? 1 : 0;
 }
 

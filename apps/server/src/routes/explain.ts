@@ -1,12 +1,15 @@
-// POST /v1/explain {req} -> ExplainResult
+// POST /v1/explain {req} -> ExplainResult (+ the card's extra parts)
 // The server redacts the passage again and refuses it if anything personal survives. EXPLAIN_MODEL writes a
 // plain version; code checks numbers and condition words; Jev checks coverage per original sentence. Sentences
 // with low coverage come back in showOriginalInstead. No Jev answer -> no explanation (fail closed).
+// When nothing can be written or checked, the answer says so plainly: ok false, explanation null, no sentences
+// and no coverage numbers (nothing was checked), an `error` word and a `message` the card can show as it is.
 import type { Hono } from 'hono';
 import {
   EXPLAIN_MODEL, buildExplainCheckCall, conditionWordsKept, numbersKept, parseExplainCheck, redactText, stillSensitive,
 } from '@webable/core';
 import type { ExplainRequest, ExplainResult } from '@webable/core';
+import { aiState } from '../ai';
 import { EXPLAIN_MAX_CHARS, jevKey } from '../config';
 import { JevError, askJev, emptyJevMetrics, jevMetrics } from '../jev';
 import { explainPassage } from '../openai';
@@ -23,22 +26,38 @@ export const LOW_COVERAGE = 0.5;
 /** Jev's adds/drops at or above this, or a failed code check, shows "may have missed or changed something". */
 export const FACT_FLAG = 0.5;
 
-/** ExplainResult plus the card's extra parts (terms, unclear) and a one-word verdict for the check line. */
+/**
+ * Why there is no explanation:
+ * - llm_unavailable: the writing model could not be used (no credits, no key, spend cap, timeout, error);
+ * - check_unavailable: Jev could not check a written version, so it is not shown.
+ */
+export type ExplainError = 'llm_unavailable' | 'check_unavailable';
+
+export const EXPLAIN_MESSAGES: Readonly<Record<ExplainError, string>> = Object.freeze({
+  llm_unavailable: "Couldn't write a plain version right now. The original is below.",
+  check_unavailable: "Couldn't check a plain version against the original right now, so it isn't shown. The original is below.",
+});
+
+/** ExplainResult plus the card's extra parts (terms, unclear), a one-word verdict and, on failure, why. */
 export type ExplainResponse = ExplainResult & {
   plain: string[];
   terms: Array<{ term: string; meaning: string }>;
   unclear: string[];
   verdict: 'checked' | 'check_original' | 'unavailable';
-  error?: string;
+  error?: ExplainError;
+  /** Machine word under `error`: no_credits, key_rejected, no_key, budget, timeout, http_5xx, no_jev_key, jev_timeout … */
+  reason?: string;
+  /** The sentence to show instead of an explanation. */
+  message?: string;
 };
 
-function failed(passageSentences: string[], model: string, ms: number, error: string): ExplainResponse {
+export function unavailable(error: ExplainError, reason: string, model: string, ms: number): ExplainResponse {
   return {
     ok: false,
     explanation: null,
-    sentences: passageSentences.map((original) => ({ original, covered: 0 })),
+    sentences: [],
     checks: { numbersKept: false, conditionWordsKept: false, addedFact: 0, droppedFact: 0 },
-    showOriginalInstead: passageSentences,
+    showOriginalInstead: [],
     model,
     ms,
     jev: emptyJevMetrics(),
@@ -47,6 +66,8 @@ function failed(passageSentences: string[], model: string, ms: number, error: st
     unclear: [],
     verdict: 'unavailable',
     error,
+    reason,
+    message: EXPLAIN_MESSAGES[error],
   };
 }
 
@@ -57,11 +78,16 @@ export async function explain(req: ExplainRequest, opts: { fresh?: boolean } = {
   if (passage.length > EXPLAIN_MAX_CHARS) {
     throw new HttpError(422, 'too_long', `Select a shorter passage (at most ${EXPLAIN_MAX_CHARS} characters).`);
   }
-  const sentences = splitSentences(passage);
+  const ai = aiState();
+  if (ai.status !== 'on') {
+    // Nothing could write a plain version: answer at once, without a model call.
+    return unavailable('llm_unavailable', ai.reason ?? 'unavailable', EXPLAIN_MODEL, 0);
+  }
   if (!jevKey()) {
     // Without Jev the explanation could not be checked, so do not pay for one.
-    return failed(sentences, EXPLAIN_MODEL, 0, 'The explanation could not be checked against the original, so it is not shown.');
+    return unavailable('check_unavailable', 'no_jev_key', EXPLAIN_MODEL, 0);
   }
+  const sentences = splitSentences(passage);
   // The same passage asked again (another click, a rehearsal) is answered from memory; only checked answers are kept.
   const { value } = await cache.getOrMake(sha256(passage), () => explainChecked(passage, sentences, opts), {
     fresh: opts.fresh,
@@ -74,7 +100,7 @@ async function explainChecked(passage: string, sentences: string[], opts: { fres
   const llm = await explainPassage(passage);
   if (!llm.ok) {
     log('explain: no explanation', { error: llm.error });
-    return failed(sentences, llm.model, llm.ms, 'The explanation could not be written right now. The original text is unchanged.');
+    return unavailable('llm_unavailable', llm.error, llm.model, llm.ms);
   }
   const { plain, terms, unclear } = llm.data;
   const explanation = plain.join('\n');
@@ -93,7 +119,7 @@ async function explainChecked(passage: string, sentences: string[], opts: { fres
       kind: e instanceof JevError ? e.kind : 'error',
       error: e instanceof JevError ? undefined : errorMessage(e).slice(0, 160),
     });
-    return failed(sentences, llm.model, llm.ms, 'The explanation could not be checked against the original, so it is not shown.');
+    return unavailable('check_unavailable', e instanceof JevError ? `jev_${e.kind}` : 'check_error', llm.model, llm.ms);
   }
 
   const covered = sentences.map((_, i) => check.covered[i] ?? 0);

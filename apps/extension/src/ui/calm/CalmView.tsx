@@ -1,21 +1,31 @@
-// Owner: D1. The Calm view: the same page re-presented as one calm column, sized to the person's fit.
+// Owner: C. The Calm view: the same page re-presented as one calm column, sized to the person's fit.
 //
-// Input is a FitSpec (enums and ids only, from the heuristic or the AI layout model). Every word shown is read from the
-// live page at render time on this device, and every control drives its original element (src/ui/proxy.ts), so the
-// page keeps working and nothing is sent anywhere. The original page is one click away ("Original page").
+// Input is a FitSpec (enums and ids only, from the heuristic, a layout Jev picked, or the cached one). Every word shown
+// is read from the live page at render time on this device, and every control drives its original element
+// (src/ui/proxy.ts), so the page keeps working and nothing is sent anywhere. The original page is one click away.
+//
+// First screen (1280×720): the strip, then the page's title (top ≤ 140 px), one orientation line in the page's words,
+// then the task (first field, first row or the buy button) above the dock. One filled button on screen at most: the
+// dock's.
 import type { FitProfile, FitSpec, PageOutline } from '@webable/core';
 import { Fragment, type JSX } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import type { EngineApi, EngineState } from '../../contracts';
-import { calmCss } from '../base.css';
+import type { EngineApi } from '../../contracts';
+import { calmChromeCss, calmCss } from '../base.css';
 import { focusOriginal, proxyClick, proxyKey } from '../proxy';
 import { calmMetrics, structureParams, themeModeFor, tokensFor, tokensToStyle } from '../tokens';
-import { Blocks, PrimaryAction } from './Blocks';
+import { Blocks } from './Blocks';
+import { ChatRow, ErrorCard, NoticeCard, PortalLinks, ProgressCard, SuccessPanel } from './Cards';
+import { Disclosure } from './Disclosure';
 import { Calm, type CalmCtx } from './context';
+import { Dock } from './Dock';
 import * as I from './icons';
+import { LeadBand } from './Lead';
 import { tickNow, useCalmStyles, useDomVersion, useEngineState, useReducedMotion, useZoom } from './live';
-import { type Block, controlFor, isShown, newCtx, pagePopups, readBlocks, textOf } from './model';
+import { type Block, isShown, keyOf, newCtx, pagePopups, readBlocks, textOf } from './model';
+import { useOutcome } from './outcome';
 import { type CalmPlan, buildPlan } from './plan';
+import { stepOf } from './sections/FormSteps';
 import { HelpCard } from './sections/layouts';
 import { Drawer, SectionView } from './sections/Section';
 import { Strip, SubStrip } from './Strip';
@@ -36,89 +46,31 @@ function specKey(s: object): number {
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
-function fmt(p: number | undefined): string {
-  return typeof p === 'number' && Number.isFinite(p) ? p.toFixed(2) : '–';
+/** The site's menus and link bars: one "Site menu" at the end, folded. */
+function isMenu(p: CalmPlan['main'][number]): boolean {
+  return p.sec.role === 'navigation' && p.state === 'collapsed';
 }
 
-function Intro({ plan, state }: { plan: CalmPlan; state: EngineState }): JSX.Element {
-  const rd = state.calm.redesign;
-  const chosen = rd?.candidates.find((c) => c.name === rd.chosen);
-  let how = '';
-  if (state.calm.source === 'cached') how = 'Layout from your last visit.';
-  if (state.calm.source === 'ai' && rd && chosen) {
-    how = `Layout chosen by Jev from ${rd.candidates.length} designs: easier ${fmt(chosen.pEasier)}, hides something needed ${fmt(chosen.pHides)}.`;
-  }
-  const n = plan.drawer.length;
-  const moved = n ? `${n} ${n === 1 ? 'part' : 'parts'} moved to “More on this page”.` : '';
-  const cookies = plan.hoisted.some((p) => p.notice === 'consent') ? 'The cookie question is below the main task.' : '';
-  const more = [moved, cookies, how].filter(Boolean).join(' ');
-  return (
-    <div class="wa-note">
-      <span class="wa-dot" aria-hidden="true" />
-      <div class="wa-note__body">
-        <span>
-          <b>Calm view.</b> Same page, one thing at a time. Buttons here press the real ones.
-        </span>
-        {more && <span>{more}</span>}
-      </div>
-    </div>
-  );
-}
-
-/**
- * The page's main action, docked at the bottom of the view while its place in the column (the end of the last
- * step) is off screen, so it is always one press away. It is the same two-press button that drives the page's own,
- * and it hides while the in-column one is visible, so the action never shows twice at once.
- */
-function PrimaryDock({ plan, rootRef, api, decisions }: {
-  plan: CalmPlan | null; rootRef: { current: HTMLDivElement | null }; api: EngineApi; decisions: EngineState['decisions'];
-}): JSX.Element | null {
-  // Docked only when Jev named this the page's main action (promote: main pick >= 0.90), never on a guess.
-  const confirmed = useMemo(() => {
-    const pa = plan?.primary;
-    if (!pa) return false;
-    return decisions.some((d) => {
-      if (d.verdict !== 'promote') return false;
-      const el = api.elementFor(d.id);
-      return !!el && (el === pa || el.contains(pa) || pa.contains(el));
-    });
-  }, [plan?.primary, decisions, api]);
-  const block = useMemo(() => (plan?.primary && confirmed ? controlFor(plan.primary, newCtx()) : null), [plan?.primary, confirmed]);
-  const [inColumn, setInColumn] = useState(false);
+/** Hide the WebAble pill and floating chips while the view is open (rules adopted into the chrome's shadow root). */
+function useChromeRules(rootRef: { current: HTMLElement | null }): void {
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root || !block) return;
-    let raf = 0;
-    const check = (): void => {
-      raf = 0;
-      const el = root.querySelector('.wa-page [data-primary]');
-      if (!el) return setInColumn(false);
-      const r = el.getBoundingClientRect();
-      const box = root.getBoundingClientRect();
-      setInColumn(r.height > 0 && r.bottom > box.top + 60 && r.top < box.bottom - 40);
-    };
-    const later = (): void => {
-      if (!raf) raf = requestAnimationFrame(check);
-    };
-    check();
-    root.addEventListener('scroll', later, { passive: true });
-    root.addEventListener('click', later, true);
-    const t = window.setInterval(check, 800);
-    return () => {
-      root.removeEventListener('scroll', later);
-      root.removeEventListener('click', later, true);
-      window.clearInterval(t);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [rootRef, block]);
-  if (!block || inColumn) return null;
-  return (
-    <div class="wa-dock" role="region" aria-label="Main action on this page">
-      <div class="wa-dock__in">
-        <PrimaryAction b={block} />
-      </div>
-    </div>
-  );
+    const node = rootRef.current;
+    if (!node) return;
+    const inner = node.getRootNode();
+    const host = inner instanceof ShadowRoot ? inner.host : null;
+    const outer = host?.getRootNode();
+    if (!(outer instanceof ShadowRoot) || !('adoptedStyleSheets' in outer)) return;
+    try {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(calmChromeCss);
+      outer.adoptedStyleSheets = [...outer.adoptedStyleSheets, sheet];
+      return () => {
+        outer.adoptedStyleSheets = outer.adoptedStyleSheets.filter((s) => s !== sheet);
+      };
+    } catch {
+      return undefined;
+    }
+  }, [rootRef]);
 }
 
 export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOutline; fit: FitProfile }): JSX.Element {
@@ -131,11 +83,15 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
   const mainRef = useRef<HTMLElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   const needInline = useCalmStyles(rootRef);
+  useChromeRules(rootRef);
   const [scale, setScaleState] = useState(sessionScale);
   const setScale = (s: number): void => {
     sessionScale = s;
     setScaleState(s);
   };
+  const [step, setStep] = useState(0);
+  const [drawerCall, setDrawerCall] = useState(0);
+  const { outcome, arm } = useOutcome();
 
   const level = (fit?.attention?.structureLevel ?? 0) as 0 | 1 | 2;
   const params = structureParams(level);
@@ -153,6 +109,13 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
     }
     // `version` re-reads the live page after it changes.
   }, [api, spec, outline, state.decisions, version, params.listFirst, params.stepMax]);
+
+  // A different layout (Jev's pick arrived) starts the form again at its first step.
+  useEffect(() => setStep(0), [spec]);
+  const nSteps = plan?.form?.steps?.length ?? 0;
+  useEffect(() => {
+    if (nSteps && step > nSteps - 1) setStep(nSteps - 1);
+  }, [nSteps, step]);
 
   /* ---------- what the page shows after the primary action, and popups the person opened ---------- */
 
@@ -185,7 +148,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       }
       setResultRoots(found.slice());
     });
-    mo.observe(document.body ?? document.documentElement, { childList: true, subtree: true, characterData: true });
+    mo.observe(document.body ?? document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['hidden'] });
     watch.current = mo;
     window.setTimeout(() => {
       if (watch.current === mo) {
@@ -196,6 +159,41 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
   }, []);
   useEffect(() => () => watch.current?.disconnect(), []);
 
+  const goStep = useCallback(
+    (i: number) => {
+      setStep(Math.max(0, Math.min(Math.max(0, nSteps - 1), i)));
+    },
+    [nSteps],
+  );
+
+  /** A link to a field ("Enter your phone number" in the page's error summary) goes to the step that holds it. */
+  const jumpToField = useCallback(
+    (el: Element): boolean => {
+      const href = el.getAttribute('href') ?? '';
+      if (!href.startsWith('#') || href.length < 2) return false;
+      let target: Element | null = null;
+      try {
+        target = document.getElementById(decodeURIComponent(href.slice(1)));
+      } catch {
+        target = null;
+      }
+      if (!target) return false;
+      const steps = plan?.form?.steps;
+      const idx = steps ? stepOf(steps, target) : -1;
+      if (steps && idx >= 0) setStep(idx);
+      const field = target.matches('input,select,textarea') ? target : target.parentElement?.querySelector('input,select,textarea') ?? null;
+      window.setTimeout(() => {
+        const root = rootRef.current;
+        const k = field ? keyOf(field) : '';
+        const mirror = (k && root?.querySelector<HTMLElement>(`[data-k="${k}"]`)) || null;
+        mirror?.focus();
+        mirror?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 120);
+      return !!field || idx >= 0;
+    },
+    [plan],
+  );
+
   const ctx = useMemo<CalmCtx>(
     () => ({
       api,
@@ -204,6 +202,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       explainOn: state.settings?.explain !== false,
       reduceMotion,
       click: (el) => {
+        if (el.localName === 'a' && jumpToField(el)) return;
         const before = new Set(pagePopups());
         proxyClick(el);
         tickNow();
@@ -212,6 +211,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       pressPrimary: (el) => {
         const before = new Set(pagePopups());
         watchResult();
+        arm();
         proxyClick(el);
         tickNow();
         watchPopups(before);
@@ -220,31 +220,38 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
         api.closeCalm();
         window.setTimeout(() => focusOriginal(el), 80);
       },
+      step,
+      goStep,
+      showDrawer: () => setDrawerCall((n) => n + 1),
+      drawerCall,
+      errorEl: outcome?.kind === 'error' ? outcome.el : null,
     }),
-    [api, params.splitSentences, params.groupSize, state.settings?.explain, reduceMotion, watchPopups, watchResult],
+    [api, params.splitSentences, params.groupSize, state.settings?.explain, reduceMotion, watchPopups, watchResult, arm, step, goStep, drawerCall, jumpToField, outcome],
   );
 
   // New page content outside every placed part (a toast, a confirmation appended to the body) shows in a result card;
-  // content inside a placed part already shows in place.
+  // content inside a placed part already shows in place. A confirmation becomes the success panel instead.
   const result = useMemo<Block[] | null>(() => {
     if (!plan || !resultRoots.length) return null;
     const roots = resultRoots.filter((r) => {
       if (!r.isConnected || plan.roots.some((p) => p === r || p.contains(r))) return false;
+      if (outcome && (outcome.el === r || outcome.el.contains(r) || r.contains(outcome.el))) return false;
       const t = textOf(r);
       return t.length > 0 && t.length < 600 && isShown(r);
     });
     const blocks = roots.slice(0, 3).flatMap((r) => readBlocks(r, newCtx()));
     return blocks.length ? blocks : null;
-  }, [plan, resultRoots, version]);
+  }, [plan, resultRoots, version, outcome]);
   useEffect(() => {
     if (result) resultRef.current?.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
   }, [!!result]);
 
   const popupBlocks = useMemo<Block[] | null>(() => {
     if (!popup || !popup.isConnected || !isShown(popup)) return null;
+    if (plan?.popups.some((c) => c.el === popup || c.el.contains(popup) || popup.contains(c.el))) return null;
     const b = readBlocks(popup, newCtx());
     return b.length ? b : null;
-  }, [popup, version]);
+  }, [popup, version, plan]);
   useEffect(() => {
     if (popup && !popupBlocks) setPopup(null);
   }, [popup, popupBlocks]);
@@ -311,23 +318,34 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
   /* ---------- render ---------- */
 
   const m = calmMetrics(fit, { zoom, density: spec.density, scale });
-  const helpAfter = plan ? Math.max(0, plan.main.findIndex((p) => p.isPrimary)) : 0;
-  // Alerts come first; the page's cookie question comes right after the main task (still open, every choice kept).
-  const alerts = plan ? plan.hoisted.filter((p) => p.notice === 'alert') : [];
-  const consents = plan ? plan.hoisted.filter((p) => p.notice !== 'alert') : [];
-  const afterPrimary = plan ? (
+  const empty = !plan || (!plan.main.length && !plan.hoisted.length && !plan.drawer.length && !plan.lead);
+  const success = outcome?.kind === 'success' ? outcome : null;
+  const error = outcome?.kind === 'error' ? outcome : null;
+  const form = plan?.form ?? null;
+  // The task's band: the form, else the primary part, else the first open part.
+  const taskIdx = plan ? Math.max(0, plan.main.findIndex((p) => (form ? p.key === form.sectionKey : p.isPrimary))) : 0;
+  const searchFirst = spec.task === 'search' || spec.task === 'navigate';
+  const afterTask = plan ? (
     <>
+      {plan.alerts.map((c) => (
+        <div key={c.key} class="wa-band wa-band--tight">
+          <NoticeCard card={c} />
+        </div>
+      ))}
+      {!searchFirst && <SubStrip plan={plan} />}
+      {plan.progress && <ProgressCard progress={plan.progress} />}
       {plan.help.length > 0 && (
         <section class="wa-band wa-band--tight" aria-label="Help">
           <HelpCard blocks={plan.help} />
         </section>
       )}
-      {consents.map((p) => (
-        <SectionView key={p.key} p={p} />
+      {plan.consents.map((c) => (
+        <div key={c.key} class="wa-band wa-band--tight">
+          <NoticeCard card={c} />
+        </div>
       ))}
     </>
   ) : null;
-  const empty = !plan || (!plan.main.length && !plan.hoisted.length && !plan.drawer.length);
 
   return (
     <div
@@ -340,6 +358,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       data-mode={mode}
       data-motion={reduceMotion ? 'reduce' : undefined}
       data-f={String(m.F)}
+      data-docked={plan?.primary || plan?.form?.steps ? 'true' : undefined}
       style={style}
       onKeyDown={onKeyDown}
       onScroll={onScroll}
@@ -348,20 +367,26 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
     >
       {needInline && <style>{calmCss}</style>}
       <Calm.Provider value={ctx}>
-        <Strip api={api} plan={plan} scale={scale} setScale={setScale} />
+        <Strip api={api} state={state} plan={plan} scale={scale} setScale={setScale} />
         <main ref={mainRef} class="wa-page" tabIndex={-1}>
           <div class={`wa-col${reduceMotion ? '' : ' wa-fade'}`} key={specKey(spec)}>
             {empty || !plan ? (
               <div class="wa-empty wa-stack" style={{ alignItems: 'center' }}>
                 <p>This page has nothing the Calm view can show here.</p>
-                <button type="button" class="wa-btn wa-btn--accent" onClick={() => api.showOriginal(true)}>
+                <button type="button" class="wa-btn wa-btn--tonal" onClick={() => api.showOriginal(true)}>
                   Original page
                 </button>
               </div>
             ) : (
               <>
-                <SubStrip plan={plan} />
-                <Intro plan={plan} state={state} />
+                {plan.popups.map((c) => (
+                  <div key={c.key} class="wa-band wa-band--first">
+                    <NoticeCard card={c} />
+                  </div>
+                ))}
+                {success && <SuccessPanel outcome={success} help={plan.help} />}
+                {plan.lead && !success && <LeadBand lead={plan.lead} />}
+                {searchFirst && <SubStrip plan={plan} />}
                 {result && (
                   <div class="wa-band wa-band--tight" ref={resultRef}>
                     <div class="wa-result wa-fade" role="status">
@@ -370,19 +395,43 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
                     </div>
                   </div>
                 )}
-                {alerts.map((p) => (
-                  <SectionView key={p.key} p={p} />
+                {error && (
+                  <div class="wa-band wa-band--tight">
+                    <ErrorCard outcome={error} />
+                  </div>
+                )}
+                {plan.portal ? (
+                  <>
+                    <PortalLinks portal={plan.portal} />
+                    {afterTask}
+                    <div class="wa-band wa-band--tight">
+                      <Disclosure title={`All links (${plan.portal.total})`} sub="Everything else in the page’s own order">
+                        {plan.main.filter((p) => !isMenu(p)).map((p) => (
+                          <SectionView key={p.key} p={p} form={null} />
+                        ))}
+                      </Disclosure>
+                    </div>
+                  </>
+                ) : (
+                  plan.main.map((p, i) => {
+                    if (isMenu(p)) return null;
+                    if (success && form && p.key === form.sectionKey) return null;
+                    return (
+                      <Fragment key={p.key}>
+                        <SectionView p={p} form={form} first={i === taskIdx} />
+                        {i === taskIdx && !success && afterTask}
+                      </Fragment>
+                    );
+                  })
+                )}
+                {(!plan.main.length || (success && taskIdx >= 0)) && !success && afterTask}
+                {plan.chat && <ChatRow el={plan.chat} />}
+                {plan.main.filter(isMenu).map((p) => (
+                  <SectionView key={p.key} p={p} form={null} />
                 ))}
-                {plan.main.map((p, i) => (
-                  <Fragment key={p.key}>
-                    <SectionView p={p} />
-                    {i === helpAfter && afterPrimary}
-                  </Fragment>
-                ))}
-                {!plan.main.length && afterPrimary}
                 <Drawer plan={plan} />
                 <footer class="wa-foot">
-                  <span>Words and controls come from this page. Shown by WebAble.</span>
+                  <span>Words and controls come from this page. Arranged by WebAble.</span>
                   <button type="button" class="wa-btn wa-btn--quiet" onClick={() => api.showOriginal(true)}>
                     Original page
                   </button>
@@ -391,7 +440,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
             )}
           </div>
         </main>
-        {!empty && <PrimaryDock plan={plan} rootRef={rootRef} api={api} decisions={state.decisions ?? []} />}
+        {!empty && plan && <Dock plan={plan} outcome={outcome} />}
         {popupBlocks && (
           <div class="wa-popup" role="dialog" aria-label="From the page">
             <div class="wa-popup__head">

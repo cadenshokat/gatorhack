@@ -36,7 +36,12 @@ export function Dots(props: ScreenProps): JSX.Element {
 
   const zoom = props.raw.zoom || 1;
   const cssSize = size / zoom;
-  const stageH = Math.max(400, Math.round(ringDiameter(stageW, 9999, touch, cssSize) + cssSize + 72));
+  // The stage is 400 px where there is room; on short screens it shrinks (never below what the ring needs, and the
+  // ring's diameter does not change) so Pause and Skip stay on the first screen.
+  const want = Math.max(400, Math.round(ringDiameter(stageW, 9999, touch, cssSize) + cssSize + 72));
+  const need = Math.round(ringDiameter(stageW, 400, touch, cssSize) + cssSize + 72);
+  const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const stageH = Math.max(need, Math.min(want, Math.round(window.innerHeight - 20 * remPx)));
   const D = ringDiameter(stageW, stageH, touch, cssSize);
   const R = D / 2;
 
@@ -141,7 +146,8 @@ export function Dots(props: ScreenProps): JSX.Element {
     <div>
       <Heading>{verb} each dot as it fills in.</Heading>
       <Deck>
-        Go at your usual pace.{blockNo > 1 ? ` Set ${blockNo}, with ${size > (walk.blocks.at(-1)?.sizePx ?? size) ? 'larger' : 'smaller'} dots.` : ''}
+        Go at your usual pace.
+        {blockNo > 1 ? ` Set ${blockNo}, with ${size > (walk.blocks.at(-1)?.sizePx ?? size) ? 'larger' : 'smaller'} dots.` : ''}
       </Deck>
       <div
         ref={stageRef}

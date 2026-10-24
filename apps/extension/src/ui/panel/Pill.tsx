@@ -1,5 +1,6 @@
-// Owner: D2. The WebAble pill, bottom right. Fern dot = WebAble changed something on this page.
+// Owner: P. The WebAble pill, in the corner with no site control under it. Fern dot = WebAble changed something on this page.
 import type { EngineState } from '../../contracts';
+import type { PillSide } from './hooks';
 
 export type DotState = 'idle' | 'working' | 'changed' | 'original' | 'error';
 
@@ -11,8 +12,8 @@ export function dotState(s: EngineState): DotState {
   return 'idle';
 }
 
-export function Pill(props: { s: EngineState; open: boolean; bottomPx: number; onToggle: () => void }) {
-  const { s, open, bottomPx, onToggle } = props;
+export function Pill(props: { s: EngineState; open: boolean; side: PillSide; bottomPx: number; onToggle: () => void }) {
+  const { s, open, side, bottomPx, onToggle } = props;
   const changed = s.ops.filter((o) => o.status === 'applied').length;
   const state = dotState(s);
   const label =
@@ -24,7 +25,8 @@ export function Pill(props: { s: EngineState; open: boolean; bottomPx: number; o
   return (
     <button
       class="wa-pill"
-      style={{ bottom: `${bottomPx}px` }}
+      data-side={side}
+      style={{ bottom: `${Math.round(bottomPx)}px` }}
       aria-expanded={open}
       aria-label={label}
       title={label}

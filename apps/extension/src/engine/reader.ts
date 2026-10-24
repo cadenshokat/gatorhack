@@ -144,8 +144,8 @@ const REGION_WORDS = new Set([
 const PROMO_WORDS = /\b(sponsored|advertisement|promo(tion)?s?|upsell|offer|deals?|sale|save \$?\d|\d+% off|free (trial|delivery|shipping|sample)|join now|sign up|subscribe|newsletter|members?hip|rewards?|limited time|shop now|learn more|try (it )?free|bogo|coupon|code [A-Z0-9]{3,}|recommended|you may also like|also (bought|viewed)|trending|most (read|popular)|weekly ad|halloween|survey|how are we doing)\b/i;
 const AD_CLASS = /(^|[-_\s])(ad|ads|adsbygoogle|advert|advertisement|sponsor|sponsored|gpt|dfp|doubleclick|taboola|outbrain|promoted)([-_\s]|$)/i;
 const CAROUSEL_CLASS = /(carousel|slider|slideshow|swiper|glide|splide|slick|flickity|rotator|marquee|ticker)/i;
-const CONSENT_CLASS = /(cookie|consent|gdpr|ccpa|cmp|onetrust|cookiebot|didomi|usercentrics|truste|cc-window|qc-cmp|privacy-?banner|cookie-?law)/i;
-const CHAT_CLASS = /(chat|livechat|intercom|zendesk|drift|messenger|assistant|helpdesk|support-?widget)/i;
+export const CONSENT_CLASS = /(cookie|consent|gdpr|ccpa|cmp|onetrust|cookiebot|didomi|usercentrics|truste|cc-window|qc-cmp|privacy-?banner|cookie-?law)/i;
+export const CHAT_CLASS = /(chat|livechat|intercom|zendesk|drift|messenger|assistant|helpdesk|support-?widget)/i;
 const HELP_NAME = /\b(help|contact|support|chat|call|phone|faq|faqs|questions?|pharmacist|customer (service|care)|assist(ance|ant)?|feedback|live agent|talk to)\b/i;
 const NOTICE_CLASS = /(^|[-_\s])(alert|warning|warn|notice|error|danger|caution|important|timeout|expire|expiring)([-_\s]|$)/i;
 const IAB_SIZES: Array<[number, number]> = [
@@ -325,7 +325,7 @@ export function iframeKindOf(src: string): string {
   return 'other_site';
 }
 
-function linkTargetOf(a: Element): ElementEvidence['link_target'] | null {
+export function linkTargetOf(a: Element): ElementEvidence['link_target'] | null {
   const href = a.getAttribute('href');
   if (href === null) return null;
   const h = href.trim();
@@ -608,6 +608,11 @@ export class PageReader {
     const el = this.refs.get(id)?.deref() ?? null;
     if (!el || !el.isConnected) return null;
     return el;
+  }
+
+  /** The element's id, assigning a new one when the reader has not seen it (overlay roots, their buttons). */
+  ensureId(el: Element): string {
+    return this.assign(el);
   }
 
   private assign(el: Element): string {
@@ -1180,7 +1185,9 @@ function regionReason(
 ): RegionWhy | null {
   if (rect.width < 1 || rect.height < 1) return null;
   if (role === 'alert' || role === 'status' || role === 'alertdialog' || (el.getAttribute('aria-live') === 'assertive')) {
-    if (collapse(el.textContent ?? '').length >= 3) return 'notice';
+    // Only a notice someone can see: rendered text (not text inside hidden children), not aria-hidden.
+    if (!el.closest('[aria-hidden="true"]') && renderedText(el).length >= 3) return 'notice';
+    if (role !== 'alertdialog') return null;
   }
   if (lm) return 'landmark';
   if (tag === 'FIELDSET') return 'fieldset';
@@ -1193,7 +1200,7 @@ function regionReason(
   if (isIabSize(rect.width, rect.height)) return 'ad';
   if (AD_CLASS.test(cwStr) && area >= 2000) return 'ad';
   if (CAROUSEL_CLASS.test(cwStr)) return 'carousel';
-  if (NOTICE_CLASS.test(cwStr) && collapse(el.textContent ?? '').length >= 3 && area < 0.3 * vw * vh) return 'notice';
+  if (NOTICE_CLASS.test(cwStr) && area < 0.3 * vw * vh && !el.closest('[aria-hidden="true"]') && renderedText(el).length >= 3) return 'notice';
   if (cw.some((w) => REGION_WORDS.has(w))) return 'words';
   if ((tag === 'SECTION' || tag === 'ARTICLE') && el.querySelector(':scope > h2, :scope > h3, :scope > header h2, :scope > header h3, :scope > div > h2')) return 'section';
   // Visually boxed containers (own background, border or shadow) that hold a control and some text.
@@ -1203,6 +1210,12 @@ function regionReason(
     if (collapse(el.textContent ?? '').length >= 8) return 'boxed';
   }
   return null;
+}
+
+/** Text as rendered (CSS-hidden children excluded), capped; for the few notice candidates only. */
+function renderedText(el: Element): string {
+  const t = el instanceof HTMLElement ? el.innerText : el.textContent;
+  return collapse((t ?? '').slice(0, 400));
 }
 
 function isWhiteish(c: Rgb): boolean {

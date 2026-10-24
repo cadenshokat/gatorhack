@@ -7,16 +7,17 @@
 // panels) get an incremental Jev read. SPA navigations re-run the element ops; zoom and behaviour ops stay.
 
 import {
-  DEFAULT_SETTINGS, decideElements, heuristicSpec, repairSpec, summarizeDecisions, summarizeFitForModel,
+  DEFAULT_SETTINGS, candidateSource, chooseOfferForFit, decideElements, heuristicSpec, repairSpec, summarizeDecisions, summarizeFitForModel,
 } from '@webable/core';
 import type {
-  BgRequest, CheckResult, ElementDecision, ElementEvidence, ElementJudgment, FitProfile, FitSpec, FitSummaryForModel, JevMetrics,
-  LedgerEntry, Offer, OfferKind, OpKind, OutlineNode, PageDigest, PageOutline, PageUnderstanding, RedesignResult,
-  Role, Settings, StruggleJudgment, StruggleKind, TabReport, VisualVerdict,
+  BgRequest, CheckResult, ElementDecision, ElementEvidence, ElementJudgment, FitProfile, FitSpec, FitSummaryForModel, HealthStatus,
+  JevMetrics, LedgerEntry, Offer, OfferKind, OpKind, OutlineNode, OverlayAction, PageDigest, PageOutline, PageUnderstanding,
+  RedesignResult, Role, Settings, StruggleJudgment, StruggleKind, TabReport, VisualVerdict,
 } from '@webable/core';
 import type { EngineApi, EngineState, Toast } from '../contracts';
 import { isOurUi } from '../ui/mount';
-import { ask, askExt, errText, plainError, tell, type ZoomInfo } from './bus';
+import { ask, askExt, errText, plainError, tell, type HealthInfo, type ZoomInfo } from './bus';
+import { OverlayManager, type OverlayView } from './overlays';
 import { createStore, throttle } from './store';
 import { routeKey, settle, sleep, waitForLoad, waitForQuiet, waitForVisible, watchNavigation } from './nav';
 import { PageReader, collapse, type NodeInfo, type ReadResult } from './reader';
@@ -302,6 +303,8 @@ export function createController(): Controller {
       struggle: s.struggle.latest,
       redesign: s.calm.redesign ? { chosen: s.calm.redesign.chosen, autoApply: s.calm.redesign.autoApply, ms: s.calm.redesign.llm.ms } : null,
       errors,
+      overlays: s.overlays,
+      ai: s.ai,
     };
   };
   const pushReport = throttle(() => {
@@ -309,6 +312,78 @@ export function createController(): Controller {
     tell({ type: 'report', report: buildReport() });
   }, 500);
   store.subscribe(() => pushReport());
+
+  /* ---------------- one writer at a time (verified batches, overlay moves) ---------------- */
+
+  let lockChain: Promise<unknown> = Promise.resolve();
+  function withLock<T>(fn: () => Promise<T>): Promise<T> {
+    const run = lockChain.then(fn, fn);
+    lockChain = run.catch(() => undefined);
+    return run;
+  }
+
+  /* ---------------- overlays that cover the task ("make room") ---------------- */
+
+  /** What the task needs in view: the main action, main-form fields in the first screens, the h1. */
+  function taskTargets(): Element[] {
+    const out: Element[] = [];
+    const promoted = store.get().decisions.find((d) => d.verdict === 'promote');
+    const main = promoted ? reader.elementFor(promoted.id) : null;
+    if (main) out.push(main);
+    const vh = document.documentElement.clientHeight || innerHeight;
+    if (!main) {
+      // No main pick (a portal home page): the buttons Jev scored most likely to be the main action stand in for it.
+      const likely = store.get().decisions
+        .filter((d) => d.verdict !== 'fold' && d.judgment.main >= 0.1)
+        .sort((a, b) => b.judgment.main - a.judgment.main)
+        .slice(0, 2);
+      for (const d of likely) {
+        const el = reader.elementFor(d.id);
+        if (!el || !el.isConnected || !el.matches('a[href], button, [role="button"], input[type="submit"]')) continue;
+        const r = el.getBoundingClientRect();
+        if (r.bottom > 0 && r.top < vh) out.push(el);
+      }
+    }
+    if (read) {
+      for (const n of read.nodes.values()) {
+        if (out.length >= 14) break;
+        if (!n.inMain || !n.el.isConnected) continue;
+        if (n.kind !== 'field' && n.kind !== 'select' && n.kind !== 'checkbox' && n.kind !== 'radio') continue;
+        const r = n.el.getBoundingClientRect();
+        if (r.bottom > 0 && r.top < vh) out.push(n.el);
+      }
+    }
+    const h1 = Array.from(document.querySelectorAll('h1')).find((h) => !safeOurs(h) && h.getBoundingClientRect().height > 0);
+    if (h1) out.push(h1);
+    return out;
+  }
+
+  const overlays = new OverlayManager({
+    ask: <T,>(req: BgRequest) => ask<T>(req),
+    isOurUi: safeOurs,
+    ensureId: (el) => reader.ensureId(el),
+    decisions: () => store.get().decisions,
+    elementFor: (id) => reader.elementFor(id),
+    taskTargets,
+    mainRoot: () => read?.mainRoot ?? null,
+    sheets: tailor.sheets,
+    lock: withLock,
+    addOp: (op) => {
+      opsList.push(op);
+      syncOps();
+    },
+    syncOps: () => syncOps(),
+    log: (e) => log(e),
+    toast: (text, undoOpId) => toast(text, undoOpId),
+    publish: (list: OverlayView[]) => store.set({ overlays: list }),
+    // Scans also run under the Calm view, so the page is already clear when the person closes it.
+    paused: () => {
+      const s = store.get();
+      return stopped || s.showingOriginal || !(s.phase === 'tailored' || s.phase === 'understood' || s.phase === 'calm');
+    },
+    quiet: () => store.get().calm.open,
+    ledgerHas: (title) => store.get().ledger.some((e) => e.title === title),
+  });
 
   /* ---------------- zoom ---------------- */
 
@@ -339,7 +414,12 @@ export function createController(): Controller {
 
   /* ---------------- applying and verifying a batch ---------------- */
 
-  async function applyBatch(batch: Op[], r: ReadResult | null, opts: { quiet?: boolean } = {}): Promise<Op[]> {
+  function applyBatch(batch: Op[], r: ReadResult | null, opts: { quiet?: boolean } = {}): Promise<Op[]> {
+    if (!batch.length || stopped) return Promise.resolve([]);
+    return withLock(() => applyBatchNow(batch, r, opts));
+  }
+
+  async function applyBatchNow(batch: Op[], r: ReadResult | null, opts: { quiet?: boolean } = {}): Promise<Op[]> {
     const fit = getFit();
     if (!batch.length || stopped) return [];
     const gen = generation;
@@ -365,7 +445,11 @@ export function createController(): Controller {
       }
       opsList.push(op);
     }
-    if (zoomInBatch) await waitResize();
+    // A zoom change: wait for the resize, then a moment for the site's own responsive scripts (menus that fold).
+    if (zoomInBatch) {
+      await waitResize();
+      await sleep(350);
+    }
     await settle();
     if (gen !== generation || stopped) {
       verifier.stopVolatile();
@@ -373,7 +457,7 @@ export function createController(): Controller {
     }
     const outcome = await verifier.verify(
       batch.filter((o) => o.active), before, probe,
-      { ops: opsList, coverOps, contrastFloor: fit?.contrast.floor, mainRoot },
+      { ops: opsList, coverOps, contrastFloor: fit?.contrast.floor, mainRoot, guardOps: opsList.filter((o) => o.active && o.rec.kind === 'page_zoom' && !batch.includes(o)) },
       async (op) => {
         await op.revert();
         op.rec.status = 'reversed';
@@ -434,6 +518,32 @@ export function createController(): Controller {
     return { settings, fit };
   }
 
+  /** AI availability from the server's /health ('on' | 'off' | 'no_credits'), for the panel's "AI layouts off" line. */
+  async function refreshHealth(): Promise<void> {
+    try {
+      const h = await askExt<HealthInfo>({ type: 'health' });
+      const ai: HealthStatus['ai'] = h.ai === 'on' || h.ai === 'off' || h.ai === 'no_credits'
+        ? h.ai
+        : h.ok && h.openai !== false ? 'on' : 'off';
+      if (store.get().ai !== ai) store.set({ ai });
+    } catch {
+      if (store.get().ai !== 'off') store.set({ ai: 'off' });
+    }
+  }
+
+  /** True on the first Jev read of this page in this browser session (that read skips the server's cache). */
+  async function firstReadInSession(): Promise<boolean> {
+    const key = `read:${hashString(`${location.origin}${location.pathname}`)}`;
+    try {
+      const got = await chrome.storage.session.get(key);
+      if (got[key]) return false;
+      await chrome.storage.session.set({ [key]: Date.now() });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function pausedHere(settings: Settings): boolean {
     return settings.pausedOrigins.includes(location.origin) || settings.pausedOrigins.includes(location.hostname);
   }
@@ -447,6 +557,7 @@ export function createController(): Controller {
     }
     if (gen !== generation || stopped) return;
     if (kind === 'first') await askExt<unknown>({ type: 'pageStart' }).catch(() => undefined);
+    if (kind !== 'navigation') void refreshHealth();
     const { settings, fit } = await loadSettingsAndFit();
     if (gen !== generation || stopped) return;
     store.set((s) => ({ settings, fit, lens: kind === 'first' ? { on: settings.lens } : s.lens, startedAt: kind === 'navigation' ? performance.now() : s.startedAt }));
@@ -545,6 +656,7 @@ export function createController(): Controller {
       store.set({ phase: 'tailored' });
       startStruggle();
       watchLateContent();
+      overlays.schedule('fitted');
 
       // 3. Jev reads the page (async; the fit is already applied).
       await understand(gen, r);
@@ -568,7 +680,8 @@ export function createController(): Controller {
     }
     let u: PageUnderstanding;
     try {
-      const res = await ask<PageUnderstanding>({ type: 'understand', digest: r.digest });
+      const noCache = await firstReadInSession();
+      const res = await ask<PageUnderstanding>(noCache ? { type: 'understand', digest: r.digest, noCache: true } : { type: 'understand', digest: r.digest });
       if (!isUnderstanding(res)) throw new Error('Unexpected answer from Jev');
       u = res;
     } catch (err) {
@@ -583,14 +696,25 @@ export function createController(): Controller {
     const decisions = decide(u, r.digest, r);
     const m = u.metrics;
     store.set({ understanding: u, decisions, digest: r.digest, phase: store.get().calm.open ? 'calm' : 'understood' });
-    log({
-      source: 'jev',
-      title: `Jev read this page: ${m.questions} decisions in ${(m.wallMs / 1000).toFixed(2)} s ($${m.costUsd.toFixed(4)})`,
-      detail: `${m.model || 'jev'} · ${m.calls} call${m.calls === 1 ? '' : 's'}${m.serverMs !== null ? ` · server ${m.serverMs} ms` : ''} · ${m.inputTokens.toLocaleString()} tokens${u.cached ? ' · cached' : ''}`,
-      action: 'kept',
-    });
+    if (u.cached) {
+      const f = u.firstRead;
+      log({
+        source: 'jev',
+        title: `Jev's read of this page came from the cache: ${m.questions} decisions${f ? ` (first read ${Math.round(f.wallMs)} ms, $${f.costUsd.toFixed(4)})` : ''}`,
+        detail: `This page has the same structure as an earlier visit, so no new Jev call was made: this view cost $0.${f ? ` ${f.model || 'jev'} · ${f.calls} call${f.calls === 1 ? '' : 's'} · ${f.inputTokens.toLocaleString()} tokens on the first read.` : ''}`,
+        action: 'kept',
+      });
+    } else {
+      log({
+        source: 'jev',
+        title: `Jev read this page: ${m.questions} decisions in ${(m.wallMs / 1000).toFixed(2)} s ($${m.costUsd.toFixed(4)})`,
+        detail: `${m.model || 'jev'} · ${m.calls} call${m.calls === 1 ? '' : 's'}${m.serverMs !== null ? ` · server ${m.serverMs} ms` : ''} · ${m.inputTokens.toLocaleString()} tokens`,
+        action: 'kept',
+      });
+    }
     await applyDecisions(decisions, r, null);
     if (gen !== generation) return;
+    overlays.schedule('jev');
     maybeAutoCalm(r, decisions);
     // Overlays that appeared while Jev was answering (cookie banners at 0.8 s, chat panels) get their own read.
     if (pendingLate) {
@@ -662,6 +786,29 @@ export function createController(): Controller {
     return true;
   }
 
+  /**
+   * A carousel may be dimmed as a whole even though its own dots and arrows are protected (dimming fades, every
+   * control stays usable and comes back on hover or focus), unless it holds help, consent, a field, focus or the
+   * main action.
+   */
+  function guardCarousel(car: Element, r: ReadResult): boolean {
+    if (car === document.body || car === document.documentElement || car === r.mainRoot || !car.isConnected || safeOurs(car)) return false;
+    const rect = car.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth || innerWidth;
+    const vh = document.documentElement.clientHeight || innerHeight;
+    if (rect.width > 0.9 * vw && rect.height > 0.9 * vh) return false;
+    if (document.activeElement && document.activeElement !== document.body && car.contains(document.activeElement)) return false;
+    if (car.querySelector('input:not([type="hidden"]), select, textarea, [contenteditable="true"]')) return false;
+    if (car.closest('[data-wa-dim]')) return false;
+    for (const n of r.nodes.values()) if ((n.help || n.consent) && car.contains(n.el)) return false;
+    for (const d of store.get().decisions) {
+      if (d.verdict !== 'promote' && d.verdict !== 'keep_popup') continue;
+      const el = reader.elementFor(d.id);
+      if (el && car.contains(el)) return false;
+    }
+    return true;
+  }
+
   async function applyDecisions(decisions: ElementDecision[], r: ReadResult, only: Set<string> | null): Promise<void> {
     const fit = getFit();
     if (!fit) return;
@@ -697,19 +844,26 @@ export function createController(): Controller {
       const node: NodeInfo | undefined = r.nodes.get(d.id);
       switch (d.verdict) {
         case 'fold': {
+          // A floating popup Jev folded is tucked out of the way by the overlay module, not dimmed in place.
+          if (overlays.inOverlay(el)) break;
           if (fit.attention.structureLevel < 1 || undoneKinds.has('dim')) {
             foldsSkipped++;
             break;
           }
-          if (!guardFold(el, protectedEls)) {
+          // A rotating carousel: dim the whole carousel, not the slide that happened to be showing (the next slide
+          // would come in at full colour).
+          const carousel = r.carousels.find((c) => c !== el && c.isConnected && c.contains(el));
+          const target = carousel && guardCarousel(carousel, r) ? carousel : el;
+          if (!guardFold(target, protectedEls)) {
             foldsSkipped++;
             break;
           }
-          if (foldCands.some((f) => f.el.contains(el) || el.contains(f.el))) break;
+          if (foldCands.some((f) => f.el.contains(target) || target.contains(f.el))) break;
           const foldP = Math.min(1, FOLD_ROLES.reduce((s, role) => s + (j.roleProbs[role] ?? 0), 0) || j.roleP);
           const roleWord = j.role === 'advertising' ? 'advertising' : j.role === 'recommendations' ? 'recommendations' : j.role === 'popup_overlay' ? 'popup' : j.role;
-          const label = name && noun !== 'the cookie notice' ? ` ${quote(name, 6)}` : '';
-          foldCands.push({ el, title: `Dimmed ${noun}${label} (${roleWord} ${p2(foldP)})`, detail: d.reasons.join('; '), p: foldP, noun });
+          const label = name && noun !== 'the cookie notice' && target === el ? ` ${quote(name, 6)}` : '';
+          const what = target !== el ? 'the moving promo banner' : noun;
+          foldCands.push({ el: target, title: `Dimmed ${what}${label} (${roleWord} ${p2(foldP)})`, detail: d.reasons.join('; '), p: foldP, noun: what });
           break;
         }
         case 'promote': {
@@ -719,16 +873,20 @@ export function createController(): Controller {
           break;
         }
         case 'keep_popup':
+          // A floating warning: the overlay module says "Kept the session warning in front (task 0.81)".
+          if (overlays.inOverlay(el)) break;
           if (alreadyMentioned(el)) break;
           mentioned.push(el);
           protectEntries.push({ source: 'jev', title: `Kept ${noun === 'the popup' ? 'the notice' : noun}${name ? ` ${quote(name, 6)}` : ''} in view (part of the task ${p2(j.task)})`, detail: d.reasons.join('; '), p: j.task, action: 'kept' });
           break;
         case 'protect': {
           if (node?.consent || j.role === 'consent_notice' || r.local.consentIds.includes(d.id)) {
+            // Already moved into the cookie bar: that ledger line says it was not answered.
+            if (el.closest('[data-wa-ov]')) consentSaid = true;
             if (!consentSaid) {
               consentSaid = true;
               mentioned.push(el);
-              protectEntries.push({ source: 'jev', title: 'Left the cookie notice for you to answer', detail: 'WebAble never answers or hides consent notices.', p: j.roleProbs.consent_notice ?? j.roleP, action: 'protected' });
+              protectEntries.push({ source: 'jev', title: 'Left the cookie notice for you to answer', detail: 'WebAble never answers consent notices or removes them.', p: j.roleProbs.consent_notice ?? j.roleP, action: 'protected' });
             }
           } else if (j.help >= 0.5 || j.role === 'help_contact') {
             if (alreadyMentioned(el)) break;
@@ -912,18 +1070,21 @@ export function createController(): Controller {
       elements: [...latest.elements.filter((e) => !u.elements.some((x) => x.id === e.id)), ...u.elements],
       mainPick: latest.mainPick,
       metrics: addMetrics(latest.metrics, u.metrics),
-      cached: latest.cached && u.cached,
+      // The page read stays "from cache" when it was; later reads of new items add their own cost to this view.
+      cached: latest.cached,
+      ...(latest.firstRead ? { firstRead: latest.firstRead } : {}),
     };
     const union = judgedDigest(r.digest);
     const decisions = decide(merged, union, r);
     store.set({ understanding: merged, decisions, digest: union });
     log({
       source: 'jev',
-      title: `Jev read ${u.elements.length} new item${u.elements.length === 1 ? '' : 's'} on the page (${(u.metrics.wallMs / 1000).toFixed(2)} s)`,
+      title: `Jev read ${u.elements.length} new item${u.elements.length === 1 ? '' : 's'} on the page (${u.cached ? 'from the cache' : `${(u.metrics.wallMs / 1000).toFixed(2)} s`})`,
       detail: `${u.metrics.questions} more decisions`,
       action: 'kept',
     });
     await applyDecisions(decisions, r, new Set(u.elements.map((e) => e.id)));
+    overlays.schedule('jev');
   }
 
   /* ---------------- struggle signals ---------------- */
@@ -948,7 +1109,25 @@ export function createController(): Controller {
   function onJudgment(j: StruggleJudgment, waiting: StruggleKind[], offers: Offer[]): void {
     const s = store.get();
     const now = Date.now();
-    const usable = offers.filter((o) => (dismissedOffers.get(o.kind) ?? 0) <= now);
+    // Offer choice against the fit: "Make buttons bigger" is pointless when the fit's targets already meet the need.
+    const folded = s.decisions.filter((d) => d.verdict === 'fold').length;
+    const pageFacts = {
+      targetsApplied: opsList.some((o) => o.rec.kind === 'targets' && o.active),
+      busy: folded >= 2 || (s.digest?.page.element_count ?? 0) >= 40,
+      calmOpen: s.calm.open,
+    };
+    const fitted: Offer[] = [];
+    for (const o of offers) {
+      let next: Offer | null = o;
+      try {
+        next = chooseOfferForFit(o, s.fit, pageFacts);
+      } catch {
+        next = o;
+      }
+      if (next) fitted.push(next);
+      else log({ source: 'signals', title: 'Did not offer bigger buttons: your fit already makes them large here', detail: o.why, p: o.p, action: 'skipped' });
+    }
+    const usable = fitted.filter((o) => (dismissedOffers.get(o.kind) ?? 0) <= now);
     const current = s.struggle.offers[0];
     const keep = current && usable.some((o) => o.kind === current.kind) ? current : usable[0];
     const shown = keep ? [keep] : current ? [current] : [];
@@ -1069,6 +1248,7 @@ export function createController(): Controller {
     }
     opOffer.set(op.rec.id, kind);
     const kept = await applyBatch([op], r);
+    if (kept.includes(op) && op.rec.kind === 'targets') tailor.flashTargets(op.elements, 800);
     if (kept.includes(op)) {
       toast(kind === 'larger_text' && op.rec.kind === 'page_zoom' ? `${OFFER_TOAST[kind]} (${op.title.match(/\d+%/)?.[0] ?? ''})`.replace(' ()', '') : OFFER_TOAST[kind], op.rec.id);
     } else {
@@ -1335,6 +1515,7 @@ export function createController(): Controller {
       phase: 'calm',
       calm: { open: true, loading: wantAi && !cached, spec: first, source, aiReady: false, redesign: cached ?? st.calm.redesign, visual: null },
     }));
+    overlays.setHidden(true);
     log({
       source: by === 'auto' ? 'layout' : 'person',
       title: why ?? (source === 'cached' ? 'Opened Calm view with the layout Jev picked last time' : 'Opened Calm view'),
@@ -1406,7 +1587,7 @@ export function createController(): Controller {
     } catch (err) {
       if (gen !== calmGen) return;
       store.set((s) => ({ calm: { ...s.calm, loading: false } }));
-      log({ source: 'layout', title: 'The AI layout was not available, so this is the simple layout', detail: plainError(err), action: 'skipped' });
+      log({ source: 'layout', title: 'No other layout was available, so this is the simple layout', detail: plainError(err), action: 'skipped' });
       return;
     }
     writeCachedRedesign(key, res);
@@ -1415,11 +1596,12 @@ export function createController(): Controller {
     store.set((s) => ({ calm: { ...s.calm, loading: false, redesign: res } }));
     const ms = Math.round(performance.now() - t0);
     if (!chosen || res.chosen === 'heuristic') {
-      const best = [...res.candidates].filter((c) => c.name !== 'heuristic').sort((a, b) => (b.composite ?? 0) - (a.composite ?? 0))[0];
+      const best = [...res.candidates].filter((c) => candidateSource(c) !== 'heuristic').sort((a, b) => (b.composite ?? 0) - (a.composite ?? 0))[0];
+      const bestWord = best && candidateSource(best) === 'ai' ? 'AI layout' : 'other layout';
       log({
         source: 'layout',
-        title: 'Jev kept the simple layout: no AI layout was clearly easier',
-        detail: best ? `Best AI layout: ${Math.round((best.pEasier ?? 0) * 100)}% likely easier, ${Math.round((best.pHides ?? 0) * 100)}% chance something needed is folded` : undefined,
+        title: `Jev kept the simple layout: no ${res.ai === 'on' ? 'other' : 'local'} layout was clearly easier`,
+        detail: best ? `Best ${bestWord} (${best.name}): ${Math.round((best.pEasier ?? 0) * 100)}% likely easier, ${Math.round((best.pHides ?? 0) * 100)}% chance something needed is folded` : undefined,
         action: 'kept',
       });
       return;
@@ -1510,7 +1692,7 @@ export function createController(): Controller {
     store.set((s) => ({ checks: [...s.checks, result].slice(-80) }));
     if (verdict.rollback && heuristicSpecCache) {
       store.set((s) => ({ calm: { ...s.calm, spec: heuristicSpecCache, source: 'heuristic' } }));
-      log({ source: 'check', title: `Reversed the AI layout: Jev's screenshot check saw ${reasons[0] ?? 'a problem'}`, detail: result.detail, action: 'reversed' });
+      log({ source: 'check', title: `Reversed the new layout: Jev's screenshot check saw ${reasons[0] ?? 'a problem'}`, detail: result.detail, action: 'reversed' });
       toast('Went back to the simple layout: the screenshot check found a problem');
     } else {
       log({ source: 'check', title: 'Jev checked the new layout against a screenshot: no text cut off or too faint', detail: result.detail, action: 'kept' });
@@ -1547,7 +1729,8 @@ export function createController(): Controller {
       phase: s.understanding ? 'understood' : s.phase === 'calm' ? 'tailored' : s.phase,
     });
     log({ source: 'person', title: 'Closed Calm view', action: 'kept' });
-    void resumeZoom();
+    overlays.setHidden(store.get().showingOriginal);
+    void resumeZoom().then(() => overlays.schedule('calm-closed'));
   }
 
   /* ---------------- original page, undo ---------------- */
@@ -1559,6 +1742,7 @@ export function createController(): Controller {
       calmWasOpen = s.calm.open;
       if (s.calm.open) closeCalm();
       store.set({ showingOriginal: true });
+      overlays.setHidden(true);
       void (async () => {
         for (const op of [...opsList].reverse()) {
           if (op.active) await revertOp(op);
@@ -1578,6 +1762,8 @@ export function createController(): Controller {
             }
           }
         }
+        overlays.setHidden(store.get().calm.open);
+        overlays.schedule('original-off');
         if (calmWasOpen) {
           calmWasOpen = false;
           await openCalm('person', 'Back to your fitted page in Calm view');
@@ -1591,6 +1777,8 @@ export function createController(): Controller {
     const op = opsList.find((o) => o.rec.id === opId);
     store.set((s) => ({ toasts: s.toasts.filter((t) => t.undoOpId !== opId) }));
     if (!op || op.rec.status !== 'applied') return;
+    // Moved overlays: the overlay module brings them back and remembers "leave" for this site and kind.
+    if (op.rec.kind === 'unobstruct' && overlays.undo(opId)) return;
     void (async () => {
       await revertOp(op);
       op.rec.status = 'reversed';
@@ -1634,6 +1822,8 @@ export function createController(): Controller {
     jevEls = new Map();
     incrementalRounds = 0;
     pendingLate = false;
+    overlays.reset();
+    overlays.setHidden(false);
     reader.reset();
     read = null;
     const s = store.get();
@@ -1721,15 +1911,14 @@ export function createController(): Controller {
     openFitting: () => {
       void askExt<unknown>({ type: 'openFitting' }).catch((err: unknown) => addError(plainError(err)));
     },
-    restoreOverlay: () => {
-      // Round 2 (engine package) implements overlay handling.
-    },
+    restoreOverlay: (id) => overlays.restore(id),
   };
 
   return {
     api,
     async start() {
       stopped = false;
+      overlays.start();
       stopNav = watchNavigation((url) => {
         void onNavigate(url);
       });
@@ -1743,6 +1932,7 @@ export function createController(): Controller {
     stop() {
       stopped = true;
       generation++;
+      overlays.stop();
       stopNav?.();
       stopNav = null;
       stopSignals?.();

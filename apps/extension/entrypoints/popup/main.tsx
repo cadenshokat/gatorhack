@@ -1,7 +1,7 @@
-// Owner: D2. Toolbar popup: on/off, pause on this site, the fitting, demo fits, the current fit, this page, server status.
+// Owner: P. Toolbar popup: on/off, pause on this site, the fitting, demo fits, the current fit, this page, server status.
 import { render } from 'preact';
 import { useCallback, useEffect, useState } from 'preact/hooks';
-import { DEMO_FITS, describeFit, type FitProfile, type Settings, type TabReport } from '@webable/core';
+import { DEMO_FITS, describeFit, type FitProfile, type JevMetrics, type Settings, type TabReport } from '@webable/core';
 import {
   activeTab,
   checkHealth,
@@ -10,6 +10,7 @@ import {
   writeFit,
   writeSettings,
   type ActiveTab,
+  type AiState,
   type Health,
   type TodayMeter,
 } from './data';
@@ -65,23 +66,78 @@ function Switch(props: { checked: boolean; label: string; sub?: string; disabled
   );
 }
 
-function ServerLine({ health, checked, origin }: { health: Health | null; checked: boolean; origin: string }) {
+type Dot = 'ok' | 'wait' | 'bad' | 'off';
+
+function HeadStatus({ health, checked }: { health: Health | null; checked: boolean }) {
+  if (!checked) return <span class="p-status" data-state="wait">Checking…</span>;
+  if (!health) return <span class="p-status" data-state="bad">Server offline</span>;
+  if (!health.ok) return <span class="p-status" data-state="wait">Server starting</span>;
+  return (
+    <span class="p-status" data-state={health.jev?.warm ? 'ok' : 'wait'}>
+      {health.jev?.warm ? 'Ready' : 'Warming up'}
+    </span>
+  );
+}
+
+const AI_TEXT: Record<AiState, { value: string; dot: Dot; sub: string | null }> = {
+  on: { value: 'On', dot: 'ok', sub: null },
+  off: {
+    value: 'Off',
+    dot: 'off',
+    sub: 'Calm view uses layouts made on this device, and Jev still picks between them.',
+  },
+  no_credits: {
+    value: 'Off: no credits',
+    dot: 'wait',
+    sub: 'Calm view uses layouts made on this device, and Jev still picks between them. AI comes back on its own when credits return.',
+  },
+};
+
+/** The server's HealthStatus: is Jev warm, and are the AI layouts on, off or out of credits. */
+function ServerStatus({ health, checked, origin }: { health: Health | null; checked: boolean; origin: string }) {
   const host = origin.replace(/^https?:\/\//, '');
-  if (!checked) return <span class="p-status" data-state="wait">Checking the server…</span>;
-  if (!health) {
+  if (!checked) {
     return (
-      <span class="p-status" data-state="bad" title={`Nothing answered at ${host}. Start it with: pnpm dev:server`}>
-        Server offline
-      </span>
+      <section class="p-card p-rows" aria-label="Server">
+        <div class="p-row">
+          <span class="p-row-dot" data-state="wait" aria-hidden="true" />
+          <span class="p-row-label">Checking the server at {host}…</span>
+        </div>
+      </section>
     );
   }
-  if (!health.ok) return <span class="p-status" data-state="wait">Server is starting</span>;
-  const warm = health.jev?.warm;
+  if (!health) {
+    return (
+      <section class="p-card p-rows" aria-label="Server">
+        <div class="p-row">
+          <span class="p-row-dot" data-state="bad" aria-hidden="true" />
+          <span class="p-row-label">Server offline</span>
+          <span class="p-row-val">{host}</span>
+        </div>
+        <p class="p-row-sub">Pages are still fitted to your settings. Jev answers come back when the server is running.</p>
+      </section>
+    );
+  }
+  const warm = Boolean(health.jev?.warm);
+  const model = health.jev?.model || 'Jev';
+  const ai = AI_TEXT[health.ai ?? (health.openai === false ? 'off' : 'on')];
   return (
-    <span class="p-status" data-state={warm ? 'ok' : 'wait'}>
-      {health.jev?.model ?? 'Jev'} {warm ? 'ready' : 'warming up'}
-      {health.openai === false ? ' · AI layouts off' : ''}
-    </span>
+    <section class="p-card p-rows" aria-label="Server">
+      <div class="p-row">
+        <span class="p-row-dot" data-state={!health.ok ? 'wait' : warm ? 'ok' : 'wait'} aria-hidden="true" />
+        <span class="p-row-label">Jev</span>
+        <span class="p-row-val">
+          {model} · {!health.ok ? 'starting' : warm ? 'warm' : 'warming up'}
+        </span>
+      </div>
+      <div class="p-hr" />
+      <div class="p-row">
+        <span class="p-row-dot" data-state={ai.dot} aria-hidden="true" />
+        <span class="p-row-label">AI layouts and Explain</span>
+        <span class="p-row-val">{ai.value}</span>
+      </div>
+      {ai.sub && <p class="p-row-sub">{ai.sub}</p>}
+    </section>
   );
 }
 
@@ -199,7 +255,10 @@ function Popup() {
     rows = [];
   }
   const changes = rows.filter((r) => r.to !== 'No change');
-  const u = report?.understanding ?? null;
+  // The report's understanding summary; `cached` and `firstRead` are read if the engine includes them.
+  const u = (report?.understanding ?? null) as
+    | (NonNullable<TabReport['understanding']> & { cached?: boolean; firstRead?: JevMetrics })
+    | null;
   const applied = report?.ops.filter((o) => o.status === 'applied').length ?? 0;
   const reversed = report?.ops.filter((o) => o.status === 'reversed').length ?? 0;
   const failed = report?.checks.filter((c) => !c.pass).length ?? 0;
@@ -210,8 +269,10 @@ function Popup() {
         <h1>
           <span class="p-dot" data-on={String(settings.enabled && !paused)} /> WebAble
         </h1>
-        <ServerLine health={health} checked={healthChecked} origin={settings.serverOrigin} />
+        <HeadStatus health={health} checked={healthChecked} />
       </header>
+
+      <ServerStatus health={health} checked={healthChecked} origin={settings.serverOrigin} />
 
       <section class="p-card">
         <Switch
@@ -251,20 +312,28 @@ function Popup() {
             This page <span class="p-badge">{PHASE[report.phase] ?? report.phase}</span>
           </h2>
           {u ? (
-            <div class="p-stats">
-              <div>
-                <b>{u.metrics.questions.toLocaleString('en-US')}</b>
-                <span>decisions</span>
+            <>
+              <div class="p-stats">
+                <div>
+                  <b>{(u.metrics.questions || u.firstRead?.questions || 0).toLocaleString('en-US')}</b>
+                  <span>decisions</span>
+                </div>
+                <div>
+                  <b>{fmtMs(u.metrics.wallMs)}</b>
+                  <span>{u.cached ? 'this view' : 'page read'}</span>
+                </div>
+                <div>
+                  <b>{u.cached ? '$0' : fmtCost(u.metrics.costUsd)}</b>
+                  <span>{u.cached ? 'this view' : 'cost'}</span>
+                </div>
               </div>
-              <div>
-                <b>{fmtMs(u.metrics.wallMs)}</b>
-                <span>Jev</span>
-              </div>
-              <div>
-                <b>{fmtCost(u.metrics.costUsd)}</b>
-                <span>cost</span>
-              </div>
-            </div>
+              {u.cached && (
+                <p class="p-muted p-small">
+                  From cache
+                  {u.firstRead ? ` · first read ${fmtMs(u.firstRead.wallMs)}, ${fmtCost(u.firstRead.costUsd)}` : ''} · this view $0
+                </p>
+              )}
+            </>
           ) : (
             <p class="p-muted">No Jev answers for this page yet.</p>
           )}
@@ -354,7 +423,7 @@ function Popup() {
         <Switch
           checked={settings.lens}
           label="Start with Jev Lens on"
-          sub="Show Jev's decisions on every page. Alt+J toggles it anytime."
+          sub="Show Jev's decisions on every page. Alt+Shift+L turns it on or off."
           onChange={(v) => void save({ lens: v })}
         />
           </>
@@ -366,7 +435,7 @@ function Popup() {
       <footer class="p-foot">
         <span>
           {today && today.decisions > 0
-            ? `Today: ${today.decisions.toLocaleString('en-US')} decisions · ${fmtCost(today.usd)}`
+            ? `Today, new answers only: ${today.decisions.toLocaleString('en-US')} · ${fmtCost(today.usd)}`
             : 'Nothing you type is sent anywhere.'}
         </span>
         <span>{settings.serverOrigin.replace(/^https?:\/\//, '')}</span>

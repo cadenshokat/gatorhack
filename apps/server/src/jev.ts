@@ -95,7 +95,7 @@ export async function askJev(call: JevCall, opts: AskOptions): Promise<JevResult
     },
     { fresh: opts.fresh },
   );
-  if (fromCache) recordJevCacheHit();
+  if (fromCache) recordJevCacheHit(questions);
   return { ...value, cached: fromCache, retries };
 }
 
@@ -229,6 +229,7 @@ async function send(call: JevCall, opts: AskOptions): Promise<{ result: Cached; 
       serverMs,
       model: parsed.model ?? JEV_MODEL,
       retries,
+      warmup: opts.warmup,
     });
     log('jev', {
       tag: opts.tag,

@@ -1,4 +1,4 @@
-// Owner: D2. Root theme bridge, shared controls, pill and panel styles.
+// Owner: P. Root theme bridge, shared controls, pill and panel styles.
 // Colours read D1's tokens (var(--wa-ink) …, set on :host by mount.ts) and fall back to the Showroom values.
 import { DISPLAY_STACK, FONT_STACK, target, u } from './css-util';
 
@@ -90,6 +90,8 @@ export const rootCss = /* css */ `
   outline: ${u(3)} solid var(--c-focus);
   outline-offset: ${u(2)};
 }
+/* Headings take focus only so screen readers start there; they are not controls, so no ring. */
+.wa-root [tabindex="-1"]:focus-visible { outline: none; }
 .wa-sr {
   position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
@@ -181,6 +183,7 @@ export const rootCss = /* css */ `
   cursor: pointer; pointer-events: auto;
   transition: bottom 260ms cubic-bezier(.3,.7,.4,1), transform 160ms ease, box-shadow 160ms ease;
 }
+.wa-pill[data-side="left"] { right: auto; left: ${u(16)}; }
 .wa-pill:hover { transform: translateY(${u(-1)}); }
 .wa-pill[aria-expanded="true"] { background: var(--c-raised); }
 .wa-pill-count {
@@ -208,6 +211,7 @@ export const rootCss = /* css */ `
   animation: wa-rise 220ms cubic-bezier(.2,.8,.3,1);
   transform-origin: bottom right;
 }
+.wa-panel[data-side="left"] { right: auto; left: ${u(16)}; transform-origin: bottom left; }
 @keyframes wa-rise { from { opacity: 0; transform: translateY(${u(10)}) scale(.98); } to { opacity: 1; transform: none; } }
 .wa-panel-head { display: flex; align-items: flex-start; gap: ${u(12)}; padding: ${u(16)} ${u(16)} ${u(10)} ${u(20)}; }
 .wa-panel-title { flex: 1; min-width: 0; }
@@ -216,7 +220,10 @@ export const rootCss = /* css */ `
   letter-spacing: -0.016em; display: flex; align-items: center; gap: ${u(8)};
 }
 .wa-panel-title p { margin: ${u(4)} 0 0; font-size: ${u(13.5)}; color: var(--c-ink2); }
-.wa-panel-body { overflow-y: auto; overscroll-behavior: contain; padding: 0 ${u(12)} ${u(12)}; display: grid; gap: ${u(8)}; }
+.wa-panel-body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 0 ${u(12)} ${u(12)}; display: grid; align-content: start; gap: ${u(8)};
+}
 .wa-card {
   background: var(--c-raised); border-radius: ${u(20)}; box-shadow: var(--c-shadow-card);
   border: ${u(1)} solid var(--c-edge); padding: ${u(6)};
@@ -233,10 +240,21 @@ export const rootCss = /* css */ `
 .wa-actions .wa-btn { width: 100%; }
 .wa-hr { height: ${u(1)}; background: var(--c-line); margin: ${u(2)} ${u(16)}; opacity: .7; }
 .wa-panel-foot {
-  display: flex; align-items: center; justify-content: space-between; gap: ${u(8)};
-  padding: ${u(10)} ${u(20)} ${u(16)}; font-size: ${u(12.5)}; color: var(--c-ink2);
+  flex: none; display: grid; gap: ${u(8)};
+  padding: ${u(8)} ${u(20)} ${u(14)}; font-size: ${u(12.5)}; color: var(--c-ink2);
   border-top: ${u(1)} solid var(--c-line);
 }
+.wa-foot-row { display: flex; align-items: center; justify-content: space-between; gap: ${u(8)}; }
+.wa-keys { display: flex; align-items: center; gap: ${u(8)}; min-width: 0; }
+.wa-keys .wa-kbd { margin-left: 0; flex: none; }
+.wa-keys ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: ${u(2)} ${u(10)}; min-width: 0; }
+.wa-keys li { white-space: nowrap; }
+.wa-keys li b { color: var(--c-ink); font-weight: 600; }
+.wa-ailine {
+  display: flex; gap: ${u(8)}; align-items: flex-start; margin: ${u(2)} ${u(6)} ${u(6)}; padding: ${u(10)} ${u(12)};
+  border-radius: ${u(14)}; background: var(--c-canvas); color: var(--c-ink2); font-size: ${u(13)}; line-height: 1.4;
+}
+.wa-ailine-icon { flex: none; display: grid; place-items: center; width: ${u(22)}; height: ${u(22)}; border-radius: 999px; background: var(--c-tonal); color: var(--c-ink2); margin-top: ${u(-1)}; }
 
 /* ---------- Jev counter ---------- */
 .wa-counter { display: grid; grid-template-columns: repeat(3, 1fr); gap: ${u(4)}; }
@@ -249,6 +267,12 @@ export const rootCss = /* css */ `
 .wa-counter-lab { font-size: ${u(12.5)}; color: var(--c-ink2); }
 .wa-counter-sub { margin-top: ${u(10)}; font-size: ${u(12.5)}; color: var(--c-ink2); display: flex; flex-wrap: wrap; gap: ${u(4)} ${u(10)}; }
 .wa-counter-sub span { white-space: nowrap; }
+.wa-counter-cache { display: inline-flex; align-items: center; gap: ${u(6)}; flex-wrap: wrap; white-space: normal !important; }
+.wa-counter-foot {
+  margin-top: ${u(10)}; padding-top: ${u(10)}; border-top: ${u(1)} solid var(--c-line);
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: ${u(4)} ${u(12)}; font-size: ${u(12.5)}; color: var(--c-ink2);
+}
+.wa-counter-foot b { color: var(--c-ink); font-weight: 600; }
 .wa-badge {
   display: inline-flex; align-items: center; gap: ${u(4)}; padding: ${u(1)} ${u(8)}; border-radius: 999px;
   font-size: ${u(11.5)}; font-weight: 600; background: var(--c-tonal); color: var(--c-ink2); white-space: nowrap;
@@ -318,16 +342,7 @@ export const rootCss = /* css */ `
 .wa-empty { padding: ${u(14)} ${u(12)}; font-size: ${u(14)}; color: var(--c-ink2); }
 .wa-more { display: flex; justify-content: center; padding: ${u(4)} 0 ${u(2)}; }
 
-/* ---------- calm host chips ---------- */
-.wa-floatchip {
-  position: fixed; left: 50%; transform: translateX(-50%); bottom: ${u(108)}; z-index: 38;
-  display: flex; align-items: center; gap: ${u(12)}; padding: ${u(8)} ${u(8)} ${u(8)} ${u(18)};
-  border-radius: 999px; background: var(--c-raised); color: var(--c-ink);
-  box-shadow: var(--c-shadow-float); border: ${u(1)} solid var(--c-edge);
-  pointer-events: auto; font-size: ${u(15)}; font-weight: 500;
-  animation: wa-rise 240ms cubic-bezier(.2,.8,.3,1);
-}
-.wa-floatchip-quiet { padding: ${u(10)} ${u(18)}; font-size: ${u(13.5)}; color: var(--c-ink2); left: auto; right: auto; transform: none; left: ${u(20)}; }
+/* ---------- Calm view loading screen ---------- */
 .wa-calm-loading {
   position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; pointer-events: auto;
   background: var(--c-canvas); color: var(--c-ink);

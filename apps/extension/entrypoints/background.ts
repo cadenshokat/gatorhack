@@ -11,8 +11,8 @@
 
 import { DEFAULT_SETTINGS, DEMO_FITS, SERVER_ORIGIN, redactText, stillSensitive } from '@webable/core';
 import type {
-  ExplainResult, FitProfile, PageUnderstanding, RedesignResult, Settings, StruggleJudgment, TabReport, VisualVerdict,
-  VisualVerifyRequest,
+  ExplainResult, FitProfile, OverlayCloseResult, PageUnderstanding, RedesignResult, Settings, StruggleJudgment, TabReport,
+  VisualVerdict, VisualVerifyRequest,
 } from '@webable/core';
 import type { BusEnvelope, BusErrorCode, BusReply, ExtRequest, HealthInfo, ZoomInfo } from '../src/engine/bus';
 
@@ -132,13 +132,19 @@ async function health(): Promise<HealthInfo> {
   const timer = setTimeout(() => ctrl.abort(), 4000);
   try {
     const res = await fetch(`${origin}/health`, { signal: ctrl.signal });
-    const j = (await res.json()) as { ok?: unknown; jev?: { warm?: unknown; model?: unknown }; openai?: unknown };
-    const info: HealthInfo = { ok: res.ok && j.ok !== false, ms: Math.round(performance.now() - t0) };
+    const j = (await res.json()) as { ok?: unknown; jev?: { warm?: unknown; model?: unknown }; ai?: unknown; openai?: unknown };
+    const ok = res.ok && j.ok !== false;
+    // HealthStatus.ai ('on' | 'off' | 'no_credits'); an older server only says openai: boolean.
+    const ai: HealthInfo['ai'] = j.ai === 'on' || j.ai === 'off' || j.ai === 'no_credits'
+      ? j.ai
+      : ok && j.openai !== false ? 'on' : 'off';
+    const info: HealthInfo = { ok, ai, ms: Math.round(performance.now() - t0) };
     if (j.jev && typeof j.jev === 'object') info.jev = { warm: !!j.jev.warm, model: typeof j.jev.model === 'string' ? j.jev.model : '' };
     if (typeof j.openai === 'boolean') info.openai = j.openai;
+    else info.openai = ai === 'on';
     return info;
-  } catch (err) {
-    return { ok: false, ms: Math.round(performance.now() - t0), error: ctrl.signal.aborted ? 'timeout' : `not reachable at ${origin}` };
+  } catch {
+    return { ok: false, ai: 'off', ms: Math.round(performance.now() - t0), error: ctrl.signal.aborted ? 'timeout' : `not reachable at ${origin}` };
   } finally {
     clearTimeout(timer);
   }
@@ -246,7 +252,8 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
   };
   switch (req.type) {
     case 'understand':
-      return post<PageUnderstanding>('/v1/understand', { digest: req.digest }, 12000);
+      // noCache: the page's first read in this session is a live Jev read (honest metrics); later views may be cached.
+      return post<PageUnderstanding>('/v1/understand', req.noCache ? { digest: req.digest, noCache: true } : { digest: req.digest }, 12000);
     case 'struggle':
       return post<StruggleJudgment>('/v1/struggle', { signals: req.signals }, 6000);
     case 'redesign':
@@ -325,7 +332,9 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
     case 'health':
       return health();
     case 'overlayClose':
-      return post('/v1/overlay-close', { overlay: req.overlay, candidates: req.candidates }, 8000);
+      // Jev finds an overlay's own minimise/close button (never asked for consent notices).
+      if (req.overlay.kind_hint === 'consent') throw new BgError('refused', 'WebAble never closes consent notices');
+      return post<OverlayCloseResult>('/v1/overlay-close', { overlay: req.overlay, candidates: req.candidates.slice(0, 8) }, 8000);
     case 'setFit':
       return setFit(req.fit);
     case 'setSettings':

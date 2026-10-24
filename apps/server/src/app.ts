@@ -10,6 +10,7 @@ import { corsMiddleware, hostGuard, originGuard } from './guard';
 import { JevError } from './jev';
 import { registerExplain } from './routes/explain';
 import { registerHealth } from './routes/health';
+import { registerOverlay } from './routes/overlay';
 import { registerRedesign } from './routes/redesign';
 import { registerStruggle } from './routes/struggle';
 import { registerUnderstand } from './routes/understand';
@@ -65,6 +66,7 @@ export function createApp(): Hono {
   registerRedesign(app);
   registerExplain(app);
   registerVisual(app);
+  registerOverlay(app);
 
   // Demo pages (package F writes apps/server/demo/**).
   if (!existsSync(DEMO_ROOT)) log('demo folder not found yet', { path: 'apps/server/demo' });
@@ -86,7 +88,7 @@ export function createApp(): Hono {
   app.get('/', (c) =>
     c.json({
       name: 'WebAble server',
-      routes: ['GET /health', 'GET /v1/stats', 'POST /v1/understand', 'POST /v1/struggle', 'POST /v1/redesign', 'POST /v1/explain', 'POST /v1/verify-visual', 'GET /demo/'],
+      routes: ['GET /health', 'GET /v1/stats', 'POST /v1/understand', 'POST /v1/struggle', 'POST /v1/redesign', 'POST /v1/explain', 'POST /v1/verify-visual', 'POST /v1/overlay-close', 'GET /demo/'],
     }),
   );
 

@@ -9,7 +9,7 @@
 //   fold        P(advertising + recommendations + popup_overlay) >= 0.90 and task <= 0.20 and help <= 0.10 and not
 //               protected.
 //   keep        everything else, including elements Jev did not answer (fail closed).
-import type { ElementDecision, ElementEvidence, ElementJudgment, PageDigest, PageUnderstanding, Role } from './types';
+import type { ElementDecision, ElementEvidence, ElementJudgment, OverlayKind, PageDigest, PageUnderstanding, Role } from './types';
 
 export interface LocalFacts { focusedIds: string[]; requiredIds: string[]; filledIds: string[]; consentIds: string[]; offsiteIds: string[] }
 
@@ -166,6 +166,155 @@ export function decideElements(u: PageUnderstanding, digest: PageDigest, local: 
 
 function dedupe(xs: string[]): string[] {
   return [...new Set(xs)];
+}
+
+/* ------------------------------------------------------------------ */
+/* Overlays that cover the task ("make room", round 2)                 */
+/* ------------------------------------------------------------------ */
+//
+// Code decides from local facts plus Jev's v1 answers (overlays brief):
+//   act when       something the task needs is blocked, one overlay covers >= 0.12, or all together >= 0.25
+//                  (largest first, until under 0.15); folded popups (survey, newsletter, promo) at any coverage.
+//   warning        alertdialog or task >= 0.70 (the session timeout scored 0.81): kept in front, never moved.
+//   consent        1-4 site choices (a lone "Close" counts), no toggles, not a full-page wall: docked into a bar,
+//                  never answered.
+//   chat           opened by itself, nothing focused or typed inside, launcher in the DOM: minimised with its own
+//                  button once Jev finds it; otherwise tucked with a chip.
+//   survey/newsletter/promo  Jev's v1 fold rule and not modal: tucked to the nearest edge with a chip.
+//   modal          offered only.
+//   promo_bar      advertising >= 0.90: unpinned at the top, tucked at the bottom.
+//   header         taller than 20% of the screen: unpinned.
+// Never touched: overlays the person opened (< 1.5 s after their last press or key), ones in use (focus or typing
+// inside), kinds the person undid on this site in the last 30 days, and any overlay after 2 automatic actions.
+
+export interface OverlayFacts {
+  id: string;
+  kind: OverlayKind;
+  /** Share of the viewport grid where this overlay is on top (0..1). */
+  coverage: number;
+  /** It covers the main action, a main-form field, the focused element or the h1. */
+  blocks: boolean;
+  /** It appeared more than 1.5 s after the person's last press or key. */
+  selfOpened: boolean;
+  /** Focus, a press or typing inside it. */
+  touched: boolean;
+  /** Site buttons inside it (consent: the choices). */
+  choices: number;
+  /** Visible checkboxes or switches inside it. */
+  toggles: boolean;
+  /** A full-page wall (covers most of the screen or has a backdrop). */
+  wall: boolean;
+  modal: boolean;
+  /** Jev's v1 fold rule fired on it (popup / advertising >= 0.90, task <= 0.20, help <= 0.10). */
+  folded: boolean;
+  /** Highest task probability Jev gave the overlay itself (0 when unknown). */
+  task: number;
+  alertdialog: boolean;
+  /** Jev's advertising probability for it (promo bars). */
+  advertising: number;
+  /** Where it is anchored on screen. */
+  edge: 'top' | 'bottom' | 'side' | 'center';
+  /** Its height as a share of the screen (headers). */
+  heightShare: number;
+  /** A chat launcher is already in the DOM. */
+  launcher: boolean;
+  /** The person undid this kind on this site within 30 days. */
+  leave: boolean;
+  /** Automatic actions WebAble already took on this overlay. */
+  actions: number;
+}
+
+export type OverlayPlan = 'dock' | 'minimise' | 'tuck' | 'unpin' | 'offer' | 'keep' | 'none';
+
+export const OVERLAY_POLICY = Object.freeze({
+  actOne: 0.12,
+  actAll: 0.25,
+  actUntil: 0.15,
+  warningTask: 0.7,
+  promoAd: 0.9,
+  headerShare: 0.2,
+  maxActions: 2,
+  consentMin: 1,
+  consentMax: 4,
+});
+
+const ACTION_KINDS: readonly OverlayKind[] = ['consent', 'chat', 'survey', 'newsletter', 'promo_bar', 'modal', 'header', 'other'];
+
+function isWarning(f: OverlayFacts): boolean {
+  return f.kind === 'warning' || f.alertdialog || f.task >= OVERLAY_POLICY.warningTask;
+}
+
+function canAct(f: OverlayFacts): boolean {
+  if (isWarning(f)) return false;
+  if (f.leave || f.actions >= OVERLAY_POLICY.maxActions || f.touched || !f.selfOpened) return false;
+  return ACTION_KINDS.includes(f.kind);
+}
+
+/** One plan per overlay, in input order. Pure: the engine measures, this decides. */
+export function planOverlays(facts: OverlayFacts[]): Array<{ id: string; plan: OverlayPlan; reason: string }> {
+  const need = new Set<string>();
+  for (const f of facts) if (f.blocks || f.coverage >= OVERLAY_POLICY.actOne) need.add(f.id);
+  const total = facts.reduce((s, f) => s + Math.max(0, f.coverage), 0);
+  if (total >= OVERLAY_POLICY.actAll) {
+    let left = total;
+    for (const f of [...facts].sort((a, b) => b.coverage - a.coverage)) {
+      if (left < OVERLAY_POLICY.actUntil) break;
+      if (!canAct(f) || f.coverage <= 0) continue;
+      need.add(f.id);
+      left -= f.coverage;
+    }
+  }
+  return facts.map((f) => {
+    const pct = `${Math.round(f.coverage * 100)}%`;
+    if (isWarning(f)) {
+      return { id: f.id, plan: 'keep' as const, reason: f.task > 0 ? `a warning (task ${f.task.toFixed(2)})` : 'a warning' };
+    }
+    if (f.leave) return { id: f.id, plan: 'none' as const, reason: 'you brought this kind back on this site before' };
+    if (f.actions >= OVERLAY_POLICY.maxActions) return { id: f.id, plan: 'none' as const, reason: 'already moved twice' };
+    if (!f.selfOpened) return { id: f.id, plan: 'none' as const, reason: 'you opened it' };
+    if (f.touched) return { id: f.id, plan: 'none' as const, reason: 'in use' };
+    const needed = need.has(f.id);
+    const why = f.blocks ? `it covered part of the task (${pct} of the screen)` : `it covered ${pct} of the screen`;
+    switch (f.kind) {
+      case 'consent':
+        if (!needed) return { id: f.id, plan: 'none' as const, reason: `small (${pct})` };
+        if (f.wall) return { id: f.id, plan: 'keep' as const, reason: 'a full-page consent wall' };
+        if (f.toggles) return { id: f.id, plan: 'keep' as const, reason: 'it has switches to set' };
+        if (f.choices < OVERLAY_POLICY.consentMin || f.choices > OVERLAY_POLICY.consentMax) {
+          return { id: f.id, plan: 'keep' as const, reason: `${f.choices} choices` };
+        }
+        return { id: f.id, plan: 'dock' as const, reason: why };
+      case 'chat':
+        if (!needed) return { id: f.id, plan: 'none' as const, reason: `small (${pct})` };
+        return { id: f.id, plan: f.launcher ? ('minimise' as const) : ('tuck' as const), reason: why };
+      case 'modal':
+        return needed || f.folded
+          ? { id: f.id, plan: 'offer' as const, reason: why }
+          : { id: f.id, plan: 'none' as const, reason: `small (${pct})` };
+      case 'survey':
+      case 'newsletter':
+      case 'other':
+        // A floating panel the page did not ask the person about, sitting on the main action or a main field
+        // (an "Alerts" flyout over "Apply now"): tucked with a chip, so it is one press away.
+        if (!f.folded && f.kind === 'other' && f.blocks && !f.modal && !f.wall && f.edge !== 'center' && f.coverage < 0.35) {
+          return { id: f.id, plan: 'tuck' as const, reason: why };
+        }
+        if (!f.folded) return { id: f.id, plan: 'none' as const, reason: 'Jev has not folded it' };
+        if (f.modal || f.wall) return { id: f.id, plan: 'offer' as const, reason: 'a popup over the whole page' };
+        return { id: f.id, plan: 'tuck' as const, reason: f.kind === 'other' ? 'Jev folded it' : `Jev folded the ${f.kind}` };
+      case 'promo_bar':
+        if (f.advertising < OVERLAY_POLICY.promoAd && !f.folded) return { id: f.id, plan: 'none' as const, reason: `advertising ${f.advertising.toFixed(2)}` };
+        if (f.edge === 'top') return { id: f.id, plan: 'unpin' as const, reason: 'a pinned promotion bar' };
+        if (f.edge === 'bottom') return { id: f.id, plan: 'tuck' as const, reason: 'a pinned promotion bar' };
+        return { id: f.id, plan: 'none' as const, reason: 'not at an edge' };
+      case 'header':
+        return f.heightShare > OVERLAY_POLICY.headerShare
+          ? { id: f.id, plan: 'unpin' as const, reason: `it took ${Math.round(f.heightShare * 100)}% of the screen` }
+          : { id: f.id, plan: 'none' as const, reason: 'short enough' };
+      default:
+        return { id: f.id, plan: 'none' as const, reason: 'unknown kind' };
+    }
+  });
 }
 
 export function summarizeDecisions(d: ElementDecision[]): { folded: number; protected: number; mainId: string | null } {

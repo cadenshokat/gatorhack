@@ -1,12 +1,16 @@
-// Running totals for /v1/stats and the Lens session meter ("Today: N decisions · $X").
+// Running totals for /v1/stats. Jev `calls`, `decisions`, tokens and $ count real (live) decision calls only;
+// answers served from the cache and connection warm-ups are counted separately.
 import { median, round } from './util';
 
 const WINDOW = 200;
 
 interface JevTotals {
-  calls: number;
-  cacheHits: number;
-  decisions: number; // typed answers received (questions answered)
+  calls: number; // live decision calls (warm-ups and cache hits excluded)
+  cacheHits: number; // calls answered from the cache
+  cachedDecisions: number; // answers served from the cache
+  warmups: number;
+  warmupUsd: number;
+  decisions: number; // typed answers received live (questions answered)
   inputTokens: number;
   costUsd: number;
   errors: number;
@@ -43,7 +47,7 @@ interface RouteTotals {
 
 const startedAt = new Date().toISOString();
 const jev: JevTotals = {
-  calls: 0, cacheHits: 0, decisions: 0, inputTokens: 0, costUsd: 0, errors: 0, retries: 0, wallMs: [], serverMs: [], lastModel: null,
+  calls: 0, cacheHits: 0, cachedDecisions: 0, warmups: 0, warmupUsd: 0, decisions: 0, inputTokens: 0, costUsd: 0, errors: 0, retries: 0, wallMs: [], serverMs: [], lastModel: null,
 };
 const openai: OpenAiTotals = { calls: 0, errors: 0, inputTokens: 0, cachedTokens: 0, outputTokens: 0, costUsd: 0, byModel: {} };
 const routes: Record<string, RouteTotals> = {};
@@ -53,7 +57,14 @@ function push(arr: number[], v: number): void {
   if (arr.length > WINDOW) arr.shift();
 }
 
-export function recordJevCall(c: { questions: number; inputTokens: number; costUsd: number; wallMs: number; serverMs: number | null; model: string; retries: number }): void {
+export function recordJevCall(c: {
+  questions: number; inputTokens: number; costUsd: number; wallMs: number; serverMs: number | null; model: string; retries: number; warmup?: boolean;
+}): void {
+  if (c.warmup) {
+    jev.warmups++;
+    jev.warmupUsd += c.costUsd;
+    return;
+  }
   jev.calls++;
   jev.decisions += c.questions;
   jev.inputTokens += c.inputTokens;
@@ -64,8 +75,9 @@ export function recordJevCall(c: { questions: number; inputTokens: number; costU
   if (c.serverMs !== null) push(jev.serverMs, c.serverMs);
 }
 
-export function recordJevCacheHit(): void {
+export function recordJevCacheHit(questions = 0): void {
   jev.cacheHits++;
+  jev.cachedDecisions += questions;
 }
 
 export function recordJevError(): void {
@@ -113,10 +125,12 @@ export function statsSnapshot() {
     jev: {
       model: jev.lastModel,
       calls: jev.calls,
-      cacheHits: jev.cacheHits,
       decisions: jev.decisions,
       inputTokens: jev.inputTokens,
       costUsd: round(jev.costUsd, 6),
+      cacheHits: jev.cacheHits,
+      cache: { calls: jev.cacheHits, decisions: jev.cachedDecisions },
+      warmups: { calls: jev.warmups, costUsd: round(jev.warmupUsd, 6) },
       errors: jev.errors,
       retries: jev.retries,
       wallMsP50: ms(jev.wallMs),
@@ -137,6 +151,6 @@ export function statsSnapshot() {
       ),
     },
     routes: Object.fromEntries(Object.entries(routes).map(([k, v]) => [k, { count: v.count, errors: v.errors, msP50: ms(v.ms) }])),
-    totalUsd: round(jev.costUsd + openai.costUsd, 5),
+    totalUsd: round(jev.costUsd + jev.warmupUsd + openai.costUsd, 5),
   };
 }

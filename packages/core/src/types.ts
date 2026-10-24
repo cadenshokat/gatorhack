@@ -233,6 +233,8 @@ export interface HealthStatus {
   ok: boolean;
   jev: { warm: boolean; model: string };
   ai: 'on' | 'off' | 'no_credits';
+  /** Why AI is off and when it is tried again; `sentence` is ready to show. */
+  aiDetail?: { reason?: string | null; retryAt?: number | string | null; sentence: string };
 }
 
 export type Verdict = 'protect' | 'fold' | 'keep' | 'promote' | 'keep_popup';
@@ -376,6 +378,8 @@ export interface LayoutCandidate {
   pHides?: number;
   fitScore?: number; // 0..4
   composite?: number;
+  /** Where the candidate came from (also the first `repairs` line). */
+  source?: 'heuristic' | 'local' | 'ai';
 }
 
 export interface RedesignResult {
@@ -384,6 +388,9 @@ export interface RedesignResult {
   autoApply: boolean; // P(easier) >= 0.70 and P(hides) < 0.50
   llm: { model: string; ms: number; costUsd: number };
   judge: JevMetrics;
+  /** AI availability when this was made, and how many candidates came from each source. */
+  ai?: 'on' | 'off' | 'no_credits';
+  sources?: Record<'heuristic' | 'local' | 'ai', number>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -404,6 +411,11 @@ export interface ExplainResult {
   model: string;
   ms: number;
   jev: JevMetrics;
+  /** Set when no plain version was written: 'llm_unavailable' | 'check_unavailable'. */
+  error?: string;
+  reason?: string;
+  /** Ready to show, e.g. "Couldn't write a plain version right now. The original is below." */
+  message?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -480,6 +492,9 @@ export interface TabReport {
   struggle: StruggleJudgment | null;
   redesign: { chosen: string; autoApply: boolean; ms: number } | null;
   errors: string[];
+  /** Overlays handled on this page and AI availability (read by the eval harness). */
+  overlays?: OverlayAction[];
+  ai?: HealthStatus['ai'];
 }
 
 /* ------------------------------------------------------------------ */

@@ -1,7 +1,9 @@
 // Server-side second pass over everything that can reach a model. The extension already redacted it; this
 // pass uses the same core functions so a modified or buggy client still cannot send personal text.
 import { allowlistWords, redactText, stillSensitive, uiLabel } from '@webable/core';
-import type { PageDigest, PageOutline, Role, StruggleSignals, VisualVerifyRequest } from '@webable/core';
+import type {
+  OverlayButtonEvidence, OverlayEvidence, PageDigest, PageOutline, Role, StruggleSignals, VisualVerifyRequest,
+} from '@webable/core';
 
 /** A label for Jev: redacted, capped at 15 words; if anything still looks personal, only allowlisted words remain. */
 export function cleanLabel(s: string, maxWords = 15): string {
@@ -109,4 +111,17 @@ export function sanitizeVisual(r: VisualVerifyRequest): VisualVerifyRequest {
     help: r.help.map((s) => cleanLabel(s)),
     mainLabel: r.mainLabel === null ? null : cleanLabel(r.mainLabel),
   };
+}
+
+/** Overlay evidence for Jev: labels and visible text redacted like element labels; class words kept to short words. */
+export function sanitizeOverlay(o: OverlayEvidence): OverlayEvidence {
+  return { ...o, label: cleanLabel(o.label), class_words: cleanWords(o.class_words) };
+}
+
+export function sanitizeOverlayButton(b: OverlayButtonEvidence): OverlayButtonEvidence {
+  return { ...b, label: cleanLabel(b.label), visible_text: cleanLabel(b.visible_text, 8), class_words: cleanWords(b.class_words) };
+}
+
+function cleanWords(ws: string[]): string[] {
+  return ws.map((w) => cleanLabel(w, 3)).filter((w) => w !== '' && !/\[[a-z]+\]/.test(w));
 }

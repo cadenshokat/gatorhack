@@ -40,6 +40,11 @@ export interface Op {
   drop?(el: Element): void;
   /** Elements whose expanded hit area should be probed after applying (targets, promote_main). */
   hitProbes?: Array<{ el: Element; padX: number; padY: number }>;
+  /**
+   * The person's own Undo, when it differs from revert (a minimised chat: revert leaves the site's chat as it is,
+   * Undo presses the site's own chat button to open it again).
+   */
+  undo?(): void | Promise<void>;
 }
 
 export interface TailorHost {
@@ -162,6 +167,11 @@ let opCounter = 0;
 function opId(kind: OpKind): string {
   opCounter += 1;
   return `${kind}-${opCounter}`;
+}
+
+/** A new op record (unique id per page view). Shared with the overlay module. */
+export function makeOpRecord(kind: OpKind, scope: OpRecord['scope'], targets: Element[], reason: string, idOf: (el: Element) => string): OpRecord {
+  return record(kind, scope, targets, reason, idOf);
 }
 
 function record(kind: OpKind, scope: OpRecord['scope'], targets: Element[], reason: string, idOf: (el: Element) => string): OpRecord {
@@ -380,6 +390,17 @@ function targetCss(attrX: string, attrY: string, attrPos: string, attrOn: string
 }
 
 const TARGET_CSS = targetCss('data-wa-tx', 'data-wa-ty', 'data-wa-tp', 'data-wa-t');
+
+/** A short outline on enlarged click areas, so "Make bigger" shows what changed (the areas themselves are invisible). */
+const FLASH_CSS = `
+${sel('data-wa-t')}${sel('data-wa-flash')}::after {
+  outline: 2px solid #0071E3 !important;
+  outline-offset: -2px !important;
+  border-radius: 8px !important;
+  background: rgba(0, 113, 227, 0.10) !important;
+}
+${sel('data-wa-flash')}:not([data-wa-t]) { outline: 2px solid #0071E3 !important; outline-offset: 2px !important; }
+`;
 
 /* ------------------------------------------------------------------ */
 /* Hit-area planning (shared by targets and promote_main)              */
@@ -1365,6 +1386,19 @@ ${sel('data-wa-unpin', 'f')} { position: absolute !important; }`);
       },
     };
     return op;
+  }
+
+  /** Outline the enlarged click areas for `ms` (default 800 ms), then remove the outline. Never changes geometry. */
+  flashTargets(els: Element[], ms = 800): void {
+    const list = els.filter((el) => el.isConnected).slice(0, 300);
+    if (!list.length) return;
+    const sheet = this.sheets.shared('flash', FLASH_CSS);
+    sheet.attach();
+    for (const el of list) el.setAttribute('data-wa-flash', '');
+    setTimeout(() => {
+      for (const el of list) el.removeAttribute('data-wa-flash');
+      sheet.detach();
+    }, Math.max(200, ms));
   }
 
   /* ---------------- marking late content with existing tokens ---------------- */

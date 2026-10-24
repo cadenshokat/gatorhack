@@ -1,4 +1,4 @@
-// Owner: D1. Draws the block model. Every control proxies its original; every word is the page's own visible text.
+// Owner: C. Draws the block model. Every control proxies its original; every word is the page's own visible text.
 import type { JSX } from 'preact';
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { proxyCheck, proxyClick, proxyCommit, proxyInput, proxyKey, proxySelect, proxySubmit, renderLiveValue } from '../proxy';
@@ -8,7 +8,7 @@ import { tickNow, useLive } from './live';
 import {
   type Block, type CardLinkBlock, type ChoiceBlock, type ChoicesBlock, type ControlBlock, type FieldBlock, type FlowBlock,
   type ImageBlock, type Inline, type LinkPart, type ListBlock, type PeekBlock, type RichTableBlock, type SelectBlock, type TableBlock,
-  PRICE_RE, isDense, splitParts,
+  PRICE_RE, isDense, splitParts, stripMarker,
 } from './model';
 
 export type Variant = 'default' | 'quiet' | 'prose';
@@ -20,10 +20,11 @@ export function Blocks({ blocks, variant = 'default' }: { blocks: Block[]; varia
   let cards: CardLinkBlock[] = [];
   const flushCards = (): void => {
     if (cards.length) {
+      const thumbs = cards.filter((c) => c.image && keepImage(c.image, true)).length * 2 >= cards.length;
       out.push(
         <div class="wa-rows" key={`${cards[0]!.key}c`}>
           {cards.map((c) => (
-            <CardLinkRow key={c.key} b={c} />
+            <CardLinkRow key={c.key} b={c} thumbs={thumbs} />
           ))}
         </div>,
       );
@@ -75,7 +76,7 @@ export function BlockView({ b, variant = 'default' }: { b: Block; variant?: Vari
     case 'select': return <SelectView b={b} />;
     case 'choices': return <ChoicesView b={b} />;
     case 'choice': return <ChoicesView b={{ b: 'choices', type: b.type, items: [b], key: `${b.key}g`, src: b.src }} />;
-    case 'image': return <ImageView b={b} />;
+    case 'image': return keepImage(b, false) ? <ImageView b={b} /> : null;
     case 'list': return <ListView b={b} variant={variant} />;
     case 'table': return <TableView b={b} />;
     case 'rtable': return <RichTableView b={b} />;
@@ -168,8 +169,30 @@ function liveLabel(v: ReturnType<typeof renderLiveValue>, fallback: string): str
   return fallback;
 }
 
+/** Page tools (Print, Save, Listen): quiet icon links, never grey pills. */
+export const TOOL_RE = /^(print( this)?( page)?|save( to (my )?list)?|share( this)?|listen|play( pronunciation| audio)?|email( this)?( page)?|bookmark|download( pdf)?)$/i;
+
+export function ToolIcon({ text }: { text: string }): JSX.Element {
+  if (/print/i.test(text)) return <I.Print />;
+  if (/listen|play/i.test(text)) return <I.Speaker />;
+  if (/email/i.test(text)) return <I.Mail />;
+  return <I.Bookmark />;
+}
+
+function ToolButton({ b }: { b: ControlBlock }): JSX.Element {
+  const ctx = useCalm();
+  return (
+    <button type="button" class="wa-btn wa-btn--tool" onClick={() => ctx.click(b.el)}>
+      <ToolIcon text={b.text} />
+      <span>{b.text}</span>
+    </button>
+  );
+}
+
 export function ControlView({ b, variant }: { b: ControlBlock; variant?: 'pill' | 'chip' | 'link' | 'quiet' }): JSX.Element | null {
-  if (b.primary) return <PrimaryAction b={b} />;
+  // The page's main action lives in the dock (one filled button on screen at most).
+  if (b.primary) return null;
+  if (TOOL_RE.test(b.text.trim())) return <ToolButton b={b} />;
   if (variant === 'chip') return <PillButton b={b} cls="wa-chip" />;
   if (b.role === 'link' || variant === 'link') return <LinkButton b={b} />;
   return <PillButton b={b} cls={variant === 'quiet' ? 'wa-btn--quiet' : ''} />;
@@ -289,7 +312,7 @@ export function FieldView({ b, compact = false }: { b: FieldBlock; compact?: boo
   const value = live.kind === 'text' ? live.value : '';
   const disabled = live.kind === 'text' && live.disabled;
   const readOnly = live.kind === 'text' && live.readOnly;
-  const label = b.label || 'Text field';
+  const label = (b.required ? stripMarker(b.label) : b.label) || 'Text field';
   const onInput = (e: Event): void => proxyInput(b.el, (e.currentTarget as HTMLInputElement | HTMLTextAreaElement).value);
   const onKey = (e: KeyboardEvent): void => {
     if (e.key !== 'Enter' || b.multiline) return;
@@ -297,14 +320,25 @@ export function FieldView({ b, compact = false }: { b: FieldBlock; compact?: boo
     if (b.search) proxySubmit(b.el);
     else proxyKey(b.el, 'Enter');
   };
+  const ac = (b.el.getAttribute('autocomplete') ?? '').toLowerCase();
+  const width =
+    /postal-code|cc-csc|bday-(day|month|year)/.test(ac) || /\b(zip|postcode|postal)\b/i.test(label) || (b.el instanceof HTMLInputElement && b.el.maxLength > 0 && b.el.maxLength <= 5)
+      ? ' wa-input--10'
+      : b.type === 'tel' || /\btel\b/.test(ac) || (b.el instanceof HTMLInputElement && b.el.maxLength > 0 && b.el.maxLength <= 12)
+        ? ' wa-input--20'
+        : b.type === 'email' || /\bemail\b/.test(ac)
+          ? ' wa-input--30'
+          : '';
   const common = {
     id,
-    class: 'wa-input',
+    'data-k': b.key,
+    class: `wa-input${b.multiline ? '' : width}`,
     value,
     disabled,
     readOnly,
     'aria-describedby': b.hint ? hintId : undefined,
     'aria-required': b.required || undefined,
+    'aria-invalid': b.el.getAttribute('aria-invalid') === 'true' || undefined,
     autoComplete: b.el.getAttribute('autocomplete') ?? undefined,
     inputMode: (b.el.getAttribute('inputmode') ?? undefined) as JSX.HTMLAttributes['inputMode'],
     onInput,
@@ -337,12 +371,13 @@ export function SelectView({ b }: { b: SelectBlock }): JSX.Element | null {
   return (
     <div class="wa-field">
       <label class="wa-label" for={id}>
-        {b.label || 'Choose one'}
+        {(b.required ? stripMarker(b.label) : b.label) || 'Choose one'}
         {b.required && <span class="wa-req"> (required)</span>}
       </label>
       <div class="wa-selectwrap">
         <select
           id={id}
+          data-k={b.key}
           class="wa-input"
           value={String(live.index)}
           disabled={live.disabled}
@@ -391,12 +426,12 @@ function ChoiceRow({ c, name }: { c: ChoiceBlock; name?: string }): JSX.Element 
   return (
     <>
       <label class="wa-choice" data-checked={checked || undefined} data-disabled={disabled || undefined}>
-        <input class="wa-sr" type={c.type} name={name} checked={checked} disabled={disabled} onChange={onChange} />
+        <input class="wa-sr" type={c.type} name={name} checked={checked} disabled={disabled} onChange={onChange} data-k={c.key} />
         <span class={`wa-box${c.type === 'radio' ? ' wa-box--radio' : ''}`} aria-hidden="true">
           {c.type === 'radio' ? <span class="wa-box__dot" /> : <I.Check />}
         </span>
         <span class="wa-choice__text">
-          <span class="wa-choice__title">{c.title}</span>
+          <span class="wa-choice__title">{stripMarker(c.title)}</span>
           {c.meta.map((m, i) => (
             <span key={i} class="wa-choice__meta">
               {m}
@@ -417,12 +452,64 @@ function ChoiceRow({ c, name }: { c: ChoiceBlock; name?: string }): JSX.Element 
 /* Media, lists, tables, cards                                         */
 /* ------------------------------------------------------------------ */
 
+/* Pictures: shown only once they decode (within 1.5 s, at least 48 px wide), never as an empty box. */
+const decoded = new Map<string, boolean>();
+
+function useDecoded(url: string): boolean | null {
+  const [ok, setOk] = useState<boolean | null>(() => decoded.get(url) ?? null);
+  useEffect(() => {
+    const known = decoded.get(url);
+    if (known !== undefined) {
+      setOk(known);
+      return;
+    }
+    let alive = true;
+    const img = new Image();
+    img.decoding = 'async';
+    const done = (v: boolean): void => {
+      decoded.set(url, v);
+      if (alive) setOk(v);
+    };
+    const timer = window.setTimeout(() => done(false), 1500);
+    img.src = url;
+    img
+      .decode()
+      .then(() => done(img.naturalWidth >= 48))
+      .catch(() => done(false))
+      .finally(() => window.clearTimeout(timer));
+    return () => {
+      alive = false;
+      window.clearTimeout(timer);
+    };
+  }, [url]);
+  return ok;
+}
+
+/**
+ * Which pictures earn a place: never logos (the site's name is in the top bar) or wide stock banners; a picture with no
+ * description only when it is a product, a gallery or tile picture (`framed`), a captioned figure or an image-only link.
+ */
+export function keepImage(b: ImageBlock, framed: boolean): boolean {
+  if (b.logo) return false;
+  if (b.caption || /\b(chart|graph|map|diagram|figure)\b/i.test(b.alt)) return true;
+  // Wide stock pictures in heroes and carousels carry no part of the task.
+  if (b.banner && b.w >= 360) return false;
+  if (framed) return true;
+  if (b.w >= 560 && b.w / Math.max(1, b.h) >= 1.45) return false;
+  return !!b.alt || b.linked;
+}
+
 export function ImageView({ b, well = false }: { b: ImageBlock; well?: boolean }): JSX.Element | null {
-  const [failed, setFailed] = useState(false);
-  if (failed) return null;
-  const img = <img src={b.url} alt={b.alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  const ok = useDecoded(b.url);
+  if (!ok) return null;
+  const img = <img src={b.url} alt={b.alt} decoding="async" />;
   if (well) return <div class="wa-well" data-fit={b.fit}>{img}</div>;
-  return <figure class={`wa-figure${Math.max(b.w, b.h) < 120 ? ' wa-figure--icon' : ''}`}>{img}</figure>;
+  return (
+    <figure class={`wa-figure${Math.max(b.w, b.h) < 120 ? ' wa-figure--icon' : ''}`}>
+      {img}
+      {b.caption && <figcaption class="wa-meta">{b.caption}</figcaption>}
+    </figure>
+  );
 }
 
 function onlyControls(items: Block[][]): ControlBlock[] | null {
@@ -435,6 +522,18 @@ function onlyControls(items: Block[][]): ControlBlock[] | null {
 }
 
 function ListView({ b, variant }: { b: ListBlock; variant: Variant }): JSX.Element {
+  // A list of card links is one grouped list of rows.
+  if (b.items.length >= 2 && b.items.every((it) => it.length === 1 && it[0]!.b === 'cardlink')) {
+    const cards = b.items.map((it) => it[0] as CardLinkBlock);
+    const thumbs = cards.filter((c) => c.image && keepImage(c.image, true)).length * 2 >= cards.length;
+    return (
+      <div class="wa-rows">
+        {cards.map((c) => (
+          <CardLinkRow key={c.key} b={c} thumbs={thumbs} />
+        ))}
+      </div>
+    );
+  }
   const links = variant !== 'prose' ? onlyControls(b.items) : null;
   if (links && links.length && links.every((l) => l.role === 'link')) {
     return (
@@ -455,8 +554,10 @@ function ListView({ b, variant }: { b: ListBlock; variant: Variant }): JSX.Eleme
     );
   }
   const Tag = b.ordered ? 'ol' : 'ul';
+  // Bullets for lists of words only; a list of cards, pictures or buttons is drawn without them.
+  const plain = b.items.some((it) => it.some((x) => x.b !== 'flow' && x.b !== 'control'));
   return (
-    <Tag class={`wa-list${b.ordered ? ' wa-list--ol' : ''}`}>
+    <Tag class={`wa-list${b.ordered ? ' wa-list--ol' : ''}${plain ? ' wa-list--plain' : ''}`}>
       {b.items.map((it, i) => (
         <li key={it[0]?.key ?? i} class="wa-stack" style={{ gap: '6px' }}>
           <Blocks blocks={it} variant={variant} />
@@ -580,18 +681,18 @@ function RichTableView({ b }: { b: RichTableBlock }): JSX.Element {
   );
 }
 
-/** A small picture in a soft well; it removes itself if the picture cannot load. */
+/** A small picture in a soft well; shown only once it decodes. */
 export function Thumb({ img }: { img: ImageBlock }): JSX.Element | null {
-  const [failed, setFailed] = useState(false);
-  if (failed) return null;
+  const ok = useDecoded(img.url);
+  if (!ok || img.logo) return null;
   return (
     <span class="wa-well wa-row__thumb" data-fit={img.fit}>
-      <img src={img.url} alt={img.alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+      <img src={img.url} alt={img.alt} decoding="async" />
     </span>
   );
 }
 
-function CardLinkRow({ b }: { b: CardLinkBlock }): JSX.Element {
+function CardLinkRow({ b, thumbs = true }: { b: CardLinkBlock; thumbs?: boolean }): JSX.Element {
   const ctx = useCalm();
   const press = (e: MouseEvent): void => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
@@ -600,7 +701,7 @@ function CardLinkRow({ b }: { b: CardLinkBlock }): JSX.Element {
   };
   const inner = (
     <>
-      {b.image && <Thumb img={b.image} />}
+      {thumbs && b.image && keepImage(b.image, true) && <Thumb img={b.image} />}
       <span class="wa-row__main">
         <span class="wa-row__title">{b.title}</span>
         {b.lines.map((l, i) => (

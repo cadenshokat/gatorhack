@@ -788,3 +788,45 @@ export function decideOffers(
   m.pageShown = [...shown, pick.kind];
   return { offers: [makeOffer(pick.kind, pick.d, latest, counts, pick.streak)], waiting, mem: m };
 }
+
+/* ------------------------------------------------------------------ */
+/* Offer choice against the fit (round 2)                              */
+/* ------------------------------------------------------------------ */
+
+/** What the page looks like for the person right now, for choosing between offers. */
+export interface OfferPageFacts {
+  /** The fit's own hit-area size is already applied on this page. */
+  targetsApplied: boolean;
+  /** Smallest hit area among the page's main buttons and links after the fit, in CSS px (null when unknown). */
+  smallestTargetPx?: number | null;
+  /** The page is busy enough for a calmer layout (folded distractions or many items). */
+  busy: boolean;
+  calmOpen: boolean;
+}
+
+/** The fit's targets meet the need when they are applied and at least 44 px (WCAG 2.5.5's size). */
+export function fitTargetsMeetNeed(fit: FitProfile | null | undefined, page: OfferPageFacts): boolean {
+  const min = fit?.targets?.minPx ?? null;
+  if (min === null || !Number.isFinite(min) || min < 44) return false;
+  if (page.smallestTargetPx !== undefined && page.smallestTargetPx !== null) return page.smallestTargetPx >= Math.min(min, 44);
+  return page.targetsApplied;
+}
+
+/**
+ * The offer to show for a struggle offer, given the fit. "Make buttons bigger" is not offered when the fit's own
+ * targets already meet the need (Rosa's are 56 px): bigger buttons would change nothing visible. Then the Calm view
+ * is offered on a busy page (fewer things to aim at), else nothing. Every other offer passes through.
+ */
+export function chooseOfferForFit(offer: Offer, fit: FitProfile | null | undefined, page: OfferPageFacts): Offer | null {
+  if (offer.kind !== 'bigger_targets') return offer;
+  if (!fitTargetsMeetNeed(fit, page)) return offer;
+  if (!page.busy || page.calmOpen) return null;
+  const px = Math.round(fit?.targets?.minPx ?? 44);
+  return {
+    kind: 'calm_view',
+    question: OFFER_COPY.calm_view.question,
+    fact: 'Same page, fewer things to aim at. Every button still works.',
+    why: `Buttons here already have ${px} px click areas from your fit, so bigger buttons would not help. ${offer.why}`,
+    p: offer.p,
+  };
+}

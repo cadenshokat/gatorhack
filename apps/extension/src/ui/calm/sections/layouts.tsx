@@ -1,8 +1,8 @@
-// Owner: D1. One renderer per FitSpec layout. Each arranges some parts specially and draws the rest in order, so no
+// Owner: C. One renderer per FitSpec layout. Each arranges some parts specially and draws the rest in order, so no
 // visible word or control from the placed part is dropped.
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
-import { Blocks, BlockView, ControlView, FlowView, ImageView, PillButton, Thumb } from '../Blocks';
+import { Blocks, BlockView, ControlView, FlowView, ImageView, PillButton, TOOL_RE, Thumb, ToolIcon, keepImage } from '../Blocks';
 import { useCalm } from '../context';
 import * as I from '../icons';
 import {
@@ -120,7 +120,7 @@ function Tile({ blocks }: { blocks: Block[] }): JSX.Element {
   const t = tileParts(blocks);
   return (
     <article class="wa-tile">
-      {t.image && <ImageView b={t.image} well />}
+      {t.image && keepImage(t.image, true) && <ImageView b={t.image} well />}
       {t.eyebrow.map((e, i) => (
         <span key={i} class="wa-tile__eyebrow">
           {e}
@@ -167,10 +167,18 @@ export function CardGrid({ p }: { p: PlanSection }): JSX.Element {
   );
 }
 
-function RecordRow({ blocks }: { blocks: Block[] }): JSX.Element {
+/** Thumbnails only when at least half the rows have a picture worth showing. */
+function rowsWithThumbs(records: Block[][]): boolean {
+  return records.filter((r) => {
+    const im = tileParts(r).image;
+    return !!im && keepImage(im, true);
+  }).length * 2 >= records.length;
+}
+
+function RecordRow({ blocks, thumbs = true }: { blocks: Block[]; thumbs?: boolean }): JSX.Element {
   const ctx = useCalm();
   const t = tileParts(blocks);
-  const thumb = t.image && <Thumb img={t.image} />;
+  const thumb = thumbs && t.image && keepImage(t.image, true) && <Thumb img={t.image} />;
   const body = (
     <span class="wa-row__main">
       {t.eyebrow.map((e, i) => (
@@ -234,6 +242,7 @@ export function RowList({ p }: { p: PlanSection }): JSX.Element {
   const ctx = useCalm();
   const records = p.records ?? [];
   const { shown, more } = useShowFirst(records, p.showFirst);
+  const thumbs = rowsWithThumbs(records);
   if (!p.records) return <Generic p={p} />;
   return (
     <div class="wa-stack" style={{ gap: 'var(--wa-card-gap)' }}>
@@ -242,7 +251,7 @@ export function RowList({ p }: { p: PlanSection }): JSX.Element {
         {chunk(shown, ctx.groupSize).map((g, gi) => (
           <div key={gi} class="wa-rows">
             {g.map((r) => (
-              <RecordRow key={r[0]?.key} blocks={r} />
+              <RecordRow key={r[0]?.key} blocks={r} thumbs={thumbs} />
             ))}
           </div>
         ))}
@@ -400,7 +409,7 @@ function PartView({ pt, rows }: { pt: PlanPart; rows: boolean }): JSX.Element {
           {chunk(pt.records, ctx.groupSize).map((g, gi) => (
             <div key={gi} class="wa-rows">
               {g.map((r) => (
-                <RecordRow key={r[0]?.key} blocks={r} />
+                <RecordRow key={r[0]?.key} blocks={r} thumbs={rowsWithThumbs(pt.records ?? [])} />
               ))}
             </div>
           ))}
@@ -428,13 +437,78 @@ export function Generic({ p, variant }: { p: PlanSection; variant?: 'default' | 
   );
 }
 
+const BYLINE_RE = /^(by\s|written by|updated|published|last (updated|reviewed)|reviewed by|medically reviewed)|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+(19|20)\d{2}\b/i;
+
+/**
+ * Running text in one reading sheet. The byline and date read in the secondary ink; Print / Save / Listen are quiet
+ * icon links; a list of links to places on this page becomes "On this page" rows. Articles are never folded.
+ */
 export function Reading({ p }: { p: PlanSection }): JSX.Element {
+  const ctx = useCalm();
+  const all = allBlocks(p);
+  const tools: ControlBlock[] = [];
+  let toc: ControlBlock[] | null = null;
+  const body: Block[] = [];
+  all.forEach((b, i) => {
+    if (b.b === 'control' && TOOL_RE.test(b.text.trim())) {
+      tools.push(b);
+      return;
+    }
+    if (!toc && b.b === 'list' && i < 8) {
+      const links = b.items.map((it) => (it.length === 1 && it[0]!.b === 'control' ? (it[0] as ControlBlock) : null));
+      if (links.length >= 3 && links.every((l) => !!l && !!l.href && l.href.split('#')[0] === location.href.split('#')[0])) {
+        toc = links as ControlBlock[];
+        return;
+      }
+    }
+    body.push(b);
+  });
   return (
     <div class="wa-sheet">
       <div class="wa-prose">
-        <Blocks blocks={allBlocks(p)} variant="prose" />
+        {tools.length > 0 && (
+          <div class="wa-tools">
+            {tools.map((t) => (
+              <button key={t.key} type="button" class="wa-btn wa-btn--tool" onClick={() => ctx.click(t.el)}>
+                <ToolIcon text={t.text} />
+                <span>{t.text}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {toc && (
+          <div class="wa-stack">
+            <h3 class="wa-h-title">On this page</h3>
+            <div class="wa-rows">
+              {(toc as ControlBlock[]).map((l) => (
+                <RowLinkInline key={l.key} b={l} />
+              ))}
+            </div>
+          </div>
+        )}
+        {body.map((b) =>
+          b.b === 'flow' && b.text.length <= 140 && BYLINE_RE.test(b.text) ? (
+            <p key={b.key} class="wa-p wa-byline">
+              {b.text}
+            </p>
+          ) : (
+            <BlockView key={b.key} b={b} variant="prose" />
+          ),
+        )}
       </div>
     </div>
+  );
+}
+
+function RowLinkInline({ b }: { b: ControlBlock }): JSX.Element {
+  const ctx = useCalm();
+  return (
+    <button type="button" class="wa-row" onClick={() => ctx.click(b.el)}>
+      <span class="wa-row__main">
+        <span class="wa-row__title">{b.text}</span>
+      </span>
+      <I.ChevronRight class="wa-row__chev" />
+    </button>
   );
 }
 
@@ -479,44 +553,32 @@ export function Hero({ p }: { p: PlanSection }): JSX.Element {
   );
 }
 
+/**
+ * A product: at ≥ 1100 px a 5fr / 7fr split with the picture sticky on the left; narrower, the picture stacks above at
+ * most a third of the screen tall. Order: name, price (large), option tiles two-up, then everything else. The main
+ * button is in the dock.
+ */
 export function BuyBox({ p }: { p: PlanSection }): JSX.Element {
   const ls = leaves(allBlocks(p));
-  const media = ls.find((b): b is ImageBlock => b.b === 'image');
-  const rest = ls.filter((b) => b !== media);
+  const media = ls.find((b): b is ImageBlock => b.b === 'image' && keepImage(b, true));
+  const rest = ls.filter((b) => b !== media && !(b.b === 'image' && b.logo));
+  const name = rest.find((b) => b.b === 'heading');
+  const price = rest.find((b): b is FlowBlock => b.b === 'flow' && b.text.length <= 40 && PRICE_RE.test(b.text));
+  const others = rest.filter((b) => b !== name && b !== price);
   return (
-    <div class="wa-buy">
+    <div class={`wa-buy${media ? '' : ' wa-buy--nomedia'}`}>
       {media && (
         <div class="wa-buy__media">
           <ImageView b={media} well />
         </div>
       )}
       <div class="wa-buy__info">
-        {rest.map((b) => (b.b === 'flow' ? <Meta key={b.key} f={b} /> : <BlockView key={b.key} b={b} />))}
-      </div>
-    </div>
-  );
-}
-
-/** Consent notices and alerts: every choice kept, all at the same size, none highlighted. */
-export function Notice({ p }: { p: PlanSection }): JSX.Element {
-  const ls = leaves(allBlocks(p));
-  const controls = ls.filter((b): b is ControlBlock => b.b === 'control' && !b.primary);
-  const rest = ls.filter((b) => !(b.b === 'control' && !b.primary));
-  const alert = p.notice === 'alert';
-  return (
-    <div class={`wa-notice${alert ? ' wa-notice--alert' : ''}`}>
-      <div class="wa-notice__title">
-        {alert ? <I.Alert /> : <I.Shield />}
-        <span>{p.title ?? p.label}</span>
-      </div>
-      <Blocks blocks={rest} />
-      {controls.length > 0 && (
-        <div class="wa-equal">
-          {controls.map((c) => (
-            <PillButton key={c.key} b={c} />
-          ))}
+        {name && name.b === 'heading' && <h2 class="wa-h-section">{name.text}</h2>}
+        {price && <p class="wa-buy__price">{price.text}</p>}
+        <div class="wa-buy__opts">
+          {others.map((b) => (b.b === 'flow' ? <Meta key={b.key} f={b} /> : <BlockView key={b.key} b={b} />))}
         </div>
-      )}
+      </div>
     </div>
   );
 }

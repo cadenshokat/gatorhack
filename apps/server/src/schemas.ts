@@ -2,8 +2,8 @@
 // Object key order follows the contract (Jev reads evidence in the order it is serialised).
 import { z } from 'zod';
 import type {
-  ElementEvidence, ExplainRequest, FitSummaryForModel, OutlineNode, PageDigest, PageOutline, Role, StruggleSignals,
-  VisualVerifyRequest,
+  ElementEvidence, ExplainRequest, FitSummaryForModel, OutlineNode, OverlayButtonEvidence, OverlayEvidence, OverlayKind,
+  PageDigest, PageOutline, Role, StruggleSignals, VisualVerifyRequest,
 } from '@webable/core';
 
 const ID = /^n\d{1,6}$/;
@@ -63,7 +63,8 @@ export const PageDigestSchema: z.ZodType<PageDigest> = z.object({
   lang: text(24),
 });
 
-export const UnderstandBody = z.object({ digest: PageDigestSchema });
+/** `noCache: true` asks Jev live (the first read of a page in a session); the answer still refreshes the cache. */
+export const UnderstandBody = z.object({ digest: PageDigestSchema, noCache: z.boolean().optional() });
 
 export const StruggleSignalsSchema: z.ZodType<StruggleSignals> = z
   .object({ page_kind: text(80), time_on_page: text(80), task_progress: text(120) })
@@ -126,6 +127,39 @@ export const VisualVerifySchema: z.ZodType<VisualVerifyRequest, unknown> = z.obj
   controls: z.array(text(200)).max(80),
   help: z.array(text(200)).max(30),
   mainLabel: text(200).nullable(),
+});
+
+export const OVERLAY_KINDS = ['consent', 'chat', 'survey', 'newsletter', 'promo_bar', 'warning', 'modal', 'header', 'other'] as const;
+const OverlayKindSchema: z.ZodType<OverlayKind> = z.enum(OVERLAY_KINDS);
+const overlayId = z.string().regex(/^[A-Za-z0-9_-]{1,40}$/, 'ids are short words like ov1 or n12');
+
+export const OverlayEvidenceSchema: z.ZodType<OverlayEvidence> = z.object({
+  id: overlayId,
+  kind_hint: OverlayKindSchema,
+  label: text(400),
+  position: text(120),
+  size: text(120),
+  opened_by_itself: z.boolean(),
+  class_words: z.array(text(40)).max(12),
+  iframe_kind: text(40).optional(),
+});
+
+export const OverlayButtonEvidenceSchema: z.ZodType<OverlayButtonEvidence> = z.object({
+  id: overlayId,
+  tag: text(32),
+  label: text(400),
+  visible_text: text(400),
+  position_in_overlay: text(120),
+  size: text(80),
+  class_words: z.array(text(40)).max(12),
+  link_target: z.enum(['same page', 'this website', 'another website']).optional(),
+  form_submit: z.boolean().optional(),
+  aria_expanded: z.boolean().optional(),
+});
+
+export const OverlayCloseBody = z.object({
+  overlay: OverlayEvidenceSchema,
+  candidates: z.array(OverlayButtonEvidenceSchema).max(40),
 });
 
 /** First zod issues as short `path: message` lines (never echoes values). */

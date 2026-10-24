@@ -1,4 +1,4 @@
-// Owner: D2. The explanation card, beside the outlined original (never over it, never instead of it).
+// Owner: P. The explanation card, beside the outlined original (never over it, never instead of it).
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { ExplainResult } from '@webable/core';
 import type { EngineApi, EngineState } from '../../contracts';
@@ -17,6 +17,24 @@ export function splitPlain(text: string): string[] {
     .split(/(?<=[.!?])\s+(?=[A-Z0-9"“(])/)
     .map((x) => x.trim())
     .filter(Boolean);
+}
+
+/** The server's extra fields on an explain answer (read defensively; the contract type stays ExplainResult). */
+type ExplainExtra = ExplainResult & { error?: unknown; verdict?: unknown };
+
+/** True when Jev actually answered the coverage check (only then are coverage numbers shown). */
+export function jevAnswered(r: ExplainResult): boolean {
+  return Boolean(r.jev && Number(r.jev.questions) > 0 && Number(r.jev.calls) > 0);
+}
+
+/** True when no plain version could be written (the writing model is unavailable), as opposed to failing a check. */
+export function writerUnavailable(r: ExplainResult): boolean {
+  if (r.ok) return false;
+  const x = r as ExplainExtra;
+  const err = typeof x.error === 'string' ? x.error : '';
+  if (/llm_unavailable|no_credits|insufficient_quota|could not be written|not reachable|unavailable/i.test(err)) return true;
+  // Nothing was written and Jev was never asked: the writer did not answer.
+  return r.explanation === null && !jevAnswered(r);
 }
 
 export function checksPassed(r: ExplainResult): boolean {
@@ -74,9 +92,13 @@ interface Props {
   /** Space kept free at the bottom right for the pill (px from the viewport bottom). */
   pillReserve: number;
   pillWidth: number;
+  /** Which edge the pill sits on. */
+  pillSide?: 'right' | 'left';
+  /** Space our own bars take at the bottom (the docked cookie-notice bar), px from the viewport bottom. */
+  bottomReserve?: number;
 }
 
-export function ExplainCard({ api, s, u, pillReserve, pillWidth }: Props) {
+export function ExplainCard({ api, s, u, pillReserve, pillWidth, pillSide = 'right', bottomReserve = 0 }: Props) {
   const ex = s.explain;
   const a = useAnchor(ex.anchor);
   const [details, setDetails] = useState(false);
@@ -107,14 +129,16 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth }: Props) {
     top = a ? a.y + a.h + gap : 80;
   }
   // Keep the card clear of the pill when they share the right edge, and give it room to read.
-  const overPill = left + cardW > vw - pillWidth - margin;
-  const bottomLimit = vh - (overPill ? pillReserve : margin);
+  const overPill = pillSide === 'right' ? left + cardW > vw - pillWidth - margin : left < pillWidth + margin;
+  const bottomLimit = vh - Math.max(overPill ? pillReserve : margin, bottomReserve);
   const minH = Math.min(Math.round(420 * u), bottomLimit - margin);
   if (!below) top = Math.max(margin, Math.min(bottomLimit - minH, top));
   else top = Math.max(margin, Math.min(bottomLimit - Math.min(minH, 220), top));
   const maxH = Math.max(160, bottomLimit - top);
 
   const r = ex.result;
+  const answered = r ? jevAnswered(r) : false;
+  const unavailable = r ? writerUnavailable(r) : false;
   const passed = r ? checksPassed(r) : false;
   const plain = r?.explanation ? splitPlain(r.explanation) : [];
   const flagged = r?.showOriginalInstead ?? [];
@@ -143,7 +167,7 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth }: Props) {
       >
         <header class="wa-ex-head">
           <span class="wa-ex-eyebrow">In plain words</span>
-          <span class="wa-badge">Explained by AI</span>
+          {!(r && !r.ok) && <span class="wa-badge">Explained by AI</span>}
           <button ref={closeRef} class="wa-iconbtn" aria-label="Close explanation" onClick={() => api.closeExplain()}>
             <IconClose size={15} />
           </button>
@@ -158,26 +182,36 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth }: Props) {
           </div>
         ) : ex.error && !r ? (
           <p class="wa-ex-msg" role="status">{errorText(ex.error)}</p>
+        ) : r && (!r.ok || !answered) ? (
+          <div class="wa-ex-body">
+            <p class="wa-ex-msg" role="status">
+              {unavailable
+                ? "Couldn't write a plain version right now. The original is below."
+                : 'No plain version is shown: it did not pass the checks. The original is below.'}
+            </p>
+            {unavailable && s.ai === 'no_credits' && (
+              <p class="wa-ex-note">AI writing is paused on the server. It comes back on its own.</p>
+            )}
+            {ex.original && <blockquote class="wa-ex-quote">{ex.original}</blockquote>}
+          </div>
         ) : r ? (
           <div class="wa-ex-body">
-            {r.ok && plain.length > 0 ? (
+            {plain.length > 0 ? (
               <ul class="wa-ex-list">
                 {plain.map((p, i) => (
                   <li key={i}>{p}</li>
                 ))}
               </ul>
             ) : (
-              <p class="wa-ex-msg">No plain version is shown: it did not pass the checks. The original text is below.</p>
+              <p class="wa-ex-msg">No plain version is shown. The original text is unchanged.</p>
             )}
 
-            {r.ok && (
-              <p class={`wa-ex-check ${passed ? 'is-ok' : 'is-warn'}`} role="status">
-                {passed ? <IconCheck size={15} /> : <IconWarn size={15} />}
-                {passed
-                  ? 'Checked against the original'
-                  : 'This explanation may have missed or changed something. Check the original.'}
-              </p>
-            )}
+            <p class={`wa-ex-check ${passed ? 'is-ok' : 'is-warn'}`} role="status">
+              {passed ? <IconCheck size={15} /> : <IconWarn size={15} />}
+              {passed
+                ? 'Checked against the original'
+                : 'This explanation may have missed or changed something. Check the original.'}
+            </p>
 
             {flagged.length > 0 && (
               <div class="wa-ex-orig">
@@ -240,8 +274,10 @@ export function ExplainCard({ api, s, u, pillReserve, pillWidth }: Props) {
 
         <footer class="wa-ex-foot">
           <span>
-            Explained by AI · The original is the official text.
-            {r
+            {r && !r.ok
+              ? 'Nothing on the page was changed. The original is the official text.'
+              : 'Explained by AI · The original is the official text.'}
+            {r && r.ok
               ? ' This passage, with personal details removed, was sent to OpenAI.'
               : ex.loading
                 ? ' Sending this passage, with personal details removed, to OpenAI.'

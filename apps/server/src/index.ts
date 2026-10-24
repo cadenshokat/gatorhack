@@ -4,6 +4,7 @@ import { JEV_MODEL } from '@webable/core';
 import { createApp } from './app';
 import { HOST, PORT, jevKey, openAiKey } from './config';
 import { startKeepWarm, warmJev } from './jev';
+import { startAiWatch } from './openai';
 import { log } from './util';
 
 const app = createApp();
@@ -14,6 +15,8 @@ const server = serve({ fetch: app.fetch, port: PORT, hostname: HOST }, (info) =>
 });
 
 const stopKeepWarm = startKeepWarm();
+// Checks once whether OpenAI answers (no credits -> AI off for 10 min, then checked again on its own).
+const stopAiWatch = startAiWatch();
 
 server.on('error', (e: NodeJS.ErrnoException) => {
   if (e.code === 'EADDRINUSE') log('port in use; is another WebAble server running?', { port: PORT });
@@ -24,6 +27,7 @@ server.on('error', (e: NodeJS.ErrnoException) => {
 function shutdown(signal: string): void {
   log('shutting down', { signal });
   stopKeepWarm();
+  stopAiWatch();
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 1_500).unref();
 }

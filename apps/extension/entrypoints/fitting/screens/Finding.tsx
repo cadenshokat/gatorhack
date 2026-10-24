@@ -31,6 +31,11 @@ export function Find(props: ScreenProps & { plan: FindPlan; motionStopped: boole
   const sizes = mockSizes(props);
   const moving = trial.motion && !reduced && !props.motionStopped;
 
+  // Each trial names a new target at the top: bring it into view before the clock starts.
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [i]);
+
   useEffect(() => {
     setReveal(false);
     setNote('');
@@ -173,6 +178,9 @@ export function Prefer(props: ScreenProps & { plan: FindPlan }): JSX.Element {
     if (questions.length === 0) props.onDone();
   }, []);
   useEffect(() => props.onProgress(qi / Math.max(1, questions.length)), [qi]);
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [qi]);
 
   const q = questions[qi];
   if (!q) return <div />;

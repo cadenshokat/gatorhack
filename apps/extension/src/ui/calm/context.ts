@@ -1,4 +1,4 @@
-// Owner: D1. What every part of the Calm view needs: the engine, the fit's structure limits and the proxy actions.
+// Owner: C. What every part of the Calm view needs: the engine, the fit's structure limits and the proxy actions.
 import { createContext } from 'preact';
 import { useContext } from 'preact/hooks';
 import type { EngineApi } from '../../contracts';
@@ -17,6 +17,15 @@ export interface CalmCtx {
   pressPrimary(el: Element): void;
   /** "Use it on the page": close the view, scroll to the original and focus it. */
   peek(el: Element): void;
+  /** The stepped form's current step (0-based) and how to move between steps. */
+  step: number;
+  goStep(i: number): void;
+  /** Open "More on this page" and bring it into view. */
+  showDrawer(): void;
+  /** Bumps each time showDrawer() is called (the drawer opens itself on change). */
+  drawerCall: number;
+  /** The page's error summary, drawn at the top of the form (not again inside it). */
+  errorEl: Element | null;
 }
 
 export const Calm = createContext<CalmCtx | null>(null);

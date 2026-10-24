@@ -1,6 +1,6 @@
-// Owner: D1. A labelled drawer with a count. Content renders only when open; nothing inside is ever deleted.
+// Owner: C. A labelled drawer with a count. Content renders only when open; nothing inside is ever deleted.
 import type { ComponentChildren, JSX } from 'preact';
-import { useId, useState } from 'preact/hooks';
+import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { ChevronDown } from './icons';
 
 export function Disclosure(props: {
@@ -9,13 +9,23 @@ export function Disclosure(props: {
   sub?: string | null;
   defaultOpen?: boolean;
   headingLevel?: 2 | 3;
+  /** Opens the disclosure (and scrolls it into view) whenever this number changes. */
+  openCall?: number;
+  quiet?: boolean;
   children: ComponentChildren;
 }): JSX.Element {
   const [open, setOpen] = useState(!!props.defaultOpen);
   const body = useId();
+  const root = useRef<HTMLDivElement>(null);
+  const first = useRef(props.openCall);
+  useEffect(() => {
+    if (props.openCall === undefined || props.openCall === first.current) return;
+    setOpen(true);
+    requestAnimationFrame(() => root.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+  }, [props.openCall]);
   const H = props.headingLevel === 3 ? 'h3' : 'h2';
   return (
-    <div class="wa-disc" data-open={open || undefined}>
+    <div class={`wa-disc${props.quiet ? ' wa-disc--quiet' : ''}`} data-open={open || undefined} ref={root}>
       <H>
         <button type="button" class="wa-disc__sum" aria-expanded={open} aria-controls={body} onClick={() => setOpen(!open)}>
           <span class="wa-disc__text">
@@ -34,5 +44,24 @@ export function Disclosure(props: {
         </div>
       )}
     </div>
+  );
+}
+
+/** A disclosure that sits in running text ("About this page"): a quiet toggle, then a well card under the line. */
+export function InlineDisclosure(props: { label: string; children: ComponentChildren }): JSX.Element {
+  const [open, setOpen] = useState(false);
+  const body = useId();
+  return (
+    <>
+      <button type="button" class="wa-about" aria-expanded={open} aria-controls={body} onClick={() => setOpen(!open)}>
+        <span>{props.label}</span>
+        <ChevronDown class="wa-about__chev" />
+      </button>
+      {open && (
+        <div class="wa-aboutwell wa-fade" id={body}>
+          {props.children}
+        </div>
+      )}
+    </>
   );
 }

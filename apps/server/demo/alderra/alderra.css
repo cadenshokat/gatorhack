@@ -264,6 +264,8 @@ fieldset.card { margin: 0; padding: 0; min-width: 0; }
 }
 .confirmed-title { font-size: 16px; font-weight: 700; color: var(--teal-700); }
 .confirmed-sub { font-size: 13px; color: #3D5F62; }
+.confirmed-ref { font-size: 13px; color: #3D5F62; margin-top: 2px; }
+.confirmed-ref span { font-weight: 700; letter-spacing: .02em; }
 .confirmed-link { margin-left: auto; font-size: 13px; }
 .helpline { margin-top: 8px; text-align: right; font-size: 11px; line-height: 15px; color: var(--grey); }
 .helpline a { color: var(--teal-700); font-weight: 700; }

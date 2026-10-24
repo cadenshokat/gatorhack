@@ -17,6 +17,28 @@ export const DESKTOP_UA =
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Screenshot the viewport from the compositor surface (CDP Page.captureScreenshot, fromSurface). Headless Chrome's
+ * plain screenshot comes out with a blank band at the top after scrolling at 150% zoom; this one does not.
+ * Falls back to page.screenshot.
+ */
+export async function shoot(page, file, { timeout = 20_000 } = {}) {
+  let session = null;
+  try {
+    session = await page.context().newCDPSession(page);
+    const { data } = await Promise.race([
+      session.send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('capture timed out')), timeout)),
+    ]);
+    const { writeFileSync } = await import('node:fs');
+    writeFileSync(file, Buffer.from(data, 'base64'));
+  } catch {
+    await page.screenshot({ path: file, timeout });
+  } finally {
+    await session?.detach().catch(() => {});
+  }
+}
+
 /** Playwright 1.64.1 from apps/extension's devDependencies (no install needed at the root). */
 export function loadPlaywright() {
   const req = createRequire(path.join(ROOT, 'apps/extension/package.json'));

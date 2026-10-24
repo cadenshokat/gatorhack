@@ -1,9 +1,15 @@
-// pnpm --filter @webable/server check:live [--url http://127.0.0.1:41741] [--skip redesign,explain] [--visual] [--fresh]
+// pnpm --filter @webable/server check:live [--url http://127.0.0.1:41741] [--skip redesign,explain,overlay] [--visual] [--fresh]
 // Sends the Alderra fixtures through the real routes and prints metrics. Uses the running server when it answers
 // on /health, otherwise the same app in-process. Never prints keys or page text beyond the fixture's own labels.
 import type { ExplainResult, PageUnderstanding, RedesignResult, StruggleJudgment, VisualVerdict } from '@webable/core';
 import { PORT } from './config';
-import { FIXTURE_DIGEST, FIXTURE_FIT, FIXTURE_OUTLINE, FIXTURE_PASSAGE, FIXTURE_ROLES, FIXTURE_SIGNALS, fixtureVisual } from './fixtures';
+import {
+  FIXTURE_DIGEST, FIXTURE_FIT, FIXTURE_OUTLINE, FIXTURE_OVERLAY, FIXTURE_OVERLAY_BUTTONS, FIXTURE_PASSAGE, FIXTURE_ROLES,
+  FIXTURE_SIGNALS, fixtureVisual,
+} from './fixtures';
+import type { ExplainResponse } from './routes/explain';
+import type { OverlayCloseResponse } from './routes/overlay';
+import type { RedesignResponse } from './routes/redesign';
 
 const args = process.argv.slice(2);
 const flag = (name: string) => args.includes(`--${name}`);
@@ -35,7 +41,7 @@ const p2 = (n: number | null | undefined) => (n === null || n === undefined ? '-
 
 let failures = 0;
 
-async function post<T>(f: Fetcher, path: string, body: unknown): Promise<{ data: T; ms: number; cache: string | null } | null> {
+async function post<T>(f: Fetcher, path: string, body: unknown, soft: number[] = []): Promise<{ data: T; ms: number; cache: string | null } | null> {
   const t0 = performance.now();
   const r = await f(path, {
     method: 'POST',
@@ -45,6 +51,10 @@ async function post<T>(f: Fetcher, path: string, body: unknown): Promise<{ data:
   const took = performance.now() - t0;
   const text = await r.text();
   if (!r.ok) {
+    if (soft.includes(r.status)) {
+      console.log(`  not available (${r.status}): ${text.slice(0, 200)}`);
+      return null;
+    }
     failures++;
     console.log(`  FAILED ${r.status}: ${text.slice(0, 400)}`);
     return null;
@@ -64,6 +74,12 @@ async function main(): Promise<void> {
   if (u) {
     const m = u.data.metrics;
     console.log(`  ${m.questions} decisions in ${m.calls} call(s) · wall ${ms(m.wallMs)} · server ${ms(m.serverMs)} · ${m.inputTokens} tokens · ${usd(m.costUsd)} · ${m.model}${u.data.cached ? ' · cached' : ''} · route ${ms(u.ms)}`);
+    const again = await post<PageUnderstanding>(fetcher, '/v1/understand', { digest: FIXTURE_DIGEST });
+    if (again) {
+      const a = again.data;
+      const fr = a.firstRead;
+      console.log(`  same page again: ${a.cached ? 'from cache' : 'live'} · this view ${ms(a.metrics.wallMs)} ${usd(a.metrics.costUsd)} · ${a.metrics.calls} call(s)${fr ? ` · first read ${ms(fr.wallMs)} ${usd(fr.costUsd)}` : ''}`);
+    }
     const main = u.data.mainPick;
     console.log(`  main action: ${main.id} (p ${p2(main.p)})`);
     for (const e of u.data.elements) {
@@ -85,27 +101,41 @@ async function main(): Promise<void> {
 
   if (!skip.has('redesign')) {
     console.log(`\nPOST /v1/redesign  (${FIXTURE_OUTLINE.nodes.length} outline nodes)`);
-    const r = await post<RedesignResult>(fetcher, '/v1/redesign', { outline: FIXTURE_OUTLINE, fit: FIXTURE_FIT, roles: FIXTURE_ROLES });
+    const r = await post<RedesignResult & Partial<RedesignResponse>>(fetcher, '/v1/redesign', { outline: FIXTURE_OUTLINE, fit: FIXTURE_FIT, roles: FIXTURE_ROLES });
     if (r) {
       const d = r.data;
-      console.log(`  chosen ${d.chosen} · autoApply ${d.autoApply} · llm ${d.llm.model} ${ms(d.llm.ms)} ${usd(d.llm.costUsd)} · judge ${d.judge.questions} q ${ms(d.judge.wallMs)} ${usd(d.judge.costUsd)} · route ${ms(r.ms)} · cache ${r.cache ?? '-'}`);
+      const src = d.sources ? ` · sources heuristic ${d.sources.heuristic} local ${d.sources.local} ai ${d.sources.ai}` : '';
+      console.log(`  ai ${d.ai ?? '-'}${src} · chosen ${d.chosen} · autoApply ${d.autoApply} · llm ${d.llm.model} ${ms(d.llm.ms)} ${usd(d.llm.costUsd)} · judge ${d.judge.questions} q ${ms(d.judge.wallMs)} ${usd(d.judge.costUsd)} · route ${ms(r.ms)} · cache ${r.cache ?? '-'}`);
       for (const c of d.candidates) {
         const open = c.spec.sections.filter((x) => x.state === 'open').length;
-        console.log(`  ${c.name.padEnd(9)} easier ${p2(c.pEasier)} hides ${p2(c.pHides)} fit ${p2(c.fitScore)} composite ${p2(c.composite)} · ${c.spec.sections.length} sections (${open} open) · primary ${c.spec.primary_action ?? '-'} · ${c.repairs.length} repairs`);
+        const source = (c as { source?: string }).source ?? '-';
+        console.log(`  ${source.padEnd(9)} ${c.name.padEnd(9)} easier ${p2(c.pEasier)} hides ${p2(c.pHides)} fit ${p2(c.fitScore)} composite ${p2(c.composite)} · ${c.spec.sections.length} sections (${open} open) · ${c.spec.form_steps.length} steps · primary ${c.spec.primary_action ?? '-'} · ${c.repairs.length} repairs`);
       }
     }
   }
 
   if (!skip.has('explain')) {
     console.log('\nPOST /v1/explain');
-    const e = await post<ExplainResult & { verdict?: string; terms?: unknown[] }>(fetcher, '/v1/explain', { req: FIXTURE_PASSAGE });
-    if (e) {
+    const e = await post<ExplainResult & Partial<ExplainResponse>>(fetcher, '/v1/explain', { req: FIXTURE_PASSAGE });
+    if (e && !e.data.ok) console.log(`  ok false · ${e.data.error ?? '-'} (${e.data.reason ?? '-'}) · "${e.data.message ?? ''}" · ${e.data.sentences.length} coverage numbers · route ${ms(e.ms)}`);
+    if (e && e.data.ok) {
       const d = e.data;
       console.log(`  ok ${d.ok} · verdict ${d.verdict ?? '-'} · ${d.model} ${ms(d.ms)} · numbers kept ${d.checks.numbersKept} · conditions kept ${d.checks.conditionWordsKept} · added ${p2(d.checks.addedFact)} · dropped ${p2(d.checks.droppedFact)}`);
       console.log(`  Jev check ${d.jev.questions} q · ${ms(d.jev.wallMs)} · ${usd(d.jev.costUsd)} · ${d.showOriginalInstead.length} sentence(s) shown as original`);
       for (const x of d.sentences) console.log(`    covered ${p2(x.covered)}  ${x.original.slice(0, 80)}`);
       if (d.explanation) console.log(`  explanation:\n    ${d.explanation.split('\n').join('\n    ')}`);
     }
+  }
+
+  if (!skip.has('overlay')) {
+    console.log('\nPOST /v1/overlay-close  (the self-opened chat panel, 3 buttons)');
+    const o = await post<OverlayCloseResponse>(fetcher, '/v1/overlay-close', { overlay: FIXTURE_OVERLAY, candidates: FIXTURE_OVERLAY_BUTTONS }, [503]);
+    if (o) {
+      const d = o.data;
+      console.log(`  pick ${d.pick} · fwd ${p2(d.pFwd)} rev ${p2(d.pRev)} side ${p2(d.sideEffect)} · accept ${d.accept}${d.skipped ? ` · skipped ${d.skipped}` : ''} · ${d.metrics.questions} q ${ms(d.metrics.wallMs)} ${usd(d.metrics.costUsd)}`);
+    }
+    const consent = await post<OverlayCloseResponse>(fetcher, '/v1/overlay-close', { overlay: { ...FIXTURE_OVERLAY, id: 'ov2', kind_hint: 'consent' }, candidates: FIXTURE_OVERLAY_BUTTONS }, [503]);
+    if (consent) console.log(`  consent notice: pick ${consent.data.pick} · accept ${consent.data.accept} · skipped ${consent.data.skipped ?? '-'} · ${consent.data.metrics.calls} Jev calls`);
   }
 
   if (flag('visual')) {
@@ -119,7 +149,7 @@ async function main(): Promise<void> {
   }
 
   const stats = await (await fetcher('/v1/stats')).json();
-  console.log('\n/v1/stats', JSON.stringify({ jev: stats.jev, openai: { calls: stats.openai.calls, costUsd: stats.openai.costUsd, errors: stats.openai.errors }, totalUsd: stats.totalUsd }));
+  console.log('\n/v1/stats', JSON.stringify({ ai: stats.ai, jev: stats.jev, openai: { calls: stats.openai.calls, costUsd: stats.openai.costUsd, errors: stats.openai.errors }, totalUsd: stats.totalUsd }));
   console.log(failures ? `\n${failures} step(s) failed.` : '\nAll steps answered.');
   process.exit(failures ? 1 : 0);
 }

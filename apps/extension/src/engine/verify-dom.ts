@@ -46,6 +46,11 @@ export interface SnapshotContext {
    * are compared with text in their own region only (pairwise order), not with the page's body size.
    */
   mainRoot?: Element | null;
+  /**
+   * Ops from earlier batches that a help or consent failure may still reverse (the page zoom: a site's responsive
+   * script can fold a help link into a menu a moment after the zoom batch was checked).
+   */
+  guardOps?: Op[];
 }
 
 interface Fail {
@@ -75,6 +80,26 @@ export interface VerifyHost {
 const FOCUSABLE = 'a[href], button, input:not([type="hidden"]), select, textarea, summary, [tabindex], [contenteditable=""], [contenteditable="true"], iframe';
 const CONTROL = 'a[href], button, input:not([type="hidden"]), select, textarea, summary, [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="tab"], [role="menuitem"], [role="switch"]';
 const HELP_NAME = /\b(help|contact|support|chat|call|faq|questions?|pharmacist|customer (service|care)|feedback)\b/i;
+const CONSENT_BOX = '[class*="cookie" i], [id*="cookie" i], [class*="consent" i], [id*="consent" i], [id*="onetrust" i], [id*="CybotCookiebot" i], [class*="gdpr" i]';
+/** For help and consent failures, these op kinds are reverted first, in this order (eval P2.12). */
+const GUARD_ORDER: OpKind[] = ['page_zoom', 'text_map'];
+
+function sleepMs(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/** Resolve after the next resize (a zoom change), or after `cap` ms. */
+function waitResize(cap = 700): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const t = setTimeout(done, cap);
+    function done() {
+      clearTimeout(t);
+      window.removeEventListener('resize', done);
+      resolve();
+    }
+    window.addEventListener('resize', done, { once: true });
+  });
+}
 
 /** Which op kinds can plausibly cause each failure (fallback attribution when core is unavailable). */
 const CAUSES: Record<CheckName, OpKind[]> = {
@@ -578,7 +603,14 @@ export class Verifier {
       const key = keyOf(f);
       const seen = tried.get(key) ?? new Set<Op>();
       tried.set(key, seen);
-      const op = this.attributeFail(f, batch.filter((o) => o.active && !seen.has(o)));
+      const pool = batch.filter((o) => o.active && !seen.has(o));
+      // A help link or a consent notice that faded, hid or became unclickable: page zoom is the usual cause (a
+      // responsive layout folds the link into a menu), then the text map. Try those first, in that order, even
+      // when the zoom was applied in an earlier batch.
+      const guarded = this.guardedFail(f);
+      const guardPool = guarded ? [...pool, ...(ctx.guardOps ?? []).filter((o) => o.active && !seen.has(o) && !pool.includes(o))] : pool;
+      const op = (guarded ? GUARD_ORDER.map((k) => guardPool.find((o) => o.rec.kind === k)).find((o) => !!o) : undefined)
+        ?? this.attributeFail(f, pool);
       if (!op) {
         unresolved.add(key);
         continue;
@@ -586,12 +618,15 @@ export class Verifier {
       seen.add(op);
       const result: CheckResult = { name: f.result.name, pass: false, detail: f.result.detail, opId: op.rec.id };
       await revert(op, result);
+      // Sites that fold their menu with a debounced resize handler need longer to unfold it again.
+      if (op.rec.kind === 'page_zoom') await waitResize().then(() => sleepMs(guarded ? 1000 : 350));
       await settle();
       after = this.snapshot(probe, snapCtx());
       const next = this.evaluate(before, after, batch.filter((o) => o.active));
       if (stillFails(f, next.fails) && reapply) {
         // Not the cause: put it back exactly as it was.
         await reapply(op);
+        if (op.rec.kind === 'page_zoom') await waitResize().then(() => sleepMs(350));
         await settle();
         after = this.snapshot(probe, snapCtx());
         ev = this.evaluate(before, after, batch.filter((o) => o.active));
@@ -741,6 +776,19 @@ export class Verifier {
     void before;
     void after;
     return fails;
+  }
+
+  /** Whether a failure is about help or a consent notice (never hidden, faded or blocked). */
+  private guardedFail(f: Fail): boolean {
+    if (/help link|consent|cookie/i.test(f.result.detail)) return true;
+    for (const id of f.ids) {
+      const el = this.lastEls.get(id);
+      if (!el || !el.isConnected) continue;
+      if (el.closest(CONSENT_BOX)) return true;
+      const name = `${el.getAttribute('aria-label') ?? ''} ${(el.textContent ?? '').slice(0, 120)}`;
+      if (el.matches(CONTROL) && (HELP_NAME.test(name) || /^(tel|mailto):/i.test(el.getAttribute('href') ?? ''))) return true;
+    }
+    return false;
   }
 
   private attributeFail(f: Fail, active: Op[]): Op | null {

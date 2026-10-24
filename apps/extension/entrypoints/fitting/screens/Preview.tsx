@@ -78,11 +78,30 @@ export function Preview(props: { fit: FitProfile; fitted: boolean }): JSX.Elemen
   const motionOff = fitted && fit.attention.motion.on;
 
   const faintBefore = ratioOf(ORIG.faint, '#FFFFFF');
-  const notes: string[] = [];
-  if (fitted && target > ORIG.body + 0.5) notes.push(`Text ${ORIG.body} → ${Math.round(sz(ORIG.body))} px`);
-  if (fitted && !dark && col(ORIG.faint) !== ORIG.faint)
-    notes.push(`Faint text ${faintBefore ? faintBefore.toFixed(1) : '2.6'}:1 → ${fit.contrast.band === 'S' ? 'max' : `${floor}:1`}`);
-  if (fitted && showHit) notes.push(`Click area ${ORIG.buttonH} → ${minHit} px`);
+  const faintTxt = faintBefore ? faintBefore.toFixed(1) : '2.6';
+  // The same facts in both modes, so switching Original/Fitted changes the values, not the layout.
+  const notes: Array<{ k: string; v: string; changed: boolean }> = [];
+  const textChanged = target > ORIG.body + 0.5;
+  notes.push({
+    k: 'Text',
+    v: fitted && textChanged ? `${ORIG.body} → ${Math.round(sz(ORIG.body))} px` : `${ORIG.body} px`,
+    changed: fitted && textChanged,
+  });
+  const faintChanged = !dark && col(ORIG.faint) !== ORIG.faint;
+  notes.push({
+    k: 'Faint text',
+    v: fitted && faintChanged ? `${faintTxt}:1 → ${fit.contrast.band === 'S' ? 'strongest' : `${floor}:1`}` : `${faintTxt}:1`,
+    changed: fitted && faintChanged,
+  });
+  const hitChanged = minHit !== null && minHit > ORIG.buttonH;
+  notes.push({
+    k: 'Click area',
+    v: fitted && hitChanged ? `${ORIG.buttonH} → ${minHit} px` : `${ORIG.buttonH} px`,
+    changed: fitted && hitChanged,
+  });
+  if (fitted && dark) notes.push({ k: 'Colors', v: 'light on dark', changed: true });
+  if (fitted && level === 2) notes.push({ k: 'Promotion', v: 'moved to the end', changed: true });
+  else if (fitted && level === 1) notes.push({ k: 'Promotion', v: 'faded', changed: true });
 
   const renew = (title: string, due: string) => (
     <li class="pv-item">
@@ -121,56 +140,65 @@ export function Preview(props: { fit: FitProfile; fitted: boolean }): JSX.Elemen
   );
 
   return (
-    <div class={`pv ${fitted ? 'is-fitted' : ''} ${dark ? 'is-dark' : ''}`} style={{ background: bg, lineHeight: lh }}>
-      <div class="pv-head" style={{ borderColor: dark ? '#2C2C2E' : '#E8E8ED' }}>
-        <span class="pv-logo" style={{ color: col(ORIG.ink), fontSize: `${sz(ORIG.title)}px` }}>
-          <i aria-hidden="true" /> Maple Grove Library
-        </span>
-        <span class="pv-nav" style={{ fontSize: `${sz(ORIG.nav)}px`, color: col(ORIG.nav2) }}>
-          <span>Catalog</span>
-          <span>Events</span>
-          <span>Visit</span>
-          <span>My account</span>
-        </span>
-      </div>
-
-      {fitted && level === 2 ? null : promo}
-
-      <div class="pv-main">
-        <h3 class="pv-h1" style={{ fontSize: `${sz(ORIG.h1)}px`, color: col(ORIG.ink) }}>
-          Renew your books
-        </h3>
-        <p
-          class="pv-p"
-          style={{ fontSize: `${sz(ORIG.body)}px`, color: col(ORIG.body2), fontWeight: weight, maxWidth: fitted ? `${fit.measure.maxCpl}ch` : undefined }}
-        >
-          Most items can be renewed up to three times, as long as nobody is waiting for them. Each renewal adds three weeks from
-          today.
-        </p>
-        <ul class="pv-list">
-          {renew('The Quiet Garden', 'Due Thursday, Oct 30')}
-          {renew('Bread for Beginners', 'Due Saturday, Nov 1')}
-        </ul>
-        <p class="pv-fine" style={{ fontSize: `${sz(ORIG.small)}px`, color: col(ORIG.faint), fontWeight: weight }}>
-          Items with a waiting list cannot be renewed. Fees stop growing after 14 days.
-        </p>
-        <p class="pv-help" style={{ fontSize: `${sz(ORIG.body)}px` }}>
-          Questions? <span class="pv-link">Ask a librarian</span>
-        </p>
-        {fitted && level === 2 ? (
-          <div class="pv-drawer" style={{ fontSize: `${sz(ORIG.small)}px`, color: col(ORIG.body2) }}>
-            More on this page · 1 promotion
+    <div class="pv-shell">
+      <ul class="pv-notes" aria-label={fitted ? 'What changed in this preview' : 'The original sample page'}>
+        {notes.map((n) => (
+          <li class={n.changed ? 'is-changed' : ''}>
+            <span class="pv-note-k">{n.k}</span>
+            <span class="pv-note-v">{n.v}</span>
+          </li>
+        ))}
+      </ul>
+      <div class={`pv-clip ${dark ? 'is-dark' : ''}`}>
+        <div class={`pv ${fitted ? 'is-fitted' : ''} ${dark ? 'is-dark' : ''}`} style={{ background: bg, lineHeight: lh }}>
+          <div class="pv-head" style={{ borderColor: dark ? '#2C2C2E' : '#E8E8ED' }}>
+            <span class="pv-logo" style={{ color: col(ORIG.ink), fontSize: `${sz(ORIG.title)}px` }}>
+              <i aria-hidden="true" /> Maple Grove Library
+            </span>
+            <span class="pv-nav" style={{ fontSize: `${sz(ORIG.nav)}px`, color: col(ORIG.nav2) }}>
+              <span>Catalog</span>
+              <span>Events</span>
+              <span>Visit</span>
+              <span>My account</span>
+            </span>
           </div>
-        ) : null}
-      </div>
 
-      {notes.length ? (
-        <ul class="pv-notes" aria-label="What changed in this preview">
-          {notes.slice(0, 3).map((n) => (
-            <li>{n}</li>
-          ))}
-        </ul>
-      ) : null}
+          {fitted && level === 2 ? null : promo}
+
+          <div class="pv-main">
+            <h3 class="pv-h1" style={{ fontSize: `${sz(ORIG.h1)}px`, color: col(ORIG.ink) }}>
+              Renew your books
+            </h3>
+            <p
+              class="pv-p"
+              style={{
+                fontSize: `${sz(ORIG.body)}px`,
+                color: col(ORIG.body2),
+                fontWeight: weight,
+                maxWidth: fitted ? `${fit.measure.maxCpl}ch` : undefined,
+              }}
+            >
+              Most items can be renewed up to three times, as long as nobody is waiting for them. Each renewal adds three weeks from today.
+            </p>
+            <ul class="pv-list">
+              {renew('The Quiet Garden', 'Due Thursday, Oct 30')}
+              {renew('Bread for Beginners', 'Due Saturday, Nov 1')}
+            </ul>
+            <p class="pv-fine" style={{ fontSize: `${sz(ORIG.small)}px`, color: col(ORIG.faint), fontWeight: weight }}>
+              Items with a waiting list cannot be renewed. Fees stop growing after 14 days.
+            </p>
+            <p class="pv-help" style={{ fontSize: `${sz(ORIG.body)}px` }}>
+              Questions? <span class="pv-link">Ask a librarian</span>
+            </p>
+            {fitted && level === 2 ? (
+              <div class="pv-drawer" style={{ fontSize: `${sz(ORIG.small)}px`, color: col(ORIG.body2) }}>
+                More on this page · 1 promotion
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+      <p class="fx-preview-note">A made-up page, shown at real size. On real sites, the original is always one click away.</p>
     </div>
   );
 }

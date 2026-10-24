@@ -4,19 +4,24 @@
 // always open. Same schema and validator as the model's candidates (research-redesign §9).
 import type { FitSection, FitSpec, FitSummaryForModel, OutlineKind, PageOutline, Role, SectionLabel } from '../types';
 import {
-  ACTION_KINDS, CONTAINER_KINDS, CONTROL_KINDS, FIELD_KINDS, RE, indexOutline, isUtility, labelFromWords, layoutLimits,
-  lower, outlineProtection, pickPrimaryAction, snapShowFirst, type OutlineIndex,
+  ACTION_KINDS, CONTAINER_KINDS, CONTROL_KINDS, FIELD_KINDS, RE, chatRoot, fieldGroup, indexOutline, isSideField, isUtility,
+  isWarningOverlay, labelFromWords, layoutLimits, lower, outlineProtection, overlayRoot, pickPrimaryAction, snapShowFirst,
+  type OutlineIndex,
 } from './outline';
 import { FIT_PAGE_TYPES, repairSpec } from './spec';
 
 type Cat =
-  | 'consent' | 'alert' | 'popup' | 'help' | 'ads' | 'related' | 'promo' | 'nav' | 'legal' | 'header' | 'footer'
+  | 'consent' | 'alert' | 'popup' | 'chat' | 'help' | 'ads' | 'related' | 'promo' | 'nav' | 'legal' | 'header' | 'footer'
   | 'aside' | 'main' | 'other';
 
 interface Unit { id: string; cat: Cat }
 
 const FOLD: ReadonlySet<Cat> = new Set<Cat>(['ads', 'related', 'promo', 'popup']);
-const SPECIAL: ReadonlySet<Cat> = new Set<Cat>(['consent', 'alert', 'help', 'ads', 'related', 'promo', 'popup']);
+const SPECIAL: ReadonlySet<Cat> = new Set<Cat>(['consent', 'alert', 'chat', 'help', 'ads', 'related', 'promo', 'popup']);
+/** A form is stepped only with at least this many real fields (search and sign-up fields do not count). */
+const MIN_STEP_FIELDS = 3;
+/** At most this many steps: more fieldsets are merged (smallest neighbours first). */
+const MAX_FORM_STEPS = 6;
 const BUY_RE = /\b(add to (cart|bag|basket)|buy( now)?|add to order)\b/;
 
 function section(p: Partial<FitSection> & Pick<FitSection, 'label' | 'role' | 'nodes'>): FitSection {
@@ -49,9 +54,16 @@ class Heuristic {
     const action = ACTION_KINDS.has(n.kind);
     const prot = outlineProtection(this.ix, id, this.roles);
     if (prot === 'consent') return 'consent';
-    if (prot === 'alert' || (role === 'popup_overlay' && n.protected)) return 'alert';
+    if (chatRoot(this.ix, id) === id) return 'chat';
+    const ov = overlayRoot(this.ix, id);
+    if (ov === id && role === 'popup_overlay' && isWarningOverlay(this.ix, id, this.roles)) return 'alert';
+    if (prot === 'alert') return 'alert';
+    // A logo is the site's name, shown in the top bar: never a card in the page.
+    if (this.isLogo(id)) return 'header';
     if (role === 'advertising' || (!action && RE.ad.test(label))) return 'ads';
     if (role === 'recommendations' || (!action && RE.related.test(label))) return 'related';
+    // A shelf of products with prices and "Add to cart" outside the main column is shopping, not the task.
+    if ((n.kind === 'region' || n.kind === 'list') && !this.inMainLandmark(id) && lm !== 'main' && this.isShelf(id)) return 'related';
     if (prot === 'help' || (zone.startsWith('overlay') && RE.help.test(label))) return 'help';
     if (role === 'popup_overlay') return 'popup';
     if ((n.kind === 'region' || n.kind === 'list' || n.kind === 'image' || n.kind === 'media') && (RE.promo.test(label) || /carousel|slides?/.test(lower(n.shape)))) return 'promo';
@@ -59,7 +71,8 @@ class Heuristic {
     if (role === 'legal_footer') return 'legal';
     if (lm === 'banner' || zone === 'header_band') return 'header';
     if (lm === 'contentinfo' || zone === 'footer_band') return 'footer';
-    if (lm === 'complementary' || zone === 'left_rail' || zone === 'right_rail') return 'aside';
+    // A paragraph that starts at the left edge of the main column is not a side rail.
+    if (lm === 'complementary' || ((zone === 'left_rail' || zone === 'right_rail') && !this.inMainLandmark(id))) return 'aside';
     if (lm === 'main' || zone === 'center_column' || zone === 'full_width_mid') return 'main';
     if (zone.startsWith('overlay')) return 'popup';
     return null;
@@ -79,7 +92,7 @@ class Heuristic {
     if (hit !== undefined) return hit;
     const v = (this.ix.children.get(id) ?? []).some((c) => {
       const cc = this.ownCat(c);
-      return (cc != null && SPECIAL.has(cc)) || this.hasSpecialBelow(c);
+      return (cc != null && SPECIAL.has(cc)) || this.isLogo(c) || this.hasSpecialBelow(c);
     });
     this.specialBelow.set(id, v);
     return v;
@@ -125,12 +138,29 @@ class Heuristic {
       return p === 'help' || p === 'consent' || p === 'alert' || p === 'field';
     });
     if (FOLD.has(cat) && !protectedBelow) return [{ id, cat }];
-    if (cat === 'consent' || cat === 'alert' || cat === 'help') return [{ id, cat }];
+    if (cat === 'consent' || cat === 'alert' || cat === 'help' || cat === 'chat') return [{ id, cat }];
     let descend = kids.length === 1 && CONTAINER_KINDS.has(this.kind(kids[0] as string) as OutlineKind);
     if (!descend) descend = this.hasSpecialBelow(id) || this.hasStripBelow(id);
     if (!descend && (cat === 'main' || cat === 'other')) descend = this.headingCarriers(id) >= 2;
     if (!descend) return [{ id, cat }];
     return kids.flatMap((k) => this.units(k, cat));
+  }
+
+  isLogo(id: string): boolean {
+    const n = this.ix.nodes.get(id);
+    return !!n && (n.kind === 'image' || n.kind === 'link') && RE.logo.test(lower(n.label));
+  }
+
+  isShelf(id: string): boolean {
+    const ds = this.ix.descendants(id);
+    if (ds.length > 400) return false;
+    const buys = ds.filter((d) => ACTION_KINDS.has(this.kind(d) as OutlineKind) && BUY_RE.test(this.ix.label(d))).length;
+    const prices = ds.filter((d) => /price/.test(lower(this.ix.nodes.get(d)?.shape))).length;
+    return buys >= 3 || (buys >= 2 && prices >= 2) || prices >= 4;
+  }
+
+  inMainLandmark(id: string): boolean {
+    return this.ix.ancestors(id).some((a) => lower(this.ix.nodes.get(a)?.landmark) === 'main');
   }
 
   inMainZone(id: string): boolean {
@@ -147,16 +177,18 @@ class Heuristic {
 
   pageType(content: Set<string>, primary: string | null): FitSpec['page_type'] {
     const hint = this.outline.pageTypeHint;
-    if (hint && (FIT_PAGE_TYPES as readonly string[]).includes(hint)) return hint as FitSpec['page_type'];
     const ids = [...content];
     const nodes = ids.map((id) => this.ix.nodes.get(id)).filter((n) => n != null);
-    const fields = nodes.filter((n) => FIELD_KINDS.has(n.kind)).length;
+    const fields = ids.filter((id) => FIELD_KINDS.has(this.kind(id) as OutlineKind) && !isSideField(this.ix, id, this.roles)).length;
+    // The reader's hint is taken unless it calls a page with only search or sign-up fields a form.
+    if (hint && (FIT_PAGE_TYPES as readonly string[]).includes(hint) && !(hint === 'form' && fields < 2)) return hint as FitSpec['page_type'];
     const price = nodes.some((n) => /price/.test(lower(n.shape)));
     const buy = nodes.some((n) => ACTION_KINDS.has(n.kind) && BUY_RE.test(lower(n.label)));
     // A price shape and a buy button (a gallery usually comes with them but is not required).
     if (price && buy) return 'product_detail';
     const pa = primary ? this.ix.nodes.get(primary) : null;
-    if (fields >= 4 || (fields >= 1 && pa && RE.submitLike.test(lower(pa.label)))) return 'form';
+    const paShort = !!pa && lower(pa.label).split(/\s+/).filter(Boolean).length <= 6;
+    if (fields >= 4 || (fields >= 1 && pa && paShort && RE.submitLike.test(lower(pa.label)))) return 'form';
     const paragraphs = nodes.reduce((a, n) => {
       if (n.kind !== 'text') return a;
       const m = /x\s*(\d+)/.exec(lower(n.shape));
@@ -206,34 +238,49 @@ class Heuristic {
   /* ---- form steps ---- */
 
   formSteps(fields: string[], maxFields: number): Array<{ label: SectionLabel; fields: string[] }> {
-    // Runs of fields sharing a parent (a fieldset), packed in page order.
+    // One step per fieldset (GOV.UK: one thing per page), in page order. Fieldsets with one field merge with a
+    // neighbouring small one; a long fieldset is split; at most MAX_FORM_STEPS steps.
     const runs: string[][] = [];
-    let prevParent: string | null | undefined;
+    let prevGroup: string | null | undefined;
     for (const f of fields) {
-      const p = this.ix.parent(f);
+      const g = fieldGroup(this.ix, f);
       const last = runs[runs.length - 1];
-      if (last && p === prevParent) last.push(f); else runs.push([f]);
-      prevParent = p;
+      if (last && g === prevGroup) last.push(f); else runs.push([f]);
+      prevGroup = g;
     }
     const consent = fields.filter((f) => RE.consentField.test(this.ix.label(f)));
-    const steps: string[][] = [];
-    let cur: string[] = [];
+    let steps: string[][] = [];
     for (const run of runs) {
       const r = run.filter((f) => !consent.includes(f) || fields.length <= 1);
-      for (let i = 0; i < r.length; i += maxFields) {
-        const chunk = r.slice(i, i + maxFields);
-        if (cur.length && cur.length + chunk.length > maxFields) { steps.push(cur); cur = []; }
-        cur.push(...chunk);
-      }
+      for (let i = 0; i < r.length; i += maxFields) steps.push(r.slice(i, i + maxFields));
     }
-    if (cur.length) steps.push(cur);
+    steps = steps.filter((st) => st.length);
+    // Lone fields join the next (or previous) small step.
+    for (let i = 0; i < steps.length; i++) {
+      const st = steps[i] as string[];
+      if (st.length !== 1 || steps.length <= 1) continue;
+      const next = steps[i + 1];
+      const prev = steps[i - 1];
+      if (next && next.length + 1 <= maxFields) { next.unshift(...st); steps.splice(i, 1); i--; }
+      else if (prev && prev.length + 1 <= maxFields) { prev.push(...st); steps.splice(i, 1); i--; }
+    }
+    while (steps.length > MAX_FORM_STEPS) {
+      let best = 0;
+      let size = Infinity;
+      for (let i = 0; i < steps.length - 1; i++) {
+        const n = (steps[i] as string[]).length + (steps[i + 1] as string[]).length;
+        if (n < size) { size = n; best = i; }
+      }
+      steps.splice(best, 2, [...(steps[best] as string[]), ...(steps[best + 1] as string[])]);
+    }
     if (consent.length && fields.length > 1) {
       const last = steps[steps.length - 1];
       if (last && last.length + consent.length <= maxFields) last.push(...consent); else steps.push([...consent]);
     }
     const labelOf = (fs: string[], i: number, n: number): SectionLabel => {
-      const words = fs.map((f) => `${this.ix.label(f)} ${this.ix.label(this.ix.parent(f) ?? '')}`).join(' ');
-      if (i === n - 1 && n > 1 && fs.some((f) => consent.includes(f))) return 'Review and submit';
+      const group = fieldGroup(this.ix, fs[0] as string);
+      const words = `${group ? this.ix.label(group) : ''} ${fs.map((f) => this.ix.label(f)).join(' ')}`;
+      if (i === n - 1 && n > 1 && fs.every((f) => consent.includes(f))) return 'Review and submit';
       const l = labelFromWords(words, 'Your details');
       return l === 'Details' ? 'Your details' : l;
     };
@@ -304,7 +351,7 @@ class Heuristic {
     const utilities = lifted.filter((u) => u.cat !== 'help' && this.isStripCandidate(u.id)).map((u) => u.id).sort((a, b) => rank(a) - rank(b) || this.ord(a) - this.ord(b));
     strip.push(...utilities.slice(0, 5));
     const helpOutside = units.filter((u) => u.cat === 'help' && !content.includes(u));
-    const helpControl = helpOutside.find((u) => ACTION_KINDS.has(this.kind(u.id) as OutlineKind));
+    const helpControl = helpOutside.find((u) => ACTION_KINDS.has(this.kind(u.id) as OutlineKind) && !overlayRoot(this.ix, u.id));
     if (helpControl && strip.length < 6) strip.push(helpControl.id);
     const inStrip = new Set(strip);
 
@@ -365,6 +412,8 @@ class Heuristic {
     // 3. Help and consent: always open.
     add(section({ label: 'Help', role: 'help', nodes: ids(helpOutside), layout: 'row_list', why: 'protected' }));
     add(section({ label: 'Cookies', role: 'consent', nodes: ids(byCat('consent')), why: 'protected' }));
+    // A chat widget: one row at the end ("Chat with the site"), never mixed into the task.
+    add(section({ label: 'Contact', role: 'help', nodes: ids(byCat('chat')), layout: 'as_is', why: 'protected' }));
 
     // 4. Navigation (header leftovers included), collapsed.
     add(section({
@@ -390,8 +439,13 @@ class Heuristic {
     let formSteps: FitSpec['form_steps'] = [];
     const prim = sections.find((s) => s.role === 'primary');
     if (prim && pageType !== 'product_detail') {
-      const fields = this.subtree(prim.nodes).filter((id) => FIELD_KINDS.has(this.kind(id) as OutlineKind)).sort((a, b) => this.ord(a) - this.ord(b));
-      if (fields.length > limits.stepFormsOver) {
+      const fields = this.subtree(prim.nodes)
+        .filter((id) => FIELD_KINDS.has(this.kind(id) as OutlineKind) && !isSideField(this.ix, id, this.roles))
+        .sort((a, b) => this.ord(a) - this.ord(b));
+      // Steps only for a real form: at least three fields that are not search or sign-up fields, in at least two
+      // fieldsets (one fieldset is one step: no stepper).
+      const groups = new Set(fields.map((f) => fieldGroup(this.ix, f)));
+      if (fields.length > limits.stepFormsOver && fields.length >= MIN_STEP_FIELDS && groups.size >= 2) {
         formSteps = this.formSteps(fields, limits.formStepMaxFields);
         if (formSteps.length && formSteps.length <= 8) prim.layout = 'form_steps'; else formSteps = [];
       }

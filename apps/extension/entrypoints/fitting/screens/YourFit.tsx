@@ -3,7 +3,7 @@
 
 import type { FitProfile } from '@webable/core';
 import type { JSX } from 'preact';
-import { useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useState } from 'preact/hooks';
 import {
   canStep,
   cloneFit,
@@ -21,22 +21,25 @@ import { Preview } from './Preview';
 
 export type FitOrigin = 'measured' | 'demo' | 'default';
 
+/** "16 → 28 px": numbers in the display face with tabular figures; the unit is set smaller, in secondary ink. */
 function Mark(props: { from: string; to: string; changed: boolean }): JSX.Element {
-  if (!props.changed) {
-    return <span class="fx-mark-text is-same">{props.to === props.from ? props.to : props.to}</span>;
-  }
-  // Numbers get a tailor's mark ("16 → 22 px"); words get a plain value in the accent.
-  const num = /^(\d+(?:\.\d+)?)\s?(px)$/;
-  const f = num.exec(props.from);
-  const t = num.exec(props.to);
+  if (!props.changed) return <span class="fx-mark-text is-same">{props.to}</span>;
+  const num = /^(\d+(?:\.\d+)?)\s*(px)$/;
+  const f = num.exec(props.from.trim());
+  const t = num.exec(props.to.trim());
   if (f && t && f[2] === t[2]) {
     return (
       <span class="fx-mark" aria-label={`from ${props.from} to ${props.to}`}>
-        <span class="fx-mark-from">{f[1]}</span>
+        <span class="fx-mark-from" aria-hidden="true">
+          {f[1]}
+        </span>
         <span class="fx-mark-arrow" aria-hidden="true">
           →
         </span>
-        <span class="fx-mark-to is-changed">{props.to}</span>
+        <span class="fx-mark-to is-changed" aria-hidden="true">
+          {t[1]}
+          <span class="fx-mark-unit">{t[2]}</span>
+        </span>
       </span>
     );
   }
@@ -80,6 +83,8 @@ export function YourFit(props: {
   done: ReadonlySet<TaskId>;
   reducedMotion: boolean;
   saving: boolean;
+  /** Called with the fit as shown (after any stepper change), so other Save buttons save the same thing. */
+  onChange?: (fit: FitProfile) => void;
   onSave: (fit: FitProfile) => void;
   onRestart: () => void;
 }): JSX.Element {
@@ -87,6 +92,7 @@ export function YourFit(props: {
   const [setByYou, setSetByYou] = useState<Set<RowKey>>(new Set());
   const [fitted, setFitted] = useState(true);
   const rows = useMemo(() => fitRows(fit), [fit]);
+  useEffect(() => props.onChange?.(fit), [fit]);
 
   const textPx = effectiveTextPx(fit);
   const stepText = (dir: -1 | 1) => {
@@ -121,9 +127,26 @@ export function YourFit(props: {
 
   return (
     <div class="fx-yourfit">
-      <Heading>Your fit</Heading>
-      <Deck>{deck}</Deck>
+      <div class="fx-fit-head">
+        <div class="fx-fit-head-text">
+          <Heading>Your fit</Heading>
+          <Deck>{deck}</Deck>
+        </div>
+        <div class="fx-seg fade-in" role="group" aria-label="See the difference on a sample page">
+          <button type="button" class={`fx-seg-btn ${!fitted ? 'is-on' : ''}`} aria-pressed={!fitted} onClick={() => setFitted(false)}>
+            Original
+          </button>
+          <button type="button" class={`fx-seg-btn ${fitted ? 'is-on' : ''}`} aria-pressed={fitted} onClick={() => setFitted(true)}>
+            Fitted
+          </button>
+        </div>
+      </div>
 
+      <section class="fx-preview fade-in" aria-label="Sample page">
+        <Preview fit={fit} fitted={fitted} />
+      </section>
+
+      <h2 class="fx-h2 fx-rows-h">What WebAble changes</h2>
       <ul class="fx-fitrows fade-in" aria-label={`${changedCount} changes`}>
         {rows.map((r) => (
           <li class={`fx-fitrow ${r.changed ? 'is-changed' : ''}`}>
@@ -159,26 +182,6 @@ export function YourFit(props: {
           </li>
         ))}
       </ul>
-
-      <section class="fx-preview fade-in" aria-labelledby="fx-preview-h">
-        <div class="fx-preview-head">
-          <h2 id="fx-preview-h" class="fx-h2">
-            See the difference
-          </h2>
-          <div class="fx-seg" role="group" aria-label="Preview">
-            <button type="button" class={`fx-seg-btn ${!fitted ? 'is-on' : ''}`} aria-pressed={!fitted} onClick={() => setFitted(false)}>
-              Original
-            </button>
-            <button type="button" class={`fx-seg-btn ${fitted ? 'is-on' : ''}`} aria-pressed={fitted} onClick={() => setFitted(true)}>
-              Fitted
-            </button>
-          </div>
-        </div>
-        <div class="fx-preview-frame">
-          <Preview fit={fit} fitted={fitted} />
-        </div>
-        <p class="fx-preview-note">A made-up page. On real sites, the original is always one click away.</p>
-      </section>
 
       <div class="fx-row fx-row-actions">
         <Btn kind="primary" onClick={() => props.onSave(fit)} disabled={props.saving} class="fx-btn-wide">

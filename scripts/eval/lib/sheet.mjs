@@ -41,8 +41,47 @@ export function siteMetrics(r) {
   };
 }
 
-function chip(label, value, tone = '') {
-  return `<span class="chip ${tone}"><span class="chip-k">${h(label)}</span><span class="chip-v">${h(value)}</span></span>`;
+function chip(label, value, tone = '', title = '') {
+  return `<span class="chip ${tone}"${title ? ` title="${h(title)}"` : ''}><span class="chip-k">${h(label)}</span><span class="chip-v">${h(value)}</span></span>`;
+}
+
+const tone = (ok) => (ok === true ? 'good' : ok === false ? 'bad' : '');
+
+/** First-screen chips for one site: heading, main action, overlays, pill, Lens chips, Calm first screen. */
+function firstScreenChips(r) {
+  const fs = r.firstScreen ?? {};
+  const out = [];
+  const after = fs.after?.page;
+  const before = fs.before?.page;
+  if (after?.h1) out.push(chip('Heading top', `${after.h1.top} px`, '', after.h1.text));
+  if (after) {
+    const m = after.main;
+    if (m) {
+      const where = m.coveredBy ? `under ${m.coveredBy}` : m.inView ? 'in view' : m.below ? `below the fold (${m.top} px)` : 'partly off screen';
+      out.push(chip('Main action', `${where}`, m.coveredBy ? 'bad' : m.inView ? 'good' : 'warn', `“${m.label}” ${m.top}–${m.bottom} px`));
+    } else out.push(chip('Main action', 'none marked', 'warn'));
+  }
+  if (before || after) {
+    const b = before?.overlayPct;
+    const a = after?.overlayPct;
+    const t = a == null ? '' : a <= 10 ? 'good' : b != null && a < b ? '' : 'warn';
+    const what = (after?.overlayBy ?? before?.overlayBy ?? []).map((x) => `${x.what} ${x.pct}%`).join(', ');
+    out.push(chip('Page overlays', `${b ?? '—'}% → ${a ?? '—'}%`, t, what || 'fixed boxes over the page'));
+  }
+  if (after) out.push(chip('WebAble UI', `${after.webablePct}%`, after.webablePct > 15 ? 'warn' : '', 'share of the first screen under WebAble’s own chrome'));
+  if (after) out.push(chip('Pill over a control', after.pillOver?.length ? after.pillOver.join(', ') : 'none', after.pillOver?.length ? 'bad' : 'good'));
+  const floats = fs.after?.ui?.floatOverlaps ?? [];
+  if (floats.length) out.push(chip('Chips overlap', floats.slice(0, 2).join('; '), 'bad'));
+  const lens = fs.lens?.lens;
+  if (lens) out.push(chip('Lens chips', `${lens.chips} · ${lens.overlapping.length} overlapping`, lens.on ? tone(lens.overlapping.length === 0) : 'warn', lens.overlapping.join('; ')));
+  else if (fs.lens) out.push(chip('Lens', 'did not open', 'bad'));
+  const c = fs.calm?.calm;
+  if (c?.open) {
+    out.push(chip('Calm h1 top', c.h1Top != null ? `${c.h1Top} px` : 'no h1', tone(c.h1Ok), `${c.h1Text ?? ''} (rule: ≤ 140 px)`));
+    out.push(chip('Calm task', c.task ? (c.taskOk ? 'on first screen' : `at ${c.task.top} px`) : 'none', tone(c.taskOk), c.task ? `${c.task.kind} “${c.task.text}”` : ''));
+    out.push(chip('Filled buttons', `${c.filled?.length ?? 0}`, tone(c.filledOk), (c.filled ?? []).join(', ')));
+  }
+  return out.join('');
 }
 
 function shotCell(r, key, label) {
@@ -93,6 +132,7 @@ function siteCard(r) {
     <a class="raw" href="${h(r.slug)}/report.json" target="_blank" rel="noopener">report.json</a>
   </header>
   <div class="chips">${chips}</div>
+  <div class="chips chips-first"><span class="chips-label">First screen</span>${firstScreenChips(r)}</div>
   <div class="shots">${SHOTS.map(([k, label]) => shotCell(r, k, label)).join('')}</div>
   <div class="details">
     <details${ledger.length ? ' open' : ''}><summary>What WebAble did (${ledger.length})</summary>${ledgerHtml}</details>
@@ -102,17 +142,84 @@ function siteCard(r) {
 </article>`;
 }
 
-export function renderSheet(meta, results) {
+function checkList(checks) {
+  const cs = (checks ?? []).filter((c) => c);
+  if (!cs.length) return '';
+  return `<ul class="checks">${cs
+    .map((c) => `<li class="${c.ok === true ? 'ok' : c.ok === false ? 'no' : 'na'}"><span class="mark">${c.ok === true ? '✓' : c.ok === false ? '✗' : '–'}</span>${h(c.name)}${c.detail ? `<span class="muted"> · ${h(c.detail)}</span>` : ''}</li>`)
+    .join('')}</ul>`;
+}
+
+function fittingSection(f) {
+  if (!f) return '';
+  const bad = f.screens.filter((x) => !x.ok).length;
+  const fit = f.fit;
+  const fitLine = fit
+    ? `Saved fit: text ${fit.text?.override ?? fit.text?.bodyPx} px · targets ${fit.targets?.minPx ?? '—'} px · contrast ${fit.contrast?.band} · calm level ${fit.attention?.structureLevel}`
+    : 'No fit saved';
+  const cards = f.screens
+    .map((x) => {
+      const m = x.checks ?? {};
+      const lines = [
+        ...x.problems.map((p) => `<li class="no"><span class="mark">✗</span>${h(p)}</li>`),
+        ...(x.notes ?? []).map((p) => `<li class="na"><span class="mark">–</span>${h(p)}</li>`),
+      ].join('');
+      const meta2 = [m.chromeScale ? `chrome ×${m.chromeScale}` : null, m.actionBar ? `Pause/Skip ${m.actionBar === 'fixed' ? 'floating' : 'in flow'}` : null, m.docHeight && m.vh ? `page ${m.docHeight} / ${m.vh} px` : null]
+        .filter(Boolean)
+        .join(' · ');
+      return `<figure class="frame ${x.ok ? '' : 'has-problem'}"><a href="${h(x.file)}" target="_blank" rel="noopener"><img src="${h(x.file)}" alt="${h(x.title)}" loading="lazy"></a>
+  <figcaption><b>${x.ok ? '✓' : '✗'} ${h(x.title)}</b><span class="muted">${h(meta2)}</span>${lines ? `<ul class="checks">${lines}</ul>` : ''}</figcaption></figure>`;
+    })
+    .join('');
+  const errs = f.errors.length ? `<ul class="plain errs">${f.errors.map((e) => `<li>${h(e)}</li>`).join('')}</ul>` : '';
+  return `<section class="block" id="fitting">
+  <header class="block-head"><h2>Fitting flow</h2><p class="muted">${f.screens.length} screens · ${bad} with problems · ${f.seconds ?? '—'} s to “Your fit” · ${h(fitLine)}</p></header>
+  ${errs}
+  <div class="frames">${cards}</div>
+</section>`;
+}
+
+function interactSection(x) {
+  if (!x) return '';
+  const bad = x.steps.filter((s) => !s.ok).length;
+  const cards = x.steps
+    .map(
+      (s) => `<figure class="frame ${s.ok ? '' : 'has-problem'}"><a href="${h(s.file)}" target="_blank" rel="noopener"><img src="${h(s.file)}" alt="${h(s.title)}" loading="lazy"></a>
+  <figcaption><b>${s.ok ? '✓' : '✗'} ${h(s.title)}</b>${(s.notes ?? []).length ? `<span class="muted">${h(s.notes.join(' · '))}</span>` : ''}${checkList(s.checks)}</figcaption></figure>`,
+    )
+    .join('');
+  const t = x.timings ?? {};
+  const line = [
+    t.toUnderstoodMs != null ? `understood in ${fmtMs(t.toUnderstoodMs)}` : null,
+    t.explainMs != null ? `Explain ${fmtMs(t.explainMs)}` : null,
+    t.struggleRounds != null ? `${t.struggleRounds} near-misses${t.offerAfterMs != null ? `, offer after ${fmtMs(t.offerAfterMs)}` : ', no offer'}` : null,
+    x.mainLabel ? `main action “${x.mainLabel}”` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const errs = x.errors.length ? `<ul class="plain errs">${x.errors.map((e) => `<li>${h(e)}</li>`).join('')}</ul>` : '';
+  return `<section class="block" id="interact">
+  <header class="block-head"><h2>Interactions · ${h(x.site)}</h2><p class="muted">${x.steps.length} steps · ${bad} with a failed check · ${h(line)}</p></header>
+  ${errs}
+  <div class="frames">${cards}</div>
+</section>`;
+}
+
+export function renderSheet(meta, results, extra = {}) {
   const ms = results.map(siteMetrics);
   const sum = (k) => ms.reduce((a, m) => a + (typeof m[k] === 'number' ? m[k] : 0), 0);
   const understood = ms.filter((m) => m.phase === 'understood' || m.phase === 'calm').length;
-  const tiles = [
+  const mainSeen = results.filter((r) => r.firstScreen?.after?.page?.main?.inView && !r.firstScreen.after.page.main.coveredBy).length;
+  const calmOk = results.filter((r) => r.firstScreen?.calm?.calm?.h1Ok && r.firstScreen.calm.calm.taskOk).length;
+  const calmN = results.filter((r) => r.firstScreen?.calm?.calm?.open).length;
+  const tiles = !results.length ? '' : [
     ['Sites', `${results.length}`, `${understood} reached “understood”`],
     ['Jev decisions', `${sum('decisions')}`, `${sum('jevCalls')} calls · ${sum('jevQuestions')} questions`],
     ['Median Jev time', fmtMs(median(ms.map((m) => m.jevMs))), 'per page, wall clock'],
     ['Jev cost', fmtUsd(sum('jevUsd')), `${sum('jevTokens').toLocaleString('en-US')} input tokens`],
     ['Changes', `${sum('opsApplied')} applied`, `${sum('opsReversed')} reversed by checks`],
     ['Problems', `${ms.reduce((a, m) => a + m.errors.length, 0)} errors`, `${ms.reduce((a, m) => a + m.checksFailed.length, 0)} checks failed`],
+    ['First screen', `${mainSeen} of ${results.length}`, `main action in view · Calm first screen right on ${calmOk} of ${calmN}`],
   ]
     .map(([k, v, s]) => `<div class="tile"><p class="tile-k">${h(k)}</p><p class="tile-v">${h(v)}</p><p class="tile-s">${h(s)}</p></div>`)
     .join('');
@@ -141,7 +248,7 @@ export function renderSheet(meta, results) {
   main { max-width: 1440px; margin: 0 auto; padding: 40px 24px 80px; }
   h1 { font-size: 34px; font-weight: 600; letter-spacing: -.4px; margin: 0 0 6px; }
   .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 13px; margin-bottom: 24px; }
-  .tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .tiles { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; margin-bottom: 28px; }
   @media (max-width: 1000px) { .tiles { grid-template-columns: repeat(3, 1fr); } }
   .tile { background: var(--card); border-radius: 14px; padding: 14px 16px; }
   .tile p { margin: 0; }
@@ -187,14 +294,34 @@ export function renderSheet(meta, results) {
   .plain { margin: 8px 0 4px; padding-left: 18px; }
   .errs li { color: var(--bad); word-break: break-word; }
   .muted { color: var(--muted); margin: 8px 0 4px; }
+  .chips-first { margin-top: -6px; }
+  .chips-label { font-size: 12px; font-weight: 600; color: var(--muted); align-self: center; margin-right: 4px; }
+  .block { background: var(--card); border-radius: 18px; padding: 20px; margin-bottom: 20px; }
+  .block-head h2 { font-size: 20px; font-weight: 600; margin: 0; }
+  .block-head p { margin: 4px 0 14px; font-size: 13px; }
+  .frames { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 1100px) { .frames { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .frame { margin: 0; }
+  .frame img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--line); background: #fafafa; }
+  .frame.has-problem img { border-color: #F5C2BD; box-shadow: 0 0 0 2px #FEF3F2; }
+  .frame figcaption { margin-top: 6px; font-size: 12px; display: flex; flex-direction: column; gap: 2px; }
+  .frame figcaption .muted { margin: 0; }
+  .checks { list-style: none; margin: 4px 0 0; padding: 0; font-size: 12px; }
+  .checks li { padding: 1px 0; }
+  .checks .mark { display: inline-block; width: 14px; font-weight: 700; }
+  .checks .ok .mark { color: var(--good); }
+  .checks .no { color: var(--bad); }
+  .checks .na .mark { color: var(--muted); }
 </style>
 </head>
 <body>
 <main>
   <h1>WebAble eval · ${h(meta.run)}</h1>
   <div class="meta">${metaLine}</div>
-  <section class="tiles" aria-label="Totals">${tiles}</section>
-  <nav class="toc" aria-label="Sites">${results.map((r) => `<a href="#${h(r.slug)}">${h(r.name)}</a>`).join('')}</nav>
+  ${tiles ? `<section class="tiles" aria-label="Totals">${tiles}</section>` : ''}
+  <nav class="toc" aria-label="Sections">${extra.fitting ? '<a href="#fitting">Fitting flow</a>' : ''}${extra.interact ? '<a href="#interact">Interactions</a>' : ''}${results.map((r) => `<a href="#${h(r.slug)}">${h(r.name)}</a>`).join('')}</nav>
+  ${interactSection(extra.interact)}
+  ${fittingSection(extra.fitting)}
   ${results.map(siteCard).join('\n')}
 </main>
 </body>

@@ -1,6 +1,9 @@
 // Fixtures for the live check: the fictional Alderra Pharmacy refill page as the extension would describe it
 // (structure only, personal details already replaced). Written for this build; not from any real site.
-import type { ExplainRequest, FitSummaryForModel, PageDigest, PageOutline, StruggleSignals, VisualVerifyRequest } from '@webable/core';
+import type {
+  ExplainRequest, FitSummaryForModel, OverlayButtonEvidence, OverlayEvidence, PageDigest, PageOutline, StruggleSignals,
+  VisualVerifyRequest,
+} from '@webable/core';
 
 export const FIXTURE_DIGEST: PageDigest = {
   v: 'digest.1',
@@ -128,6 +131,23 @@ export const FIXTURE_PASSAGE: ExplainRequest = {
   passage:
     'By selecting Confirm refill, you authorize the pharmacy to bill your insurance on file. Your copay may differ from the estimate shown. Refills of controlled substances may require pharmacist review and can be delayed up to 1 business day. Orders placed after 6 PM are processed the next business day. Prices shown are estimates and do not include applicable taxes. Generic substitution may occur unless your prescriber indicates otherwise.',
 };
+
+/** The demo's chat panel that opens by itself at 4 s, with its own buttons (structure only). */
+export const FIXTURE_OVERLAY: OverlayEvidence = {
+  id: 'ov1',
+  kind_hint: 'chat',
+  label: 'Virtual assistant · Need help with your refill',
+  position: 'bottom right corner',
+  size: '360 x 520 px, covers 25% of the screen',
+  opened_by_itself: true,
+  class_words: ['chat', 'panel', 'assistant'],
+};
+
+export const FIXTURE_OVERLAY_BUTTONS: OverlayButtonEvidence[] = [
+  { id: 'b1', tag: 'button', label: 'Minimize chat', visible_text: '–', position_in_overlay: 'top right corner', size: '32 x 32 px', class_words: ['chat', 'minimize'] },
+  { id: 'b2', tag: 'button', label: 'End chat', visible_text: 'End chat', position_in_overlay: 'top left', size: '72 x 28 px', class_words: ['chat', 'end'] },
+  { id: 'b3', tag: 'button', label: 'Send message', visible_text: 'Send', position_in_overlay: 'bottom right', size: '64 x 36 px', class_words: ['chat', 'send'], form_submit: true },
+];
 
 /* ------------------------------------------------------------------ */
 /* Two synthetic screenshots for the visual check (plumbing test only) */

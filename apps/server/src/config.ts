@@ -27,8 +27,12 @@ export const LLM_TIMEOUT_MS = num('LLM_TIMEOUT_MS', 12_000);
 export const LAYOUT_WAVE_MS = num('LAYOUT_WAVE_MS', 8_000);
 export const DEEP_TIMEOUT_MS = num('DEEP_TIMEOUT_MS', 40_000);
 export const EXPLAIN_TIMEOUT_MS = num('EXPLAIN_TIMEOUT_MS', 12_000);
-/** Background deep layout job (gpt-6.1-sol) cached for the next visit. WEBABLE_DEEP=0 turns it off. */
-export const DEEP_ENABLED = process.env.WEBABLE_DEEP !== '0';
+/** Background deep layout job (gpt-6.1-sol) cached for the next visit. Off by default (up to $0.08 a page); WEBABLE_DEEP=1 turns it on. */
+export const DEEP_ENABLED = process.env.WEBABLE_DEEP === '1';
+/** After OpenAI says "no credits" (or rejects the key), AI stays off this long, then is tried again. */
+export const AI_BLOCK_MS = num('AI_BLOCK_MS', 10 * 60_000);
+/** The cheap call that checks whether OpenAI answers again (at boot and when a block ends). */
+export const AI_PROBE_MODEL = process.env.AI_PROBE_MODEL ?? 'gpt-6-luna';
 export const DEEP_CACHE_TTL_MS = num('DEEP_CACHE_TTL_MS', 6 * 60 * 60_000);
 export const REDESIGN_CACHE_TTL_MS = num('REDESIGN_CACHE_TTL_MS', 30 * 60_000);
 /** Hard stop for generative spend in one server process; past it, layouts fall back to the heuristic. */

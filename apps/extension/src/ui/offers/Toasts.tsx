@@ -1,16 +1,18 @@
-// Owner: D2. Toasts state what changed. Toasts with an Undo never time out; plain notes leave after 6 s.
+// Owner: D2. Toasts state what changed. Plain notes leave after 6 s; toasts with an Undo after 12 s (the Undo stays
+// in the panel). Hover or focus holds either.
 import { useEffect, useState } from 'preact/hooks';
 import type { EngineApi, Toast } from '../../contracts';
 import { IconCheck, IconClose, IconUndo } from '../panel/icons';
 
 const SHOW = 3;
 const PLAIN_MS = 6000;
+const UNDO_MS = 12000;
 
 function ToastItem({ api, t }: { api: EngineApi; t: Toast }) {
   const [hold, setHold] = useState(false);
   useEffect(() => {
-    if (t.undoOpId || hold) return;
-    const tm = window.setTimeout(() => api.dismissToast(t.id), PLAIN_MS);
+    if (hold) return;
+    const tm = window.setTimeout(() => api.dismissToast(t.id), t.undoOpId ? UNDO_MS : PLAIN_MS);
     return () => window.clearTimeout(tm);
   }, [api, t.id, t.undoOpId, hold]);
 

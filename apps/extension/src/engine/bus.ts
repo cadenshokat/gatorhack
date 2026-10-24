@@ -26,10 +26,14 @@ export interface ZoomInfo {
   personChanged: boolean;
 }
 
-/** Answer to `health`. */
+/**
+ * Answer to `health`: the server's HealthStatus (`ok`, `jev`, `ai`) plus how long the check took. When the server
+ * cannot be reached: ok false, ai 'off'. `openai` is the older boolean, kept for readers that still use it.
+ */
 export interface HealthInfo {
   ok: boolean;
   jev?: { warm: boolean; model: string };
+  ai: 'on' | 'off' | 'no_credits';
   openai?: boolean;
   ms: number;
   error?: string;
@@ -78,6 +82,7 @@ const DEFAULT_TIMEOUTS: Partial<Record<ExtRequest['type'], number>> = {
   getSettings: 3000,
   report: 3000,
   health: 5000,
+  overlayClose: 9000,
 };
 
 function isReply(v: unknown): v is BusReply {

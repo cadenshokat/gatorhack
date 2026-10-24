@@ -1,4 +1,4 @@
-// Owner: D1. Reads the live page into a small block model for the Calm view.
+// Owner: C. Reads the live page into a small block model for the Calm view.
 // Read-only: nothing here writes to the page. Every word comes from the page's visible text at render time, on the device.
 // Controls keep a reference to their original element so the view can proxy them.
 
@@ -21,7 +21,17 @@ export interface ChoiceBlock extends Base {
 }
 export interface ChoicesBlock extends Base { b: 'choices'; type: 'checkbox' | 'radio'; items: ChoiceBlock[] }
 export interface SelectBlock extends Base { b: 'select'; el: HTMLSelectElement; label: string; hint: string; required: boolean }
-export interface ImageBlock extends Base { b: 'image'; url: string; alt: string; w: number; h: number; fit: 'cover' | 'contain' }
+export interface ImageBlock extends Base {
+  b: 'image'; url: string; alt: string; w: number; h: number; fit: 'cover' | 'contain';
+  /** A logo or brand mark (never shown: the site's name is in the top bar). */
+  logo: boolean;
+  /** The page's own caption (figure/figcaption), when it has one. */
+  caption: string;
+  /** Inside a link (an image-only link keeps its picture). */
+  linked: boolean;
+  /** Inside a hero, carousel or banner (stock photography, never needed for the task). */
+  banner: boolean;
+}
 export interface ListBlock extends Base { b: 'list'; ordered: boolean; items: Block[][] }
 export interface TableBlock extends Base { b: 'table'; rows: string[][]; head: boolean }
 /** A table whose cells hold links or controls: each cell keeps its blocks. */
@@ -84,13 +94,40 @@ export function clean(s: string | null | undefined): string {
 
 export function textOf(el: Element): string {
   const h = el as HTMLElement;
-  return clean(typeof h.innerText === 'string' ? h.innerText : el.textContent);
+  const t = clean(typeof h.innerText === 'string' ? h.innerText : el.textContent);
+  // Words the page shouts only through CSS (text-transform: uppercase) are shown in their own case.
+  if (t.length > 3 && t === t.toUpperCase() && /[A-Z]/.test(t)) {
+    try {
+      if (getComputedStyle(el).textTransform === 'uppercase') {
+        const raw = clean(el.textContent);
+        if (raw && raw.toUpperCase() === t) return raw;
+      }
+    } catch {
+      /* detached */
+    }
+  }
+  return t;
 }
 
 export function linesOf(el: Element): string[] {
   const h = el as HTMLElement;
   const raw = typeof h.innerText === 'string' ? h.innerText : (el.textContent ?? '');
-  return raw.split(/\n+/).map(clean).filter(Boolean);
+  const lines = raw.split(/\n+/).map(clean).filter(Boolean);
+  // A line the page shouts only through CSS ("SLEEP" from "Sleep") is shown in its own case.
+  return lines.map((l) => {
+    if (l.length < 4 || l !== l.toUpperCase() || !/[A-Z]/.test(l)) return l;
+    for (const d of Array.from(el.querySelectorAll('*')).slice(0, 80)) {
+      const t = clean(d.textContent);
+      if (t && t !== l && t.toUpperCase() === l) {
+        try {
+          if (getComputedStyle(d).textTransform === 'uppercase') return t;
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    return l;
+  });
 }
 
 function labelledBy(el: Element): string {
@@ -107,6 +144,17 @@ function labelledBy(el: Element): string {
   );
 }
 
+/** How many fields name this element in aria-describedby (a hint shared by Day / Month / Year is shown once). */
+function describerCount(d: Element): number {
+  if (!d.id) return 0;
+  try {
+    return d.ownerDocument.querySelectorAll(`[aria-describedby~="${CSS.escape(d.id)}"]`).length;
+  } catch {
+    return 0;
+  }
+}
+
+/** A field's own hint: description elements only this field points to (shared hints stay as text in the page's place). */
 function describedBy(el: Element): string {
   const ids = el.getAttribute('aria-describedby');
   if (!ids) return '';
@@ -115,10 +163,30 @@ function describedBy(el: Element): string {
     ids
       .split(/\s+/)
       .map((id) => doc.getElementById(id))
-      .filter((x): x is HTMLElement => !!x)
+      .filter((x): x is HTMLElement => !!x && describerCount(x) === 1 && !x.matches('input,select,textarea,button'))
       .map((x) => textOf(x))
       .join(' '),
   );
+}
+
+/** Hint elements drawn under their one field: not read again as text. */
+function ownHints(root: Element): Set<Element> {
+  const out = new Set<Element>();
+  const fields: Element[] = root.matches('[aria-describedby]') ? [root] : [];
+  fields.push(...Array.from(root.querySelectorAll('[aria-describedby]')));
+  for (const f of fields) {
+    if (!f.matches('input,select,textarea')) continue;
+    for (const id of (f.getAttribute('aria-describedby') ?? '').split(/\s+/)) {
+      const d = id ? f.ownerDocument.getElementById(id) : null;
+      if (d && describerCount(d) === 1 && !d.contains(f) && !d.matches('input,select,textarea,button')) out.add(d);
+    }
+  }
+  return out;
+}
+
+/** The page's required-field marker ("First name *") is dropped where the view says "(required)". */
+export function stripMarker(s: string): string {
+  return s.replace(/\s*[*＊]\s*$/, '').trim();
 }
 
 /** A label's visible words without the text of controls inside it (a select's options, for example). */
@@ -267,7 +335,31 @@ function hidden(el: Element, cs: CSSStyleDeclaration): boolean {
     if (r.width <= 2 && r.height <= 2) return true; // screen-reader-only text
     if (r.right + window.scrollX <= 0 || r.bottom + window.scrollY <= 0) return true; // parked off-screen
   }
+  // Clipped to nothing (visually-hidden helpers) or a closed box (height 0, overflow hidden).
+  if (/inset\(50%\)/.test(cs.clipPath) || cs.clip === 'rect(0px, 0px, 0px, 0px)') return true;
+  if ((cs.overflow === 'hidden' || cs.overflow === 'clip' || cs.overflowY === 'hidden' || cs.overflowY === 'clip') && cs.position !== 'static') {
+    const r = el.getBoundingClientRect();
+    if (r.height <= 1 || r.width <= 1) return true;
+  } else if (cs.overflowY === 'hidden' || cs.overflowY === 'clip') {
+    const r = el.getBoundingClientRect();
+    if (r.height <= 1) return true;
+  }
   return false;
+}
+
+/** Hidden from everyone: not rendered, aria-hidden (itself or a near wrapper), or a 0×0 box with nothing visible inside. */
+export function isGone(el: Element): boolean {
+  if (!isShown(el)) return true;
+  const ah = el.closest('[aria-hidden="true"]');
+  if (ah && (ah === el || el.contains(ah) || depthBetween(ah, el) <= 3)) return true;
+  const r = el.getBoundingClientRect();
+  return r.width < 1 || r.height < 1;
+}
+
+function depthBetween(anc: Element, el: Element): number {
+  let d = 0;
+  for (let x: Element | null = el; x && x !== anc; x = x.parentElement) d++;
+  return d;
 }
 
 export function isShown(el: Element): boolean {
@@ -356,25 +448,62 @@ function bestSrc(img: HTMLImageElement): string | null {
   return placeholder(img.src) ? null : img.src;
 }
 
+const LOGO_RE = /\b(logo|logotype|brand ?mark|wordmark)\b/i;
+
+/** A logo: named so, drawn in the header's home link, or the site's own name as a picture. */
+function isLogoImage(img: Element, alt: string, url: string): boolean {
+  if (LOGO_RE.test(alt) || LOGO_RE.test(img.getAttribute('class') ?? '') || LOGO_RE.test(img.id)) return true;
+  if (/[/_-]logo[s]?[._/-]|logo\.(svg|png|jpe?g|webp)/i.test(url.split('?')[0] ?? '')) return true;
+  const home = img.closest('a[href]');
+  if (home && img.closest('header,[role=banner]')) {
+    try {
+      const u = new URL((home as HTMLAnchorElement).href, location.href);
+      if (u.origin === location.origin && (u.pathname === '/' || u.pathname === '')) return true;
+    } catch {
+      /* ignore */
+    }
+  }
+  if (LOGO_RE.test(img.parentElement?.getAttribute('class') ?? '') || LOGO_RE.test(home?.getAttribute('class') ?? '')) return true;
+  return false;
+}
+
+const BANNER_SEL = '[class*="hero" i],[class*="carousel" i],[class*="slider" i],[class*="swiper" i],[class*="slick" i],[class*="banner" i],[aria-roledescription="carousel"],[aria-roledescription="slide"]';
+
+function imageMeta(img: Element, alt: string, url: string): Pick<ImageBlock, 'logo' | 'caption' | 'linked' | 'banner'> {
+  const fig = img.closest('figure');
+  const cap = fig?.querySelector('figcaption');
+  let banner = false;
+  try {
+    banner = !!img.closest(BANNER_SEL);
+  } catch {
+    banner = false;
+  }
+  return { logo: isLogoImage(img, alt, url), caption: cap ? clean(textOf(cap)).slice(0, 240) : '', linked: !!img.closest('a[href]'), banner };
+}
+
 function imageFor(el: Element): ImageBlock | null {
   let img: Element = el;
   if (el.localName === 'picture') img = el.querySelector('img') ?? el;
   const r = img.getBoundingClientRect();
   if (r.width < 32 || r.height < 32) return null;
+  // Decoration the page hides from assistive technology (an icon drawn on a coloured tile) is not a picture to show.
+  const hiddenDeco = img.closest('[aria-hidden="true"],[role="presentation"],[role="none"]');
+  if (hiddenDeco && depthBetween(hiddenDeco, img) <= 3 && !(img instanceof HTMLImageElement && clean(img.alt))) return null;
   if (img instanceof HTMLImageElement) {
     const url = bestSrc(img);
     if (!url || !safeImageUrl(url)) return null;
     // Photos fill their well; cut-outs, drawings and near-square product shots sit inside it.
     const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : r.width / Math.max(1, r.height);
     const art = /\.(png|svg|gif)(\?|#|$)|^data:image\/(png|svg|gif)/i.test(url) || (ratio > 0.8 && ratio < 1.25);
-    return { b: 'image', url, alt: clean(img.alt), w: r.width, h: r.height, fit: art ? 'contain' : 'cover', key: keyOf(img), src: img };
+    const alt = clean(img.alt);
+    return { b: 'image', url, alt, w: r.width, h: r.height, fit: art ? 'contain' : 'cover', ...imageMeta(img, alt, url), key: keyOf(img), src: img };
   }
   if (img instanceof SVGSVGElement) {
     if (r.width < 40 || r.height < 40) return null;
     const url = svgDataUrl(img, r);
     if (!url) return null;
     const alt = clean(img.getAttribute('aria-label')) || clean(img.querySelector('title')?.textContent);
-    return { b: 'image', url, alt, w: r.width, h: r.height, fit: 'contain', key: keyOf(img), src: img };
+    return { b: 'image', url, alt, w: r.width, h: r.height, fit: 'contain', ...imageMeta(img, alt, ''), key: keyOf(img), src: img };
   }
   return null;
 }
@@ -417,6 +546,7 @@ function countFormControls(el: Element): number {
 interface Prep {
   rows: Map<Element, Element>; // row element → its checkbox / radio
   consumed: Set<Element>; // labels drawn as part of their control
+  hints: Set<Element>; // hints drawn under their field
 }
 
 function prepare(root: Element): Prep {
@@ -441,7 +571,7 @@ function prepare(root: Element): Prep {
     if ((l as HTMLLabelElement).control) consumed.add(l);
   });
   if (root instanceof HTMLLabelElement && root.control) consumed.add(root);
-  return { rows, consumed };
+  return { rows, consumed, hints: ownHints(root) };
 }
 
 /* ------------------------------------------------------------------ */
@@ -524,6 +654,7 @@ class Run {
       this.push(this.choice(el, rowInput));
       return;
     }
+    if (this.prep.hints.has(el)) return;
     if (this.prep.consumed.has(el)) {
       // Drawn by its control; still reach controls nested inside it.
       el.querySelectorAll('input,select,textarea,button,a[href],[role=button]').forEach((c) => this.visit(c, v));
@@ -602,6 +733,8 @@ class Run {
       if (r.width < 80 || r.height < 50) return;
       this.close();
       const label = clean(el.getAttribute('aria-label')) || clean(el.getAttribute('title'));
+      // An ad frame is not part of the task: Calm view leaves it on the page (it is in Original page).
+      if (tag === 'iframe' && (AD_FRAME_SRC.test(el.getAttribute('src') ?? '') || /^(google_ads_iframe|aswift_|ad[-_])/i.test(`${el.id} ${el.getAttribute('name') ?? ''}`.trim()) || /^(advertisement|ad|ads|sponsored( content)?|3rd party ad content)$/i.test(label))) return;
       const why = tag === 'video' || tag === 'audio' || tag === 'canvas' ? 'media' : 'frame';
       this.push({ b: 'peek', el, label, why, key: keyOf(el), src: el });
       return;
@@ -672,11 +805,29 @@ class Run {
         return;
       }
     }
+    if (tag === 'details' && v) {
+      // A question and its answer (FAQ): the summary is the heading, the answer shows under it.
+      this.close();
+      const summary = el.querySelector(':scope > summary');
+      const legend = summary ? textOf(summary) : '';
+      const blocks = readBlocksFrom(el, this.ctx, el, v, summary);
+      if (legend || blocks.length) this.push({ b: 'group', legend, blocks, key: keyOf(el), src: el });
+      return;
+    }
     if (tag === 'fieldset' || role === 'radiogroup' || role === 'group' && el.querySelector(CHECKABLE)) {
       this.close();
       const legendEl = tag === 'fieldset' ? el.querySelector(':scope > legend') : null;
-      const legend = legendEl ? textOf(legendEl) : labelledBy(el) || clean(el.getAttribute('aria-label'));
+      let legend = stripMarker(legendEl ? textOf(legendEl) : labelledBy(el) || clean(el.getAttribute('aria-label')));
       const blocks = readBlocksFrom(el, this.ctx, el, v, legendEl);
+      // A visually hidden legend ("Prescriptions to refill") under a visible card title ("Your prescriptions (3)"):
+      // the visible title is the group's heading, shown once.
+      const lr = legendEl?.getBoundingClientRect();
+      const first = blocks[0];
+      const hiddenLegend = !legend || (!!lr && (lr.width <= 2 || lr.height <= 2));
+      if (hiddenLegend && first && ((first.b === 'flow' && first.text.length <= 48 && !first.parts.some((p) => p.t === 'link')) || first.b === 'heading')) {
+        legend = first.text;
+        blocks.shift();
+      }
       if (blocks.length) this.push({ b: 'group', legend, blocks, key: keyOf(el), src: el });
       return;
     }
@@ -715,6 +866,8 @@ class Run {
     const image = media ? imageFor(media) : null;
     const title = clean(el.getAttribute('aria-label')) || lines[0] || (image?.alt ?? '');
     if (!title) return null;
+    // A logo link is the site's name: it is in the top bar, never a card.
+    if ((image?.logo || /\blogo\b/i.test(title)) && lines.length <= 1) return null;
     return {
       b: 'cardlink', el, href: safeHref(el), title, lines: lines.filter((l) => l !== title).slice(0, 6), image,
       key: keyOf(el), src: el,
@@ -731,8 +884,17 @@ class Run {
     const rowLines = row === input ? [] : linesOf(row).filter((l) => !extraTexts.has(l));
     const title = labelLines[0] ?? rowLines[0] ?? '';
     const meta: string[] = [];
-    for (const l of [...labelLines.slice(1), ...rowLines]) {
-      if (l !== title && !meta.includes(l) && !title.includes(l)) meta.push(l);
+    // A link drawn below the row ("Change store") is not repeated at the end of a meta line.
+    const trimExtra = (l: string): string => {
+      let out = l;
+      for (const t of extraTexts) {
+        if (t && out.endsWith(t)) out = out.slice(0, -t.length).replace(/[\s·•|,–—-]+$/, '');
+      }
+      return out;
+    };
+    for (const raw of [...labelLines.slice(1), ...rowLines]) {
+      const l = trimExtra(raw);
+      if (l && l !== title && !meta.includes(l) && !title.includes(l)) meta.push(l);
     }
     const extra: Block[] = [];
     for (const e of extrasEls) {
@@ -847,13 +1009,54 @@ export function readBlocks(root: Element, ctx: ReadCtx): Block[] {
   if (ctx.budget.left <= 0 && root.isConnected) {
     run.out.push({ b: 'peek', el: root, label: '', why: 'rest', key: keyOf(root, 'rest'), src: root });
   }
-  return groupChoices(run.out);
+  return dropEchoes(groupChoices(run.out));
+}
+
+const AD_FRAME_SRC = /(doubleclick\.net|googlesyndication\.com|googleadservices|adnxs\.com|amazon-adsystem|taboola|outbrain|criteo|adsrvr|moatads|pubmatic|rubiconproject|openx\.net|\/ads?\/|[?&]ad_?unit=)/i;
+
+/** The words a block shows, for spotting echoes (lower case, no trailing ellipsis). */
+function echoText(b: Block): string {
+  const t = b.b === 'flow' || b.b === 'control' || b.b === 'heading' ? b.text : b.b === 'cardlink' ? [b.title, ...b.lines].join(' ') : '';
+  return clean(t).toLowerCase().replace(/(\.{3}|…)$/, '').trim();
+}
+
+/**
+ * A news card often repeats its summary as a cut-off link right after it ("…and past scrutiny" then "…and past…"):
+ * a short echo of the block just before it is dropped (the element stays on the page and in Original page).
+ */
+function dropEchoes(bs: Block[]): Block[] {
+  const out: Block[] = [];
+  for (const b of bs) {
+    const prev = out[out.length - 1];
+    const t = echoText(b);
+    const p = prev ? echoText(prev) : '';
+    if (prev && t.length >= 24 && p.length >= t.length && p.startsWith(t) && (b.b === 'flow' || b.b === 'control')) continue;
+    // A card whose title only repeats the summary of the card before it (two links to one story).
+    if (b.b === 'cardlink' && prev?.b === 'cardlink' && !b.lines.length) {
+      const title = clean(b.title).toLowerCase().replace(/(\.{3}|…)$/, '').trim();
+      if (title.length >= 24 && clean(prev.lines.join(' ')).toLowerCase().startsWith(title)) continue;
+    }
+    if (b.b === 'group') b.blocks = dropEchoes(b.blocks);
+    if (b.b === 'list' && b.items.length > 1) {
+      const items: Block[][] = [];
+      for (const it of b.items) {
+        const last = items[items.length - 1];
+        const one = it.length === 1 ? it[0] : undefined;
+        const before = last && last.length === 1 ? last[0] : undefined;
+        if (one?.b === 'cardlink' && before?.b === 'cardlink' && dropEchoes([before, one]).length === 1) continue;
+        items.push(it);
+      }
+      b.items = items;
+    }
+    out.push(b);
+  }
+  return out;
 }
 
 /** A control block for one element outside a read (the primary action when no section reached it). */
 export function controlFor(el: Element, ctx: ReadCtx): ControlBlock | null {
   if (!el.isConnected) return null;
-  const run = new Run(ctx, { rows: new Map(), consumed: new Set() }, el);
+  const run = new Run(ctx, { rows: new Map(), consumed: new Set(), hints: new Set() }, el);
   return run.control(el, el.localName === 'a' || el.getAttribute('role') === 'link' ? 'link' : 'button');
 }
 
@@ -981,16 +1184,106 @@ export function pagePopups(): Element[] {
   return out;
 }
 
-/** The site's name for the strip: og:site_name, application-name, the title's last part, or the host. */
+const GENERIC_NAME = /^(home|homepage|home page|welcome|official site|official website|index|main|untitled|default)$/i;
+
+function shortName(raw: string): string | null {
+  let t = clean(raw);
+  if (!t) return null;
+  // og:site_name sometimes holds a URL ("https://www.wcjb.com"): use its host.
+  if (/^(https?:\/\/|www\.)/i.test(t)) {
+    try {
+      t = new URL(/^https?:/i.test(t) ? t : `https://${t}`).hostname.replace(/^www\./, '');
+    } catch {
+      return null;
+    }
+  }
+  if (GENERIC_NAME.test(t)) return null;
+  return t.length <= 24 ? t : null;
+}
+
+/** The brand link's first line ("Lakeshore County" of "Lakeshore County / Family Services"). */
+function brandLinkName(): string | null {
+  const a = document.querySelector('header a[href], [role=banner] a[href]');
+  if (!a) return null;
+  try {
+    const u = new URL((a as HTMLAnchorElement).href, location.href);
+    if (u.origin !== location.origin) return null;
+  } catch {
+    return null;
+  }
+  const first = linesOf(a)[0] ?? clean(a.getAttribute('aria-label')) ?? '';
+  return first && first.length <= 24 && !GENERIC_NAME.test(first) ? first : null;
+}
+
+/**
+ * The site's short name for the strip (at most 24 characters): og:site_name, else the hostname. Pages served from a
+ * bare address (127.0.0.1) use the title's site part or the brand link instead of the address.
+ */
 export function siteName(): string {
   const meta = (sel: string): string => clean(document.querySelector<HTMLMetaElement>(sel)?.content);
-  const og = meta('meta[property="og:site_name"]') || meta('meta[name="application-name"]');
-  if (og) return og.slice(0, 40);
-  const title = clean(document.title);
-  const parts = title.split(/\s+[|–—·•-]\s+/).map(clean).filter(Boolean);
-  if (parts.length >= 2) {
-    const last = parts[parts.length - 1]!;
-    if (last.length <= 40) return last;
+  const og = shortName(meta('meta[property="og:site_name"]')) ?? shortName(meta('meta[name="application-name"]'));
+  if (og) return og;
+  const host = location.hostname.replace(/^www\./, '');
+  const bareHost = !host || /^[\d.]+$|^\[|^localhost$/i.test(host);
+  if (!bareHost) return host.length <= 24 ? host : host.split('.').slice(-2).join('.');
+  const parts = clean(document.title).split(/\s+[|–—·•-]\s+/).map(clean).filter(Boolean);
+  const last = parts.length >= 2 ? shortName(parts[parts.length - 1]!) : null;
+  return last ?? brandLinkName() ?? (shortName(parts[0] ?? '') || 'This page');
+}
+
+/* ------------------------------------------------------------------ */
+/* Widgets the view treats specially                                   */
+/* ------------------------------------------------------------------ */
+
+const CHAT_ATTR = /\b(chat|chatbot|livechat|live-chat|webchat|messenger|intercom|drift|zendesk|zopim|olark|tawk|livehelp|helpbot|virtual[- ]?assistant)\b|chat|assistant/i;
+const CHAT_WORDS = /\b(chat|virtual assistant|live agent|send (a )?message|message us|talk to us|ask us)\b/i;
+
+function floating(el: Element): boolean {
+  for (let x: Element | null = el, i = 0; x && i < 6; x = x.parentElement, i++) {
+    const p = getComputedStyle(x).position;
+    if (p === 'fixed' || p === 'sticky') return true;
   }
-  return location.hostname.replace(/^www\./, '') || title.slice(0, 40);
+  return false;
+}
+
+/** A chat widget (or its launcher): floating over the page and named, labelled or built as a chat. */
+export function isChatWidget(el: Element): boolean {
+  if (!floating(el)) return false;
+  // A sticky header or a full-width bar that happens to hold a "Chat with us" link is not a chat widget.
+  const r = el.getBoundingClientRect();
+  if (r.width > Math.max(520, window.innerWidth * 0.5) && el.localName !== 'iframe') return false;
+  const attrs = [el.id, el.getAttribute('class') ?? '', el.getAttribute('aria-label') ?? '', el.getAttribute('title') ?? '', el.getAttribute('data-testid') ?? ''].join(' ');
+  if (CHAT_ATTR.test(attrs)) return true;
+  if (el.localName === 'iframe' && CHAT_ATTR.test(`${el.getAttribute('title') ?? ''} ${(el as HTMLIFrameElement).src}`)) return true;
+  const t = textOf(el).slice(0, 400);
+  return CHAT_WORDS.test(t) || !!el.querySelector('[aria-label*="chat" i],[class*="chat" i],[id*="chat" i]');
+}
+
+/** The outermost chat widget holding `el`, if any (looks up a few levels). */
+export function chatContainer(el: Element): Element | null {
+  let found: Element | null = null;
+  for (let x: Element | null = el, i = 0; x && x !== document.body && i < 8; x = x.parentElement, i++) {
+    if (isChatWidget(x)) found = x;
+  }
+  return found;
+}
+
+/** The site's own progress rail for a multi-page flow ("Your application": steps with done / current). */
+export function isProgressRail(el: Element): boolean {
+  const label = `${el.getAttribute('aria-label') ?? ''} ${labelledBy(el)}`;
+  if (/\b(steps?|progress|application|your (application|journey|progress))\b/i.test(label) && el.querySelector('ol,ul,[aria-current="step"]')) return true;
+  return !!el.querySelector('[aria-current="step"]') && el.querySelectorAll('li').length >= 3 && !el.querySelector('input,select,textarea');
+}
+
+/** "Step 2 of 5" in the page's own words, if the page says it. */
+export function siteStepText(root: ParentNode = document): string | null {
+  const bar = root.querySelector('[role=progressbar][aria-valuetext]');
+  const vt = clean(bar?.getAttribute('aria-valuetext'));
+  if (/step\s+\d+\s+of\s+\d+/i.test(vt)) return vt;
+  const cands = Array.from(root.querySelectorAll('p,span,div,li,h2,h3')).filter((e) => e.childElementCount <= 2);
+  for (const e of cands.slice(0, 600)) {
+    const t = textOf(e);
+    if (t.length <= 60 && /\bstep\s+\d+\s+of\s+\d+\b/i.test(t)) return t;
+  }
+  return null;
 }

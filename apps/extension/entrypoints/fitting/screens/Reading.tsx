@@ -26,6 +26,13 @@ export function Comfort(props: ScreenProps & { onSize: (cssPx: number) => void }
   const minLevel = Math.ceil(Math.log(10 / start) / Math.log(STEP));
   const maxLevel = Math.floor(Math.log(120 / start) / Math.log(STEP));
 
+  // Text that no longer fits the fixed box runs under a soft fade; text that fits is never faded.
+  const [clipped, setClipped] = useState(false);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (el) setClipped(el.scrollHeight > el.clientHeight + 1);
+  }, [px]);
+
   const smaller = () => setLevel((l) => Math.max(minLevel, l - 1));
   const larger = () => setLevel((l) => Math.min(maxLevel, l + 1));
   const confirm = () => {
@@ -48,8 +55,8 @@ export function Comfort(props: ScreenProps & { onSize: (cssPx: number) => void }
   return (
     <div>
       <Heading>Make this comfortable to read.</Heading>
-      <div class="fx-stage fx-stage-text">
-        <p ref={ref} class="fx-stim fx-comfort" style={{ fontSize: `${px}px`, fontFamily: STIMULUS_FONT }}>
+      <div class="fx-stage fx-stage-comfort">
+        <p ref={ref} class={`fx-stim fx-comfort ${clipped ? 'is-clipped' : ''}`} style={{ fontSize: `${px}px`, fontFamily: STIMULUS_FONT }}>
           {COMFORT_PARAGRAPH}
         </p>
       </div>
@@ -165,10 +172,7 @@ export function Ladder(props: ScreenProps & { sentences: SentenceSource }): JSX.
       <Heading>Is it true?</Heading>
       <Deck>{practice ? 'Let’s try one first. Read at your usual pace.' : 'Read at your usual pace.'}</Deck>
       <div class="fx-stage fx-stage-text" ref={stageRef}>
-        <p
-          class="fx-stim fx-sentence"
-          style={{ fontSize: `${px}px`, fontFamily: STIMULUS_FONT, maxWidth: `${Math.max(minCh, 22)}ch` }}
-        >
+        <p class="fx-stim fx-sentence" style={{ fontSize: `${px}px`, fontFamily: STIMULUS_FONT, maxWidth: `${Math.max(minCh, 22)}ch` }}>
           {sentence.text}
         </p>
       </div>

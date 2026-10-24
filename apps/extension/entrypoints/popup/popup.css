@@ -1,4 +1,4 @@
-/* Owner: D2. Popup styles: Showroom language, light. */
+/* Owner: P. Popup styles: Showroom language, light. */
 :root {
   --canvas: #F5F5F7; --raised: #FFFFFF; --tonal: #E8E8ED; --hover: #DCDCE1; --press: #D2D2D7;
   --ink: #1D1D1F; --ink-2: #5E5E63; --line: #D2D2D7; --line-strong: #86868B;
@@ -132,3 +132,14 @@ button { font: inherit; color: inherit; }
 .p-disclosure:hover { background: rgba(0,0,0,.035); }
 .p-chev { font-size: 20px; color: var(--line-strong); transition: transform .18s ease; }
 .p-disclosure[aria-expanded="true"] .p-chev { transform: rotate(90deg); }
+
+.p-rows { padding: 4px 0; }
+.p-row { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 6px 16px; }
+.p-row-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--line-strong); flex: none; }
+.p-row-dot[data-state="ok"] { background: #2DA44E; box-shadow: 0 0 0 3px rgba(45,164,78,.16); }
+.p-row-dot[data-state="wait"] { background: #D99A00; box-shadow: 0 0 0 3px rgba(217,154,0,.16); }
+.p-row-dot[data-state="bad"] { background: var(--bad); box-shadow: 0 0 0 3px rgba(179,38,30,.14); }
+.p-row-dot[data-state="off"] { background: var(--line-strong); }
+.p-row-label { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; }
+.p-row-val { font-size: 13px; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.p-row-sub { margin: -2px 16px 8px 34px; font-size: 12px; line-height: 1.4; color: var(--ink-2); }
