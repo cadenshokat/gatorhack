@@ -81,6 +81,8 @@ const OP_NOUN: Record<OpKind, string> = {
   focus_ring: 'the focus ring',
   calm_view: 'the calm layout',
   unobstruct: 'the moved overlay',
+  column: 'the narrower page',
+  heading_scale: 'the larger headings',
 };
 
 const OFFER_TOAST: Record<OfferKind, string> = {
@@ -177,6 +179,8 @@ function initialState(): EngineState {
     showingOriginal: false,
     overlays: [],
     ai: 'on',
+    column: { on: false, widthPx: null, minPx: 720, maxPx: 1600 },
+    textStep: 0,
   };
 }
 
@@ -1912,6 +1916,12 @@ export function createController(): Controller {
       void askExt<unknown>({ type: 'openFitting' }).catch((err: unknown) => addError(plainError(err)));
     },
     restoreOverlay: (id) => overlays.restore(id),
+    adjustColumn: () => {
+      // Round 3 (text and layout package) implements the column.
+    },
+    adjustText: () => {
+      // Round 3 (text and layout package) implements text steps.
+    },
   };
 
   return {

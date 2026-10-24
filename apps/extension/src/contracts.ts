@@ -53,6 +53,10 @@ export interface EngineState {
   showingOriginal: boolean;
   overlays: OverlayAction[];
   ai: HealthStatus['ai'];
+  /** The page-width column (round 3): content held to a centred column so enlarged pages don't fill the screen. */
+  column: { on: boolean; widthPx: number | null; minPx: number; maxPx: number };
+  /** Text size steps the person took on this site (0 = the fit's size). */
+  textStep: number;
 }
 
 export interface EngineApi {
@@ -76,4 +80,8 @@ export interface EngineApi {
   openFitting(): void;
   /** Undo one overlay action (restores the overlay; remembers 'leave' for this site and kind). */
   restoreOverlay(id: string): void;
+  /** Page width: -1 narrower, 1 wider, 0 back to automatic, 'off' full width. Remembered per site. */
+  adjustColumn(step: -1 | 0 | 1 | 'off'): void;
+  /** Text size: one zoom preset smaller or larger than the fit, remembered per site. */
+  adjustText(step: -1 | 1): void;
 }

@@ -58,6 +58,8 @@ export interface FitProfile {
     missRate: number;
   };
   calibration: { version: string; durationSec: number; skipped: string[] };
+  /** Page layout preferences. column: 'auto' narrows wide pages when text is enlarged; a number is a fixed column width in screen px. */
+  layout?: { column: 'auto' | 'off' | number };
 }
 
 /** Raw results the fitting page hands to core's deriveFit(). */
@@ -448,7 +450,7 @@ export interface VisualVerdict {
 export type OpKind =
   | 'page_zoom' | 'text_map' | 'spacing' | 'contrast' | 'weight' | 'measure' | 'targets'
   | 'steady_clicks' | 'debounce' | 'motion' | 'dim' | 'promote_main' | 'unpin_sticky'
-  | 'focus_ring' | 'calm_view' | 'unobstruct';
+  | 'focus_ring' | 'calm_view' | 'unobstruct' | 'column' | 'heading_scale';
 
 export interface OpRecord {
   id: string;
