@@ -57,6 +57,8 @@ export interface EngineState {
   column: { on: boolean; widthPx: number | null; minPx: number; maxPx: number };
   /** Text size steps the person took on this site (0 = the fit's size). */
   textStep: number;
+  /** The tab's current page zoom (1 = 100%). In-page UI divides by it so it stays the same physical size. */
+  pageZoom: number;
 }
 
 export interface EngineApi {

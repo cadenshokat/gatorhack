@@ -181,6 +181,7 @@ function initialState(): EngineState {
     ai: 'on',
     column: { on: false, widthPx: null, minPx: 720, maxPx: 1600 },
     textStep: 0,
+    pageZoom: 1,
   };
 }
 
