@@ -1,131 +1,138 @@
 <!--
 Devpost "About the project". Paste everything below the line into the field.
-Written by Wren (Sid's Claude) with Lucius (Caden's Claude Code). Numbers come only from the "Say now" section of
-docs/CLAIMS.md and from the code on main; formulas are the ones the product actually uses.
+Merged by Wren (Sid's Claude) from Caden's submission copy (via Lucius, 02:41) and Wren's draft. Numbers come only from
+the "Say now" section of docs/CLAIMS.md and from the code on main; every formula is one the product actually uses.
+Setup is described as it is on main (53e72f7): five short tasks. If a three-part setup ships instead, change the
+"Setup" paragraph and the table only.
 -->
 
 ---
 
-## What inspired us
+## Inspiration
 
-Most of the web is built for someone with sharp eyes, a steady hand and time to spare. Everyone else pays for it in
-small ways: grey text that's too faint, a button that's too small to hit the first time, a recipe buried six screens
-under a story and the ads.
+Reading the news, checking a tax refund or refilling a prescription gets hard when the text is too small, the buttons
+are hard to hit, and the page keeps competing for your attention. Finding and changing accessibility settings, site by
+site, adds even more work.
 
-**Sid** started by asking who actually needs help. The answer surprised us. The typical person isn't a screen reader
-user; they're someone with a few mild, overlapping needs who would never call themselves disabled and never opens a
-settings menu. One in four US adults reports a disability (CDC, 2022), the most common kind is cognitive, and the rate
-climbs steeply with age. Those people mostly do ordinary, high-stakes things online: read the news, refill a
-prescription, check a tax refund. So we wanted a tool that learns what a person needs without a setup screen, and never
-asks about their health.
+When we looked at who actually needs help, the answer surprised us. The typical person isn't a screen reader user.
+They have a few mild, overlapping needs (text a bit larger, buttons a bit bigger, fewer distractions), would never call
+themselves disabled, and never open a settings menu. One in four US adults reports a disability (CDC, 2022), the most
+common kind is cognitive, and the rate climbs steeply with age. Most of what those people do online is ordinary and
+important.
 
-**Caden** [CADEN'S INSPIRATION, from Lucius]
-
-The tools that exist today mostly zoom the whole page, which breaks layouts, or are overlays a website installs on
-itself with promises about compliance. We wanted the opposite: a tool the person owns, that fits every page to them and
-only does what it can check.
+So we wanted a tool the person owns: one that learns what helps them once, without asking about their health, and
+carries that fit from website to website.
 
 ## How we built it
 
-**WebAble** is a Chrome extension (TypeScript, Preact, WXT) with a small server that runs on the laptop (Node and Hono).
-The server holds the API keys and talks to the models; the extension only talks to the server.
+**WebAble** is a Chrome extension built with TypeScript, Preact and WXT. A small Node.js and Hono server on the laptop
+handles model requests, caching and API keys; the extension only talks to that server.
 
-**It starts with five quick games**, each borrowed from a published measure, each stopping as soon as it's sure:
+### 1. Learn what helps the person
 
-| Game | Borrows from | Sets |
+Setup is five short tasks, each borrowed from a published measure, and every one can be skipped:
+
+| Task | Borrows from | What it sets |
 |---|---|---|
-| Reading size | MNREAD reading test (critical print size) | text size, reading support |
-| Faint words | Pelli-Robson contrast chart | how much to darken faint text, light or dark |
-| Pop the bubbles | Fitts's law and the ISO 9241 pointing test | button size, steady clicks |
-| Find it | research on visual clutter and motion capture | how much to simplify busy pages, stopping motion |
+| Reading size | MNREAD reading test | text size |
+| Faint words | Pelli-Robson contrast chart | how much to darken faint text |
+| Pop the bubbles | Fitts's law and the ISO 9241 pointing test | click-area size, steady clicks |
+| Find it | research on visual clutter and motion | how much to simplify busy pages, stopping motion |
 | Sort the colours | Farnsworth D-15 | labels where colour alone carries meaning |
 
-The games are adaptive. Faint words, for example, uses a "2-down, 1-up" staircase: two right answers make the word
-fainter, one wrong answer makes it darker. That settles where the person is right with probability $p$ such that
+The tasks adapt as they go. Faint words uses a "2-down, 1-up" staircase: two right answers make the word fainter, one
+wrong answer makes it darker. It settles where the person is right with probability $p$ such that
 
 $$p^2 = \tfrac{1}{2} \quad\Rightarrow\quad p = \tfrac{1}{\sqrt{2}} \approx 0.707,$$
 
-so it finds a usable threshold in a few dozen taps (Levitt, 1971). Pop the bubbles leans on Fitts's law, which says the
-time to hit a target grows with its distance $D$ and shrinks with its width $W$:
+so it finds a usable threshold in a few dozen taps. Pop the bubbles leans on Fitts's law: the time to hit a target grows
+with its distance $D$ and shrinks with its width $W$,
 
-$$MT = a + b \log_2\!\left(\frac{D}{W} + 1\right).$$
+$$MT = a + b \log_2\!\left(\frac{D}{W} + 1\right),$$
 
-We fit a person's misses, near misses and jitter at three sizes, and set the smallest button size they hit reliably.
-Reading size finds the critical print size (the smallest text before reading slows down), and body text becomes about
-$1.4\times$ that, never below 16 px.
+and we set the smallest click area the person hits reliably. Reading size finds the critical print size (the smallest
+text before reading slows down) and sets body text to about $1.4\times$ that, never below 16 px. The results page says
+in plain words what will change ("Text will be 22 px on every site") and shows it on sample pages.
 
-**Then Jev reads every page.** Jev is TypeSafe AI's decision model, released in September 2026. It doesn't write text;
-it answers typed questions with a probability on every answer. For each part of a page we ask what it is (one of 125 fine
-roles: a stat, a team logo, a recipe step, an ad, a teaser for another page...), whether it's part of the page's task,
-whether it's the main action, and whether it's a way to get help. A typical page is about 178 decisions, asked in
-parallel.
+After setup, WebAble keeps learning from ordinary browsing. Repeated missed clicks or manual zooming on several sites
+lead to a suggested adjustment, never a silent one.
 
-**Code decides, never the model.** An element is folded away only when Jev is very sure it's clutter and fairly sure it
-isn't needed:
+### 2. Read the page
+
+The extension extracts the page's structure, its content groups and controls, and data it can read locally, such as
+recipe steps and table rows. It turns every part into structured evidence (tag, role, landmark, position, size, where
+its links go) with names and numbers taken out before anything leaves the laptop.
+
+### 3. Interpret it with Jev, decide with code
+
+Jev, TypeSafe AI's decision model (version 1.14, released October 14, 2026), doesn't write text. It answers typed
+questions with a probability on every answer: what each part is (one of 125 fine roles, such as a stat, a team logo, a
+recipe step, an ad or a teaser for another page), whether it belongs to the page's task, whether it's the main action,
+whether it's help, and what the page as a whole is for. A typical page is about 178 decisions, asked in parallel.
+
+Shared policy code decides what's allowed. A part is folded away only when Jev is very sure it's clutter and fairly sure
+it isn't needed:
 
 $$\text{fold}(e) \iff P_{\text{ad}} + P_{\text{teaser}} + P_{\text{pop-up}} \ge 0.90 \;\wedge\; P_{\text{task}} \le 0.20 \;\wedge\; P_{\text{help}} \le 0.10.$$
 
-Anything with even a 5% chance of being content, a field, a button or help is protected and never touched.
+Anything with even a 5% chance of being content, a field, a button or help is protected.
 
-**On busy reading pages, you just get the simplified page**, built around what the page exists to show: a sports record
-becomes a stat grid with both team logos, a recipe opens on its ingredients and steps. Before it appears, Jev checks it
-against the original: does it lead with the page's main information, and is anything missing? If not, you get the
-original page, adjusted in place. One switch, "Original page", brings the site's version back and is remembered per
-site. Sign-in, checkout, account and statement pages are never replaced.
+A typical read is about 81,000 input tokens, and Jev charges only for input, so at today's price
 
-**Every change is checked.** After each change, code looks for text that's cut off, overlapping or scrolling sideways,
-and puts the change back by itself if a check fails.
+$$81{,}000 \times \frac{\$0.042}{10^{6}} \approx \$0.0034 \text{ per page}.$$
 
-**It's cheap enough to run on every page.** A typical read is about 81,000 input tokens at Jev's price of $0.042 per
-million:
+### 4. Build the presentation
 
-$$81{,}000 \times \frac{\$0.042}{10^{6}} \approx \$0.0034 \text{ per page},$$
+On busy reading pages, local components rebuild the page around what it's for, using the page's own content: an
+article, a recipe's ingredients and steps, a team's record and game history. Controls stay linked to the original
+elements. Before the simplified page appears, Jev checks it against the original: does it lead with what the page
+exists to show, and is anything missing? Sign-in, checkout, account and statement pages are never replaced, and one
+switch, "Original page", brings the site's version back, remembered per site.
 
-and on our 50-site run the typical read took under half a second.
+OpenAI models can propose structured layouts and write plain-language explanations of hard passages; Jev assesses each
+proposal, and layouts come back as a constrained specification, never as executable page code.
 
-**How the two of us worked:** Caden and Sid, each with an AI assistant, plus Grok in Cursor and Codex, took tasks in one
-Slack channel and pushed their own branches for review. Lucius (Caden's Claude Code) coordinated and built the engine;
-Wren (Sid's Claude) wrote the research, the demo specs and the words people see in the onboarding and on the page. All code was written during the
-hackathon.
+### 5. Check the result
+
+Code checks every change for clipped text, overlap and horizontal overflow, and reverses changes that fail. Explanations
+get number, condition-word and sentence-coverage checks. One small WebAble button on each page lists what changed,
+with Undo for each, and "Pause on this site".
+
+We built it as a team of two, Caden and Sid, each working with AI coding agents that took tasks in a shared Slack
+channel and pushed their own branches for review. All code was written during the hackathon.
+
+## Challenges we ran into
+
+- **Preserving meaning.** Recognising a number, a label and a table is only the start; their relationships matter. An
+  early simplified view of floridagators.com's Kentucky history page led with a news teaser and dropped the record and
+  the team logos. We added page-purpose questions, structured extraction and components for stats, scoreboards, tables,
+  schedules and recipes, and the meaning check.
+- **Keeping the page stable.** Zoom, responsive layouts, model results that arrive late and pages that change underneath
+  us can interact badly. We added guards against repeated automatic switching, against late results changing a view
+  someone is using, and against overriding a choice to keep the original page.
+- **A page can try to steer the model.** A site can label a "subscribe" button "Close". Jev judges mainly from structure,
+  and WebAble only ever presses two kinds of button: a chat window's own minimise button, after Jev picks the same one
+  with the options in both orders, and a slideshow's own pause button.
+- **A model that reads text, not pages,** with mid-tier accuracy and image input that's only days old. We designed the
+  evidence it reads, act only on high probabilities, and let code checks, not the model, decide whether a change stays.
+- **Making personalization understandable.** Earlier versions exposed too many modes and technical controls. We moved to
+  one WebAble experience, clear task instructions, concrete results and a small in-page control with Undo and Pause.
 
 ## What we learned
 
+- **Personalization needs two kinds of understanding:** of the person and of the page. A simpler-looking layout can still
+  be harder to use if it loses context. Clear results, stable behaviour and an easy way back matter as much as the model.
 - **A probability is a product decision.** Where to act ($0.90$ to fold, $0.05$ to protect) is where safety lives, and
-  it's code we can read and test, not a model's mood.
+  it's code we can read and test.
 - **Small numbers add up.** When Jev's vocabulary grew to 125 roles, it spread 1–2% across dozens of unrelated roles.
-  Summed into families, that crossed our 5% "protect" line on things Jev was sure were ads, so WebAble stopped hiding
-  them. We now treat any single role at or below $0.02$ as zero before summing.
-- **The evidence matters more than the wording.** Jev can't see a page, so we describe each part as structured evidence.
-  Putting each part's evidence inside its own questions, instead of one shared list, stopped its answers from depending
-  on the order of the page.
-- **Measure needs, never conditions.** A need is something WebAble can act on; a condition isn't, and naming one claims an
-  accuracy a 30-second game doesn't have. Ability-based design (Wobbrock et al., 2011) says the same thing.
-- **Agreement isn't accuracy, and "nothing broken" isn't success.** Undoing every change also breaks nothing, so our count
-  requires the larger text to have actually held.
+  Summed into families, that crossed our 5% protect line on things Jev was sure were ads, so WebAble stopped hiding them.
+  We now treat any single role at or below $0.02$ as zero before summing:
 
-[CADEN'S LEARNING, from Lucius]
+  $$P_{\text{family}} = \sum_{r \in \text{family}} P_r \cdot \mathbf{1}[P_r > 0.02].$$
 
-## Challenges we faced
-
-- **Jev reads text, not pages,** so we had to design the evidence it sees for every part of a page, and strip names and
-  numbers out before anything leaves the laptop.
-- **A page can try to steer it.** A site can label a "subscribe" button "Close". Jev judges mainly from structure, and
-  WebAble only ever presses two kinds of button: a chat window's own minimise button, after Jev picks the same one with
-  the options in both orders, and a slideshow's own pause button.
-- **Its accuracy is mid-tier.** Fast and cheap, not perfect, so we act only on high probabilities and check every change.
-- **Its image input is ten days old and experimental,** so we use it for one extra check and let code decide.
-- **The simplified page got a page's meaning wrong.** On floridagators.com's Kentucky history page it led with a news
-  teaser and dropped the record and the logos. That's why Jev now says what each page is for, and why the meaning check
-  exists.
-- **We built it like engineers.** When we tested it ourselves, the simplified page was the best thing WebAble did, but
-  everything around it had too many named features, buttons nobody understood and an onboarding that felt like a chore.
-  We cut it to one WebAble, one small button and plain words.
-
-[CADEN'S HARDEST MOMENT, from Lucius]
-
-## Where it stands
-
-On 50 sites people use every day, WebAble made the text larger and left nothing broken on 32. When a change broke
-something, it put it back by itself. Asked the same questions about the same ten pages, Jev answered in under a third of a
-second for a third of a cent; GPT-6 Sol took twelve seconds and five cents. And what WebAble learns about you never leaves
-your laptop. Next, we test it with people.
+- **Measure needs, never conditions.** A need is something WebAble can act on. A condition isn't, and naming one would
+  claim an accuracy a short task doesn't have.
+- **Count honestly.** "Nothing broken" is an empty claim on its own, because undoing every change also breaks nothing. In
+  one earlier frozen build, 32 of 50 public sites met our stricter clean-fit criteria: the larger text held, with none of
+  the overlap or horizontal overflow our checks look for. That's an automated prototype result, not evidence about real
+  users. Testing with people who use accessibility support is next.
