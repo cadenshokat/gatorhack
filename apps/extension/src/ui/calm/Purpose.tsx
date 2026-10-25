@@ -34,7 +34,7 @@ function ItemLinks({ item }: { item: MeaningItem }): JSX.Element | null {
   }
   return (
     <div class="wa-purpose__more">
-      <Disclosure title="Links in this part" count={item.links.length}>
+      <Disclosure title="More links">
         <Blocks blocks={item.links} />
       </Disclosure>
     </div>

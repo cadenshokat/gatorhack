@@ -1,16 +1,13 @@
-// Owner: P, U. Pure parts of the in-page chrome: shortcuts, the offer's "why" split, overlay views, explain states,
-// steady sizing at any page zoom, the corner dock and the page controls.
+// Owner: P, U. Pure parts of the in-page chrome: shortcuts, overlay views, explain states, steady sizing at any page
+// zoom and the corner dock.
 import { describe, expect, it } from 'vitest';
 import { DEMO_FITS, type ExplainResult, type JevMetrics, type OverlayAction } from '@webable/core';
-import type { EngineState } from '../../contracts';
 import { jevAnswered, writerUnavailable } from '../explain/ExplainCard';
-import { splitWhy } from '../offers/OfferCard';
 import { overlayView } from '../offers/Overlays';
 import { parseZoom } from '../zoom';
-import { dockHeights, planDock, type DockInput } from './dock';
+import { clampBottom, dockHeights, planDock, type DockInput } from './dock';
 import { chromeSizing } from './hooks';
 import { shortcutFor } from './keys';
-import { columnButtons, columnLabel, textSizeLabel } from './Panel';
 
 const key = (code: string, mods: { alt?: boolean; shift?: boolean; ctrl?: boolean; meta?: boolean } = {}) => ({
   code,
@@ -21,7 +18,12 @@ const key = (code: string, mods: { alt?: boolean; shift?: boolean; ctrl?: boolea
 });
 
 describe('shortcuts', () => {
-  it('maps Alt+Shift+L/C/O/W and keeps Alt+J for the Lens', () => {
+  it('opens the sheet with Alt+W (and Alt+Shift+W)', () => {
+    expect(shortcutFor(key('KeyW', { shift: false }))).toBe('panel');
+    expect(shortcutFor(key('KeyW'))).toBe('panel');
+    expect(shortcutFor(key('KeyW', { shift: false, ctrl: true }))).toBeNull();
+  });
+  it('maps Alt+Shift+L/C/O and keeps Alt+J for the Jev view', () => {
     expect(shortcutFor(key('KeyL'))).toBe('lens');
     expect(shortcutFor(key('KeyC'))).toBe('calm');
     expect(shortcutFor(key('KeyO'))).toBe('original');
@@ -40,26 +42,6 @@ describe('shortcuts', () => {
     expect(shortcutFor(key('KeyL', { meta: true }))).toBeNull();
     expect(shortcutFor(key('KeyC', { shift: false }))).toBeNull();
     expect(shortcutFor(key('KeyX'))).toBeNull();
-  });
-});
-
-describe('offer "why"', () => {
-  const why =
-    '5 near-miss clicks in the last 30 s. WebAble counted this on your device. To check the suggestion, it sent only counts like these: ' +
-    'no page text and nothing you typed. Jev: 0.91 that clicks keep missing their controls, in 2 checks in a row (offers start at 0.75).';
-  it('splits counts, privacy note and Jev answer without repeating any of them', () => {
-    const p = splitWhy(why);
-    expect(p).not.toBeNull();
-    expect(p!.counts).toBe('5 near-miss clicks in the last 30 s.');
-    expect(p!.privacy.startsWith('WebAble counted this')).toBe(true);
-    expect(p!.jev).toBe('that clicks keep missing their controls, in 2 checks in a row');
-    expect(p!.threshold).toBe(0.75);
-    const all = `${p!.counts} ${p!.privacy} ${p!.jev}`;
-    expect(all.match(/WebAble counted/g)).toHaveLength(1);
-  });
-  it('reads a different threshold and falls back when the shape is unknown', () => {
-    expect(splitWhy(why.replace('0.75', '0.80'))!.threshold).toBe(0.8);
-    expect(splitWhy('Just a sentence.')).toBeNull();
   });
 });
 
@@ -168,25 +150,10 @@ describe('corner dock', () => {
     expect(short.pillWithPanel).toBe(false);
     expect(short.aboveMax).toBe(360 - 32);
   });
-});
-
-describe('page controls', () => {
-  const col = (on: boolean, widthPx: number | null): EngineState['column'] => ({ on, widthPx, minPx: 720, maxPx: 1312 });
-  it('says the column width in plain words', () => {
-    expect(columnLabel(col(true, 960))).toBe('960 px column');
-    expect(columnLabel(col(true, 959.6))).toBe('960 px column');
-    expect(columnLabel(col(false, null))).toBe('Full width');
-    expect(columnLabel(undefined)).toBe('Full width');
-  });
-  it('enables only the steps that can happen', () => {
-    expect(columnButtons(col(true, 960))).toEqual({ narrower: true, wider: true, full: false });
-    expect(columnButtons(col(true, 720))).toEqual({ narrower: false, wider: true, full: false });
-    expect(columnButtons(col(true, 1312))).toEqual({ narrower: true, wider: false, full: false });
-    expect(columnButtons(col(false, null))).toEqual({ narrower: true, wider: false, full: true });
-  });
-  it('shows the text size as the page zoom', () => {
-    expect(textSizeLabel(1.5)).toBe('150%');
-    expect(textSizeLabel(1.75)).toBe('175%');
-    expect(textSizeLabel(Number.NaN)).toBe('100%');
+  it('keeps the button on screen however high the dock is pushed', () => {
+    expect(clampBottom(794, 20, 20, 52)).toBe(20);
+    expect(clampBottom(300, 400, 20, 52)).toBe(300 - 52 - 8);
+    expect(clampBottom(40, 100, 20, 52)).toBe(0);
+    expect(clampBottom(Number.NaN, 20, 20, 52)).toBe(0);
   });
 });

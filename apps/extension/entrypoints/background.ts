@@ -582,9 +582,12 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
       updateBadge(t, req.report);
       return { ok: true };
     }
-    case 'openFitting':
-      await chrome.tabs.create({ url: chrome.runtime.getURL('/fitting.html') });
+    case 'openFitting': {
+      // The WebAble sheet's "Your settings" asks for the settings view ({ hash: 'settings' }).
+      const hash = (req as { hash?: unknown }).hash === 'settings' ? '#settings' : '';
+      await chrome.tabs.create({ url: chrome.runtime.getURL(`/fitting.html${hash}`) });
       return { ok: true };
+    }
     case 'health':
       return health();
     case 'overlayClose':

@@ -67,11 +67,10 @@ export const SENTENCES: readonly Sentence[] = [
   { text: "Your nose is on your foot so you can smell your shoes.", truth: false },
 ];
 
-/** The paragraph on the comfortable-size screen. It is the thing being sized. 61 words. */
+/** The paragraph on the comfortable-size screen. It is the thing being sized, so it stays short (38 words). */
 export const COMFORT_PARAGRAPH =
-  "This short note is here for you to read. Press Larger or Smaller until the words feel easy on your eyes, " +
-  "the way a letter from a friend should look when you can read it without leaning in. There is no right size, " +
-  "only the one that feels relaxed for you today. When it looks just right, press This is comfortable.";
+  "This is a short note for you to read. Make it larger or smaller until the words feel easy, " +
+  "the way a letter from a friend should look. There is no right size, only the one that feels relaxed today.";
 
 /** Common five-letter words for the faint-words screen. */
 export const FAINT_WORDS: readonly string[] = [

@@ -37,9 +37,16 @@ export class RawCollector {
   readonly skipped = new Set<WarmupBlock>();
   readonly done = new Set<WarmupBlock>();
 
+  /** R1: the comfortable size the person picked (px at 100%). */
+  seedPx: number | null = null;
   ladder: ReadTrial[] = [];
   faint: Array<{ contrast: number; correct: boolean }> = [];
+  /** R4: reading times (56-character standard) on the light and the dark stage. */
+  lightMs: number[] = [];
+  darkMs: number[] = [];
   stated: Polarity | null = null;
+  /** Steps with no block of their own in core's list ('size', 'light or dark'), when skipped. */
+  readonly skippedSteps = new Set<string>();
   blocks: Array<{ sizePx: number; presses: RingPress[] }> = [];
   findTrials: Array<{ clutter: boolean; motion: boolean; ms: number; found: boolean }> = [];
   preferredCalm = 0;
@@ -187,9 +194,13 @@ export class RawCollector {
     this.stopClock();
     this.skipped.clear();
     this.done.clear();
+    this.seedPx = null;
     this.ladder = [];
     this.faint = [];
+    this.lightMs = [];
+    this.darkMs = [];
     this.stated = null;
+    this.skippedSteps.clear();
     this.blocks = [];
     this.findTrials = [];
     this.preferredCalm = 0;
@@ -211,19 +222,19 @@ export class RawCollector {
   }
 
   toRaw(): FittingRaw {
-    const readingTouched = this.ladder.length > 0 || this.faint.length > 0 || this.stated !== null;
+    const readingTouched = this.seedPx != null || this.ladder.length > 0 || this.faint.length > 0 || this.stated !== null;
     const gotInWay = [...(this.stoppedMotion ? [STOPPED_MOTION] : []), ...this.notes];
     const findingTouched = this.done.has('find') || this.done.has('pick');
     return {
       inputClass: this.inputClass,
       durationSec: this.durationSec,
-      skipped: [...this.skipped],
+      skipped: [...this.skipped, ...this.skippedSteps],
       reading: readingTouched
         ? {
-            seedPx: null,
+            seedPx: this.seedPx,
             ladder: this.ladder.map((t) => ({ ...t })),
             faint: this.faint.map((t) => ({ ...t })),
-            polarity: { lightMs: [], darkMs: [], stated: this.stated },
+            polarity: { lightMs: [...this.lightMs], darkMs: [...this.darkMs], stated: this.stated },
           }
         : null,
       pointing: this.blocks.length

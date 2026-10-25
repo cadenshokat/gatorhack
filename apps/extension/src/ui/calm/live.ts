@@ -6,10 +6,14 @@ import { ask } from '../../engine/bus';
 import { calmCss } from '../base.css';
 import { componentsCss } from './components';
 import { markersCss } from './markers';
+import { pageCss } from './page.css';
 import { purposeCss } from './purpose.css';
 
-/** Calm view's whole stylesheet: the view, the meaning components (round 7) and the purpose template around them. */
-export const calmSheetCss = (): string => `${calmCss}\n${componentsCss}\n${purposeCss}\n${markersCss}`;
+/**
+ * Calm view's whole stylesheet: the view, the meaning components (round 7), the purpose template around them, and
+ * round 8b's page rules (width, spacing, the end of a reading page), last so they win.
+ */
+export const calmSheetCss = (): string => `${calmCss}\n${componentsCss}\n${purposeCss}\n${markersCss}\n${pageCss}`;
 import { liveKey, renderLiveValue, type LiveValue } from '../proxy';
 
 /** The engine's state, re-rendering on every change. */

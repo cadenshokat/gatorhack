@@ -73,3 +73,14 @@ export function dockHeights(vh: number, bottom: number, margin: number, pillH: n
   const pillWithPanel = !panelOpen || withPill >= 300;
   return { aboveMax: Math.max(0, pillWithPanel ? withPill : room), pillWithPanel };
 }
+
+/**
+ * The dock's bottom edge, kept low enough that the button stays fully on screen however short the window (a site
+ * control in the corner, or the simplified page's action bar, may push the dock up).
+ */
+export function clampBottom(vh: number, bottom: number, margin: number, buttonH: number): number {
+  const v = Number.isFinite(vh) ? vh : 0;
+  const b = Number.isFinite(bottom) ? bottom : margin;
+  const highest = Math.max(0, v - buttonH - Math.min(margin, 8));
+  return Math.max(0, Math.min(b, highest));
+}

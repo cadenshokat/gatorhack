@@ -1,4 +1,4 @@
-// Owner: S (round 3). The "Explain" pill that appears beside a long text selection. Explaining is never automatic.
+// Owner: S (round 3), P. The "Explain" pill that appears beside a long text selection. Explaining is never automatic.
 // It sits just below the end of the selection (above it when there is no room), in viewport px divided by the
 // layer's CSS zoom, so it lands next to the text however the in-page layer is scaled.
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
@@ -40,7 +40,7 @@ export function ExplainAffordance({ api, item, onDone, u = 1 }: { api: EngineApi
         ref={btn}
         class="wa-ex-pill"
         style={{ left: `${Math.round(left / k)}px`, top: `${Math.round(top / k)}px` }}
-        title="Explain this in plain words. Sends this passage, with personal details removed, to OpenAI. The original stays."
+        title="Explain this in plain words. Sends only this passage to OpenAI, with personal details removed."
         // Keep the page's selection while pressing our button.
         onMouseDown={(e) => e.preventDefault()}
         onPointerDown={(e) => e.preventDefault()}

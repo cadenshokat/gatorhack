@@ -26,3 +26,38 @@ export function maxSentenceCss(cardW: number, cardH: number, charRatio: number, 
   }
   return best;
 }
+
+/** R2's ladder (onboarding spec): start a step above the comfortable size, then 0.1 log smaller each sentence. */
+export const LADDER = {
+  stepLog: 0.1,
+  maxSentences: 9,
+  maxActiveMs: 35_000,
+  missesInRow: 2,
+  /** Never smaller than this (px at 100%): below it nobody reads, and the stop rule has already fired. */
+  floorPx: 6,
+} as const;
+
+/** The first sentence's size (px at 100%): just above the comfortable size, or above 20 px when none is known. */
+export function ladderStartPx(seedPx: number | null, priorPx: number | null): number {
+  const base = seedPx ?? priorPx ?? 20;
+  return Math.round(Math.min(120, Math.max(12, base * 10 ** LADDER.stepLog)) * 10) / 10;
+}
+
+/** Size of sentence n (0-based) on the ladder. */
+export function ladderPx(startPx: number, n: number): number {
+  return Math.round(startPx * 10 ** (-LADDER.stepLog * n) * 10) / 10;
+}
+
+/** Why the ladder stops after these answers, or null to go on. A miss is a wrong answer or "I can't read it". */
+export function ladderStop(
+  trials: ReadonlyArray<{ correct: boolean }>,
+  activeMs: number,
+  nextPx: number,
+): 'max_trials' | 'time' | 'reversal' | 'ladder_end' | null {
+  const n = trials.length;
+  if (n >= LADDER.maxSentences) return 'max_trials';
+  if (n >= LADDER.missesInRow && trials.slice(-LADDER.missesInRow).every((t) => !t.correct)) return 'reversal';
+  if (activeMs >= LADDER.maxActiveMs) return 'time';
+  if (nextPx < LADDER.floorPx) return 'ladder_end';
+  return null;
+}

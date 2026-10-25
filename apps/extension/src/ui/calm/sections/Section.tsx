@@ -82,7 +82,7 @@ export function SectionView({ p, form = null, first = false }: { p: PlanSection;
   if (p.state === 'collapsed') {
     return (
       <div class="wa-band wa-band--tight">
-        <Disclosure title={name} count={p.count || null}>
+        <Disclosure title={name}>
           <SectionBody p={p} />
         </Disclosure>
       </div>
@@ -93,11 +93,10 @@ export function SectionView({ p, form = null, first = false }: { p: PlanSection;
   const showHead = p.layout !== 'hero' && !!p.title;
   const panel = !isForm && p.lead && PANEL_LAYOUTS.has(p.layout) && !(p.layout === 'as_is' && p.isPrimary);
   return (
-    <section class={`wa-band${first ? ' wa-band--task' : ''}${p.lead ? ' wa-band--lead' : ''}`} aria-label={name}>
+    <section class={`wa-band${first ? ' wa-band--task' : ''}${p.lead ? ' wa-band--lead' : ''}`} aria-label={name} data-role={p.sec.role}>
       {showHead && (
         <div class="wa-head">
           <H class={p.titleSize === 'page' ? 'wa-h-page' : 'wa-h-section'}>{p.title}</H>
-          {!!p.records && p.count >= 3 && <span class={`wa-count ${p.titleSize === 'page' ? 'wa-h-page' : 'wa-h-section'}`}>{p.count}</span>}
         </div>
       )}
       {panel ? (
@@ -123,13 +122,13 @@ export function Drawer({ plan }: { plan: CalmPlan }): JSX.Element | null {
   if (!plan.drawer.length) return null;
   return (
     <section class="wa-band" aria-label="More on this page">
-      <Disclosure title="More on this page" count={plan.drawer.length} sub={plan.drawerLabels.join(' · ') || null} openCall={ctx.drawerCall}>
+      {/* Round 8b: no counts (they meant nothing to a reader). */}
+      <Disclosure title="More on this page" sub={plan.drawerLabels.join(' · ') || null} openCall={ctx.drawerCall}>
         {plan.drawer.map((d) => (
           <div key={d.key} class="wa-sub">
             <div class="wa-sub__head">
               {allAds(d.section ? allBlocks(d.section) : d.blocks, ctx.marks) && <AdTag />}
-              <h3 class="wa-h-title">{d.label}</h3>
-              {d.section?.records && d.section.records.length >= 2 && <span class="wa-count wa-h-title">{d.section.records.length}</span>}
+              {(plan.drawer.length > 1 || d.label !== 'More on this page') && <h3 class="wa-h-title">{d.label}</h3>}
             </div>
             {d.section ? (
               <SectionBody p={d.section} inDrawer />

@@ -20,6 +20,7 @@ import { ChatRow, ErrorCard, NoticeCard, PortalLinks, ProgressCard, SuccessPanel
 import { Disclosure } from './Disclosure';
 import { Calm, type CalmCtx, isResultsUrl } from './context';
 import { Dock } from './Dock';
+import { MoreFrom, SiteLinks } from './End';
 import * as I from './icons';
 import { IndexView } from './Index';
 import { ArticleHeader, LeadBand } from './Lead';
@@ -325,7 +326,10 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
     rootRef.current?.dispatchEvent(new CustomEvent('webable:calm-interact', { bubbles: true, composed: true }));
   };
   const onScroll = (e: Event): void => {
-    if ((e.currentTarget as HTMLElement).scrollTop > 100) signalInteraction();
+    const el = e.currentTarget as HTMLElement;
+    // Never sideways (round 8b): a focus or scrollIntoView must not shift the page or its top bar.
+    if (el.scrollLeft) el.scrollLeft = 0;
+    if (el.scrollTop > 100) signalInteraction();
   };
 
   const onKeyDown = (e: KeyboardEvent): void => {
@@ -423,7 +427,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
                 ))}
                 {success && <SuccessPanel outcome={success} help={plan.help} />}
                 {plan.kind === 'article' && plan.article && !success ? (
-                  <ArticleHeader lead={plan.lead} art={plan.article} readLine={readLine} />
+                  <ArticleHeader lead={plan.lead} art={plan.article} readLine={readLine} listen={plan.listen} />
                 ) : (
                   plan.lead && !success && !plan.meaning?.hideLead && <LeadBand lead={plan.lead} small={plan.kind === 'index'} />
                 )}
@@ -488,7 +492,9 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
                 {plan.main.filter(isMenu).map((p) => (
                   <SectionView key={p.key} p={p} form={null} />
                 ))}
+                {!success && <MoreFrom plan={plan} bodyPx={m.F} />}
                 <Drawer plan={plan} />
+                <SiteLinks plan={plan} />
                 <footer class="wa-foot">
                   <span>Words and controls come from this page. Arranged by WebAble.</span>
                   <button type="button" class="wa-btn wa-btn--quiet" onClick={() => api.closeCalm()}>

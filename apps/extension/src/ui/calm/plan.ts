@@ -16,6 +16,7 @@ import {
 } from '@webable/core';
 import { isResultsUrl } from './context';
 import { contentRoot, coverContent } from './meaning';
+import { type EndPart, Seen, findListen, normText, scrubBlocks, sortEnd } from './tidy';
 import {
   type Block, type CardLinkBlock, type ControlBlock, type FlowBlock, type ImageBlock, type Inline, type LinkPart, TOOL_RE,
   chatContainer, clean, controlFor, flatten, imageFor, isGone, isProgressRail, keepImage, keyOf, nameOf, newCtx,
@@ -171,6 +172,14 @@ export interface CalmPlan {
   roots: Element[];
   drawerLabels: string[];
   stats: { sections: number; blocks: number; ms: number; folded: number; lifted: number; leftovers: number };
+  /** Round 8b: a page to read (an article, a record, a recipe): the site's chrome is left out of it. */
+  reading: boolean;
+  /** Round 8b: related stories with real titles, de-duplicated, drawn as "More from {site}" (reading pages). */
+  more: CardLinkBlock[];
+  /** Round 8b: the site's menu and footer links, de-duplicated, in one closed "Site links (N)" at the very end. */
+  siteLinks: ControlBlock[];
+  /** Round 8b: the article's own "Listen" control, pressed by "Listen to this article" under the byline. */
+  listen: Element | null;
 }
 
 export interface PlanInput {
@@ -704,7 +713,9 @@ export function buildPlan(o: PlanInput): CalmPlan {
   const ctx = newCtx({ placed, primary, help, folded, keepLogos });
   const items: MeaningItem[] = pending.map((x) => ({
     key: x.key, data: x.data, el: x.el,
-    links: x.links.map((l) => controlFor(l, ctx)).filter((b): b is ControlBlock => !!b && !!b.text),
+    // Round 8b: each address once, and never a placeholder label ("Links", "Related card") or a share button.
+    links: scrubBlocks(x.links.map((l) => controlFor(l, ctx)).filter((b): b is ControlBlock => !!b && !!b.text), { reading: true })
+      .filter((b): b is ControlBlock => b.b === 'control'),
   }));
   let action: ControlBlock | null = null;
   if (actionEl) {
@@ -921,7 +932,7 @@ export function buildPlan(o: PlanInput): CalmPlan {
   const helpLink = helpCands.find((c) => HELP_LINK_RE.test(c.text.trim())) ?? helpCands.find((c) => c.text.length <= 28) ?? null;
 
   // Drawer: end_drawer sections, Jev-folded parts, then anything no section placed.
-  const drawer: DrawerPart[] = sections
+  let drawer: DrawerPart[] = sections
     .filter((p) => p.state === 'end_drawer')
     .map((p) => ({ key: p.key, label: p.title ?? p.label, blocks: [], section: p }));
   const hitsByLabel = new Map<SectionLabel, Element[]>();
@@ -982,6 +993,58 @@ export function buildPlan(o: PlanInput): CalmPlan {
     if (tools.length) drawer.push({ key: 'tools', label: 'Share and save', blocks: tools, section: null });
   }
 
+  // Round 8b (SIMPLIFIED.md): the site's chrome never shows as content. On a page to read (an article, a record, a
+  // recipe) menus and link clouds, share and follow bars, account and app links, ads and newsletter boxes leave the
+  // page; related stories become "More from {site}" and the menu and footer links one closed "Site links (N)".
+  // Machine labels and placeholders are never shown, on any page (rules 1–3).
+  const reading = kind === 'article' || (kind !== 'index' && kind !== 'form' && kind !== 'product' && (tpl === 'article' || tpl === 'record_stats' || tpl === 'recipe'));
+  if (reading && kind !== 'article') {
+    const clouds = main.filter((p) => !p.isPrimary && p.key !== form?.sectionKey).flatMap((p) => [...pluck(p, isLinkCloud), ...pluckLinkRuns(p, 6)]);
+    if (clouds.length) drawer.push({ key: 'clouds', label: 'Site links', blocks: clouds, section: null });
+  }
+  const chromeOut: Block[] = [];
+  // Captions the page shows with its pictures: a second copy as a line of its own is dropped (rule 3).
+  const captions = [articleHead?.lead?.caption ?? '', ...main.flatMap((p) => flatten(allBlocks(p))).map((b) => (b.b === 'image' ? b.caption : ''))]
+    .map(normText).filter((c) => c.length >= 20);
+  for (const p of main) if (p.key !== form?.sectionKey) scrubSection(p, reading, chromeOut, captions);
+  let more: CardLinkBlock[] = [];
+  let siteLinks: ControlBlock[] = [];
+  if (reading) {
+    const ends: EndPart[] = [{ key: 'chrome', label: 'Site links', blocks: chromeOut, chrome: true }];
+    for (let i = main.length - 1; i >= 0; i--) {
+      const p = main[i]!;
+      const role = p.sec.role;
+      if (p.isPrimary || p.lead || p.key === lead?.from || p.key === form?.sectionKey || p.cards) continue;
+      if (!CHROME_ROLES.has(role) && role !== 'related') continue;
+      main.splice(i, 1);
+      ends.splice(1, 0, { key: p.key, label: p.title ?? p.label, blocks: allBlocks(p), chrome: CHROME_ROLES.has(role) });
+    }
+    for (const d of drawer) {
+      const role = d.section?.sec.role ?? '';
+      const chrome = d.key === 'clouds' || d.key === 'tools' || ['Site links', 'Sponsored', 'Offers', 'Navigation', 'Legal', 'Account', 'Search'].includes(d.label) || CHROME_ROLES.has(role);
+      ends.push({ key: d.key, label: d.section ? d.section.title ?? d.section.label : d.label, blocks: d.section ? allBlocks(d.section) : d.blocks, chrome });
+    }
+    // A story the page already shows is not listed again under "More from".
+    const shown = new Seen();
+    for (const p of main) for (const b of flatten(allBlocks(p))) if (b.b === 'cardlink') shown.fresh(b.href, b.title);
+    const end = sortEnd(ends, shown);
+    more = end.stories;
+    siteLinks = end.links;
+    drawer = end.rest.map((r) => ({ key: r.key, label: r.label === 'Other' ? 'More on this page' : r.label, blocks: r.blocks, section: null }));
+  } else {
+    for (const d of drawer) {
+      if (d.section) scrubSection(d.section, false);
+      else d.blocks = scrubBlocks(d.blocks, { reading: false });
+    }
+    drawer = drawer.filter((d) => (d.section ? allBlocks(d.section).length > 0 : d.blocks.length > 0));
+  }
+  // A part left with nothing to show is not drawn as an empty band.
+  for (let i = main.length - 1; i >= 0; i--) {
+    const p = main[i]!;
+    if (!p.isPrimary && p.key !== form?.sectionKey && !p.cards && !allBlocks(p).length) main.splice(i, 1);
+  }
+  const listen = kind === 'article' ? findListen(artDom?.h1 ?? null) : null;
+
   const labels: string[] = [];
   for (const d of drawer) {
     const l = d.section ? d.section.label : d.label;
@@ -1004,7 +1067,8 @@ export function buildPlan(o: PlanInput): CalmPlan {
     index,
     article: articleHead,
     portal,
-    strip,
+    // A page to read has no search box or account links to show (rule 1); its own help link still reaches the top bar.
+    strip: reading ? [] : strip,
     helpLink,
     hoisted: sections.filter((p) => p.hoist),
     popups: cards.filter((c) => c.kind === 'popup'),
@@ -1021,7 +1085,35 @@ export function buildPlan(o: PlanInput): CalmPlan {
     roots: [...Array.from(placed.keys()), ...Array.from(folded), ...leftoverEls],
     drawerLabels: labels.slice(0, 4),
     stats: { sections: sections.length, blocks: totalBlocks, ms: Math.round(performance.now() - t0), folded: foldedCount, lifted, leftovers: leftoverEls.length },
+    reading,
+    more,
+    siteLinks,
+    listen,
   };
+}
+
+/** Section roles that hold the site's own chrome (menus, the legal footer, ads, promos). */
+const CHROME_ROLES = new Set<string>(['navigation', 'legal', 'ads', 'promo']);
+
+/** Rules 1–3 inside one placed part (SIMPLIFIED.md): see tidy.scrubBlocks. */
+function scrubSection(p: PlanSection, reading: boolean, chrome?: Block[], captions?: string[]): void {
+  const seen = new Seen();
+  const s = (bs: Block[]): Block[] => scrubBlocks(bs, { reading, seen, chrome, captions });
+  const recs = (rs: Block[][] | null): Block[][] | null => (rs ? rs.map(s).filter((r) => r.length) : null);
+  p.before = s(p.before);
+  p.blocks = s(p.blocks);
+  p.records = recs(p.records);
+  if (p.parts) {
+    for (const pt of p.parts) {
+      pt.before = s(pt.before);
+      pt.blocks = s(pt.blocks);
+      pt.records = recs(pt.records);
+      pt.after = s(pt.after);
+    }
+    p.parts = p.parts.filter((pt) => pt.blocks.length || pt.records?.length || pt.before.length || pt.after.length);
+  }
+  p.after = s(p.after);
+  p.count = p.records ? p.records.length : p.parts ? p.parts.length : flatten(p.blocks).filter((b) => b.b === 'control' || b.b === 'cardlink').length;
 }
 
 /* ------------------------------------------------------------------ */

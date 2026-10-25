@@ -1,6 +1,6 @@
-// Owner: P. The demo keyboard shortcuts: Alt+Shift+L Jev Lens, Alt+Shift+C Calm view, Alt+Shift+O original page,
-// Alt+Shift+W the panel, Alt+Shift+[ and Alt+Shift+] page width narrower and wider. Alt+J stays as an older Lens
-// alias. They never fire while focus is in a text field. Keys are matched by `code` (the physical key), so the
+// Owner: P. Keyboard: Alt+W opens and closes the WebAble sheet (Alt+Shift+W too). Quieter extras for demos:
+// Alt+Shift+L how WebAble read the page, Alt+Shift+C the simplified page, Alt+Shift+O the original page,
+// Alt+Shift+[ and ] page width; Alt+J is an older alias. They never fire while focus is in a text field. Keys are matched by `code` (the physical key), so the
 // brackets work whatever character Option+Shift types on a Mac.
 
 export type ShortcutAction = 'lens' | 'calm' | 'original' | 'panel' | 'narrower' | 'wider';
@@ -9,7 +9,7 @@ type KeyLike = Pick<KeyboardEvent, 'altKey' | 'shiftKey' | 'ctrlKey' | 'metaKey'
 
 export function shortcutFor(e: KeyLike): ShortcutAction | null {
   if (!e.altKey || e.ctrlKey || e.metaKey) return null;
-  if (!e.shiftKey) return e.code === 'KeyJ' ? 'lens' : null;
+  if (!e.shiftKey) return e.code === 'KeyW' ? 'panel' : e.code === 'KeyJ' ? 'lens' : null;
   switch (e.code) {
     case 'KeyL':
       return 'lens';

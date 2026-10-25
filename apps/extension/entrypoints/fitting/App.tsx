@@ -1,535 +1,414 @@
-// Onboarding: a welcome, five short games, then a results page.
-// Each game opens with an instruction card. The saved fit is still the shared FitProfile.
+// The onboarding (docs/design/ONBOARDING.md): Welcome, then Reading · Pointing · Finding, one step at a time, each
+// opened by an instruction card. Every press anywhere counts toward steady clicks. At the end, core's deriveFit turns
+// the raw answers into the person's settings, which are saved and shown on Results.
+//
+// Routes: fitting.html opens Welcome; fitting.html#settings opens Results with the saved settings (Welcome if none).
 
 import {
-  DEMO_FITS, defaultFit, type BrowserSettings, type FitProfile, type InputClass, type WarmupBlock,
+  DEMO_FITS, defaultFit, deriveFit, type BrowserSettings, type FitProfile, type InputClass, type WarmupMetrics,
 } from '@webable/core';
 import type { JSX } from 'preact';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { copy, type SectionId } from './content/copy';
-import { READ_LINES } from './content/lines';
-import { BubbleGame } from './games/BubbleGame';
-import { ColourGame } from './games/ColourGame';
-import { FaintGame } from './games/FaintGame';
-import { FindGame } from './games/FindGame';
-import { ReadGame } from './games/ReadGame';
-import { attentionFromRounds } from './logic/attention';
-import { summarizeBubbles } from './logic/bubbles';
-import { scoreArrangement } from './logic/colour';
-import { captureEnv, readBrowserSettings, readPageZoom, settingsUsed } from './logic/env';
-import { cloneFit, deriveSafely } from './logic/fitview';
-import { makeRng, type Rng } from './logic/rand';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { SENTENCES } from './content/sentences';
+import { captureEnv, readBrowserSettings, readPageZoom, settingsUsed, type Env } from './logic/env';
+import { makeRng } from './logic/rand';
 import { RawCollector } from './logic/raw';
-import { estimateReading } from './logic/reading';
-import { extrasOf, type OnboardingExtras } from './logic/needs';
-import { applySession, emptyMeasures, type SessionMeasures } from './logic/session';
+import {
+  eyebrowFor, linesFor, mergeLines, PART_OF, partSetLine, PARTS, partsFor, planSteps, wordsFor,
+  type LearnedLine, type PartId, type StepId,
+} from './logic/steps';
 import { closeThisTab, loadFit, saveFit } from './logic/storage';
-import { Results } from './screens/Results';
-import { Button, useFocusTrap, useReducedMotion } from './ui/bits';
-import { Instruction } from './ui/Instruction';
+import { Results } from './results/Results';
+import { Welcome } from './screens/Welcome';
+import { DotsTask } from './tasks/Dots';
+import { FaintTask } from './tasks/Faint';
+import { FindTask } from './tasks/Find';
+import { LightDarkTask } from './tasks/LightDark';
+import { SizeTask } from './tasks/Size';
+import { TaskLayout, type StepOutcome, type TaskProps } from './tasks/Task';
+import { TrueFalseTask } from './tasks/TrueFalse';
+import { CheckIcon, Rail, TopBar } from './ui/Chrome';
+import { Instruction } from './ui/Modal';
 
-type Phase = 'boot' | 'welcome' | 'card' | 'play' | 'note' | 'results';
-type Fit = FitProfile & OnboardingExtras;
+type View =
+  | { kind: 'boot' }
+  | { kind: 'welcome' }
+  | { kind: 'intro'; step: StepId }
+  | { kind: 'task'; step: StepId }
+  | { kind: 'closing' }
+  | { kind: 'results'; fit: FitProfile; measured: boolean };
 
-const SECTIONS: ReadonlyArray<{ id: SectionId; block: WarmupBlock }> = [
-  { id: 'read', block: 'read' },
-  { id: 'faint', block: 'faint' },
-  { id: 'bubbles', block: 'point' },
-  { id: 'find', block: 'find' },
-  { id: 'colours', block: 'pick' },
-];
-
-const BLOCK_OF: Record<SectionId, WarmupBlock> = {
-  read: 'read',
-  faint: 'faint',
-  bubbles: 'point',
-  find: 'find',
-  colours: 'pick',
+const TASKS: Record<StepId, (p: TaskProps) => JSX.Element> = {
+  size: SizeTask,
+  truefalse: TrueFalseTask,
+  faint: FaintTask,
+  lightdark: LightDarkTask,
+  dots: DotsTask,
+  find: FindTask,
 };
 
-function sectionIndex(id: string | null): number {
-  return SECTIONS.findIndex((s) => s.id === id);
-}
+/** The stage size each step uses, so the card behind the instruction already has the right shape. */
+const STAGE_CLASS: Record<StepId, string> = {
+  size: 'is-size',
+  truefalse: 'is-read',
+  faint: 'is-faint',
+  lightdark: 'is-read',
+  dots: 'is-dots',
+  find: 'is-find',
+};
 
-function skippedSections(ids: readonly string[]): SectionId[] {
-  const out: SectionId[] = [];
-  for (const section of SECTIONS) {
-    if (ids.includes(section.block)) out.push(section.id);
+const CLOSING_MS = 1600;
+const newSeed = (): number => (Math.random() * 2 ** 31) | 0;
+
+function safeDerive(raw: RawCollector, settings: BrowserSettings | null, metrics?: WarmupMetrics): FitProfile {
+  try {
+    return deriveFit(raw.toRaw(), { settings, metrics: metrics ?? null });
+  } catch {
+    return defaultFit();
   }
-  return out;
 }
 
 export function App(): JSX.Element {
   const raw = useMemo(() => new RawCollector(), []);
-  const seed = useMemo(() => (Math.random() * 2 ** 31) | 0, []);
+  const [seed, setSeed] = useState(newSeed);
   const rng = useMemo(() => makeRng(seed), [seed]);
-  const motion = useReducedMotion();
-  const [phase, setPhase] = useState<Phase>('boot');
-  const [index, setIndex] = useState(0);
-  const [note, setNote] = useState('');
+  const [env, setEnv] = useState<Env | null>(null);
   const [settings, setSettings] = useState<BrowserSettings | null>(null);
-  const [existing, setExisting] = useState<Fit | null>(null);
-  const [fit, setFit] = useState<Fit | null>(null);
-  const [saved, setSaved] = useState(true);
-  const [envReady, setEnvReady] = useState(false);
-  const [skipped, setSkipped] = useState<SectionId[]>([]);
-  const [returnTo, setReturnTo] = useState<'results' | null>(null);
-  const [leave, setLeave] = useState(false);
-  const measures = useRef<SessionMeasures>(emptyMeasures(false));
-  const replayMeasures = useRef<SessionMeasures | null>(null);
-  const input = useRef({ moved: false, tabFirst: false, pointer: null as string | null });
-  const heading = useRef<HTMLHeadingElement>(null);
+  const [view, setView] = useState<View>({ kind: 'boot' });
+  const [steps, setSteps] = useState<StepId[]>([]);
+  const [prev, setPrev] = useState<StepId | null>(null);
+  const [doneParts, setDoneParts] = useState<Set<PartId>>(new Set());
+  const [rail, setRail] = useState<LearnedLine[]>([]);
+  const [chip, setChip] = useState<LearnedLine | null>(null);
+  const [draft, setDraft] = useState<FitProfile>(defaultFit);
+  const [ticking, setTicking] = useState(false);
+  const [announce, setAnnounce] = useState('');
+  const touchedParts = useRef(new Set<PartId>());
+  const anyDone = useRef(false);
+  const input = useRef<{ moved: boolean; pointerType: string | null }>({ moved: false, pointerType: null });
+  const tickTimer = useRef(0);
+  const closingTimer = useRef(0);
 
-  const reduced = motion || !!settings?.reducedMotion;
-  const section = SECTIONS[index] ?? SECTIONS[0];
-
-  useEffect(() => {
-    const move = () => {
-      input.current.moved = true;
-    };
-    const key = (e: KeyboardEvent) => {
-      if (e.key === 'Tab' && !input.current.moved) input.current.tabFirst = true;
-    };
-    const down = (e: PointerEvent) => {
-      input.current.pointer ??= e.pointerType;
-    };
-    window.addEventListener('pointermove', move, { passive: true });
-    window.addEventListener('keydown', key, true);
-    window.addEventListener('pointerdown', down, true);
-    return () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('keydown', key, true);
-      window.removeEventListener('pointerdown', down, true);
-    };
-  }, []);
+  /* ---------------- boot: the browser's own settings before any press ---------------- */
 
   useEffect(() => {
     void (async () => {
       const zoom = await readPageZoom();
       raw.zoom = zoom;
-      captureEnv(READ_LINES.map((s) => s.text).join(' '), zoom);
-      const browser = await readBrowserSettings().catch(() => null);
-      setSettings(browser);
-      const stored = await loadFit();
-      const storedFit = stored ? ({ ...cloneFit(stored), ...extrasOf(stored as Fit) } as Fit) : null;
-      setExisting(storedFit);
-      const params = new URLSearchParams(location.search);
-      const demo = params.get('demo');
-      const screen = params.get('screen');
-      if ((demo === 'rosa' || demo === 'typical' || demo === 'reader') && (!screen || screen === 'results')) {
-        const demoFit = { ...cloneFit(DEMO_FITS[demo]), createdAt: new Date().toISOString() } as Fit;
-        setFit(demoFit);
-        setPhase('results');
-        setEnvReady(true);
-        return;
+      setEnv(captureEnv(SENTENCES.map((s) => s.text).join(' '), zoom));
+      const s = await readBrowserSettings().catch(() => null);
+      setSettings(s);
+      if (location.hash === '#settings') {
+        const saved = await loadFit();
+        if (saved) {
+          setView({ kind: 'results', fit: saved, measured: false });
+          return;
+        }
       }
-      const play = screen?.startsWith('play-') ? screen.slice(5) : null;
-      const asked = sectionIndex(play ?? screen);
-      if (asked >= 0) {
-        setIndex(asked);
-        raw.startClock();
-        const block = SECTIONS[asked]?.block;
-        if (block) raw.beginBlock(block);
-        setPhase(play ? 'play' : 'card');
-        setEnvReady(true);
-        return;
-      }
-      setPhase('welcome');
-      setEnvReady(true);
+      setView({ kind: 'welcome' });
     })();
-  }, [raw]);
-
-  useEffect(() => {
-    if (phase === 'note') heading.current?.focus();
-  }, [phase, note]);
-
-  const classify = () => {
-    const pt = input.current.pointer;
-    const keyboard = input.current.tabFirst && !input.current.moved;
-    const cls: InputClass = keyboard ? 'keyboard' : pt === 'touch' || settings?.pointer === 'coarse' ? 'touch' : pt === 'pen' ? 'other' : 'mouse';
-    raw.inputClass = cls;
-    measures.current.keyboard = keyboard;
-  };
-
-  const begin = (i: number, play: boolean) => {
-    const block = SECTIONS[i]?.block;
-    if (!block) return;
-    setIndex(i);
-    raw.beginBlock(block);
-    setPhase(play ? 'play' : 'card');
-  };
-
-  const publish = useCallback(async (next: Fit) => {
-    setFit(next);
-    const ok = await saveFit(next);
-    setSaved(ok);
-    setPhase('results');
+    return () => {
+      window.clearTimeout(tickTimer.current);
+      window.clearTimeout(closingTimer.current);
+    };
   }, []);
 
-  const buildFit = useCallback((base: FitProfile, measured: SessionMeasures, skipIds: SectionId[]): Fit => {
+  /* ---------------- input type: inferred from the first presses, never asked ---------------- */
+
+  useEffect(() => {
+    const move = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') input.current.moved = true;
+    };
+    const down = (e: PointerEvent) => {
+      input.current.moved = true;
+      input.current.pointerType ??= e.pointerType;
+    };
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerdown', down, true);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerdown', down, true);
+    };
+  }, []);
+
+  /* ---------------- every press in the flow (Start buttons too), actions, hidden-tab time ---------------- */
+
+  const inFlow = view.kind === 'welcome' || view.kind === 'intro' || view.kind === 'task';
+  useEffect(() => {
+    if (!inFlow) return;
+    const down = (e: PointerEvent) => {
+      raw.countAction();
+      raw.onPointerDown(e);
+    };
+    const up = (e: PointerEvent) => raw.onPointerUp(e);
+    const key = (e: KeyboardEvent) => {
+      if (!e.repeat && !['Shift', 'Meta', 'Control', 'Alt'].includes(e.key)) raw.countAction();
+    };
+    const vis = () => {
+      if (document.hidden) raw.stopClock();
+      else if (view.kind !== 'welcome') raw.startClock();
+    };
+    window.addEventListener('pointerdown', down, true);
+    window.addEventListener('pointerup', up, true);
+    window.addEventListener('keydown', key, true);
+    document.addEventListener('visibilitychange', vis);
+    return () => {
+      window.removeEventListener('pointerdown', down, true);
+      window.removeEventListener('pointerup', up, true);
+      window.removeEventListener('keydown', key, true);
+      document.removeEventListener('visibilitychange', vis);
+    };
+  }, [inFlow, view.kind]);
+
+  /* ---------------- flow ---------------- */
+
+  const openIntro = (step: StepId, plan: StepId[]) => {
+    setView({ kind: 'intro', step });
+    setAnnounce(`${eyebrowFor(step, plan)}. ${wordsFor(step, raw.inputClass).title}`);
+  };
+
+  const start = (e: MouseEvent) => {
+    // Enter or Space on Start with no pointer movement: a keyboard user (click events from keys have detail 0).
+    const keyboard = e.detail === 0 && !input.current.moved;
+    const pt = input.current.pointerType;
+    const cls: InputClass = keyboard
+      ? 'keyboard'
+      : pt === 'touch' || (pt == null && settings?.pointer === 'coarse')
+        ? 'touch'
+        : pt === 'pen'
+          ? 'other'
+          : 'mouse';
+    raw.inputClass = cls;
+    const plan = planSteps(cls, settings);
+    if (cls === 'keyboard') raw.markBlock('point', 'not_run');
+    if (settings?.forcedColors) {
+      raw.markBlock('faint', 'prefilled');
+      raw.skippedSteps.add('light or dark');
+    }
+    setSteps(plan);
+    raw.startClock();
+    const first = plan[0];
+    if (first) openIntro(first, plan);
+  };
+
+  const beginStep = (step: StepId) => {
+    if (step === 'size' || step === 'truefalse') raw.beginBlock('read');
+    else if (step === 'faint') raw.beginBlock('faint');
+    else if (step === 'dots') raw.beginBlock('point');
+    else if (step === 'find') raw.beginBlock('find');
+    setView({ kind: 'task', step });
+  };
+
+  /** Bookkeeping for a step the person skipped (or never reached when they skip the rest). */
+  const markSkipped = (step: StepId) => {
+    if (step === 'size') raw.skippedSteps.add('size');
+    else if (step === 'truefalse') raw.endBlock('read', { trials: raw.ladder.length, skipped: true });
+    else if (step === 'faint') raw.endBlock('faint', { trials: raw.faint.length, skipped: true });
+    else if (step === 'lightdark') raw.skippedSteps.add('light or dark');
+    else if (step === 'dots') raw.endBlock('point', { trials: 0, skipped: true });
+    else if (step === 'find') {
+      raw.endBlock('find', { trials: raw.findTrials.length, skipped: true });
+      raw.endBlock('pick', { trials: 0, skipped: true });
+    }
+  };
+
+  const finish = async (measured: boolean, completed: boolean) => {
+    window.clearTimeout(closingTimer.current);
+    raw.stopClock();
     const metrics = raw.metrics({
-      completed: skipIds.length === 0,
+      completed,
       corrections: { textSteps: 0, colours: false, rows: [] },
       settingsUsed: settings ? settingsUsed(settings) : [],
     });
-    const next = applySession(base, measured, settings);
-    next.createdAt = new Date().toISOString();
-    next.calibration = {
-      ...next.calibration,
-      version: 'warmup-1',
-      durationSec: raw.durationSec,
-      skipped: skipIds.map((id) => BLOCK_OF[id]),
-      warmup: metrics,
-    } as FitProfile['calibration'];
-    return next;
-  }, [raw, settings]);
+    const fit = safeDerive(raw, settings, metrics);
+    await saveFit(fit);
+    setView({ kind: 'results', fit, measured });
+  };
 
-  const finishAll = useCallback((skipIds: SectionId[]) => {
-    raw.beginBlock('confirm');
-    raw.endBlock('confirm', { trials: 1, stop: 'person' });
-    raw.stopClock();
-    const base = deriveSafely(raw.toRaw(), settings, raw.metrics({
-      completed: skipIds.length === 0,
-      corrections: { textSteps: 0, colours: false, rows: [] },
-      settingsUsed: settings ? settingsUsed(settings) : [],
-    }));
-    void publish(buildFit(base, measures.current, skipIds));
-  }, [buildFit, publish, raw, settings]);
-
-  const forward = useCallback(() => {
-    if (returnTo === 'results') {
-      replayMeasures.current = null;
-      setReturnTo(null);
-      setPhase('results');
+  const advance = (step: StepId, added: LearnedLine | null) => {
+    const i = steps.indexOf(step);
+    const next = steps[i + 1];
+    const part = PART_OF[step];
+    if (!next || PART_OF[next] !== part) setDoneParts((s) => new Set(s).add(part));
+    setPrev(step);
+    setChip(added);
+    if (next) {
+      openIntro(next, steps);
       return;
     }
-    const next = index + 1;
-    if (next >= SECTIONS.length) finishAll(skipped);
-    else begin(next, false);
-  }, [finishAll, index, returnTo, skipped]);
-
-  useEffect(() => {
-    if (phase !== 'note' || reduced) return;
-    const id = window.setTimeout(() => forward(), 1700);
-    return () => window.clearTimeout(id);
-  }, [forward, phase, reduced]);
-
-  useEffect(() => {
-    const onPop = () => {
-      if (phase === 'card' || phase === 'play' || phase === 'note') {
-        setLeave(true);
-        history.pushState({ fitting: true }, '');
-      }
-    };
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, [phase]);
-
-  const showNote = (line: string) => {
-    setNote(line);
-    setPhase('note');
+    setView({ kind: 'closing' });
+    setAnnounce('You’re all set.');
+    closingTimer.current = window.setTimeout(() => void finish(anyDone.current, true), CLOSING_MS);
   };
 
-  const skip = () => {
-    const block = section?.block;
-    const id = section?.id;
-    if (!block || !id || phase === 'note' || phase === 'results') return;
-    raw.endBlock(block, { trials: 0, skipped: true });
-    const nextSkipped = skipped.includes(id) ? skipped : [...skipped, id];
-    setSkipped(nextSkipped);
-    if (returnTo === 'results') {
-      showNote(copy.skippedNote);
-      return;
-    }
-    showNote(copy.skippedNote);
+  const stepDone = (step: StepId, o: StepOutcome) => {
+    if (step === 'truefalse') raw.endBlock('read', o);
+    else if (step === 'faint') raw.endBlock('faint', o);
+    else if (step === 'dots') raw.endBlock('point', o);
+    else if (step === 'find') raw.endBlock('pick', { trials: 2, stop: 'person' });
+    anyDone.current = true;
+    touchedParts.current.add(PART_OF[step]);
+    const d = safeDerive(raw, settings);
+    setDraft(d);
+    const add = linesFor(step, d);
+    setRail((r) => mergeLines(r, add));
+    advance(step, add[add.length - 1] ?? null);
   };
 
-  const start = () => {
-    classify();
-    raw.reset();
-    replayMeasures.current = null;
-    raw.startClock();
-    history.pushState({ fitting: true }, '');
-    setSkipped([]);
-    measures.current = emptyMeasures(measures.current.keyboard);
-    begin(0, false);
+  const skipStep = (step: StepId) => {
+    markSkipped(step);
+    advance(step, null);
   };
 
-  const useStandard = () => {
-    const skipIds = SECTIONS.map((s) => s.id);
-    const base = defaultFit();
-    base.inputClass = raw.inputClass;
-    setSkipped(skipIds);
-    void publish(buildFit(base, emptyMeasures(false), skipIds));
-  };
-
-  const continueSaved = () => {
-    if (!existing) return;
-    setFit(existing);
-    setSkipped(skippedSections(existing.calibration?.skipped ?? []));
-    setSaved(true);
-    setPhase('results');
-  };
-
-  const playOne = (id: SectionId) => {
-    const at = sectionIndex(id);
-    if (at < 0) return;
-    replayMeasures.current = emptyMeasures(measures.current.keyboard);
-    setReturnTo('results');
-    setSkipped((prev) => prev.filter((s) => s !== id));
-    history.pushState({ fitting: true }, '');
-    begin(at, false);
-  };
-
-  const stopForNow = () => {
-    const base = fit ?? existing ?? deriveSafely(raw.toRaw(), settings);
-    const next = buildFit(base, measures.current, skipped);
-    void saveFit(next).then((ok) => {
-      if (!ok) {
-        setFit(next);
-        setSaved(false);
-        setLeave(false);
-        setPhase('results');
+  /** "Skip for now": keep what was learned so far and show what WebAble will do. */
+  const skipAll = async () => {
+    if (view.kind === 'welcome') {
+      const saved = await loadFit();
+      if (saved) {
+        setView({ kind: 'results', fit: saved, measured: false });
         return;
       }
-      void closeThisTab();
-    });
+      for (const s of planSteps(raw.inputClass, settings)) markSkipped(s);
+      await finish(false, false);
+      return;
+    }
+    const at = view.kind === 'intro' || view.kind === 'task' ? steps.indexOf(view.step) : steps.length;
+    for (const s of steps.slice(Math.max(0, at))) markSkipped(s);
+    await finish(anyDone.current, false);
   };
 
-  const retrySave = () => {
-    if (fit) void publish(fit);
+  const onAnswer = () => {
+    setTicking(true);
+    window.clearTimeout(tickTimer.current);
+    tickTimer.current = window.setTimeout(() => setTicking(false), 700);
   };
 
+  const retake = () => {
+    window.clearTimeout(closingTimer.current);
+    raw.reset();
+    setSeed(newSeed());
+    setSteps([]);
+    setPrev(null);
+    setDoneParts(new Set());
+    setRail([]);
+    setChip(null);
+    setDraft(defaultFit());
+    touchedParts.current = new Set();
+    anyDone.current = false;
+    input.current = { moved: false, pointerType: null };
+    try {
+      history.replaceState(null, '', location.pathname);
+    } catch {
+      /* fine */
+    }
+    setView({ kind: 'welcome' });
+  };
+
+  // Test hook for automation (scripts/eval): `__fitting.phase()` names the screen ('welcome', 'intro:size',
+  // 'task:find', 'results', ...); `__fitting.raw()` is the raw answers so far; `await __fitting.finish('rosa' | 'typical' | 'reader')` saves that demo fit from core's
+  // DEMO_FITS and jumps straight to Results, as if the steps had run.
   useEffect(() => {
-    const g = globalThis as { __warmup?: unknown };
-    g.__warmup = {
-      phase: () => phase,
-      section: () => section?.id ?? null,
-      fit: () => fit,
+    (globalThis as { __fitting?: unknown }).__fitting = {
+      phase: () => (view.kind === 'intro' || view.kind === 'task' ? `${view.kind}:${view.step}` : view.kind),
       raw: () => raw.toRaw(),
-      saved: () => (saved ? fit : null),
+      finish: async (name: keyof typeof DEMO_FITS = 'rosa') => {
+        window.clearTimeout(closingTimer.current);
+        const fit: FitProfile = { ...(JSON.parse(JSON.stringify(DEMO_FITS[name])) as FitProfile), createdAt: new Date().toISOString() };
+        await saveFit(fit);
+        setView({ kind: 'results', fit, measured: true });
+      },
     };
   });
 
-  if (!envReady || phase === 'boot' || !section) return <div class="ob-app" />;
+  /* ---------------- render ---------------- */
 
-  const activeMeasures = replayMeasures.current ?? measures.current;
+  if (view.kind === 'boot' || !env) return <div class="fl-app" />;
 
-  return (
-    <div class={`ob-app is-${phase}`} data-phase={phase} data-section={section.id} data-motion={reduced ? 'reduce' : 'ok'}>
-      <header class="ob-top">
-        <p class="ob-brand">WebAble</p>
-        {phase === 'welcome' || phase === 'results' ? <span /> : (
-          <ol class="ob-steps" aria-label={copy.header.step(index + 1, copy.sections[section.id].name)}>
-            {SECTIONS.map((s, i) => {
-              const wasSkipped = skipped.includes(s.id);
-              return (
-                <li
-                  key={s.id}
-                  class={i === index ? 'is-on' : wasSkipped ? 'is-skipped' : i < index ? 'is-done' : ''}
-                  aria-current={i === index ? 'step' : undefined}
-                  aria-label={wasSkipped ? `${copy.sections[s.id].name}. ${copy.header.skipped}` : undefined}
-                >
-                  <span class="ob-step-dot" aria-hidden="true" />
-                  <span class="ob-step-name">{wasSkipped ? copy.header.skipped : copy.sections[s.id].name}</span>
-                </li>
-              );
-            })}
-          </ol>
-        )}
-        {phase === 'play' ? (
-          <button type="button" class="ob-link" data-answer="skip-section" onClick={skip}>{copy.skip}</button>
-        ) : <span />}
-      </header>
-      <main id="ob-main" class="ob-main">
-        {phase === 'welcome' && existing ? (
-          <Returning onContinue={continueSaved} onStartOver={start} />
-        ) : null}
-        {phase === 'welcome' && !existing ? (
-          <section class="ob-welcome">
-            <h1 class="ob-title">{copy.welcome.title}</h1>
-            <p class="ob-lede">{copy.welcome.body}</p>
-            <p>{copy.welcome.stays}</p>
-            <div class="ob-actions">
-              <Button kind="primary" onClick={start} data="start" focus>{copy.welcome.start}</Button>
-            </div>
-            <button type="button" class="ob-link" data-answer="later" onClick={useStandard}>{copy.welcome.skip}</button>
-            <p class="ob-fine">{copy.welcome.menu}</p>
-          </section>
-        ) : null}
-        {phase === 'card' ? <Instruction id={section.id} onStart={() => setPhase('play')} onSkip={skip} /> : null}
-        {phase === 'play' ? (
-          <Game
-            id={section.id}
-            rng={rng}
-            reduced={reduced}
-            onResult={(line) => {
-              if (returnTo === 'results' && fit && replayMeasures.current) {
-                const next = applySession(fit, replayMeasures.current, settings);
-                const still = skipped.filter((id) => id !== section.id);
-                next.calibration = { ...next.calibration, skipped: still.map((id) => BLOCK_OF[id]) };
-                setFit(next);
-                void saveFit(next).then(setSaved);
-              }
-              showNote(line);
-            }}
-            raw={raw}
-            measures={activeMeasures}
-          />
-        ) : null}
-        {phase === 'note' ? (
-          <section class="ob-note-screen">
-            <h1 class="ob-title" ref={heading} tabIndex={-1}>
-              <button type="button" class="ob-note-go" onClick={forward} data-answer="continue">{note}</button>
-            </h1>
-          </section>
-        ) : null}
-        {phase === 'results' && fit ? (
-          <Results
-            fit={fit}
-            saved={saved}
-            skipped={skipped}
-            onRetake={() => {
-              setExisting(null);
-              setFit(null);
-              setSkipped([]);
-              setPhase('welcome');
-            }}
-            onPlay={playOne}
-            onSave={(next) => void publish(next)}
-            onRetry={retrySave}
-          />
-        ) : null}
-      </main>
-      <p class="ob-live-region" aria-live="polite">{phase === 'note' ? note : phase === 'results' ? copy.results.status : ''}</p>
-      {leave ? <Leave onKeep={() => setLeave(false)} onStop={stopForNow} /> : null}
-    </div>
-  );
-}
-
-function Returning(props: { onContinue: () => void; onStartOver: () => void }): JSX.Element {
-  return (
-    <section class="ob-welcome">
-      <h1 class="ob-title">{copy.returning.title}</h1>
-      <div class="ob-actions">
-        <Button kind="primary" onClick={props.onContinue} data="continue" focus>{copy.returning.continue}</Button>
-        <Button kind="quiet" onClick={props.onStartOver} data="start-over">{copy.returning.startOver}</Button>
+  if (view.kind === 'results') {
+    return (
+      <div class="fl-results" key="results">
+        <Results
+          fit={view.fit}
+          measured={view.measured}
+          onChange={(next: FitProfile) => {
+            void saveFit(next);
+            setView((v) => (v.kind === 'results' ? { ...v, fit: next } : v));
+          }}
+          onRetake={retake}
+          onDone={() => void closeThisTab()}
+        />
       </div>
-    </section>
-  );
-}
+    );
+  }
 
-function Leave(props: { onKeep: () => void; onStop: () => void }): JSX.Element {
-  const trap = useFocusTrap(true);
+  const parts = steps.length ? partsFor(steps) : PARTS;
+  const currentPart = view.kind === 'intro' || view.kind === 'task' ? PART_OF[view.step] : null;
+  const showRail = view.kind !== 'welcome';
+
+  let body: JSX.Element;
+  if (view.kind === 'welcome') {
+    body = <Welcome onStart={start} onSkip={() => void skipAll()} />;
+  } else if (view.kind === 'task') {
+    const Task = TASKS[view.step];
+    const step = view.step;
+    body = (
+      <Task
+        key={step}
+        raw={raw}
+        env={env}
+        settings={settings}
+        draft={draft}
+        rng={rng}
+        input={raw.inputClass}
+        onAnswer={onAnswer}
+        onDone={(o) => stepDone(step, o)}
+      />
+    );
+  } else if (view.kind === 'intro') {
+    // The step's empty stage waits behind the card, so Start reveals it in place.
+    body = (
+      <TaskLayout title={wordsFor(view.step, raw.inputClass).title} stageClass={STAGE_CLASS[view.step]} actions={<span class="fl-actions-ghost" />} />
+    );
+  } else {
+    body = (
+      <section class="fl-closing card">
+        <span class="fl-closing-mark" aria-hidden="true">
+          <CheckIcon size={36} />
+        </span>
+        <h2 class="fl-closing-title">You’re all set.</h2>
+        <p class="fl-closing-deck">Here’s what WebAble will do for you.</p>
+      </section>
+    );
+  }
+
+  const intro = view.kind === 'intro' ? view.step : null;
+  const setLine = intro && prev && touchedParts.current.has(PART_OF[prev]) ? partSetLine(prev, intro) : null;
+
   return (
-    <div class="ob-modal" role="dialog" aria-modal="true" aria-labelledby="ob-leave-title" ref={trap.ref}>
-      <div class="ob-card">
-        <h2 id="ob-leave-title" class="ob-title ob-title-card">{copy.leave.ask}</h2>
-        <div class="ob-actions">
-          <Button kind="primary" onClick={props.onKeep} data="keep-going" focus>{copy.leave.keep}</Button>
-          <Button kind="quiet" onClick={props.onStop} data="stop-now">{copy.leave.stop}</Button>
+    <div class="fl-app">
+      <TopBar parts={parts} current={currentPart} done={doneParts} ticking={ticking} onSkip={view.kind === 'welcome' || view.kind === 'closing' ? null : () => void skipAll()} />
+      <main class={`fl-main ${showRail ? 'has-rail' : ''}`}>
+        <div class="fl-col" inert={intro != null}>
+          {body}
         </div>
+        {showRail ? <Rail lines={rail} /> : null}
+      </main>
+      {intro ? (
+        <div class={`fl-scrim ${showRail ? 'has-rail' : ''}`}>
+          <Instruction
+            step={intro}
+            eyebrow={eyebrowFor(intro, steps)}
+            words={wordsFor(intro, raw.inputClass)}
+            setLine={setLine}
+            chip={chip}
+            onStart={() => beginStep(intro)}
+            onSkip={() => skipStep(intro)}
+          />
+        </div>
+      ) : null}
+      <div class="visually-hidden" aria-live="polite">
+        {announce}
       </div>
     </div>
-  );
-}
-
-function Game(props: {
-  id: SectionId;
-  rng: Rng;
-  reduced: boolean;
-  raw: RawCollector;
-  measures: SessionMeasures;
-  onResult: (line: string) => void;
-}): JSX.Element {
-  const done = (line: string, trials: number, stop: string) => {
-    const block = SECTIONS.find((s) => s.id === props.id)?.block;
-    if (block) props.raw.endBlock(block, { trials, stop });
-    props.onResult(line);
-  };
-  if (props.id === 'read') {
-    return (
-      <ReadGame
-        rng={props.rng}
-        onDone={(result) => {
-          for (const t of result.trials) {
-            props.raw.ladder.push({
-              px: props.raw.eff(t.px),
-              ms: Math.round(t.ms * (56 / Math.max(1, t.chars))),
-              correct: t.correct,
-            });
-          }
-          const scaled = result.trials.map((t) => ({ ...t, px: props.raw.eff(t.px) }));
-          props.measures.reading = estimateReading(scaled);
-          done(copy.sections.read.encourage, result.trials.length, result.stop);
-        }}
-      />
-    );
-  }
-  if (props.id === 'faint') {
-    return (
-      <FaintGame
-        rng={props.rng}
-        onDone={(result) => {
-          for (const t of result.trials) props.raw.faint.push({ contrast: t.ratio, correct: t.correct });
-          props.raw.stated = result.polarity === 'none' ? null : result.polarity;
-          props.measures.band = result.band;
-          props.measures.polarity = result.polarity;
-          done(copy.sections.faint.encourage, result.trials.length, result.stop);
-        }}
-      />
-    );
-  }
-  if (props.id === 'bubbles') {
-    return (
-      <BubbleGame
-        rng={props.rng}
-        onDone={(result) => {
-          const summary = summarizeBubbles(result.taps);
-          if (!props.measures.keyboard) {
-            props.raw.blocks = summary.blocks;
-            props.measures.minPx = summary.minPx;
-            props.measures.steady = summary.steady;
-            props.measures.debounce = summary.debounce;
-          }
-          done(copy.sections.bubbles.encourage, result.taps.length, result.reason);
-        }}
-      />
-    );
-  }
-  if (props.id === 'find') {
-    return (
-      <FindGame
-        reducedMotion={props.reduced}
-        onDone={(result) => {
-          props.raw.findTrials = [
-            { clutter: false, motion: false, ms: result.cleanMs, found: result.cleanFound },
-            { clutter: true, motion: false, ms: result.busyMs, found: result.busyFound },
-            { clutter: true, motion: true, ms: result.movingMs, found: result.movingFound },
-          ];
-          const att = attentionFromRounds(
-            { ms: result.cleanMs, found: result.cleanFound },
-            { ms: result.busyMs, found: result.busyFound },
-            { ms: result.movingMs, found: result.movingFound },
-          );
-          props.raw.preferredCalm = att.preferredCalm;
-          props.raw.notes = att.gotInWay;
-          props.measures.clutterP = att.clutterP;
-          props.measures.structureLevel = att.structureLevel;
-          props.measures.motionOn = att.motionOn;
-          props.measures.motionP = att.motionP;
-          done(copy.sections.find.encourage, 3, 'person');
-        }}
-      />
-    );
-  }
-  return (
-    <ColourGame
-      rng={props.rng}
-      onDone={(result) => {
-        props.measures.colour = scoreArrangement(result.placed);
-        done(copy.sections.colours.encourage, 1, 'person');
-      }}
-    />
   );
 }

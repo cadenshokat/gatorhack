@@ -1,12 +1,11 @@
-// Owner: S (round 3). The explanation card, beside the outlined original (never over it, never instead of it).
-// Wording: "Explained by AI · Checked by Jev against the original". Sentences Jev found the plain version did not
-// cover are shown as the original text. Positions are viewport px; they are divided by the layer's CSS zoom so the
+// Owner: S (round 3), P. The plain-words card, beside the outlined original (never over it, never instead of it).
+// It says only what a reader needs: the plain version, whether it was checked against the original, and any
+// sentence the plain version did not cover, shown as written. No numbers, no model names. Positions are viewport px; they are divided by the layer's CSS zoom so the
 // card stays beside the passage however the in-page layer is scaled.
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import type { ExplainResult } from '@webable/core';
 import type { EngineApi, EngineState } from '../../contracts';
-import { fmtCost, fmtMs, fmtP } from '../panel/format';
 import { IconCheck, IconClose, IconWarn } from '../panel/icons';
 
 type Anchor = NonNullable<EngineState['explain']['anchor']>;
@@ -60,10 +59,10 @@ function errorText(err: string): string {
   if (/sensitive|password|payment/i.test(err)) {
     return 'This page has password or payment fields, so nothing from it is sent for explaining.';
   }
-  if (/redact|personal/i.test(err)) return 'This passage still had personal details after redaction, so it was not sent.';
-  if (/timeout|timed out|abort/i.test(err)) return 'The explanation took too long. The original text is unchanged.';
-  if (/^(Explain is|Select |This passage)/.test(err)) return err;
-  return 'The explanation service is not reachable right now. The original text is unchanged.';
+  if (/redact|personal/i.test(err)) return 'This passage has personal details in it, so it was not sent.';
+  if (/timeout|timed out|abort/i.test(err)) return 'That took too long. The text on the page is unchanged.';
+  if (/^(Select |This passage)/.test(err)) return err;
+  return "Plain words aren't available right now. The text on the page is unchanged.";
 }
 
 /** Follow page scroll from the moment the anchor was taken (anchors are viewport coordinates). */
@@ -205,14 +204,10 @@ interface Props {
 export function ExplainCard({ api, s, u, pillReserve = 96, pillWidth = 170, pillSide = 'right', bottomReserve = 0 }: Props) {
   const ex = s.explain;
   const a = useAnchor(ex.anchor);
-  const [details, setDetails] = useState(false);
   const probe = useRef<HTMLDivElement>(null);
   const k = useLayerZoom(probe);
 
   const akey = anchorKey(ex.anchor);
-  useEffect(() => {
-    setDetails(false);
-  }, [akey]);
 
   // Everything below is in viewport px; styles divide by k (the layer's zoom).
   const place = placeCard({
@@ -275,7 +270,7 @@ export function ExplainCard({ api, s, u, pillReserve = 96, pillWidth = 170, pill
       >
         <header class="wa-ex-head">
           <span class="wa-ex-eyebrow">In plain words</span>
-          <button class="wa-iconbtn" aria-label="Close explanation" onClick={() => api.closeExplain()}>
+          <button class="wa-ex-x" aria-label="Close" onClick={() => api.closeExplain()}>
             <IconClose size={15} />
           </button>
         </header>
@@ -285,7 +280,7 @@ export function ExplainCard({ api, s, u, pillReserve = 96, pillWidth = 170, pill
             <span class="wa-shimmer" style={{ width: '92%' }} />
             <span class="wa-shimmer" style={{ width: '78%' }} />
             <span class="wa-shimmer" style={{ width: '85%' }} />
-            <p>Writing a plain version. Jev then checks it against the original.</p>
+            <p>Writing this in plain words, then checking it against the original.</p>
           </div>
         ) : ex.error && !r ? (
           <p class="wa-ex-msg" role="status">{errorText(ex.error)}</p>
@@ -293,7 +288,7 @@ export function ExplainCard({ api, s, u, pillReserve = 96, pillWidth = 170, pill
           <div class="wa-ex-body">
             <p class="wa-ex-msg" role="status">{unavailableText(r)}</p>
             {writerUnavailable(r) && s.ai === 'no_credits' && (
-              <p class="wa-ex-note">AI writing is paused on the server. It comes back on its own.</p>
+              <p class="wa-ex-note">Plain words are paused for now. They come back on their own.</p>
             )}
             {ex.original && <blockquote class="wa-ex-quote">{ex.original}</blockquote>}
           </div>
@@ -303,9 +298,7 @@ export function ExplainCard({ api, s, u, pillReserve = 96, pillWidth = 170, pill
           <p class={`wa-ex-status ${passed ? 'is-ok' : 'is-warn'}`} role="status">
             {passed ? <IconCheck size={15} /> : <IconWarn size={15} />}
             <span>
-              {passed
-                ? 'Explained by AI · Checked by Jev against the original'
-                : 'Explained by AI · It may have missed or changed something. Check the original.'}
+              {passed ? 'Checked against the original' : 'This may have missed something. Check the original.'}
             </span>
           </p>
           <div class="wa-ex-body">
@@ -329,45 +322,6 @@ export function ExplainCard({ api, s, u, pillReserve = 96, pillWidth = 170, pill
                 ))}
               </div>
             )}
-
-            <button class="wa-link wa-ex-how" aria-expanded={details} onClick={() => setDetails(!details)}>
-              {details ? 'Hide how it was checked' : 'How it was checked'}
-            </button>
-            {details && (
-              <div class="wa-ex-details">
-                <ul class="wa-ex-checks">
-                  <li data-ok={String(r.checks.numbersKept)}>
-                    {r.checks.numbersKept ? <IconCheck size={14} /> : <IconWarn size={14} />} Every number kept
-                  </li>
-                  <li data-ok={String(r.checks.conditionWordsKept)}>
-                    {r.checks.conditionWordsKept ? <IconCheck size={14} /> : <IconWarn size={14} />} Condition words kept (if, unless, not…)
-                  </li>
-                  <li data-ok={String(r.checks.addedFact < 0.5)}>
-                    {r.checks.addedFact < 0.5 ? <IconCheck size={14} /> : <IconWarn size={14} />} Added a fact: Jev {fmtP(r.checks.addedFact)}
-                  </li>
-                  <li data-ok={String(r.checks.droppedFact < 0.5)}>
-                    {r.checks.droppedFact < 0.5 ? <IconCheck size={14} /> : <IconWarn size={14} />} Dropped a fact: Jev {fmtP(r.checks.droppedFact)}
-                  </li>
-                </ul>
-                {r.sentences && r.sentences.length > 0 && (
-                  <ol class="wa-ex-cover" aria-label="How well each original sentence is covered">
-                    {r.sentences.map((x, i) => (
-                      <li key={i}>
-                        <span class="wa-ex-cover-text">{x.original}</span>
-                        <span class="wa-ex-cover-bar" aria-hidden="true">
-                          <i data-low={String(x.covered < 0.5)} style={{ width: `${Math.round(Math.max(0.03, x.covered) * 100)}%` }} />
-                        </span>
-                        <span class="wa-num">{fmtP(x.covered)}</span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-                <p class="wa-ex-meta">
-                  Written by {r.model} in {fmtMs(r.ms)} from this passage only, with personal details removed. Checked by{' '}
-                  {r.jev?.model ?? 'Jev'}: {r.jev?.questions ?? 0} answers in {fmtMs(r.jev?.wallMs)}, {fmtCost(r.jev?.costUsd ?? 0)}.
-                </p>
-              </div>
-            )}
           </div>
           </>
         ) : null}
@@ -375,12 +329,12 @@ export function ExplainCard({ api, s, u, pillReserve = 96, pillWidth = 170, pill
         <footer class="wa-ex-foot">
           <span>
             {ex.loading && !r
-              ? 'Sending this passage, with personal details removed, to OpenAI.'
+              ? 'Sending only this passage to OpenAI, with personal details removed.'
               : r && r.ok
-                ? 'The original on the page is the official text.'
+                ? 'The text on the page is the official version.'
                 : 'Nothing on the page was changed.'}
           </span>
-          <button class="wa-btn wa-btn-sm" onClick={() => api.closeExplain()}>
+          <button class="wa-kbtn wa-ex-close" onClick={() => api.closeExplain()}>
             Close
           </button>
         </footer>

@@ -1,4 +1,4 @@
-// Owner: D2. Number formatting and Jev totals for the in-page chrome.
+// Owner: D2. Number formatting and Jev totals (the Jev view uses these; the sheet never shows them).
 import type { JevMetrics, Role } from '@webable/core';
 import type { EngineState } from '../../contracts';
 
@@ -173,29 +173,6 @@ export function fmtCacheNote(t: JevTotals): string | null {
 export function fmtSinceLoad(t: JevTotals): string | null {
   if (t.sinceLoad.decisions <= t.decisions) return null;
   return `${fmtCount(t.sinceLoad.decisions)} since load`;
-}
-
-/** Plain copy for the engine phase, about the page, never about the person. */
-export function phaseLine(s: EngineState, origin: string): string {
-  if (!s.settings.enabled) return 'WebAble is off. Pages are shown as the site made them.';
-  if (s.settings.pausedOrigins.includes(origin)) return 'Paused on this site. The page is as the site made it.';
-  if (s.showingOriginal) return 'Showing the original page. Your changes are kept for when you switch back.';
-  switch (s.phase) {
-    case 'idle':
-      return s.fit ? 'Waiting for the page to settle.' : 'Starting from your browser settings.';
-    case 'reading':
-      return 'Reading this page.';
-    case 'tailored':
-      return 'Text and buttons fitted. Asking Jev about the page.';
-    case 'understood':
-      return 'Fitted to your settings. Every change can be undone.';
-    case 'calm':
-      return 'Calm view is open. Every button still drives the page.';
-    case 'error':
-      return 'Some steps did not finish. Every change below can be undone.';
-    default:
-      return '';
-  }
 }
 
 export function pageOrigin(): string {

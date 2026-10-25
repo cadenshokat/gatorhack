@@ -2,14 +2,15 @@
 // - a docked cookie notice becomes a short bar: "This site asks about cookies.", the site's own choices in one
 //   neutral style, and "Read the notice". WebAble never answers it: pressing a choice brings the notice back
 //   first, then presses the site's own control;
-// - a tucked survey, signup, promotion or chat leaves a "‹name› · Show" chip that brings it back;
-// - a modal the engine only offers to close becomes an offer card ("Close it" / "Leave it").
-// Commands go through api.restoreOverlay: `id` (Undo / Show), `${id}#read` (back for this page view only),
+// - a tucked survey, sign-up box or chat is listed in the sheet ("Moved a survey out of the way" · Show it);
+// - a pop-up the engine only offers to close becomes one small card ("Close it" / "Leave it").
+// Commands go through api.restoreOverlay: `id` (Show it), `${id}#read` (back for this page view only),
 // `${id}#close` (accept the offered close).
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { OverlayAction, OverlayKind } from '@webable/core';
 import type { EngineApi } from '../../contracts';
 import { IconChevron, IconShield } from '../panel/icons';
+import { popupNoun } from '../panel/model';
 
 /** One of the site's own buttons in a docked notice, in DOM order (`id` works with api.elementFor). */
 export interface OverlayChoice {
@@ -177,19 +178,19 @@ export function ConsentBar({ api, view, left, right, bottom, onGone, layoutKey =
         <p class="wa-cbar-text">This site asks about cookies.</p>
         {!showChoices && <span class="wa-cbar-gap" aria-hidden="true" />}
         {showChoices ? (
-          <button class="wa-btn wa-cbar-btn" onClick={bringBack}>
+          <button class="wa-kbtn wa-cbar-btn" onClick={bringBack}>
             Show the choices
           </button>
         ) : (
           <>
             <div class="wa-cbar-choices" role="group" aria-label="The site's own choices">
               {view.choices.map((c, i) => (
-                <button key={`${i}-${c.label}`} class="wa-btn wa-cbar-btn" onClick={() => press(c)}>
+                <button key={`${i}-${c.label}`} class="wa-kbtn wa-cbar-btn" onClick={() => press(c)}>
                   {c.label}
                 </button>
               ))}
             </div>
-            <button class="wa-link wa-cbar-read" onClick={bringBack}>
+            <button class="wa-cbar-read" onClick={bringBack}>
               Read the notice
               <IconChevron size={14} />
             </button>
@@ -200,60 +201,32 @@ export function ConsentBar({ api, view, left, right, bottom, onGone, layoutKey =
   );
 }
 
-/** "Survey · Show" chips for overlays WebAble tucked away. */
-export function OverlayChips({ api, views, onGone }: { api: EngineApi; views: OverlayView[]; onGone: (id: string) => void }) {
-  if (views.length === 0) return null;
-  return (
-    <div class="wa-ochips" role="group" aria-label="Moved out of the way">
-      {views.map((v) => {
-        const verb = v.kind === 'chat' ? 'Open' : 'Show';
-        const noun = v.name.toLowerCase();
-        return (
-          <button
-            key={v.id}
-            class="wa-ochip"
-            aria-label={`${verb} the ${noun} WebAble moved aside`}
-            title={`WebAble moved the ${noun} aside. ${verb} it again.`}
-            onClick={() => {
-              api.restoreOverlay(v.id);
-              onGone(v.id);
-            }}
-          >
-            <span class="wa-ochip-name">{v.name}</span>
-            <span class="wa-ochip-sep" aria-hidden="true">·</span>
-            <span class="wa-ochip-verb">{verb}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 /** A modal the engine found a safe close button for: offered, never pressed without the person. */
 export function OverlayOffer({ api, view, onGone }: { api: EngineApi; view: OverlayView; onGone: (id: string) => void }) {
-  const noun = view.kind === 'newsletter' ? 'signup popup' : view.kind === 'survey' ? 'survey' : 'popup';
+  const noun = popupNoun(view.kind);
+  const what = noun.charAt(0).toUpperCase() + noun.slice(1);
   return (
-    <div class="wa-offer" role="region" aria-label="WebAble suggestion">
-      <p class="wa-offer-q">{view.question ?? `A ${noun} covers this page. Close it with its own × button?`}</p>
-      <p class="wa-offer-fact">WebAble presses the site's own close button. Nothing else changes.</p>
+    <div class="wa-offer" role="region" aria-label="WebAble" data-wa-chrome="">
+      <p class="wa-offer-q">{what} is covering this page.</p>
+      <p class="wa-offer-fact">WebAble can close it with the site's own close button.</p>
       <div class="wa-offer-btns">
         <button
-          class="wa-btn wa-btn-primary"
-          onClick={() => {
-            api.restoreOverlay(`${view.id}#close`);
-            onGone(view.id);
-          }}
-        >
-          Close it
-        </button>
-        <button
-          class="wa-btn"
+          class="wa-kbtn"
           onClick={() => {
             api.restoreOverlay(view.id);
             onGone(view.id);
           }}
         >
           Leave it
+        </button>
+        <button
+          class="wa-kbtn wa-kbtn-primary"
+          onClick={() => {
+            api.restoreOverlay(`${view.id}#close`);
+            onGone(view.id);
+          }}
+        >
+          Close it
         </button>
       </div>
     </div>

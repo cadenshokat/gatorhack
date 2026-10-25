@@ -265,8 +265,8 @@ export function LinkButton({ b, cls = '' }: { b: ControlBlock; cls?: string }): 
     <>
       {tel && <I.Phone />}
       {mail && <I.Mail />}
+      {/* Round 8b: no chevron on every link (one only on a disclosure). */}
       <span>{b.text}</span>
-      {!tel && !mail && <I.ChevronRight />}
     </>
   );
   if (!b.href) {
@@ -746,7 +746,6 @@ export function RowLink({ b }: { b: ControlBlock }): JSX.Element {
       <span class="wa-row__main">
         <span class="wa-row__title">{b.text}</span>
       </span>
-      <I.ChevronRight class="wa-row__chev" />
     </>
   );
   if (b.href) {
@@ -884,7 +883,6 @@ function CardLinkRow({ b, thumbs = true }: { b: CardLinkBlock; thumbs?: boolean 
         {b.time && <span class="wa-time">{b.time}</span>}
       </span>
       {pic && <Thumb img={pic} />}
-      {!pic && <I.ChevronRight class="wa-row__chev" />}
     </>
   );
   const label = b.title || b.image?.alt || undefined;

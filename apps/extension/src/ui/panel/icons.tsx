@@ -167,3 +167,38 @@ export const IconDrop = (p: IconProps) => (
     <path d="M12 3.5s6 6.3 6 10.5a6 6 0 0 1-12 0c0-4.2 6-10.5 6-10.5z" />
   </Svg>
 );
+
+/* The sheet's "What WebAble did here" lines and its text size buttons. */
+export const IconFade = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="4" y="4" width="16" height="16" rx="3" />
+    <path d="M4.5 19.5 19.5 4.5" />
+  </Svg>
+);
+export const IconWindow = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+    <rect x="11" y="11" width="6.5" height="5" rx="1.2" />
+  </Svg>
+);
+export const IconLines = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 6.5h12M6 12h12M6 17.5h8" />
+  </Svg>
+);
+export const IconFocus = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="6.5" y="9" width="11" height="6" rx="3" />
+    <rect x="3.5" y="6" width="17" height="12" rx="6" />
+  </Svg>
+);
+export const IconMinus = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 12h12" />
+  </Svg>
+);
+export const IconPlus = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 12h12M12 6v12" />
+  </Svg>
+);
