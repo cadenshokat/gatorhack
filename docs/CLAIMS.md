@@ -221,6 +221,19 @@ faster", and a two-sided sign test. With 8 people, 8 of 8 gives p = 0.008 and 7 
 counts and every person's numbers, never a percentage improvement for "people with" anything. Swapping the order
 balances practice, and the script prints an order check so we can see if practice swamped the effect.
 
+### How to label (Sid, about 90 minutes)
+
+1. Caden runs the export with `--kit` and gives you only its `label-kit` folder, never `jev.csv`.
+2. Double-click `label.html` in that folder. It opens in your browser with no install and no internet. Don't open the
+   live pages: the pictures show them as the sites made them, with WebAble off.
+3. First, for each of the 10 pages, click its main button in the picture, or press None.
+4. Then, for each part in a red box, press Y (yes), N (no) or C (can't tell) for the three questions. It moves on by
+   itself. ← goes back, V shows the whole page.
+5. Your answers save in that browser as you go, so you can stop and come back. Keep using the same browser.
+6. At the end press "Finish & download CSV", press both buttons, and send Caden `to-label.csv` and `pages-blind.csv`
+   without opening them in Excel. Caden runs
+   `node scripts/claims/score.mjs --in <dir> --labels <to-label.csv> --pages <pages-blind.csv>`.
+
 ## What the runs found that we should fix
 
 - **No zoom on 10 sites.** On Fox News, Best Buy, IRS, Allrecipes, Amtrak and Delta (body text 13–16 px by the

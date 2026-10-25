@@ -3,7 +3,7 @@
 // it loads an unpacked build of the extension and writes only to --out.
 //
 //   node scripts/claims/export-decisions.mjs --urls scripts/claims/urls-jev-vs-gpt.txt --out <dir> [--ext <dir>]
-//                                            [--fit rosa] [--headed]
+//                                            [--fit rosa] [--headed] [--kit]
 //
 // Needs the WebAble server on 127.0.0.1:41741 (pnpm dev:server, or the shared one). AI layouts and Explain are
 // switched OFF for the export, so the only spend is Jev (about $0.003 a page). Writes:
@@ -12,10 +12,13 @@
 //   <out>/pages-blind.csv BLIND sheet: one row per page, "main action" to fill in.
 //   <out>/jev.csv        Jev's answers for the same rows (for score.mjs; never show it to the labellers).
 //   <out>/pages-jev.csv  Jev's main-action pick per page (for score.mjs).
+// With --kit, also the label kit (label-kit.mjs): while each page is open, WebAble shows the original page and every
+// row gets a ringed crop, plus a full-page shot per page, then <out>/label-kit/label.html (+ images/) for the labeller.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
+import { BLIND_HEAD, PAGES_HEAD, captureKitPage, writeKit } from './label-kit.mjs';
 import { evalCommon, toCsv } from './lib.mjs';
 
 const { EXT_DIR, DESKTOP_UA, loadPlaywright, browserTarget, sleep, slug } = await evalCommon();
@@ -29,6 +32,7 @@ const { values: opt } = parseArgs({
     headed: { type: 'boolean', default: false },
     sample: { type: 'string', default: '10' }, // extra random "kept" elements per page, for calibration
     wait: { type: 'string', default: '20000' },
+    kit: { type: 'boolean', default: false }, // pictures + label.html for the labeller (label-kit.mjs)
   },
 });
 if (!opt.urls) {
@@ -92,6 +96,7 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 const labelRows = [];
 const jevRows = [];
 const pageRows = [];
+const kitShots = {};
 try {
   const sw = context.serviceWorkers()[0] ?? (await context.waitForEvent('serviceworker', { timeout: 15000 }));
   await sw.evaluate(async (fitName) => {
@@ -132,10 +137,12 @@ try {
     const keptPool = shuffle(u.elements.map((j) => j.id).filter((id) => !acted.includes(id))).slice(0, Number(opt.sample));
     const helpish = u.elements.filter((j) => j.help >= 0.3 || j.role === 'help_contact').map((j) => j.id);
     const ids = [...new Set([...acted, ...helpish, ...keptPool])];
+    const rowIds = [];
     for (const id of ids) {
       const e = els.get(id);
       const j = u.elements.find((x) => x.id === id);
       if (!e || !j) continue;
+      rowIds.push(id);
       const r = got.rects[id];
       labelRows.push([name, url, id, e.tag, e.label, e.position, r ? `x${r[0]} y${r[1]} ${r[2]}x${r[3]}` : '', '', '', '']);
       const foldP = (j.roleProbs.advertising ?? 0) + (j.roleProbs.recommendations ?? 0) + (j.roleProbs.popup_overlay ?? 0);
@@ -145,16 +152,27 @@ try {
     pageRows.push([name, url, '', mp.id === 'none' ? 'none' : els.get(mp.id)?.label ?? mp.id, mp.p]);
     const m = u.firstRead ?? u.metrics;
     console.log(`${name}: ${u.elements.length} elements · ${m.questions} decisions · ${m.wallMs} ms${u.cached ? ' (cached; first read shown)' : ''} · $${m.costUsd?.toFixed(4)} · ${acted.length} acted on · main ${mp.id} ${mp.p}`);
+    if (opt.kit) {
+      // Only the row ids go in: the kit never sees Jev's verdicts or probabilities.
+      kitShots[name] = await captureKitPage(page, { name, url, ids: rowIds, kitDir: path.join(outDir, 'label-kit') }).catch((err) => {
+        console.log(`  ${name}: no kit pictures (${String(err?.message ?? err).split('\n')[0]})`);
+        return null;
+      });
+    }
     await page.close().catch(() => {});
   }
 } finally {
   await context.close().catch(() => {});
   rmSync(userDataDir, { recursive: true, force: true });
 }
-const head = ['page', 'url', 'id', 'tag', 'label', 'position', 'where (page px)', 'ad_promo_teaser_or_popup (y/n)', 'help_or_contact (y/n)', 'needed_for_the_main_task (y/n)'];
-writeFileSync(path.join(outDir, 'to-label.csv'), toCsv([head, ...shuffle(labelRows)]));
+const blindRows = shuffle(labelRows);
+writeFileSync(path.join(outDir, 'to-label.csv'), toCsv([BLIND_HEAD, ...blindRows]));
 writeFileSync(path.join(outDir, 'jev.csv'), toCsv([['page', 'id', 'verdict', 'role', 'roleP', 'foldP', 'help', 'task', 'main'], ...jevRows]));
 // The labeller fills "main action (label or none)" in pages-blind.csv without seeing pages-jev.csv.
-writeFileSync(path.join(outDir, 'pages-blind.csv'), toCsv([['page', 'url', 'main action (label, or none)'], ...pageRows.map((r) => r.slice(0, 3))]));
+writeFileSync(path.join(outDir, 'pages-blind.csv'), toCsv([PAGES_HEAD, ...pageRows.map((r) => r.slice(0, 3))]));
 writeFileSync(path.join(outDir, 'pages-jev.csv'), toCsv([['page', 'url', '', 'jev_main', 'jev_main_p'], ...pageRows]));
 console.log(`\n${pageRows.length} pages · ${labelRows.length} rows to label → ${path.join(outDir, 'to-label.csv')}`);
+if (opt.kit) {
+  const shots = Object.fromEntries(Object.entries(kitShots).filter(([, v]) => v));
+  console.log(`label kit (${Object.keys(shots).length} pages with pictures) → ${writeKit(outDir, { rows: blindRows, pages: pageRows.map((r) => r.slice(0, 3)), shots })}`);
+}

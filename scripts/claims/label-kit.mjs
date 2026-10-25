@@ -13,6 +13,8 @@
 //     sticky headers and lazy loading can't shift the box;
 //   - the page map and the main-action hotspots: measured at scroll 0 as rect + scroll (fixed elements where they sit
 //     at the top), the same frame as the full-page screenshot.
+// The site's own popups stay, with two exceptions the labeller is told about: a popup covering an element is moved
+// aside for that element's crop only, and the full-page shot leaves out what floats over the page.
 // Writes <dir>/label-kit/ (label.html + images/) and <dir>/kit-data.json. The kit holds no Jev answers: it is built
 // from to-label.csv, pages-blind.csv and what each page itself shows. Hand the labeller the label-kit folder only.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -28,7 +30,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE = path.join(HERE, 'label-kit.template.html');
 const VW = 1280;
 const VH = 720;
-const MAX_PAGE_H = 15000; // full-page screenshots stop here (Chrome's capture limit is about 16k px)
+const MAX_PAGE_H = 16000; // full-page screenshots stop here (Chrome captures up to about 16k px)
 
 /* ------------------------------------------------------------------ */
 /* Capture (runs while export-decisions.mjs has the page open)          */
@@ -99,20 +101,136 @@ return { elements: n, attrs: [...names].sort(), sheets: document.adoptedStyleShe
 
 const SHOW_ORIGINAL = `
 e.showOriginal(true);
-const ui = document.querySelector('webable-ui');
-if (ui) ui.style.setProperty('display', 'none', 'important');
 return true;
 `;
 
-/** At scroll 0: page title and size, each row element's page rect, and every visible button / link for the hotspots. */
-const MEASURE_PAGE = `
+/** WebAble's in-page UI out of the pictures. Its layer is a popover in the top layer, so hiding the host isn't enough. */
+const HIDE_UI = `
+let n = 0;
+for (const ui of document.querySelectorAll('webable-ui')) {
+  ui.style.setProperty('visibility', 'hidden', 'important');
+  ui.style.setProperty('display', 'none', 'important');
+  let root = null;
+  try { root = (globalThis.chrome && chrome.dom && chrome.dom.openOrClosedShadowRoot) ? chrome.dom.openOrClosedShadowRoot(ui) : ui.shadowRoot; } catch {}
+  for (const c of (root ? root.children : [])) {
+    try { if (c.matches(':popover-open')) c.hidePopover(); } catch {}
+    if (c.style) { c.style.setProperty('display', 'none', 'important'); c.style.setProperty('visibility', 'hidden', 'important'); }
+  }
+  n++;
+}
+return { ui: n };
+`;
+
+/**
+ * Some sites lock scrolling under a popup (CNN's consent wall sets body { height: 100vh; overflow: hidden }), which
+ * clips the full-page shot to the first screen. Unlock it for the capture. The popup itself stays: FLOATING leaves it
+ * out of the page shot only, and RING moves it aside only for crops it covers.
+ */
+const UNLOCK_SCROLL = `
+const se = document.scrollingElement || document.documentElement;
+const b = document.body;
+if (!b) return { unlocked: false };
+const tall = Math.max(b.scrollHeight, ...[...b.children].map((c) => c.getBoundingClientRect().bottom + scrollY));
+if (se.scrollHeight > innerHeight + 8 || tall <= innerHeight + 100) return { unlocked: false };
+const set = (el, k, v) => el.style.setProperty(k, v, 'important');
+set(document.documentElement, 'overflow-y', 'auto'); set(document.documentElement, 'height', 'auto');
+set(b, 'overflow-y', 'visible'); set(b, 'height', 'auto'); set(b, 'max-height', 'none');
+if (getComputedStyle(b).position === 'fixed') { set(b, 'position', 'static'); set(b, 'top', 'auto'); }
+return { unlocked: se.scrollHeight > innerHeight + 8 };
+`;
+
+/**
+ * Popups and backdrops out of the way, without touching layout: opacity 0 (children can't undo it the way they can
+ * undo visibility), no hits, and no ::backdrop for a modal <dialog>. restoreHidden puts every one back.
+ */
+const FIXED_ROOT = `
+// The outermost layer an element sits in above the page: fixed or sticky boxes, and absolute ones stacked very high
+// (Qualtrics' backdrop is position: absolute at z-index 2000000004).
+const highLayer = (cs) => cs.position === 'absolute' && parseInt(cs.zIndex, 10) >= 1000;
+const fixedRoot = (x) => {
+  let root = null;
+  for (let a = x; a && a !== document.body && a !== document.documentElement; a = a.parentElement) {
+    const cs = getComputedStyle(a);
+    if (cs.position === 'fixed' || cs.position === 'sticky' || highLayer(cs)) root = a;
+  }
+  if (!root && x && x.matches && x.matches(':modal, :popover-open')) root = x;
+  const text = (document.body && document.body.innerText || '').length;
+  if (root && text > 200 && (root.innerText || '').length > 0.5 * text) return null; // the page's own shell
+  return root;
+};
+// A fixed wrapper can be 0 x 0 with its popup overflowing it (Medicare's sign-up modal): size it by its contents.
+const effRect = (el) => {
+  const r = el.getBoundingClientRect();
+  if (r.width >= 2 && r.height >= 2) return r;
+  try { const rg = document.createRange(); rg.selectNodeContents(el); return rg.getBoundingClientRect(); } catch { return r; }
+};
+const HIDE_ATTR = 'data-labelkit-hide';
+const hideFor = (el) => {
+  if (!globalThis.__waKitSheet) {
+    try {
+      const sh = new CSSStyleSheet();
+      sh.replaceSync('[' + HIDE_ATTR + '] { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; } [' + HIDE_ATTR + ']::backdrop { display: none !important; }');
+      globalThis.__waKitSheet = sh;
+    } catch {}
+  }
+  if (globalThis.__waKitSheet && !document.adoptedStyleSheets.includes(globalThis.__waKitSheet)) document.adoptedStyleSheets = [...document.adoptedStyleSheets, globalThis.__waKitSheet];
+  if (!globalThis.__waKitHidden) globalThis.__waKitHidden = [];
+  globalThis.__waKitHidden.push(el);
+  el.setAttribute(HIDE_ATTR, '');
+};
+const isHidden = (x) => (globalThis.__waKitHidden || []).some((h) => h.contains(x));
+const restoreHidden = () => {
+  for (const el of (globalThis.__waKitHidden || [])) el.removeAttribute(HIDE_ATTR);
+  globalThis.__waKitHidden = [];
+};
+`;
+
+/**
+ * For the full-page shot only: leave out everything that floats over the page (popups, backdrops, cookie bars, chat
+ * buttons). A full-page shot draws them where they sit at scroll 0, on top of content that is really below them.
+ * Kept: a fixed header at the top, and a fixed shell that holds the page itself.
+ */
+const FLOATING = `${FIXED_ROOT}
+const bodyText = (document.body && document.body.innerText || '').length;
+const gone = [];
+let hidden = 0;
+for (const el of (document.body ? document.body.querySelectorAll('*') : [])) {
+  if (gone.some((g) => g.contains(el)) || el.closest('webable-ui') || el.id === 'wa-kit-ring') continue;
+  const cs = getComputedStyle(el);
+  if ((cs.position !== 'fixed' && !highLayer(cs)) || cs.display === 'none' || cs.visibility === 'hidden') continue;
+  const b = effRect(el);
+  if (b.width < 2 || b.height < 2) continue;
+  const area = Math.max(0, Math.min(VW, b.right) - Math.max(0, b.left)) * Math.max(0, Math.min(VH, b.bottom) - Math.max(0, b.top));
+  if (cs.position !== 'fixed' && area < 0.25 * VW * VH) continue; // a high absolute layer counts only as a backdrop
+  if (b.top <= 2 && b.height < VH * 0.35 && area < 0.25 * VW * VH) continue; // a pinned header
+  if (bodyText > 200 && (el.innerText || '').length > 0.5 * bodyText) continue; // the page's own shell
+  hideFor(el);
+  gone.push(el);
+  hidden++;
+}
+return { hidden };
+`;
+
+const RESTORE_POPUPS = `${FIXED_ROOT}
+restoreHidden();
+return true;
+`;
+
+/** At scroll 0: page title and size, and each row element's page rect (rect + scroll; fixed ones as at the top). */
+const MEASURE_ROWS = `
 const sx = scrollX, sy = scrollY;
-const docH = Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0);
+const docH = (document.scrollingElement || document.documentElement).scrollHeight;
 const rects = {};
 for (const id of ARG.ids) {
   const p = pick(id);
   rects[id] = p.target ? { status: p.status, rect: box(p.target.getBoundingClientRect(), sx, sy) } : { status: p.status, rect: null };
 }
+return { title: clean(document.title).slice(0, 160), docH, rects };
+`;
+
+/** At scroll 0: every visible button, link and field, for the main-action question's hotspots. */
+const MEASURE_HOTSPOTS = `
+const sx = scrollX, sy = scrollY;
 // Digest labels for the hotspots, so a click fills in exactly the words the score compares.
 const labelOf = new Map();
 for (const d of (e.getState().digest?.elements || [])) { const el = e.elementFor(d.id); if (el && d.label) labelOf.set(el, d.label); }
@@ -126,7 +244,7 @@ for (const el of document.querySelectorAll(SEL)) {
   if (hotspots.length >= 600 || !shown(el)) continue;
   const r = el.getBoundingClientRect();
   const x = r.left + sx, y = r.top + sy;
-  if (x + r.width < 0 || x > VW || y > ${MAX_PAGE_H}) continue;
+  if (x + r.width < 0 || x > VW || y + r.height < 0 || y > ${MAX_PAGE_H}) continue;
   let label = labelOf.get(el);
   if (!label) for (const [d, l] of labelOf) if ((d.contains(el) || el.contains(d)) && same(d.getBoundingClientRect(), r)) { label = l; break; }
   label = clean(label || own(el)).slice(0, 140);
@@ -136,7 +254,7 @@ for (const el of document.querySelectorAll(SEL)) {
   seen.add(key);
   hotspots.push([...box(r, sx, sy), label]);
 }
-return { title: clean(document.title).slice(0, 160), docH, rects, hotspots };
+return { hotspots };
 `;
 
 /** Scroll the row's element into view (inner scrollers too). Returns what it is and what it says. */
@@ -156,20 +274,33 @@ if (p.el) {
   let href = '';
   try { if (link) { const u = new URL(link.href, location.href); href = (u.host === location.host ? '' : u.host) + u.pathname; } } catch {}
   Object.assign(out, { tag, role: clean(el.getAttribute('role')), type: tag === 'input' ? clean(el.type) : '', text: text.slice(0, 320),
-    more: more.join(' · ').slice(0, 200), href: href.slice(0, 90), sameSite: !!link && href.startsWith('/') });
+    more: more.join(' · ').slice(0, 200), href: href.slice(0, 90) });
 }
 if (p.target) {
   const r = p.target.getBoundingClientRect();
   const tall = r.height > VH * 0.85;
-  out.tall = tall;
-  try { p.target.scrollIntoView({ block: tall ? 'start' : 'center', inline: 'center', behavior: 'instant' }); } catch { p.target.scrollIntoView(); }
+  // A popup or pinned bar (a fixed box that fits on screen, not a scroll lock on body or a fixed page shell): picture
+  // it over the first screen, where a visitor meets it.
+  let pinned = false;
+  for (let a = p.target; a && a !== document.body && a !== document.documentElement; a = a.parentElement) {
+    if (getComputedStyle(a).position !== 'fixed') continue;
+    const fr = a.getBoundingClientRect();
+    pinned = fr.height <= VH + 2 && fr.width <= VW + 2;
+    break;
+  }
+  if (pinned) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  else try { p.target.scrollIntoView({ block: tall ? 'start' : 'center', inline: 'center', behavior: 'instant' }); } catch { p.target.scrollIntoView(); }
 }
 return out;
 `;
 
-/** Measure again (viewport coordinates), choose the crop and draw the red ring above everything, top layer included. */
-const RING = `
+/**
+ * Measure again (viewport coordinates), move popups that cover the element out of the way for this one picture
+ * (UNRING puts them back), choose the crop and draw the red ring above everything, top layer included.
+ */
+const RING = `${FIXED_ROOT}
 document.getElementById('wa-kit-ring')?.remove();
+restoreHidden();
 const p = pick(ARG.id);
 let t = p.target, status = p.status;
 if (!t) return { status, crop: null };
@@ -180,6 +311,19 @@ if (!inView(r)) {
   t = a; status = status === 'ok' ? 'offscreen' : status; r = t.getBoundingClientRect();
 }
 const vx0 = Math.max(0, r.left), vy0 = Math.max(0, r.top), vx1 = Math.min(VW, r.right), vy1 = Math.min(VH, r.bottom);
+let moved = 0;
+for (let round = 0; round < 4; round++) {
+  let hit = null;
+  for (const [fx, fy] of [[0.5, 0.5], [0.2, 0.25], [0.8, 0.25], [0.2, 0.75], [0.8, 0.75]]) {
+    const top = document.elementFromPoint(vx0 + (vx1 - vx0) * fx, vy0 + (vy1 - vy0) * fy);
+    if (!top || t.contains(top) || top.contains(t) || top.closest('webable-ui') || isHidden(top)) continue;
+    const root = fixedRoot(top);
+    if (root && !root.contains(t) && !t.contains(root)) { hit = root; break; }
+  }
+  if (!hit) break;
+  hideFor(hit);
+  moved++;
+}
 const m = Math.round(Math.min(220, Math.max(90, 0.5 * Math.max(vx1 - vx0, vy1 - vy0))));
 let x0 = vx0 - m, y0 = vy0 - m, x1 = vx1 + m, y1 = vy1 + m;
 const grow = (a, b, min) => { if (b - a >= min) return [a, b]; const c = (a + b) / 2; return [c - min / 2, c + min / 2]; };
@@ -194,13 +338,17 @@ const dashed = status !== 'ok';
 ring.style.cssText = 'all: initial; position: fixed; box-sizing: border-box; pointer-events: none; z-index: 2147483647; margin: 0; padding: 0; overflow: visible; '
   + 'left: ' + (r.left - 4) + 'px; top: ' + (r.top - 4) + 'px; width: ' + (r.width + 8) + 'px; height: ' + (r.height + 8) + 'px; '
   + 'border: 4px ' + (dashed ? 'dashed' : 'solid') + ' #ff1a1a; border-radius: 3px; background: transparent; '
-  + 'box-shadow: 0 0 0 2px #ffffff, 0 0 0 9999px rgba(0, 0, 0, 0.22);';
+  + 'box-shadow: 0 0 0 2px #ffffff, 0 0 0 9999px rgba(0, 0, 0, 0.16);';
 try { ring.setAttribute('popover', 'manual'); document.documentElement.appendChild(ring); ring.showPopover(); }
 catch { ring.removeAttribute('popover'); document.documentElement.appendChild(ring); }
-return { status, crop: { x: Math.round(x0), y: Math.round(y0), width: Math.round(x1 - x0), height: Math.round(y1 - y0) }, cut: r.bottom > VH + 4 };
+return { status, crop: { x: Math.round(x0), y: Math.round(y0), width: Math.round(x1 - x0), height: Math.round(y1 - y0) }, cut: r.bottom > VH + 4, moved };
 `;
 
-const UNRING = `document.getElementById('wa-kit-ring')?.remove(); return true;`;
+const UNRING = `${FIXED_ROOT}
+document.getElementById('wa-kit-ring')?.remove();
+restoreHidden();
+return true;
+`;
 
 /** Scroll the whole page once so lazy images and late sections load, then go back to the top. */
 async function warmScroll(page) {
@@ -264,13 +412,20 @@ export async function captureKitPage(page, { name, url, ids, kitDir, log = conso
     const dpr = await page.evaluate(() => window.devicePixelRatio).catch(() => 0);
     const clean = after && after.elements === 0 && after.zoom === 1 && dpr === 1;
     if (!clean) log(`  ${name}: original page not fully restored (zoom ${after?.zoom}, dpr ${dpr}, ${after?.elements} marked elements: ${after?.attrs?.join(' ')})`);
+    const ui = await world.eval(HIDE_UI);
 
+    const lock = (await world.eval(UNLOCK_SCROLL)) ?? {};
     await warmScroll(page);
-    const m = (await world.eval(MEASURE_PAGE, { ids })) ?? { title: '', docH: VH, rects: {}, hotspots: [] };
+    const m = (await world.eval(MEASURE_ROWS, { ids })) ?? { title: '', docH: VH, rects: {} };
+    // The page picture (for the main-action question and the map) without what floats over it.
+    const big = (await world.eval(FLOATING)) ?? { hidden: 0 };
+    await sleep(300);
+    const hs = (await world.eval(MEASURE_HOTSPOTS)) ?? { hotspots: [] };
     const shotH = Math.max(VH, Math.min(m.docH || VH, MAX_PAGE_H));
     const full = await page.screenshot({ fullPage: true, type: 'jpeg', quality: 72, clip: { x: 0, y: 0, width: VW, height: shotH }, timeout: 90000 });
     writeFileSync(path.join(imgDir, 'page.jpg'), full);
     writeFileSync(path.join(imgDir, 'thumb.jpg'), await thumbnail(page.context(), full, 320));
+    await world.eval(RESTORE_POPUPS);
     await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })).catch(() => {});
 
     const els = {};
@@ -286,7 +441,7 @@ export async function captureKitPage(page, { name, url, ids, kitDir, log = conso
           if (ring?.crop && ring.crop.width > 8 && ring.crop.height > 8) {
             const file = `${id}.jpg`;
             writeFileSync(path.join(imgDir, file), await page.screenshot({ clip: ring.crop, type: 'jpeg', quality: 84, timeout: 30000 }));
-            Object.assign(entry, { status: ring.status, crop: `${imgRel}/${file}`, cropW: ring.crop.width, cropH: ring.crop.height, cut: !!ring.cut });
+            Object.assign(entry, { status: ring.status, crop: `${imgRel}/${file}`, cropW: ring.crop.width, cropH: ring.crop.height, cut: !!ring.cut, moved: ring.moved || 0 });
             crops++;
           } else if (ring) entry.status = ring.status;
           await world.eval(UNRING);
@@ -300,8 +455,9 @@ export async function captureKitPage(page, { name, url, ids, kitDir, log = conso
       els[id] = entry;
     }
     const host = (() => { try { return new URL(url).host; } catch { return ''; } })();
-    log(`  ${name}: kit ${crops}/${ids.length} crops · ${m.hotspots.length} hotspots · page ${shotH}px${m.docH > MAX_PAGE_H ? ` of ${m.docH}` : ''} · marks ${before?.elements ?? '?'} → ${after?.elements ?? '?'} · ${Math.round((Date.now() - t0) / 1000)} s`);
-    return { page: name, url, host, title: m.title, restored: !!clean, img: { page: `${imgRel}/page.jpg`, thumb: `${imgRel}/thumb.jpg`, w: VW, h: shotH }, docH: m.docH, hotspots: m.hotspots, els };
+    const moved = Object.values(els).filter((x) => x.moved).length;
+    log(`  ${name}: kit ${crops}/${ids.length} crops (${moved} with a covering popup moved) · ${hs.hotspots.length} hotspots · page ${shotH}px${m.docH > MAX_PAGE_H ? ` of ${m.docH}` : ''}${lock.unlocked ? ' · scroll unlocked' : ''}${big.hidden ? ` · ${big.hidden} floating box(es) left out of the page shot` : ''} · WebAble marks ${before?.elements ?? '?'} → ${after?.elements ?? '?'}, UI hidden ${ui?.ui ?? 0} · ${Math.round((Date.now() - t0) / 1000)} s`);
+    return { page: name, url, host, title: m.title, restored: !!clean, unlocked: !!lock.unlocked, popupsHidden: big.hidden, img: { page: `${imgRel}/page.jpg`, thumb: `${imgRel}/thumb.jpg`, w: VW, h: shotH }, docH: m.docH, hotspots: hs.hotspots, els };
   } finally {
     await world.close();
   }
@@ -324,7 +480,7 @@ export function writeKit(outDir, { rows, pages, shots }) {
   mkdirSync(kitDir, { recursive: true });
   const data = { v: 1, kit: path.basename(path.resolve(outDir)), made: new Date().toISOString(), head: BLIND_HEAD, pagesHead: PAGES_HEAD, rows, pages, shots };
   writeFileSync(path.join(outDir, 'kit-data.json'), JSON.stringify({ ...data, rows: undefined, pages: undefined }, null, 1));
-  const json = JSON.stringify(data).replace(/</g, '\\u003c').replace(/ /g, '\\u2028').replace(/ /g, '\\u2029');
+  const json = JSON.stringify(data).replace(/</g, '\\u003c').replace(/[\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16)}`);
   const html = readFileSync(TEMPLATE, 'utf8').replace('/*__KIT_DATA__*/null', () => json);
   writeFileSync(path.join(kitDir, 'label.html'), html);
   return path.join(kitDir, 'label.html');
