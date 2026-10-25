@@ -36,6 +36,12 @@ export interface FitProfile {
     override: number | null;
   };
   contrast: { band: ContrastBand; floor: number };
+  /** Onboarding extras (round 8): top reading speed in words a minute, and whether reading support is on. */
+  topWpm?: number;
+  readingSupport?: boolean;
+  /** Colour sorting: crossings on the colour-confusion axes, a 0-100 score, and which axes. */
+  colourNeed?: { crossings: number; score: number; axes: string[] };
+  colourAssist?: boolean;
   polarity: { value: Polarity; stated: Polarity | null };
   weight: { floor: number };
   spacing: { lineHeight: number; wordEm: number; letterEm: number };
