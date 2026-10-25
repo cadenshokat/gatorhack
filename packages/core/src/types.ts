@@ -169,6 +169,11 @@ export interface ElementJudgment {
   task: number; // P(part of the main job)
   main: number; // P(is the main action)
   help: number; // P(help or contact)
+  /** Round 7: the fine role from Jev page model v2, and its probability. */
+  fine?: FineRole;
+  fineP?: number;
+  /** Round 7: how much this element matters to the page's purpose, 0 (distraction) to 4 (essential). */
+  importance?: number;
 }
 
 export interface PageUnderstanding {
@@ -178,6 +183,10 @@ export interface PageUnderstanding {
   cached: boolean;
   /** Metrics of the first (uncached) read of this digest, so a cached view can say what the live read cost. */
   firstRead?: JevMetrics;
+  /** Round 7: what kind of page this is. */
+  purpose?: { kind: PagePurpose; p: number; probs: Record<string, number> };
+  /** Round 7: the region holding the information the page exists to show. */
+  mainRegion?: { id: string | 'none'; p: number; probs: Record<string, number> };
 }
 
 /* ------------------------------------------------------------------ */
@@ -325,6 +334,10 @@ export interface OutlineNode {
   zone?: Zone;
   jevRole?: Role;
   protected?: boolean; // help, consent, warnings, required fields, focused or filled fields
+  /** Round 7: Jev's fine role for this node, when it was in the digest. */
+  fine?: FineRole;
+  /** Round 7: structured content read on the device (never sent to any model). */
+  data?: ExtractedData;
 }
 
 export interface PageOutline {
@@ -512,6 +525,7 @@ export type BgRequest =
   | { type: 'passiveEvidence'; items: PassiveEvidence[] }
   | { type: 'passiveFeedback'; dim: FitDimension; action: 'not_right' | 'forget' | 'confirm' }
   | { type: 'attribute'; question: AttributionQuestion }
+  | { type: 'meaning'; req: MeaningCheckRequest }
   | { type: 'redesign'; outline: PageOutline; fit: FitSummaryForModel; roles: Record<string, Role> }
   | { type: 'explain'; req: ExplainRequest }
   | { type: 'visualVerify'; controls: string[]; help: string[]; mainLabel: string | null; phase: 'before' | 'after' }
@@ -614,5 +628,67 @@ export interface AttributionAnswer {
   /** e.g. zoom_reason: { text: 0.82, image: 0.10, layout: 0.05, other: 0.03 } */
   probs: Record<string, number>;
   top: string;
+  metrics: JevMetrics;
+}
+
+/* ------------------------------------------------------------------ */
+/* Round 7: Jev page model v2 and structured content                    */
+/* ------------------------------------------------------------------ */
+
+/** What kind of page this is, from the person's point of view. */
+export type PagePurpose =
+  | 'record_stats' | 'scoreboard' | 'schedule' | 'standings' | 'roster' | 'article' | 'news_index' | 'recipe'
+  | 'product' | 'search_results' | 'form_task' | 'checkout' | 'sign_in' | 'account_dashboard' | 'bill_statement'
+  | 'appointment' | 'status_lookup' | 'info_guide' | 'faq' | 'directory_listing' | 'location_hours' | 'calendar_dates'
+  | 'comparison' | 'video' | 'gallery' | 'home_portal' | 'other';
+
+/** Fine roles: what an element is for. Grouped by family; the coarse `Role` stays for the existing policy. */
+export type FineRole =
+  // content
+  | 'page_title' | 'headline' | 'dek_summary' | 'body_text' | 'byline' | 'dateline' | 'lead_image' | 'figure'
+  | 'caption' | 'quote' | 'key_fact'
+  // data
+  | 'stat_value' | 'stat_label' | 'scoreboard' | 'team_or_org_logo' | 'data_table' | 'table_row' | 'chart'
+  | 'schedule_item' | 'standings' | 'price' | 'rating' | 'comparison_row'
+  // recipe and instructions
+  | 'ingredient_list' | 'instruction_steps' | 'recipe_meta'
+  // task
+  | 'form_field' | 'primary_action' | 'secondary_action' | 'step_indicator' | 'search_box' | 'filter_sort'
+  | 'result_item' | 'status_message'
+  // navigation and identity
+  | 'site_logo' | 'site_nav' | 'section_nav' | 'breadcrumb' | 'tabs' | 'pagination' | 'back_link' | 'jump_link'
+  // help and notices
+  | 'help_link' | 'contact_info' | 'warning_notice' | 'consent_notice' | 'popup'
+  // distractions
+  | 'advertising' | 'sponsored' | 'upsell_promo' | 'newsletter_signup' | 'teaser_other_content' | 'social_share'
+  | 'comments' | 'video_autoplay' | 'carousel'
+  // other
+  | 'account_utility' | 'legal_footer' | 'decorative' | 'other';
+
+/** Structured content read on the device from the page, for Calm view's components. Never sent to a model. */
+export type ExtractedData =
+  | { kind: 'stats'; title?: string; items: Array<{ label: string; value: string; sub?: string; nodeId?: string }> }
+  | {
+      kind: 'scoreboard'; label?: string; date?: string; joiner?: string;
+      sides: Array<{ name: string; logoSrc?: string; logoAlt?: string; score: string; side?: 'home' | 'away' | 'neutral'; winner?: boolean }>;
+      periods?: { labels: string[]; rows: Array<{ name: string; values: string[] }> };
+    }
+  | { kind: 'table'; caption?: string; columns: string[]; rows: string[][]; numericCols?: number[] }
+  | { kind: 'schedule'; title?: string; items: Array<{ date: string; title: string; detail?: string; result?: string; logoSrc?: string; nodeId?: string }> }
+  | { kind: 'recipe'; title: string; meta?: Array<{ label: string; value: string }>; imageSrc?: string; ingredients: string[]; steps: string[]; notes?: string[] }
+  | { kind: 'logo'; src: string; label: string };
+
+/** Round 7 meaning check: does a Calm plan keep what the original page exists to show? */
+export interface MeaningCheckRequest {
+  purpose: PagePurpose | null;
+  /** Structure-only summaries (roles and allowlisted labels, no page text or numbers). */
+  original: { mainRegion: string; leadRoles: FineRole[]; mustKeep: FineRole[] };
+  calm: { leadRoles: FineRole[]; shownRoles: FineRole[]; foldedRoles: FineRole[] };
+}
+
+export interface MeaningVerdict {
+  leadsWithMain: number; // P(the calm version leads with what the page exists to show)
+  missingMain: number; // P(something from the main information is missing)
+  pass: boolean;
   metrics: JevMetrics;
 }

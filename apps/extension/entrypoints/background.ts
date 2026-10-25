@@ -625,6 +625,9 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
     case 'attribute':
       // Jev attribution (a weight for a held zoom or a page's missed clicks). Structure-only evidence; fails closed.
       return post<AttributionAnswer>('/v1/attribute', { question: req.question }, 6000);
+    case 'meaning':
+      // Round 7 meaning check: structure-only summaries of the original page and the Calm plan.
+      return post<unknown>('/v1/meaning', { req: req.req }, 6000);
     default: {
       const never: never = req;
       throw new BgError('refused', `Unknown request ${(never as { type?: string }).type ?? ''}`);
