@@ -196,7 +196,7 @@ colour petal should grow only on a clear, consistent pattern of crossings.
 
 ## Changes we recommend
 
-Posted in the Slack thread at 01:25; Lucius passed them to Alfred, who built all three in at about 01:36.
+Posted in the Slack thread at 01:15; Lucius passed them to Alfred, who built all three in a minute later.
 
 1. **Split "Find it" into three short rounds:** a clean page, a busy page with nothing moving, and the same busy page plus
    one moving banner. Score each against the person's own clean round: busy-still minus clean sets the busy-pages need,
