@@ -27,7 +27,8 @@ A Chrome extension that learns how you read and click, then fits every website t
 
 ## Built with
 
-Devpost takes up to 25 tags, entered one at a time. **[Lucius to confirm]**
+Devpost takes up to 25 tags, entered one at a time. The AI coding tools we built with aren't listed; Sid's call is
+that they're implied. **[Lucius to confirm the rest]**
 
 ```text
 TypeScript
