@@ -5,10 +5,11 @@ import type { EngineApi, EngineState } from '../../contracts';
 import { ask } from '../../engine/bus';
 import { calmCss } from '../base.css';
 import { componentsCss } from './components';
+import { markersCss } from './markers';
 import { purposeCss } from './purpose.css';
 
 /** Calm view's whole stylesheet: the view, the meaning components (round 7) and the purpose template around them. */
-export const calmSheetCss = (): string => `${calmCss}\n${componentsCss}\n${purposeCss}`;
+export const calmSheetCss = (): string => `${calmCss}\n${componentsCss}\n${purposeCss}\n${markersCss}`;
 import { liveKey, renderLiveValue, type LiveValue } from '../proxy';
 
 /** The engine's state, re-rendering on every change. */

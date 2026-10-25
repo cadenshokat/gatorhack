@@ -24,6 +24,7 @@ import * as I from './icons';
 import { IndexView } from './Index';
 import { ArticleHeader, LeadBand } from './Lead';
 import { calmSheetCss, tickNow, useCalmStyles, useDomVersion, useEngineState, useReducedMotion } from './live';
+import { pageMarks, readTimeLine } from './markers';
 import { pageMeaning } from './meaning';
 import { type Block, isShown, keyOf, newCtx, pagePopups, readBlocks, textOf } from './model';
 import { useOutcome } from './outcome';
@@ -34,8 +35,10 @@ import { HelpCard } from './sections/layouts';
 import { Drawer, SectionView } from './sections/Section';
 import { Strip, SubStrip } from './Strip';
 
-/** The person's Text − / Text + step, kept while the content script lives. */
-let sessionScale = 1;
+/** Text size on the simplified page: the panel's steps (state.calm.textStep), 15% each, 0.85× to 1.6×. */
+function scaleFor(step: number | undefined): number {
+  return Math.round(Math.min(1.6, Math.max(0.85, 1 + 0.15 * (step ?? 0))) * 100) / 100;
+}
 
 const specIds = new WeakMap<object, number>();
 let specN = 0;
@@ -89,11 +92,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
   const resultRef = useRef<HTMLDivElement>(null);
   const needInline = useCalmStyles(rootRef);
   useChromeRules(rootRef);
-  const [scale, setScaleState] = useState(sessionScale);
-  const setScale = (s: number): void => {
-    sessionScale = s;
-    setScaleState(s);
-  };
+  const scale = scaleFor(state.calm.textStep);
   const [step, setStep] = useState(0);
   const [drawerCall, setDrawerCall] = useState(0);
   const { outcome, arm } = useOutcome();
@@ -128,6 +127,18 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
     }
     // `version` re-reads the live page after it changes.
   }, [api, spec, outline, state.decisions, version, params.listFirst, params.stepMax, params.groupSize, meaning]);
+
+  // Round 8 markers: Jev's live badges and paid content, and "N min read" on an article that does not say it.
+  const marks = useMemo(() => pageMarks(state.understanding, (id) => api.elementFor(id)), [api, state.understanding]);
+  const isArticle = plan?.kind === 'article' && !!plan.article;
+  const readLine = useMemo(() => {
+    if (!isArticle) return null;
+    try {
+      return readTimeLine(document, state.understanding, (id) => api.elementFor(id));
+    } catch {
+      return null;
+    }
+  }, [api, isArticle, state.understanding]);
 
   // A different layout (Jev's pick arrived) starts the form again at its first step.
   useEffect(() => setStep(0), [spec]);
@@ -237,7 +248,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
         watchPopups(before);
       },
       peek: (el) => {
-        api.closeCalm();
+        api.closeCalm('peek');
         window.setTimeout(() => focusOriginal(el), 80);
       },
       step,
@@ -248,8 +259,10 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       kind: plan?.kind ?? 'page',
       textCol: m.textCol,
       results,
+      marks,
+      pulse: !reduceMotion,
     }),
-    [api, params.splitSentences, params.groupSize, state.settings?.explain, reduceMotion, watchPopups, watchResult, arm, step, goStep, drawerCall, jumpToField, outcome, plan?.kind, m.textCol, results],
+    [api, params.splitSentences, params.groupSize, state.settings?.explain, reduceMotion, watchPopups, watchResult, arm, step, goStep, drawerCall, jumpToField, outcome, plan?.kind, m.textCol, results, marks],
   );
 
   // New page content outside every placed part (a toast, a confirmation appended to the body) shows in a result card;
@@ -374,7 +387,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       ref={rootRef}
       class="wa-calm"
       role="region"
-      aria-label="Calm view"
+      aria-label="Simplified page"
       lang={document.documentElement.lang || undefined}
       data-scheme={tokens.scheme}
       data-mode={mode}
@@ -391,13 +404,13 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
     >
       {needInline && <style>{calmSheetCss()}</style>}
       <Calm.Provider value={ctx}>
-        <Strip api={api} state={state} plan={plan} scale={scale} setScale={setScale} />
+        <Strip api={api} plan={plan} />
         <main ref={mainRef} class="wa-page" tabIndex={-1}>
           <div class={`wa-col${reduceMotion ? '' : ' wa-fade'}`} key={specKey(spec)} data-kind={plan?.kind}>
             {empty || !plan ? (
               <div class="wa-empty wa-stack" style={{ alignItems: 'center' }}>
-                <p>This page has nothing the Calm view can show here.</p>
-                <button type="button" class="wa-btn wa-btn--tonal" onClick={() => api.showOriginal(true)}>
+                <p>WebAble could not simplify this page.</p>
+                <button type="button" class="wa-btn wa-btn--tonal" onClick={() => api.closeCalm()}>
                   Original page
                 </button>
               </div>
@@ -410,7 +423,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
                 ))}
                 {success && <SuccessPanel outcome={success} help={plan.help} />}
                 {plan.kind === 'article' && plan.article && !success ? (
-                  <ArticleHeader lead={plan.lead} art={plan.article} />
+                  <ArticleHeader lead={plan.lead} art={plan.article} readLine={readLine} />
                 ) : (
                   plan.lead && !success && !plan.meaning?.hideLead && <LeadBand lead={plan.lead} small={plan.kind === 'index'} />
                 )}
@@ -478,7 +491,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
                 <Drawer plan={plan} />
                 <footer class="wa-foot">
                   <span>Words and controls come from this page. Arranged by WebAble.</span>
-                  <button type="button" class="wa-btn wa-btn--quiet" onClick={() => api.showOriginal(true)}>
+                  <button type="button" class="wa-btn wa-btn--quiet" onClick={() => api.closeCalm()}>
                     Original page
                   </button>
                 </footer>

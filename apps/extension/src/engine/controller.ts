@@ -5,8 +5,10 @@
 // reader -> text zoom and page column planned once and applied in one step (one tab zoom change), checked once; a
 // failed check falls back once (column off, then the next lower zoom preset) and stops; the site's settled size is
 // kept for the session -> fit ops (verified) -> heading ramp (verified, single headings dropped) -> Jev understand ->
-// decisions -> ops from decisions (verified) -> Calm view automatically only on task pages (a form with a clear main
-// action) at structure level 2, else offered. Late overlays (cookie banners, chat panels) get an incremental Jev read.
+// decisions -> ops from decisions (verified) -> the simplified page (Calm view) by itself, once, on busy reading pages
+// (round 8, ./busy: before the person starts using the page, never on sign-in, checkout, account or statement pages,
+// not on a site set to "Original page") and on task pages (a form with a clear main action) at structure level 2,
+// else offered. Late overlays (cookie banners, chat panels) get an incremental Jev read.
 // SPA navigations re-run the element ops; zoom, column and behaviour ops stay. Nothing re-sizes a page on its own: late
 // Jev reads, learning, overlays and DOM changes never touch zoom or column; the person's A−/A+, width controls and
 // accepted offers do, in one step.
@@ -37,6 +39,7 @@ import { noteOfferOutcome, startSignals, type SignalsHost } from './signals';
 import { requestExplain } from './explain';
 import { PassiveObserver, readMediaFacts, watchMedia } from './passive';
 import { pageMeaning } from '../ui/calm/meaning';
+import { busyVerdict, distractionShare, isDistraction, type BusyVerdict } from './busy';
 
 export interface Controller {
   api: EngineApi;
@@ -87,6 +90,8 @@ interface SitePrefs {
   column?: 'off' | number;
   /** When the automatic column last did not fit this site (ms); it stays off until COLUMN_RETRY_MS has passed. */
   columnFailed?: number;
+  /** Round 8: the person closed the simplified page that opened by itself here: keep this site's own layout. */
+  original?: boolean;
 }
 
 const SITE_PREFS_KEY = 'sitePrefs';
@@ -221,6 +226,16 @@ function isWebApp(privatePage: boolean): boolean {
   }
   return false;
 }
+
+/** Round 8: what the person reads when the page could not be read (the server or Jev did not answer). */
+const UNREAD_LINE = "Couldn't read this page right now. Text size and buttons still work.";
+
+/** What counts as the person starting to use the page (round 8): then the page is never swapped on its own. */
+const INTERACT_EVENTS = ['pointerdown', 'keydown', 'scroll'] as const;
+
+/** Text size steps on the simplified page: one step is 15% (0.85× to 1.6×). */
+const CALM_STEP_MIN = -1;
+const CALM_STEP_MAX = 4;
 
 const OP_NOUN: Record<OpKind, string> = {
   page_zoom: 'page zoom',
@@ -520,6 +535,17 @@ export function createController(): Controller {
   let heuristicSpecCache: FitSpec | null = null;
   let pendingAi: { spec: FitSpec; result: RedesignResult } | null = null;
   let calmWasOpen = false;
+  // Round 8: the busy-page default. When this page started (performance.now(); 0 = the document load), when the
+  // person last clicked, pressed a key or scrolled past one screen, whether the simplified page opened by itself on
+  // this page (closing it then sets the site to "Original page"), and that the decision was made (once per page).
+  let pageAt = 0;
+  let interactedAt = -1;
+  let autoOpenedHere = false;
+  let autoDecided = false;
+  /** A refit (the person changed a setting) closed the simplified page: open it again once the page is read. */
+  let reopenAfterRefit: 'auto' | 'person' | null = null;
+  /** Text size steps taken in the simplified page (the panel's text size while it is open); kept for the session. */
+  let calmTextStep = 0;
   const redesignCache = new Map<string, RedesignResult>();
   // Round 7: the meaning check. Calm view is opened or offered on a page only when it leads with what the page exists
   // to show and leaves none of it out (Jev's verdict on a structure-only summary; checked on the device without Jev).
@@ -1375,6 +1401,18 @@ export function createController(): Controller {
 
   /** A−/A+: one Chrome zoom preset smaller or larger, with the column, in one step; remembered for this site. */
   async function adjustText(dir: -1 | 1): Promise<void> {
+    // Round 8: on the simplified page, text size sizes the simplified page (drawn at the fit's size, whatever the zoom).
+    if (store.get().calm.open) {
+      const next = Math.max(CALM_STEP_MIN, Math.min(CALM_STEP_MAX, calmTextStep + dir));
+      if (next === calmTextStep) {
+        toast(dir > 0 ? 'Text is as large as WebAble makes it' : 'Text is as small as it goes');
+        return;
+      }
+      calmTextStep = next;
+      store.set((st) => ({ calm: { ...st.calm, textStep: next } }));
+      log({ source: 'person', title: `Made the text ${dir > 0 ? 'bigger' : 'smaller'}`, action: 'applied' });
+      return;
+    }
     const fit = getFit();
     const r = read;
     if (!fit || !r || store.get().showingOriginal) return;
@@ -1811,6 +1849,8 @@ export function createController(): Controller {
       refitTimer = null;
       if (stopped) return;
       void (async () => {
+        const c = store.get().calm;
+        if (c.open) reopenAfterRefit = c.auto ? 'auto' : 'person';
         await teardownPage(true, true);
         errors = [];
         store.set({ ledger: [], startedAt: performance.now(), phase: 'idle' });
@@ -1821,6 +1861,12 @@ export function createController(): Controller {
 
   async function boot(kind: 'first' | 'navigation' | 'refit'): Promise<void> {
     const gen = ++generation;
+    if (kind === 'navigation') {
+      // A new page: the click that led here was on the last one.
+      pageAt = performance.now();
+      autoOpenedHere = false;
+    }
+    if (kind !== 'refit') autoDecided = false;
     if (kind === 'first') {
       await waitForVisible();
       await waitForLoad(1500);
@@ -1871,6 +1917,7 @@ export function createController(): Controller {
       if (gen !== generation) return;
       sitePrefs = await loadSitePrefs();
       if (gen !== generation) return;
+      if (!!sitePrefs.original !== !!store.get().calm.originalPinned) store.set((st) => ({ calm: { ...st.calm, originalPinned: !!sitePrefs.original } }));
       const hadSize = opsList.some((o) => (o.rec.kind === 'page_zoom' || o.rec.kind === 'column') && o.active);
       if (!hadSize) setZoomState(zi.tab);
       const sized = await fitSize(gen, r, fit, zi, kind);
@@ -1949,8 +1996,9 @@ export function createController(): Controller {
       u = res;
     } catch (err) {
       if (gen !== generation) return;
-      log({ source: 'jev', title: 'Jev could not be reached, so only your fit was applied', detail: plainError(err), action: 'skipped' });
-      addError(plainError(err));
+      // Round 8: one plain line for the person (the technical reason stays in the detail).
+      log({ source: 'jev', title: UNREAD_LINE, detail: plainError(err), action: 'skipped' });
+      addError(UNREAD_LINE);
       return;
     }
     if (gen !== generation || stopped) return;
@@ -2218,10 +2266,112 @@ export function createController(): Controller {
     return null;
   }
 
+  /**
+   * Round 8, the busy-page default: on a busy reading page the simplified page opens by itself, once, as soon as the
+   * page is understood (rules in ./busy). Measures the distractions' share of the page and logs the numbers.
+   */
+  function busyPageVerdict(r: ReadResult, gate: MeaningGate | null): BusyVerdict | null {
+    const s = store.get();
+    const u = s.understanding;
+    if (!u) return null;
+    const fit = getFit();
+    const clutterP = Math.max(fit?.attention?.clutter?.p ?? 0, s.passive?.beliefs?.clutter?.p ?? 0);
+    let share = 0;
+    try {
+      // The page's key content (Jev's main region, content of importance >= 3): a "distraction" box that wraps it is
+      // a layout container judged by its teasers, and is not counted in the share.
+      const key: Element[] = [];
+      const mr = u.mainRegion && u.mainRegion.id !== 'none' && u.mainRegion.p >= 0.8 ? reader.elementFor(u.mainRegion.id) : null;
+      if (mr) key.push(mr);
+      for (const e of u.elements) {
+        if ((e.importance ?? 0) < 3 || isDistraction(e)) continue;
+        const el = reader.elementFor(e.id);
+        if (el) key.push(el);
+      }
+      const boxes: Array<[Element, number]> = [];
+      for (const e of u.elements) {
+        if (!isDistraction(e)) continue;
+        const el = reader.elementFor(e.id);
+        if (!el?.isConnected || key.some((k) => k !== el && el.contains(k))) continue;
+        const rc = el.getBoundingClientRect();
+        boxes.push([el, Math.max(0, rc.width) * Math.max(0, rc.height)]);
+      }
+      const de = document.documentElement;
+      const pageArea = Math.max(de.scrollWidth, de.clientWidth) * Math.max(de.scrollHeight, de.clientHeight);
+      share = distractionShare(boxes, pageArea, (a, b) => a.contains(b));
+    } catch {
+      share = 0;
+    }
+    const v = busyVerdict({
+      purpose: u.purpose ?? null,
+      mainRegion: u.mainRegion ?? null,
+      elements: u.elements,
+      share,
+      clutterP,
+      sensitive: r.sensitive || !!r.digest.hasSensitiveFields,
+      meaningPass: gate ? gate.pass : null,
+      interacted: interactedAt >= 0 && interactedAt >= pageAt,
+      pinned: !!sitePrefs.original,
+    });
+    if (v.open && isSearchResults(r.pageKind)) return { ...v, open: false, reason: 'search results keep their own list' };
+    if (v.open && isWebApp(r.privatePage)) return { ...v, open: false, reason: 'web apps and mail keep their own layout' };
+    if (v.open && undoneKinds.has('calm_view')) return { ...v, open: false, reason: 'you undid the simplified page here' };
+    return v;
+  }
+
+  /** A click, a key press, or a scroll past one screen (trusted events only). */
+  function onInteract(e: Event): void {
+    if (!e.isTrusted || stopped) return;
+    if (e.type === 'scroll') {
+      const vh = document.documentElement.clientHeight || innerHeight;
+      if ((window.scrollY || document.documentElement.scrollTop || 0) <= vh) return;
+    }
+    interactedAt = performance.now();
+  }
+
+  function logBusy(v: BusyVerdict): void {
+    const u = store.get().understanding;
+    const pct0 = (x: number) => `${Math.round(x * 100)}%`;
+    const bars = `busy means ${v.bars.count} or more, or ${pct0(v.bars.share)} of the page with ${v.bars.minForShare} or more${v.sensitiveBars ? ' (lower, because busy pages bother you)' : ''}`;
+    const facts = [
+      u?.purpose ? `Page: ${purposeWords(u.purpose.kind)} (${p2(u.purpose.p)})` : 'Page purpose unknown',
+      u?.mainRegion ? `main content ${p2(u.mainRegion.p)}` : null,
+    ].filter(Boolean).join('; ');
+    const detail = `${v.count} ads, teasers and other distractions cover ${pct0(v.share)} of the page; ${bars}. ${facts}.`;
+    console.info('[WebAble] busy page', JSON.stringify({ open: v.open, reason: v.reason, count: v.count, share: Math.round(v.share * 1000) / 1000, purpose: u?.purpose?.kind ?? null, purposeP: u?.purpose?.p ?? null, main: u?.mainRegion?.p ?? null, url: location.href }));
+    log({
+      source: 'layout',
+      title: v.open ? 'This page is busy, so WebAble simplified it' : `Kept this page's own layout: ${v.reason}`,
+      detail,
+      action: v.open ? 'applied' : 'skipped',
+    });
+  }
+
   function maybeAutoCalm(r: ReadResult, decisions: ElementDecision[], gate: MeaningGate | null): void {
     const fit = getFit();
     const s = store.get();
     if (!fit || s.calm.open || s.showingOriginal) return;
+    if (reopenAfterRefit) {
+      const by = reopenAfterRefit;
+      reopenAfterRefit = null;
+      if (!gate || gate.pass) {
+        void openCalm(by === 'auto' ? 'auto' : 'person', 'Back to the simplified page after a settings change');
+        return;
+      }
+    }
+    // Decided once per page: a late read never opens it, and it never toggles back and forth.
+    if (autoDecided) return;
+    autoDecided = true;
+    // Round 8: busy reading pages open simplified by default (one fade, before the person starts using the page).
+    const busyV = busyPageVerdict(r, gate);
+    if (busyV) logBusy(busyV);
+    if (busyV?.open) {
+      autoOpenedHere = true;
+      void openCalm('auto', 'This page is busy, so WebAble simplified it');
+      return;
+    }
+    // The site is set to "Original page": nothing opens by itself here.
+    if (sitePrefs.original) return;
     // A Calm plan that would change what the page means is neither opened nor offered (the ledger already says why).
     if (gate && !gate.pass) return;
     const folded = decisions.filter((d) => d.verdict === 'fold').length;
@@ -2229,6 +2379,7 @@ export function createController(): Controller {
     if (!busy || fit.attention.structureLevel < 1) return;
     const block = fit.attention.structureLevel === 2 && !undoneKinds.has('calm_view') ? autoCalmBlock(r, decisions) : 'offered';
     if (block === null) {
+      autoOpenedHere = true;
       void openCalm('auto', `This form is busy (${folded} distraction${folded === 1 ? '' : 's'}, ${r.digest.page.element_count} items), so it opened in Calm view`);
       return;
     }
@@ -2887,7 +3038,7 @@ export function createController(): Controller {
     let gate = meaningGate;
     if (!gate && meaningRun) gate = await Promise.race([meaningRun, sleep(2500).then(() => null)]);
     if (gate && !gate.pass && gate.key === location.href) {
-      toast('Calm view stays off here: it would change what this page shows first');
+      toast('This page keeps its own layout: simplifying it would change what it shows first');
       log({
         source: 'check',
         title: 'Calm view did not open: it would not keep what this page is for',
@@ -2919,6 +3070,12 @@ export function createController(): Controller {
     const cov = calmCoverage(spec, outline);
     const key = `${location.pathname}|${outlineSignature(r.outline)}`;
     const cached = redesignCache.get(key) ?? (await readCachedRedesign(key));
+    // Round 8: the page is never swapped on its own once the person started using it (they may have while the
+    // layout was prepared), or when the site was just set to "Original page".
+    if (by === 'auto' && ((interactedAt >= 0 && interactedAt >= pageAt) || sitePrefs.original || gen !== calmGen || store.get().calm.open)) {
+      log({ source: 'layout', title: 'Kept this page as it is: you had started using it', action: 'skipped' });
+      return;
+    }
     const wantAi = s.settings.aiLayouts && !r.sensitive && !r.privatePage && outline.nodes.length > 0;
     // The page keeps its zoom under the Calm view (round 6): the view is drawn at 1 ÷ page zoom, so it is the fit's
     // size either way, and opening or closing it never changes the tab's zoom.
@@ -2940,9 +3097,17 @@ export function createController(): Controller {
         source = 'cached';
       }
     }
+    // Round 8: opening it by hand clears the site's "Original page" setting.
+    if (by === 'person' && sitePrefs.original) {
+      delete sitePrefs.original;
+      void saveSitePrefs({ original: undefined });
+    }
     store.set((st) => ({
       phase: 'calm',
-      calm: { open: true, loading: wantAi && !cached, spec: first, source, aiReady: false, redesign: cached ?? st.calm.redesign, visual: null },
+      calm: {
+        open: true, loading: wantAi && !cached, spec: first, source, aiReady: false, redesign: cached ?? st.calm.redesign, visual: null,
+        auto: by === 'auto', originalPinned: !!sitePrefs.original, textStep: calmTextStep,
+      },
     }));
     overlays.setHidden(true);
     const m = meaningNow(r.outline);
@@ -3143,9 +3308,18 @@ export function createController(): Controller {
     if (heuristicSpecCache) heuristicSpecCache = withMeaning(alignPrimary(completeSpec(heuristicSpecCache, outline).spec), outline);
   }
 
-  function closeCalm(): void {
+  /**
+   * Close the simplified page. The person closing it (`how` undefined) on a page where it opened by itself sets the
+   * site to "Original page" (round 8); a peek at one control, showing the untouched page or leaving the page does not.
+   */
+  function closeCalm(how?: 'peek' | 'internal'): void {
     const s = store.get();
     if (!s.calm.open) return;
+    const pin = how === undefined && autoOpenedHere && !sitePrefs.original;
+    if (pin) {
+      sitePrefs.original = true;
+      void saveSitePrefs({ original: true });
+    }
     calmGen++;
     pendingAi = null;
     window.removeEventListener('wheel', onEngage, { capture: true });
@@ -3153,10 +3327,14 @@ export function createController(): Controller {
     window.removeEventListener('keydown', onEngage, { capture: true });
     window.removeEventListener('touchstart', onEngage, { capture: true });
     store.set({
-      calm: { ...s.calm, open: false, loading: false, aiReady: false },
+      calm: { ...s.calm, open: false, loading: false, aiReady: false, originalPinned: !!sitePrefs.original },
       phase: s.understanding ? 'understood' : s.phase === 'calm' ? 'tailored' : s.phase,
     });
-    log({ source: 'person', title: 'Closed Calm view', action: 'kept' });
+    log({
+      source: 'person',
+      title: pin ? `Showing the original page; WebAble will keep ${siteKey()} as it is` : 'Showing the page with your adjustments',
+      action: 'kept',
+    });
     overlays.setHidden(store.get().showingOriginal);
     overlays.schedule('calm-closed');
   }
@@ -3168,7 +3346,7 @@ export function createController(): Controller {
     if (on === s.showingOriginal) return;
     if (on) {
       calmWasOpen = s.calm.open;
-      if (s.calm.open) closeCalm();
+      if (s.calm.open) closeCalm('internal');
       store.set({ showingOriginal: true });
       overlays.setHidden(true);
       void (async () => {
@@ -3250,7 +3428,7 @@ export function createController(): Controller {
     if (passiveTimer) clearTimeout(passiveTimer);
     passiveTimer = null;
     passiveOffers.clear();
-    if (store.get().calm.open) closeCalm();
+    if (store.get().calm.open) closeCalm('internal');
     const keep: Op[] = [];
     const drop: Op[] = [];
     for (const op of opsList) {
@@ -3371,7 +3549,7 @@ export function createController(): Controller {
     elementFor: (id) => reader.elementFor(id),
     toggleLens,
     openCalm: () => openCalm('person'),
-    closeCalm,
+    closeCalm: (how?: 'peek') => closeCalm(how === 'peek' ? 'peek' : undefined),
     useAiLayout: () => {
       if (pendingAi) void swapToAi('person', 'Chosen from the “A calmer layout is ready” chip');
     },
@@ -3414,6 +3592,7 @@ export function createController(): Controller {
       }
       window.addEventListener('resize', onResize, { passive: true });
       window.addEventListener('pageshow', onPageShow);
+      for (const t of INTERACT_EVENTS) window.addEventListener(t, onInteract, { capture: true, passive: true });
       await boot('first');
     },
     stop() {
@@ -3435,6 +3614,7 @@ export function createController(): Controller {
       stopPassive();
       window.removeEventListener('resize', onResize);
       window.removeEventListener('pageshow', onPageShow);
+      for (const t of INTERACT_EVENTS) window.removeEventListener(t, onInteract, { capture: true });
       try {
         chrome.storage.onChanged.removeListener(onStorage);
       } catch {

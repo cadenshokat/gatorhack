@@ -57,14 +57,14 @@ function Guard({ name, resetKey, fallback, children }: { name: string; resetKey:
 function CalmFallback({ api, s, broken = false }: { api: EngineApi; s: EngineState; broken?: boolean }) {
   const failed = broken || (!s.calm.loading && !s.calm.spec);
   return (
-    <div class="wa-calm-loading" role="dialog" aria-modal="true" aria-label="Calm view">
+    <div class="wa-calm-loading" role="dialog" aria-modal="true" aria-label="Simplified page">
       <div class="wa-calm-loading-card">
         {!failed && <span class="wa-spinner" aria-hidden="true" />}
-        <h2>{failed ? 'Calm view is not ready for this page' : 'Arranging a calmer view'}</h2>
+        <h2>{failed ? 'This page could not be simplified' : 'Simplifying this page'}</h2>
         <p>
           {failed
             ? 'The page stays as it is. Your other changes are still on.'
-            : 'Same page, fewer distractions. Every button will still drive the page.'}
+            : 'Same page, fewer distractions. Every button still works.'}
         </p>
         <button class="wa-btn" onClick={() => api.closeCalm()}>
           {failed ? 'Close' : 'Original page'}
@@ -116,8 +116,12 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
   const docked = onPage ? (views.find((v) => v.kind === 'consent' && v.action === 'docked') ?? null) : null;
   const tucked = onPage ? views.filter((v) => v.action === 'tucked') : [];
   const overlayOffer = onPage ? (views.find((v) => v.action === 'offered') ?? null) : null;
-  const offer = s.struggle.offers[0] ?? null;
-  const hasItems = !calmOpen && Boolean(offer || overlayOffer || s.toasts.length > 0 || tucked.length > 0);
+  // On the simplified page only toasts show beside WebAble's button (offers and overlay chips are about the page under it).
+  const offer = calmOpen ? null : (s.struggle.offers[0] ?? null);
+  const hasItems = Boolean(offer || overlayOffer || s.toasts.length > 0 || tucked.length > 0);
+  // Round 8: WebAble's one button stays on the simplified page too (text size, What changed, Original page, Pause),
+  // above the simplified page's own action bar when it has one.
+  const [calmDockH, setCalmDockH] = useState(0);
 
   const barMinH = Math.max(72, sz.target + 20);
   const plan = planDock({
@@ -146,9 +150,9 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
     recheckKey: `${s.showingOriginal}|${calmOpen}|${views.map((v) => `${v.id}:${v.action}`).join(',')}|${Math.round(Z * 100)}`,
   });
   const side = spot.side;
-  const bottom = Math.max(plan.minBottom, spot.bottom / Z);
+  const bottom = Math.max(plan.minBottom, spot.bottom / Z, calmOpen && calmDockH > 0 ? calmDockH / Z + GAP : 0);
   const heights = dockHeights(vh, bottom, M, sz.target, GAP, panelOpen);
-  const showPill = !calmOpen && heights.pillWithPanel;
+  const showPill = heights.pillWithPanel;
   const showItems = hasItems && (!panelOpen || plan.itemsBeside);
   const itemsMax = panelOpen ? vh - bottom - M : heights.aboveMax;
 
@@ -172,7 +176,7 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
         if (st.calm.open || st.showingOriginal) return;
         noteAdjust('column');
         api.adjustColumn(act === 'narrower' ? -1 : 1);
-      } else if (!st.calm.open) {
+      } else {
         setPanelOpen((open) => {
           if (open) {
             requestAnimationFrame(() => {
@@ -233,12 +237,18 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
   useLayoutEffect(() => {
     calmHost.classList.toggle('is-open', calmReady);
     calmHost.setAttribute('data-mode', mode);
+    calmHost.setAttribute('data-motion', reduce ? 'reduce' : 'full');
     const has = calmReady && calmMount.childElementCount > 0;
     calmHost.classList.toggle('has-content', has);
     const cz = String(Math.round((1 / pageZoom) * 10000) / 10000);
     if (calmHost.style.getPropertyValue('zoom') !== cz) calmHost.style.setProperty('zoom', cz);
     calmHost.style.setProperty('--wa-vw', `${Math.round(vp.w * pageZoom)}px`);
     calmHost.style.setProperty('--wa-vh', `${Math.round(vp.h * pageZoom)}px`);
+    // The simplified page's own action bar (its height from the bottom of the screen, in the page's CSS px).
+    const calmDock = calmReady ? calmMount.querySelector<HTMLElement>('.wa-dock') : null;
+    const dr = calmDock?.getBoundingClientRect();
+    const dockH = dr && dr.height > 0 ? Math.max(0, Math.round(vp.h - dr.top)) : 0;
+    if (Math.abs(dockH - calmDockH) > 1) setCalmDockH(dockH);
     if (calmReady && !wasCalm.current) {
       const root = calmMount.getRootNode() as ShadowRoot | Document;
       const focused = 'activeElement' in root ? root.activeElement : null;
@@ -399,7 +409,7 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
         )}
 
         {calmReady && s.calm.spec && s.outline && s.fit && (
-          <Guard name="Calm view" resetKey={`${s.calm.source}|${s.calm.spec ? 1 : 0}|${s.calm.open}`} fallback={<CalmFallback api={api} s={s} broken />}>
+          <Guard name="Simplified page" resetKey={`${s.calm.source}|${s.calm.spec ? 1 : 0}|${s.calm.open}`} fallback={<CalmFallback api={api} s={s} broken />}>
             {createPortal(<CalmView api={api} spec={s.calm.spec} outline={s.outline} fit={s.fit} />, calmMount)}
           </Guard>
         )}
@@ -430,7 +440,7 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
           />
         )}
 
-        {!calmOpen && (showPill || panelOpen || items) && (
+        {(showPill || panelOpen || items) && (
           <div
             class="wa-dock"
             ref={dockRef}

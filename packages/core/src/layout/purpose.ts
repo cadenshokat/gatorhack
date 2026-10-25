@@ -450,7 +450,10 @@ export function meaningRequest(spec: FitSpec, outline: PageOutline, m: PageMeani
 
   // The Calm plan, in the order Calm view draws it: the page's title band, what the template draws first, then the part
   // that leads. Parts Calm view folds into the drawer (distractions Jev named, inside open parts too) are not "shown".
-  const hidden = new Set<string>([...m.drawer, ...m.chrome].flatMap(sub));
+  // A news page is drawn as the page's own story list, lead story first (round 8: the view keeps its teasers, so the
+  // check must not count them as folded).
+  const storyList = m.template === 'news_index';
+  const hidden = new Set<string>([...m.drawer.filter((id) => !(storyList && m.fine[id] === 'teaser_other_content')), ...m.chrome].flatMap(sub));
   const visible = (ids: string[]): string[] => ids.filter((id) => !hidden.has(id));
   const open = spec.sections.filter((s) => s.state === 'open' && s.role !== 'navigation' && s.role !== 'legal');
   const folded = spec.sections.filter((s) => s.state !== 'open' || s.role === 'navigation');

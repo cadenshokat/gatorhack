@@ -3,7 +3,9 @@
 // of the page's intro behind "About this page". Nothing here is written by us or by a model.
 import type { JSX } from 'preact';
 import { Blocks, InlineLink, Picture } from './Blocks';
+import { useCalm } from './context';
 import { InlineDisclosure } from './Disclosure';
+import { LiveDot, isLiveText } from './markers';
 import type { Inline } from './model';
 import type { ArticleHead, Lead } from './plan';
 
@@ -53,14 +55,23 @@ export function LeadBand({ lead, small = false }: { lead: Lead; small?: boolean 
  * An article's header (design.md §2): kicker · date, then the title (left-aligned), the dek, the byline with each name
  * once (the page's own links), and the lead picture in the picture column with its caption and credit.
  */
-export function ArticleHeader({ lead, art }: { lead: Lead | null; art: ArticleHead }): JSX.Element {
+export function ArticleHeader({ lead, art, readLine = null }: { lead: Lead | null; art: ArticleHead; readLine?: string | null }): JSX.Element {
+  const ctx = useCalm();
   const meta = [art.kicker, art.date].filter((x): x is string => !!x);
   const by = art.byline;
+  // Round 8: "N min read" under the headline: the page's own, else words / 230 (markers.readTimeLine).
   return (
     <header class="wa-art">
       {meta.length > 0 && (
         <p class="wa-art__meta wa-meta">
-          {art.kicker && <span class="wa-art__kicker">{art.kicker}</span>}
+          {art.kicker && isLiveText(art.kicker) ? (
+            <span class="wa-art__kicker wa-live">
+              <LiveDot pulse={!!ctx.pulse} />
+              {art.kicker}
+            </span>
+          ) : (
+            art.kicker && <span class="wa-art__kicker">{art.kicker}</span>
+          )}
           {art.kicker && art.date && (
             <span class="wa-sep" aria-hidden="true">
               ·
@@ -84,8 +95,17 @@ export function ArticleHeader({ lead, art }: { lead: Lead | null; art: ArticleHe
                 ))
               : by.text}
           </span>
+          {readLine && (
+            <>
+              <span class="wa-sep" aria-hidden="true">
+                ·
+              </span>
+              <span class="wa-art__readtime">{readLine}</span>
+            </>
+          )}
         </p>
       )}
+      {readLine && !by && <p class="wa-meta wa-readtime">{readLine}</p>}
       {art.lead && (
         <div class="wa-art__lead">
           <Picture b={art.lead} lead wide />

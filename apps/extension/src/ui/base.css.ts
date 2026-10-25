@@ -4,8 +4,8 @@
 // - `baseCss`: host reset, default light tokens and shared primitives (pills, cards, the fern dot) for all WebAble UI.
 // - `calmCss`: the Calm view, every selector scoped under `.wa-calm`. CalmView adopts it into its own root node itself,
 //   so it renders correctly whether or not the host also adopted `baseCss`.
-// - `calmChromeCss`: rules for the in-page chrome's shadow root while the Calm view is open (the WebAble pill and the
-//   floating chips hide). Keyed on `[data-calm-open]` on `.wa-root` (or the host), and on the open Calm host itself.
+// - `calmChromeCss`: rules for the in-page chrome's shadow root while the Calm view is open (the floating chips hide;
+//   round 8: WebAble's pill stays, it is the one control on every page). Keyed on `[data-calm-open]` on `.wa-root` (or the host), and on the open Calm host itself.
 // Tokens are CSS custom properties `--wa-*` from tokens.ts; the Calm view sets fit-sized values inline on its root.
 // The Calm host is CSS-zoomed by 1 ÷ page zoom, where vw / vh no longer match the screen: viewport lengths use
 // --wa-vw / --wa-vh (the viewport in the view's own px, set on the host), with vw / vh only as fallbacks.
@@ -61,9 +61,8 @@ export const baseCss: string = `${RESET}${tokensToCss(tokensFor(null, 'light'), 
  * Calm host works even before it does.
  */
 export const calmChromeCss: string = `
-.wa-root[data-calm-open] .wa-pill,.wa-root[data-calm-open] .wa-floatchip,
-:host([data-calm-open]) .wa-pill,:host([data-calm-open]) .wa-floatchip,
-.wa-calm-host.is-open.has-content ~ .wa-app .wa-pill,.wa-calm-host.is-open.has-content ~ .wa-app .wa-floatchip{display:none!important}
+.wa-root[data-calm-open] .wa-floatchip,:host([data-calm-open]) .wa-floatchip,
+.wa-calm-host.is-open.has-content ~ .wa-app .wa-floatchip{display:none!important}
 `;
 
 const C = '.wa-calm';

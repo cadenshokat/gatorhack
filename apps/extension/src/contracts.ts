@@ -34,6 +34,16 @@ export interface EngineState {
     aiReady: boolean; // an AI layout arrived while the person was busy: show the chip
     redesign: RedesignResult | null;
     visual: VisualVerdict | null;
+    /** Round 8: the simplified page opened by itself on this page (a busy reading page, or a task form). */
+    auto?: boolean;
+    /**
+     * Round 8: this site is set to "Original page" (the person closed the simplified page after it opened by itself);
+     * nothing opens by itself here until the person opens it again. Drives the panel's "Original page" switch:
+     * on = closeCalm(), off = openCalm().
+     */
+    originalPinned?: boolean;
+    /** Round 8: text size steps on the simplified page (the panel's text size while it is open; 1 step = 15%). */
+    textStep?: number;
   };
   struggle: {
     latest: StruggleJudgment | null;
@@ -77,7 +87,8 @@ export interface EngineApi {
 
   toggleLens(on?: boolean): void;
   openCalm(): Promise<void>;
-  closeCalm(): void;
+  /** Close the simplified page. Closing one that opened by itself sets the site to "Original page"; a peek at one control does not. */
+  closeCalm(how?: 'peek'): void;
   useAiLayout(): void; // accept the AI layout chip
   showOriginal(on: boolean): void; // one click back to the untouched page
   undoOp(opId: string): void;

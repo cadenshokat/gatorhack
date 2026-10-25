@@ -5,6 +5,7 @@ import * as I from '../icons';
 import type { Block } from '../model';
 import { useCalm } from '../context';
 import { Disclosure } from '../Disclosure';
+import { AdTag, type Marks, isAdItem } from '../markers';
 import { type CalmPlan, type FormPlan, type PlanSection, allBlocks } from '../plan';
 import { FormSteps, SingleForm } from './FormSteps';
 import {
@@ -110,6 +111,12 @@ export function SectionView({ p, form = null, first = false }: { p: PlanSection;
   );
 }
 
+/** Round 8: every block of a part comes from paid content Jev is sure about (p >= 0.9): it gets an "Ad" tag. */
+function allAds(blocks: Block[], marks: Marks | undefined): boolean {
+  if (!blocks.length || !marks?.ads.length) return false;
+  return blocks.every((b) => isAdItem(b.src instanceof Element ? b.src : b.src.parentElement, marks));
+}
+
 /** "More on this page": every end-drawer part, Jev-folded distraction and unplaced part, behind one disclosure. */
 export function Drawer({ plan }: { plan: CalmPlan }): JSX.Element | null {
   const ctx = useCalm();
@@ -120,6 +127,7 @@ export function Drawer({ plan }: { plan: CalmPlan }): JSX.Element | null {
         {plan.drawer.map((d) => (
           <div key={d.key} class="wa-sub">
             <div class="wa-sub__head">
+              {allAds(d.section ? allBlocks(d.section) : d.blocks, ctx.marks) && <AdTag />}
               <h3 class="wa-h-title">{d.label}</h3>
               {d.section?.records && d.section.records.length >= 2 && <span class="wa-count wa-h-title">{d.section.records.length}</span>}
             </div>

@@ -2,6 +2,7 @@
 import { createContext } from 'preact';
 import { useContext } from 'preact/hooks';
 import type { EngineApi } from '../../contracts';
+import type { Marks } from './markers';
 import type { PageKind } from './plan';
 
 export interface CalmCtx {
@@ -33,6 +34,10 @@ export interface CalmCtx {
   textCol: number;
   /** A search results page (Google, Bing, a site's own search): results are a plain list, not cards. */
   results?: boolean;
+  /** Round 8: elements Jev judged live badges and paid content, for the "Live" dot and the "Ad" tag. */
+  marks?: Marks;
+  /** Round 8: the live dot may pulse (moving things are fine for this person and the system allows motion). */
+  pulse?: boolean;
 }
 
 /** A results page by its address (the layout may not say so): a search engine's, or a site's own /search?q=… page. */
@@ -47,7 +52,7 @@ export const Calm = createContext<CalmCtx | null>(null);
 
 export function useCalm(): CalmCtx {
   const c = useContext(Calm);
-  if (!c) throw new Error('Calm view context missing');
+  if (!c) throw new Error('Simplified page context missing');
   return c;
 }
 

@@ -7,6 +7,7 @@ import { proxyCheck, proxyClick, proxyCommit, proxyInput, proxyKey, proxySelect,
 import { isIrreversible, useCalm } from './context';
 import * as I from './icons';
 import { tickNow, useLive } from './live';
+import { AdTag, Kicker, LIVE_MAX_CHARS, LiveDot, isAdItem, liveLabelFor } from './markers';
 import {
   type Block, type CardLinkBlock, type ChoiceBlock, type ChoicesBlock, type ControlBlock, type FieldBlock, type FlowBlock,
   type ImageBlock, type Inline, type LinkPart, type ListBlock, type PeekBlock, type RichTableBlock, type SelectBlock, type TableBlock,
@@ -154,6 +155,18 @@ export function FlowView({ b, quiet = false, pageline = false }: { b: FlowBlock;
     const r = ref.current?.getBoundingClientRect();
     void ctx.api.explainSelection(b.text, r ? { x: r.left, y: r.top, w: r.width, h: r.height } : { x: 0, y: 0, w: 0, h: 0 });
   };
+  // Round 8: a short "Live" label the page shows gets the green dot.
+  const src = b.src instanceof Element ? b.src : b.src.parentElement;
+  if (b.text.length <= LIVE_MAX_CHARS && liveLabelFor(src, b.text, ctx.marks)) {
+    return (
+      <p class={cls}>
+        <span class="wa-live">
+          <LiveDot pulse={!!ctx.pulse} />
+          {renderParts(b.parts)}
+        </span>
+      </p>
+    );
+  }
   if (paras.length === 1 && !dense) {
     return <p class={cls}>{renderParts(paras[0]!)}</p>;
   }
@@ -855,10 +868,12 @@ function CardLinkRow({ b, thumbs = true }: { b: CardLinkBlock; thumbs?: boolean 
     ctx.click(b.el);
   };
   const pic = thumbs && b.image && keepImage(b.image, true) ? b.image : null;
+  const live = liveLabelFor(b.el, b.kicker, ctx.marks);
   const inner = (
     <>
       <span class="wa-row__main">
-        {b.kicker && <span class="wa-kicker">{b.kicker}</span>}
+        {isAdItem(b.el, ctx.marks) && <AdTag />}
+        <Kicker text={b.kicker} live={live} pulse={!!ctx.pulse} />
         {b.title && <span class="wa-row__title">{b.title}</span>}
         {b.dek && <span class="wa-meta wa-story__dek">{b.dek}</span>}
         {b.lines.map((l, i) => (

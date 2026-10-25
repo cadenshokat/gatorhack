@@ -6,6 +6,7 @@ import type { JSX } from 'preact';
 import { Blocks, Picture, keepImage } from './Blocks';
 import { useCalm } from './context';
 import { Disclosure } from './Disclosure';
+import { AdTag, Kicker, isAdItem, liveLabelFor } from './markers';
 import type { CardLinkBlock } from './model';
 import type { IndexPlan, IndexSection } from './plan';
 
@@ -23,10 +24,12 @@ function LeadStory({ s }: { s: CardLinkBlock }): JSX.Element {
   const press = usePress(s);
   const ctx = useCalm();
   const pic = s.image && keepImage(s.image, true) ? s.image : null;
+  const live = liveLabelFor(s.el, s.kicker, ctx.marks);
   const body = (
     <>
       {pic && <Picture b={pic} ratio={16 / 9} lead caption={false} />}
-      {s.kicker && <span class="wa-kicker">{s.kicker}</span>}
+      {isAdItem(s.el, ctx.marks) && <AdTag />}
+      <Kicker text={s.kicker} live={live} pulse={!!ctx.pulse} />
       <h2 class="wa-leadstory__title">{s.title}</h2>
       {s.dek && <p class="wa-leadstory__dek">{s.dek}</p>}
       {s.time && <span class="wa-time">{s.time}</span>}
@@ -48,10 +51,12 @@ export function StoryRow({ s }: { s: CardLinkBlock }): JSX.Element {
   const press = usePress(s);
   const ctx = useCalm();
   const pic = s.image && keepImage(s.image, true) ? s.image : null;
+  const live = liveLabelFor(s.el, s.kicker, ctx.marks);
   const body = (
     <>
       <span class="wa-story__text">
-        {s.kicker && <span class="wa-kicker">{s.kicker}</span>}
+        {isAdItem(s.el, ctx.marks) && <AdTag />}
+        <Kicker text={s.kicker} live={live} pulse={!!ctx.pulse} />
         <span class="wa-story__title">{s.title}</span>
         {s.dek && <span class="wa-story__dek">{s.dek}</span>}
         {s.time && <span class="wa-time">{s.time}</span>}

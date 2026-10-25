@@ -75,6 +75,11 @@ const CALM_HOST_CSS = /* css */ `
 .wa-calm-host.is-open.has-content { pointer-events: auto; background: var(--wa-canvas, #F5F5F7); }
 .wa-calm-host.is-open.has-content[data-mode="dark"] { background: var(--wa-canvas, #000000); }
 .wa-calm-host.is-open.has-content[data-mode="max"] { background: var(--wa-canvas, #FFFFFF); }
+/* Round 8: the simplified page arrives in one calm fade (none when motion is reduced). */
+@keyframes wa-calm-host-in { from { opacity: 0; } to { opacity: 1; } }
+.wa-calm-host.is-open.has-content { animation: wa-calm-host-in .32s ease-out both; }
+.wa-calm-host.is-open.has-content[data-motion="reduce"] { animation: none; }
+@media (prefers-reduced-motion: reduce) { .wa-calm-host.is-open.has-content { animation: none; } }
 `;
 
 export function mountUi(api: EngineApi): () => void {
@@ -116,7 +121,7 @@ export function mountUi(api: EngineApi): () => void {
   calmHost.tabIndex = -1;
   calmHost.setAttribute('role', 'dialog');
   calmHost.setAttribute('aria-modal', 'true');
-  calmHost.setAttribute('aria-label', 'Calm view');
+  calmHost.setAttribute('aria-label', 'Simplified page');
   const calmShadow = calmHost.attachShadow({ mode: shadowMode() });
   adopt(calmShadow, [tokensSheet, sheet(baseCss)], baseCss);
   const calmMount = document.createElement('div');
