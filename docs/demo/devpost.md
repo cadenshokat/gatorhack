@@ -2,7 +2,7 @@
 
 Ready to paste into Devpost; due Sunday 5 PM. Built from `docs/demo/frontier.md`, `docs/agents/PLAN.md` and
 `docs/CLAIMS.md`. Every number comes from the "Say now" section of `docs/CLAIMS.md`; if one changes there, change it
-here. Written by Wren (Sid's Claude) for round 7.
+here. Written by Wren (Sid's Claude) for round 7, updated for round 8 (one WebAble, the onboarding games).
 
 There's no separate positioning doc in the repo, so the positioning here is taken from those three files: WebAble fits
 pages to one person, it's the person's own tool, it makes no compliance claims, and it only does what it can check.
@@ -27,9 +27,13 @@ page to them, without asking about their health and without breaking the page.
 
 WebAble is a Chrome extension. It learns what you need, then fits the pages you visit to you.
 
-- **It learns your needs, not your health.** A short warm-up sets a starting text size, click size and contrast. While you
-  browse, it notices things like zooming in on several sites, or clicks that just miss, and offers a change. You can
-  accept, undo or ignore it. It never names a condition.
+- **It starts with five quick games.** Reading size, Faint words, Pop the bubbles, Find it and Sort the colours, designed
+  to take about three minutes. Each borrows from a published measure: the MNREAD reading test, the Pelli-Robson
+  contrast chart, Fitts's law and the ISO pointing test, research on visual clutter and motion, and the Farnsworth D-15.
+  Each stops as soon as it's sure. The results page shows a petal chart of what helps you most and says, in plain words,
+  what WebAble will do on every site: "Text will be 22 px on every site", "Buttons and links will be at least 44 px".
+- **It learns your needs, not your health.** It never names a condition. While you browse, it notices things like
+  zooming in on several sites, or clicks that just miss, and offers a change. You can accept, undo or ignore it.
 - **Jev reads the page before you do.** For each part of a page, Jev says what it's for: the page's content, a form field,
   the main button, an ad, a teaser for another page, a pop-up, help. It also says what kind of page it is and which part
   holds the information the page exists to show. Every answer comes with a probability.
@@ -39,9 +43,14 @@ WebAble is a Chrome extension. It learns what you need, then fits the pages you 
 - **It makes room.** Pop-ups that open by themselves and cover what you're doing get tucked to the edge, one tap to
   bring back. Cookie notices are moved aside with the site's own choices in a small bar; WebAble never answers them for
   you.
-- **Calm view rebuilds the page around what it's for.** A sports record becomes a stat grid with both team logos. A recipe
-  opens on the ingredients and steps. Before Calm view shows anything, Jev checks it against the original: does it lead
-  with what the page exists to show, and is anything missing? If not, Calm view isn't offered.
+- **On busy pages, you just get the simplified page.** News, recipes, sports records and guides open built around what
+  the page is for: a sports record becomes a stat grid with both team logos, a recipe opens on the ingredients and steps.
+  There are no modes to choose. One switch, "Original page", brings the site's version back, and WebAble remembers it
+  per site. Sign-in, checkout, account and statement pages are never replaced.
+- **It checks the meaning first.** Before the simplified page shows, Jev checks it against the original: does it lead
+  with what the page exists to show, and is anything missing? If not, you get the original page, adjusted in place.
+- **One small button.** On every page there's one small WebAble button. It opens a short sheet: text size, the
+  "Original page" switch, up to five plain lines saying what changed (each with Undo), and "Pause on this site".
 - **Every change gets checked.** After each change, WebAble checks the page for text that's cut off, overlapping or
   scrolling sideways. When a change breaks something, it puts it back by itself.
 - **Hard passages, explained.** Select a dense paragraph and WebAble writes a plain version. Code checks that every number
@@ -58,8 +67,11 @@ WebAble is a Chrome extension. It learns what you need, then fits the pages you 
   task, is this the main action, is this help. A typical page is about 178 of these decisions, asked in parallel.
 - **Code makes every decision.** The thresholds (fold at 90% or more, protect at 5% or more that something matters,
   outline a main button only at 90% or more) live in one shared core package, with tests.
-- **GPT writes, Jev judges.** Where we need writing, OpenAI's models draft it: candidate layouts for Calm view (GPT-6
-  Sol) and plain-language explanations (GPT-5.4 mini). Jev then judges each layout and checks each explanation against
+- **The onboarding is built on research.** Each of the five games borrows from a published measure and an adaptive
+  method that stops once it's sure. We checked every source and wrote down what a 30-second game can and can't tell
+  us (`docs/onboarding/research.md`).
+- **GPT writes, Jev judges.** Where we need writing, OpenAI's models draft it: candidate layouts for the simplified page
+  (GPT-6 Sol) and plain-language explanations (GPT-5.4 mini). Jev then judges each layout and checks each explanation against
   the original.
 - **We measured as we went.** A Playwright harness runs WebAble over 50 popular sites in a fresh browser profile and
   checks the result. Separate scripts compare Jev with GPT-6 Sol on the same questions, scan everything sent for personal
@@ -82,8 +94,11 @@ WebAble is a Chrome extension. It learns what you need, then fits the pages you 
 - **Its server won't take calls from a browser extension,** so we built the local server to hold the key.
 - **Its image input is ten days old and experimental.** We use it for one extra before-and-after check; the code checks
   still decide whether a change stays.
-- **Calm view could get a page's meaning wrong.** On floridagators.com's Kentucky history page it led with a news teaser
-  and dropped the record and the logos. That's why we built the page-purpose questions and the meaning check.
+- **The simplified page could get a page's meaning wrong.** On floridagators.com's Kentucky history page it led with a
+  news teaser and dropped the record and the logos. That's why we built the page-purpose questions and the meaning check.
+- **We built it like engineers.** When we tested it ourselves, the simplified page was the best thing WebAble did, but
+  everything around it had too many named features, buttons nobody understood, and an onboarding that felt like a chore.
+  We cut it to one WebAble, one small button and plain words, and rebuilt the onboarding as five short games.
 
 ## Accomplishments that we're proud of
 
@@ -118,7 +133,8 @@ WebAble is a Chrome extension. It learns what you need, then fits the pages you 
   hand on the trackpad, with WebAble on and off.
 - **Fix the misses.** On 10 of the 50 sites WebAble didn't try to enlarge the text at all. We traced it to misjudging
   which text on the page is the body text, and it's most of the gap between 32 and the 47 sites that loaded.
-- **More kinds of pages in Calm view,** and pictures, once Jev's image input is ready for production.
+- **Validate the games.** Compare each game's result with the clinical test it borrows from, on the same people.
+- **More kinds of simplified pages,** and pictures, once Jev's image input is ready for production.
 
 ## Built with
 
@@ -155,14 +171,14 @@ settled who pays; a personal subscription, or an organisation paying for its peo
 
 **6. What if it hides something I need?**
 It folds something only when Jev is at least 90% sure it's an ad, a teaser or a pop-up, and anything that might be
-content, a field or help is protected and never folded. Folded parts open in one tap, and Calm view isn't offered if
-Jev's meaning check finds the page's main information missing.
+content, a field or help is protected and never folded. Every change is listed in the sheet with an Undo, and the
+simplified page isn't used if Jev's meaning check finds the page's main information missing.
 
 **7. Can a website trick it?**
 It could try, for example by labelling a "subscribe" button "Close". Jev judges mainly from structure rather than the
-site's own labels, and the only things WebAble ever presses are a chat window's own minimise button and a video's own
-pause button, after Jev picks the same button with the options in both orders and code rules out links and submit
-buttons.
+site's own labels, and WebAble only ever presses two kinds of button: a chat window's own minimise button (only when Jev
+picks the same one with the options in both orders and code rules out links and submit buttons) and a slideshow's own
+pause button, while videos that play muted are paused directly.
 
 **8. Does it work on every site?**
 No: on 32 of 50 popular sites it made the text larger and left nothing broken. Most misses are pages where it misjudged
@@ -186,5 +202,8 @@ a general chat model took twelve seconds on the same questions.
 - **"How the team worked"** names the AI agents. Keep it if you want to be open about how it was built; cut it if you'd
   rather not.
 - **Question 5** is the one answer that isn't backed by `CLAIMS.md`. Change it to what you actually plan.
+- **"Calm view" is gone from the user-facing story** (round 8: no modes). This file now says "the simplified page".
+- **"About three minutes"** for the games is the design target, not a measured time. Say "designed to take" until it's
+  timed on people.
 - **Never say** (from `CLAIMS.md`): compliance, ADA or WCAG; condition names; age or health; "more accurate than GPT";
   "works on any website"; "nothing leaves your laptop" (say "nothing about you"); counts of people we help.

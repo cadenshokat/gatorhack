@@ -2,7 +2,7 @@
 
 Gator Hack asks every team to show what their new technology does, what was hard, and why it's recent. This is ours,
 in plain spoken language. Every number in it comes from the "Say now" section of `docs/CLAIMS.md`; if a number changes
-there, change it here. Written by Wren (Sid's Claude) for round 7.
+there, change it here. Written by Wren (Sid's Claude) for round 7, updated for round 8.
 
 ## What Jev is, and why it's recent
 
@@ -34,11 +34,23 @@ fitting. Jev does the part code can't: it reads the page and says what each part
 - **Code decides, and only on confident answers.** WebAble folds something away only when Jev is at least 90% sure it's
   an ad, a teaser or a pop-up, and less than 20% sure it's part of the task. Anything that might be content, a field or
   help is protected and never folded. It outlines a main button only when Jev is at least 90% sure.
-- **Round 7: the page's meaning.** Jev now also says what the page is for (a record, an article, a recipe, a form...),
-  which region holds the information the page exists to show, and a finer role for each part (a stat, a team logo, a
-  recipe step). Calm view rebuilds the page around that.
-- **A meaning check.** Before Calm view shows anything, Jev compares it with the original: does it lead with what the
-  page exists to show, and is anything from it missing? If it fails, Calm view isn't offered on that page.
+- **The page's meaning.** Jev also says what the page is for (a record, an article, a recipe, a form...), which region
+  holds the information the page exists to show, and a finer role for each part (a stat, a team logo, a recipe step).
+- **One WebAble, no modes.** On busy pages (news, articles, recipes, sports records, guides) you simply get the
+  simplified page, built around what the page is for, the moment WebAble understands it. Everywhere else it adjusts the
+  page in place. One switch, "Original page", brings the site's own version back, and WebAble remembers it per site.
+  Sign-in, checkout, account and statement pages are never replaced, and once you start scrolling or clicking WebAble
+  never swaps the page on its own.
+- **A meaning check.** Before the simplified page shows, Jev compares it with the original: does it lead with what the
+  page exists to show, and is anything from it missing? If it fails, you get the original page, adjusted in place.
+- **One small button.** On every page there's one small WebAble button. It opens a short sheet: text size, the
+  "Original page" switch, up to five plain lines saying what changed (each with Undo), and "Pause on this site".
+- **It starts with five quick games.** About three minutes: Reading size, Faint words, Pop the bubbles, Find it and Sort
+  the colours. Each borrows from a published measure (the MNREAD reading test, the Pelli-Robson contrast chart, Fitts's
+  law and the ISO pointing test, research on visual clutter and motion, and the Farnsworth D-15) and stops as soon as
+  it's sure. The results page shows a petal chart of what helps you most and says, in plain words, what WebAble will
+  do on every site. It measures needs, never conditions, and keeps learning as you browse. The research is in
+  `docs/onboarding/research.md`.
 - **Every change is checked.** After each change, code checks the page for text that's cut off, overlapping or
   scrolling sideways, and puts the change back if a check fails.
 
@@ -59,6 +71,10 @@ fitting. Jev does the part code can't: it reads the page and says what each part
   the API key, caches answers and talks to Jev. The extension only talks to that server.
 - **Its image input is experimental.** We use it for one extra check, comparing screenshots before and after a change.
   The code checks are still what decide whether a change stays.
+- **We built it like engineers.** When Caden and Sid tested round 7, the simplified page was the best thing WebAble had
+  done, but everything around it had too many named features, buttons nobody understood, and an onboarding that felt
+  like a chore. Round 8 cut it to one WebAble, one small button and plain words, and rebuilt the onboarding as five short
+  games backed by published measures.
 
 ## The numbers we can say
 
@@ -78,27 +94,30 @@ From `docs/CLAIMS.md`, "Say now". Use these words, not stronger ones.
 
 ## The 2-minute video
 
-Five pages, about 280 words of narration. Record the screen in Chrome at 1440×900 with the URLs from
-`docs/demo/pages.md`. Each page shows the original for a moment, then WebAble's version. Lines in brackets are on-screen
-text, not narration.
+The onboarding, then five pages, about 260 words of narration. Record the screen in Chrome at 1440×900 with the URLs
+from `docs/demo/pages.md`. Each page shows the original for a moment, then WebAble's version. Lines in brackets are
+on-screen text, not narration.
 
-The storyboard shows what round 7 is meant to do. Before recording, check each page against what actually ships, and
+The storyboard shows what round 8 is meant to do. Before recording, check each shot against what actually ships, and
 cut any line the build doesn't back up.
 
 | Time | Shot | On screen | Narration |
 |---|---|---|---|
-| 0:00–0:12 | Title, then Alderra as the site made it | [WebAble · built on Jev, TypeSafe AI, Sept 2026] Cursor drifts over the small grey Confirm button | "A lot of the web is hard to use if you need bigger text, steadier clicks or fewer distractions. WebAble fits each page to the person using it. It runs on Jev, a decision model TypeSafe released in September." |
-| 0:12–0:35 | Alderra refill | WebAble's panel shows Jev's read; the carousel stops, offers fold, prescriptions move up, Confirm refill grows to full width; click it, "Refill requested ✓" | "On this pharmacy page, the button that matters is small and grey, right next to a big one that takes you shopping. Jev reads every part of the page and says what it's for, with a probability. WebAble acts only on answers Jev is very sure of. Here it puts the prescriptions first and makes Confirm the button you can't miss." |
-| 0:35–0:55 | floridagators.com, Kentucky history | Original with the scoreboard slider and menus; Calm view opens on both logos, the 7–38 scoreboard and the stat grid | "Some pages exist to show information. This one is Florida's record against Kentucky. Jev finds the record and both team logos, and WebAble leads with them: 54 wins, 22 losses, and last year's 7 to 38." |
-| 0:55–1:12 | Allrecipes, Best Chocolate Chip Cookies | Scroll fast past the video and ads to show the distance; then WebAble's version opens on ingredients and steps | "On this recipe, the ingredients start six screens down, past a floating video and the ads. WebAble opens with the ingredients and the steps, and keeps the times." |
-| 1:12–1:30 | CNN article | Zoom in with Ctrl +; WebAble's offer appears; accept; the article reflows at the larger size with its photos | "On a news article, the story is what matters. You zoomed in on two sites, so WebAble offers larger text everywhere, and keeps the photos that go with the story." |
-| 1:30–1:42 | IRS refund page | Original with both buttons below the fold; WebAble brings up the two large buttons and the "what you'll need" list | "On the IRS refund page, the two ways to check are just below the first screen. WebAble brings them up and makes them easy to press." |
-| 1:42–2:00 | Results card, then the five pages side by side | [32 of 50 sites · under half a second per read · about a third of a cent] | "We pointed WebAble at 50 sites people use every day. On 32 of them it made the text larger and left nothing broken. Every change gets checked, and when a change breaks something, WebAble puts it back by itself. Jev reads a typical page in under half a second, for about a third of a cent. And what WebAble learns about you never leaves your laptop." |
+| 0:00–0:10 | Title, then the onboarding welcome | [WebAble · built on Jev, TypeSafe AI, Sept 2026] "Let's fit the web to you" | "A lot of the web is hard to use if you need bigger text, steadier clicks or fewer distractions. WebAble fits every page to you." |
+| 0:10–0:28 | Onboarding: a few seconds of each game, then the results page | Reading size, Faint words, Pop the bubbles in quick cuts; the petal chart grows in; "What WebAble will do for you" rows | "It starts with five quick games, each borrowed from a published test: how small you can read, how faint is too faint, how big a button needs to be. Then it shows what it will do for you, in plain words." |
+| 0:28–0:45 | Alderra refill | Original, cursor over the small grey Confirm; then the carousel stops, offers fold, prescriptions move up, Confirm refill grows; click it, "Refill requested ✓" | "On this pharmacy page, the button that matters is small and grey. Jev, a decision model TypeSafe released in September, reads every part of the page, and WebAble acts only on what Jev is very sure of. Confirm becomes the button you can't miss." |
+| 0:45–1:00 | floridagators.com, Kentucky history | Original with the scoreboard slider and menus; the simplified page opens on both logos, the 7–38 scoreboard and the stat grid | "This page exists to show a record. WebAble opens with it: 54 wins, 22 losses, last year's 7 to 38, and both team logos." |
+| 1:00–1:14 | Allrecipes, Best Chocolate Chip Cookies | Scroll fast past the video and ads to show the distance; reload with WebAble: it opens on ingredients and steps; flip the "Original page" switch and back | "On busy pages like this recipe, you just get the simplified page: ingredients and steps first, the ads gone. One switch brings back the original." |
+| 1:14–1:28 | CNN article | Zoom in with Ctrl +; WebAble's offer appears; accept; the article reflows at the larger size with its photos | "On a news article, the story is what matters. You zoomed in on two sites, so WebAble offers larger text everywhere, and keeps the photos." |
+| 1:28–1:40 | IRS refund page | Original with both buttons below the fold; WebAble brings up the two large buttons and the "what you'll need" list | "On the IRS refund page, the two ways to check are just below the first screen. WebAble brings them up and makes them easy to press." |
+| 1:40–2:00 | Results card, then the five pages side by side | [32 of 50 sites · under half a second per read · about a third of a cent] | "We pointed WebAble at 50 sites people use every day. On 32 it made the text larger and left nothing broken, and when a change breaks something, WebAble puts it back by itself. Jev reads a typical page in under half a second. And what WebAble learns about you never leaves your laptop." |
 
 Notes for the shoot:
 - The CNN shot is the live "zoomed in on two sites" moment. `docs/CLAIMS.md` says to run it three times in a row from a
   fresh profile first; it worked on 2 of 4 tries in testing. If it doesn't hold, film the larger text without the zoom
-  and change the line to "WebAble sets the text at the size you need, and keeps the photos that go with the story."
+  and change the line to "WebAble sets the text at the size you need, and keeps the photos."
+- In the onboarding shot, don't show the games' instructions in full; show a person playing, then the results page.
+  Never show a petal labelled with anything but the eight plain labels.
 - Fix the IRS body-text measurement first (see `docs/demo/pages.md`), or the IRS shot shows no change.
 - Accept or reject cookie notices before each take. WebAble never answers them, and the bar it shows instead would be
   in the shot.
