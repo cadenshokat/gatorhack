@@ -1,149 +1,87 @@
-// The 70-second warm-up (fitting brief round 4): one news-page stage that fits itself while the person taps along.
-// Browser settings answer what they can first; Read, Faint, Point, Find and Pick stop as soon as they are sure; the
-// person ends on their own fitted page and can change anything. No Next buttons, no timers or scores.
+// Onboarding: a welcome, five short games, then a results page.
+// Each game opens with an instruction card. The saved fit is still the shared FitProfile.
 
-import { DEMO_FITS, defaultFit, type BrowserSettings, type FitProfile, type InputClass, type WarmupMetrics } from '@webable/core';
+import {
+  DEMO_FITS, defaultFit, type BrowserSettings, type FitProfile, type InputClass, type WarmupBlock,
+} from '@webable/core';
 import type { JSX } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { SENTENCES } from './content/sentences';
-import { captureEnv, readBrowserSettings, readPageZoom, settingsUsed, type Env } from './logic/env';
-import { cloneFit, deriveSafely, lookOf, markValue, type MarkState } from './logic/fitview';
-import { MARK_OF, MARKS, planBlocks, type BlockId, type BlockPlan, type MarkId } from './logic/plan';
-import { makeRng } from './logic/rand';
+import { copy, type SectionId } from './content/copy';
+import { READ_LINES } from './content/lines';
+import { BubbleGame } from './games/BubbleGame';
+import { ColourGame } from './games/ColourGame';
+import { FaintGame } from './games/FaintGame';
+import { FindGame } from './games/FindGame';
+import { ReadGame } from './games/ReadGame';
+import { attentionFromRounds } from './logic/attention';
+import { summarizeBubbles } from './logic/bubbles';
+import { scoreArrangement } from './logic/colour';
+import { captureEnv, readBrowserSettings, readPageZoom, settingsUsed } from './logic/env';
+import { cloneFit, deriveSafely } from './logic/fitview';
+import { makeRng, type Rng } from './logic/rand';
 import { RawCollector } from './logic/raw';
-import { closeThisTab, loadFit, loadServerOrigin, openPage, saveFit } from './logic/storage';
-import { Confirm, Done } from './screens/Confirm';
-import { ReaderPath, Skipped, Start } from './screens/Start';
-import { FaintBlock } from './stage/Faint';
-import { FindBlock } from './stage/Find';
-import { FrameBar, Instruction } from './stage/Frame';
-import { NewsPage } from './stage/NewsPage';
-import { PickBlock } from './stage/Pick';
-import { PointBlock } from './stage/Point';
-import { ReadBlock } from './stage/Read';
-import type { BlockOutcome, BlockProps } from './stage/types';
-import { Btn, Wordmark } from './ui/common';
-import { Strip, type StripMark } from './ui/Strip';
+import { estimateReading } from './logic/reading';
+import { extrasOf, type OnboardingExtras } from './logic/needs';
+import { applySession, emptyMeasures, type SessionMeasures } from './logic/session';
+import { closeThisTab, loadFit, saveFit } from './logic/storage';
+import { Results } from './screens/Results';
+import { Button, useFocusTrap, useReducedMotion } from './ui/bits';
+import { Instruction } from './ui/Instruction';
 
-type Phase = 'boot' | 'start' | 'stage' | 'confirm' | 'done' | 'skipped' | 'reader';
-type DemoName = 'rosa' | 'typical' | 'reader';
+type Phase = 'boot' | 'welcome' | 'card' | 'play' | 'note' | 'results';
+type Fit = FitProfile & OnboardingExtras;
 
-interface Beat {
-  mark: MarkId;
-  title: string;
-  sub: string;
-}
+const SECTIONS: ReadonlyArray<{ id: SectionId; block: WarmupBlock }> = [
+  { id: 'read', block: 'read' },
+  { id: 'faint', block: 'faint' },
+  { id: 'bubbles', block: 'point' },
+  { id: 'find', block: 'find' },
+  { id: 'colours', block: 'pick' },
+];
 
-const BEAT_MS = 1100;
-const IDLE_MS = 20_000;
-
-function emptyMarks(): Record<MarkId, StripMark> {
-  return { text: { state: 'pending', value: null }, contrast: { state: 'pending', value: null }, clicks: { state: 'pending', value: null }, calm: { state: 'pending', value: null }, colours: { state: 'pending', value: null } };
-}
-
-/** What the page just took on, in a few words (shown while the page changes). */
-function beatFor(id: BlockId, fit: FitProfile): Beat | null {
-  switch (id) {
-    case 'read': {
-      const px = fit.text.override ?? fit.text.bodyPx;
-      return px > 16.25
-        ? { mark: 'text', title: `Text: ${Math.round(px * 2) / 2} px.`, sub: 'The page grows to your size. Headings stay in proportion.' }
-        : { mark: 'text', title: 'Text: the usual size suits you.', sub: 'Pages keep their own text size.' };
-    }
-    case 'faint':
-      return fit.contrast.band === 'S'
-        ? { mark: 'contrast', title: 'Contrast: strongest.', sub: 'Grey text is drawn near-black.' }
-        : fit.contrast.band === 'M'
-          ? { mark: 'contrast', title: 'Grey text: darker.', sub: 'Captions and faint text are darkened. Colours keep their hue.' }
-          : { mark: 'contrast', title: 'Grey text: fine as it is.', sub: 'Only text too faint for anyone is darkened.' };
-    case 'point': {
-      const T = fit.targets.minPx;
-      const steady = fit.clicks.steady.on ? ' Steady clicks on.' : '';
-      return T != null && T > 24
-        ? { mark: 'clicks', title: `Click areas: ${T} px.${steady}`, sub: 'Small buttons and links answer to a larger area. They look the same.' }
-        : { mark: 'clicks', title: `Click areas: fine as they are.${steady}`, sub: 'Buttons and links keep their size.' };
-    }
-    case 'pick': {
-      const l = fit.attention.structureLevel;
-      return l === 2
-        ? { mark: 'calm', title: 'Calm view on busy pages.', sub: 'Side panels and promotions step back. The original is one click away.' }
-        : l === 1
-          ? { mark: 'calm', title: 'Calm view offered on busy pages.', sub: 'Side panels step back when you ask.' }
-          : { mark: 'calm', title: 'Busy pages stay as they are.', sub: 'A calmer layout is there when you ask for it.' };
-    }
-    default:
-      return null;
-  }
-}
-
-const BLOCKS: Record<BlockId, (p: BlockProps) => JSX.Element> = {
-  read: ReadBlock,
-  faint: FaintBlock,
-  point: PointBlock,
-  find: FindBlock,
-  pick: PickBlock,
+const BLOCK_OF: Record<SectionId, WarmupBlock> = {
+  read: 'read',
+  faint: 'faint',
+  bubbles: 'point',
+  find: 'find',
+  colours: 'pick',
 };
+
+function sectionIndex(id: string | null): number {
+  return SECTIONS.findIndex((s) => s.id === id);
+}
+
+function skippedSections(ids: readonly string[]): SectionId[] {
+  const out: SectionId[] = [];
+  for (const section of SECTIONS) {
+    if (ids.includes(section.block)) out.push(section.id);
+  }
+  return out;
+}
 
 export function App(): JSX.Element {
   const raw = useMemo(() => new RawCollector(), []);
   const seed = useMemo(() => (Math.random() * 2 ** 31) | 0, []);
   const rng = useMemo(() => makeRng(seed), [seed]);
+  const motion = useReducedMotion();
   const [phase, setPhase] = useState<Phase>('boot');
-  const [env, setEnv] = useState<Env | null>(null);
+  const [index, setIndex] = useState(0);
+  const [note, setNote] = useState('');
   const [settings, setSettings] = useState<BrowserSettings | null>(null);
-  const [existing, setExisting] = useState<FitProfile | null>(null);
-  const [plan, setPlan] = useState<BlockPlan | null>(null);
-  const [qi, setQi] = useState(0);
-  const [beat, setBeat] = useState<Beat | null>(null);
-  const [landed, setLanded] = useState<Set<MarkId>>(new Set());
-  const [marks, setMarks] = useState<Record<MarkId, StripMark>>(emptyMarks);
-  const [paused, setPaused] = useState(false);
-  const [idle, setIdle] = useState(false);
-  const [draft, setDraft] = useState<FitProfile>(() => defaultFit());
-  const [stageStill, setStageStill] = useState(false);
-  const [confirmBase, setConfirmBase] = useState<FitProfile | null>(null);
-  const [demoName, setDemoName] = useState<DemoName | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [doneSeconds, setDoneSeconds] = useState<number | null>(null);
-  const [serverOrigin, setServerOrigin] = useState('');
-  const lastSaved = useRef<FitProfile | null>(null);
-  const lastMetrics = useRef<WarmupMetrics | null>(null);
-  const lastActivity = useRef(performance.now());
-  const input = useRef<{ moved: boolean; tabFirst: boolean; pointerType: string | null }>({ moved: false, tabFirst: false, pointerType: null });
+  const [existing, setExisting] = useState<Fit | null>(null);
+  const [fit, setFit] = useState<Fit | null>(null);
+  const [saved, setSaved] = useState(true);
+  const [envReady, setEnvReady] = useState(false);
+  const [skipped, setSkipped] = useState<SectionId[]>([]);
+  const [returnTo, setReturnTo] = useState<'results' | null>(null);
+  const [leave, setLeave] = useState(false);
+  const measures = useRef<SessionMeasures>(emptyMeasures(false));
+  const replayMeasures = useRef<SessionMeasures | null>(null);
+  const input = useRef({ moved: false, tabFirst: false, pointer: null as string | null });
+  const heading = useRef<HTMLHeadingElement>(null);
 
-  const block: BlockId | null = plan && phase === 'stage' ? (plan.queue[qi] ?? null) : null;
-
-  /* ---------------- boot: settings before any tap ---------------- */
-
-  useEffect(() => {
-    try {
-      history.scrollRestoration = 'manual';
-    } catch {
-      /* not supported */
-    }
-    void (async () => {
-      const zoom = await readPageZoom();
-      raw.zoom = zoom;
-      setEnv(captureEnv(SENTENCES.map((s) => s.text).join(' '), zoom));
-      const s = await readBrowserSettings().catch(() => null);
-      setSettings(s);
-      setExisting(await loadFit());
-      setServerOrigin(await loadServerOrigin());
-      if (s) setDraft(deriveSafely(raw.toRaw(), s));
-      const demo = new URLSearchParams(location.search).get('demo');
-      if (demo === 'rosa' || demo === 'typical' || demo === 'reader') {
-        setDemoName(demo);
-        setConfirmBase({ ...cloneFit(DEMO_FITS[demo]), createdAt: new Date().toISOString() });
-        setMarks(Object.fromEntries(MARKS.map((m) => [m.id, { state: 'done', value: markValue(m.id, DEMO_FITS[demo], s) }])) as Record<MarkId, StripMark>);
-        setPhase('confirm');
-        return;
-      }
-      setPhase('start');
-    })();
-  }, []);
-
-  /* ---------------- input type: the first pointer, or Tab before any pointer move ---------------- */
+  const reduced = motion || !!settings?.reducedMotion;
+  const section = SECTIONS[index] ?? SECTIONS[0];
 
   useEffect(() => {
     const move = () => {
@@ -153,7 +91,7 @@ export function App(): JSX.Element {
       if (e.key === 'Tab' && !input.current.moved) input.current.tabFirst = true;
     };
     const down = (e: PointerEvent) => {
-      input.current.pointerType ??= e.pointerType;
+      input.current.pointer ??= e.pointerType;
     };
     window.addEventListener('pointermove', move, { passive: true });
     window.addEventListener('keydown', key, true);
@@ -165,372 +103,433 @@ export function App(): JSX.Element {
     };
   }, []);
 
-  /* ---------------- presses, actions, activity, visibility ---------------- */
-
   useEffect(() => {
-    const live = phase === 'stage' || phase === 'confirm';
-    const down = (e: PointerEvent) => {
-      lastActivity.current = performance.now();
-      setIdle(false);
-      if (!live) return;
-      raw.countAction();
-      if (phase === 'stage') raw.onPointerDown(e);
-    };
-    const up = (e: PointerEvent) => {
-      if (phase === 'stage') raw.onPointerUp(e);
-    };
-    const key = (e: KeyboardEvent) => {
-      lastActivity.current = performance.now();
-      setIdle(false);
-      if (live && !e.repeat && !['Shift', 'Meta', 'Control', 'Alt'].includes(e.key)) raw.countAction();
-    };
-    const vis = () => {
-      if (document.hidden) raw.stopClock();
-      else if (live && !paused) raw.startClock();
-    };
-    window.addEventListener('pointerdown', down, true);
-    window.addEventListener('pointerup', up, true);
-    window.addEventListener('keydown', key, true);
-    document.addEventListener('visibilitychange', vis);
-    return () => {
-      window.removeEventListener('pointerdown', down, true);
-      window.removeEventListener('pointerup', up, true);
-      window.removeEventListener('keydown', key, true);
-      document.removeEventListener('visibilitychange', vis);
-    };
-  }, [phase, paused]);
-
-  useEffect(() => {
-    if (phase !== 'stage' || paused || beat) {
-      setIdle(false);
-      return;
-    }
-    lastActivity.current = performance.now();
-    const id = window.setInterval(() => {
-      if (performance.now() - lastActivity.current > IDLE_MS) setIdle(true);
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [phase, paused, qi, beat]);
-
-  /* ---------------- marks ---------------- */
-
-  const setMark = (id: MarkId, state: MarkState, value: string | null) => setMarks((m) => ({ ...m, [id]: { state, value } }));
-
-  /* ---------------- start ---------------- */
-
-  const start = () => {
-    const pt = input.current.pointerType;
-    const cls: InputClass = input.current.tabFirst && !input.current.moved ? 'keyboard' : pt === 'touch' || settings?.pointer === 'coarse' ? 'touch' : pt === 'pen' ? 'other' : 'mouse';
-    raw.inputClass = cls;
-    const p = planBlocks(settings, cls);
-    setPlan(p);
-    for (const [b] of Object.entries(p.prefilled)) raw.markBlock(b as BlockId, 'prefilled');
-    for (const b of p.notRun) raw.markBlock(b, 'not_run');
-
-    const d = deriveSafely(raw.toRaw(), settings);
-    setDraft(d);
-    const m = emptyMarks();
-    const queued = new Set(p.queue.map((b) => MARK_OF[b]));
-    const land = new Set<MarkId>();
-    for (const mk of MARKS) {
-      if (queued.has(mk.id)) continue;
-      // Keyboard first: Point is not needed (WebAble never changes keyboard handling). Otherwise settings answered it.
-      if (mk.id === 'clicks') m.clicks = cls === 'keyboard' ? { state: 'done', value: 'Keyboard' } : { state: 'skipped', value: null };
-      else m[mk.id] = { state: 'setting', value: markValue(mk.id, d, settings) };
-    }
-    if (settings?.contrastMore || settings?.forcedColors) {
-      m.contrast = { state: 'setting', value: markValue('contrast', d, settings) };
-      land.add('contrast');
-    }
-    m.colours = { state: 'setting', value: p.colours === 'dark' ? 'Dark' : p.colours === 'light' ? 'Light' : settings?.forcedColors ? 'System' : 'Site' };
-    const first = p.queue[0];
-    if (first) m[MARK_OF[first]] = { ...m[MARK_OF[first]], state: 'active' };
-    setMarks(m);
-    setLanded(land);
-    setStageStill(!!settings?.reducedMotion);
-    raw.startClock();
-    if (first) {
-      raw.beginBlock(first);
-      setQi(0);
-      setPhase('stage');
-    } else goConfirm();
-  };
-
-  const goConfirm = () => {
-    raw.beginBlock('confirm');
-    const base = deriveSafely(raw.toRaw(), settings);
-    setConfirmBase(base);
-    setMarks((m) => {
-      const out = { ...m };
-      for (const mk of MARKS) if (out[mk.id].state === 'active' || out[mk.id].state === 'pending') out[mk.id] = { state: 'done', value: markValue(mk.id, base, settings) };
-      return out;
-    });
-    setPhase('confirm');
-  };
-
-  /* ---------------- blocks ---------------- */
-
-  const advance = (from: number) => {
-    if (!plan) return;
-    const next = plan.queue[from + 1];
-    if (!next) {
-      goConfirm();
-      return;
-    }
-    raw.beginBlock(next);
-    setMarks((m) => {
-      const mk = MARK_OF[next];
-      return m[mk].state === 'active' ? m : { ...m, [mk]: { ...m[mk], state: 'active' } };
-    });
-    setQi(from + 1);
-    lastActivity.current = performance.now();
-  };
-
-  const finishBlock = useCallback(
-    (o: BlockOutcome, skipped = false) => {
-      if (!plan || !block || beat) return;
-      raw.endBlock(block, { trials: o.trials, stop: o.stop, skipped });
-      const d = deriveSafely(raw.toRaw(), settings);
-      setDraft(d);
-      const mk = MARK_OF[block];
-      const pickQueued = plan.queue.includes('pick');
-      const fillsMark = block !== 'find' || !pickQueued;
-      if (fillsMark) {
-        const fromSettings = mk === 'text' && skipped && d.text.source === 'stated';
-        const contrastSetting = mk === 'contrast' && skipped && (settings?.contrastMore || settings?.forcedColors);
-        const state: MarkState = skipped ? (fromSettings || contrastSetting ? 'setting' : 'skipped') : 'done';
-        setMark(mk, state, markValue(mk, d, settings));
-        if (state !== 'skipped') setLanded((l) => new Set(l).add(mk));
+    void (async () => {
+      const zoom = await readPageZoom();
+      raw.zoom = zoom;
+      captureEnv(READ_LINES.map((s) => s.text).join(' '), zoom);
+      const browser = await readBrowserSettings().catch(() => null);
+      setSettings(browser);
+      const stored = await loadFit();
+      const storedFit = stored ? ({ ...cloneFit(stored), ...extrasOf(stored as Fit) } as Fit) : null;
+      setExisting(storedFit);
+      const params = new URLSearchParams(location.search);
+      const demo = params.get('demo');
+      const screen = params.get('screen');
+      if ((demo === 'rosa' || demo === 'typical' || demo === 'reader') && (!screen || screen === 'results')) {
+        const demoFit = { ...cloneFit(DEMO_FITS[demo]), createdAt: new Date().toISOString() } as Fit;
+        setFit(demoFit);
+        setPhase('results');
+        setEnvReady(true);
+        return;
       }
-      const b = !skipped && fillsMark ? beatFor(block, d) : null;
-      const at = qi;
-      if (b) {
-        setBeat(b);
-        window.setTimeout(() => {
-          setBeat(null);
-          advance(at);
-        }, BEAT_MS);
-      } else advance(at);
-    },
-    [plan, block, beat, qi, settings],
-  );
+      const play = screen?.startsWith('play-') ? screen.slice(5) : null;
+      const asked = sectionIndex(play ?? screen);
+      if (asked >= 0) {
+        setIndex(asked);
+        raw.startClock();
+        const block = SECTIONS[asked]?.block;
+        if (block) raw.beginBlock(block);
+        setPhase(play ? 'play' : 'card');
+        setEnvReady(true);
+        return;
+      }
+      setPhase('welcome');
+      setEnvReady(true);
+    })();
+  }, [raw]);
 
-  const skipPart = () => {
-    if (!block || beat) return;
-    setPaused(false);
-    raw.startClock();
-    const trials = block === 'read' ? raw.ladder.length : block === 'faint' ? raw.faint.length : block === 'find' ? raw.findTrials.length : 0;
-    finishBlock({ trials }, true);
+  useEffect(() => {
+    if (phase === 'note') heading.current?.focus();
+  }, [phase, note]);
+
+  const classify = () => {
+    const pt = input.current.pointer;
+    const keyboard = input.current.tabFirst && !input.current.moved;
+    const cls: InputClass = keyboard ? 'keyboard' : pt === 'touch' || settings?.pointer === 'coarse' ? 'touch' : pt === 'pen' ? 'other' : 'mouse';
+    raw.inputClass = cls;
+    measures.current.keyboard = keyboard;
   };
 
-  const togglePause = useCallback(() => {
-    if (phase !== 'stage') return;
-    setPaused((p) => {
-      if (p) raw.startClock();
-      else raw.stopClock();
-      return !p;
+  const begin = (i: number, play: boolean) => {
+    const block = SECTIONS[i]?.block;
+    if (!block) return;
+    setIndex(i);
+    raw.beginBlock(block);
+    setPhase(play ? 'play' : 'card');
+  };
+
+  const publish = useCallback(async (next: Fit) => {
+    setFit(next);
+    const ok = await saveFit(next);
+    setSaved(ok);
+    setPhase('results');
+  }, []);
+
+  const buildFit = useCallback((base: FitProfile, measured: SessionMeasures, skipIds: SectionId[]): Fit => {
+    const metrics = raw.metrics({
+      completed: skipIds.length === 0,
+      corrections: { textSteps: 0, colours: false, rows: [] },
+      settingsUsed: settings ? settingsUsed(settings) : [],
     });
+    const next = applySession(base, measured, settings);
+    next.createdAt = new Date().toISOString();
+    next.calibration = {
+      ...next.calibration,
+      version: 'warmup-1',
+      durationSec: raw.durationSec,
+      skipped: skipIds.map((id) => BLOCK_OF[id]),
+      warmup: metrics,
+    } as FitProfile['calibration'];
+    return next;
+  }, [raw, settings]);
+
+  const finishAll = useCallback((skipIds: SectionId[]) => {
+    raw.beginBlock('confirm');
+    raw.endBlock('confirm', { trials: 1, stop: 'person' });
+    raw.stopClock();
+    const base = deriveSafely(raw.toRaw(), settings, raw.metrics({
+      completed: skipIds.length === 0,
+      corrections: { textSteps: 0, colours: false, rows: [] },
+      settingsUsed: settings ? settingsUsed(settings) : [],
+    }));
+    void publish(buildFit(base, measures.current, skipIds));
+  }, [buildFit, publish, raw, settings]);
+
+  const forward = useCallback(() => {
+    if (returnTo === 'results') {
+      replayMeasures.current = null;
+      setReturnTo(null);
+      setPhase('results');
+      return;
+    }
+    const next = index + 1;
+    if (next >= SECTIONS.length) finishAll(skipped);
+    else begin(next, false);
+  }, [finishAll, index, returnTo, skipped]);
+
+  useEffect(() => {
+    if (phase !== 'note' || reduced) return;
+    const id = window.setTimeout(() => forward(), 1700);
+    return () => window.clearTimeout(id);
+  }, [forward, phase, reduced]);
+
+  useEffect(() => {
+    const onPop = () => {
+      if (phase === 'card' || phase === 'play' || phase === 'note') {
+        setLeave(true);
+        history.pushState({ fitting: true }, '');
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
   }, [phase]);
 
-  useEffect(() => {
-    if (phase !== 'stage') return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        togglePause();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [phase, togglePause]);
+  const showNote = (line: string) => {
+    setNote(line);
+    setPhase('note');
+  };
 
-  /* ---------------- save ---------------- */
-
-  const onSave = async (fit: FitProfile, corrections: WarmupMetrics['corrections']) => {
-    setSaving(true);
-    let final: FitProfile;
-    if (demoName) {
-      final = { ...fit, createdAt: new Date().toISOString() };
-    } else {
-      raw.endBlock('confirm', { trials: 1, stop: 'person' });
-      raw.stopClock();
-      const metrics = raw.metrics({ completed: true, corrections, settingsUsed: settings ? settingsUsed(settings) : [] });
-      lastMetrics.current = metrics;
-      final = {
-        ...fit,
-        createdAt: new Date().toISOString(),
-        calibration: { ...fit.calibration, version: 'warmup-1', durationSec: Math.round(metrics.activeMs / 1000), skipped: [...raw.skipped], warmup: metrics } as FitProfile['calibration'],
-      };
-      setDoneSeconds(Math.round(metrics.activeMs / 1000));
+  const skip = () => {
+    const block = section?.block;
+    const id = section?.id;
+    if (!block || !id || phase === 'note' || phase === 'results') return;
+    raw.endBlock(block, { trials: 0, skipped: true });
+    const nextSkipped = skipped.includes(id) ? skipped : [...skipped, id];
+    setSkipped(nextSkipped);
+    if (returnTo === 'results') {
+      showNote(copy.skippedNote);
+      return;
     }
-    const ok = await saveFit(final);
-    lastSaved.current = final;
-    setSaving(false);
-    setSaved(ok);
-    setPhase('done');
+    showNote(copy.skippedNote);
   };
 
-  const saveReader = async () => {
-    setSaving(true);
-    raw.inputClass = 'keyboard';
-    for (const b of ['read', 'faint', 'point', 'find', 'pick'] as BlockId[]) raw.markBlock(b, 'not_run');
-    const metrics = raw.metrics({ completed: true, corrections: { textSteps: 0, colours: false, rows: [] }, settingsUsed: settings ? settingsUsed(settings) : [] });
-    const fit = deriveSafely(raw.toRaw(), settings, metrics);
-    const ok = await saveFit(fit);
-    lastSaved.current = fit;
-    setSaving(false);
-    setSaved(ok);
-    if (ok) void closeThisTab();
-    else setPhase('done');
+  const start = () => {
+    classify();
+    raw.reset();
+    replayMeasures.current = null;
+    raw.startClock();
+    history.pushState({ fitting: true }, '');
+    setSkipped([]);
+    measures.current = emptyMeasures(measures.current.keyboard);
+    begin(0, false);
   };
 
-  const exportSession = () => {
-    const data = { v: 'warmup-session.1', at: new Date().toISOString(), metrics: lastMetrics.current, raw: raw.toRaw(), fit: lastSaved.current };
-    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `webable-warmup-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
-    a.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+  const useStandard = () => {
+    const skipIds = SECTIONS.map((s) => s.id);
+    const base = defaultFit();
+    base.inputClass = raw.inputClass;
+    setSkipped(skipIds);
+    void publish(buildFit(base, emptyMeasures(false), skipIds));
   };
 
-  // For the eval harness and the pilot logger: read-only views of the session.
+  const continueSaved = () => {
+    if (!existing) return;
+    setFit(existing);
+    setSkipped(skippedSections(existing.calibration?.skipped ?? []));
+    setSaved(true);
+    setPhase('results');
+  };
+
+  const playOne = (id: SectionId) => {
+    const at = sectionIndex(id);
+    if (at < 0) return;
+    replayMeasures.current = emptyMeasures(measures.current.keyboard);
+    setReturnTo('results');
+    setSkipped((prev) => prev.filter((s) => s !== id));
+    history.pushState({ fitting: true }, '');
+    begin(at, false);
+  };
+
+  const stopForNow = () => {
+    const base = fit ?? existing ?? deriveSafely(raw.toRaw(), settings);
+    const next = buildFit(base, measures.current, skipped);
+    void saveFit(next).then((ok) => {
+      if (!ok) {
+        setFit(next);
+        setSaved(false);
+        setLeave(false);
+        setPhase('results');
+        return;
+      }
+      void closeThisTab();
+    });
+  };
+
+  const retrySave = () => {
+    if (fit) void publish(fit);
+  };
+
   useEffect(() => {
-    (globalThis as { __warmup?: unknown }).__warmup = {
+    const g = globalThis as { __warmup?: unknown };
+    g.__warmup = {
       phase: () => phase,
-      block: () => block,
-      beat: () => beat,
-      draft: () => draft,
+      section: () => section?.id ?? null,
+      fit: () => fit,
       raw: () => raw.toRaw(),
-      metrics: () => lastMetrics.current,
-      saved: () => lastSaved.current,
-      settings: () => settings,
+      saved: () => (saved ? fit : null),
     };
   });
 
-  /* ---------------- render ---------------- */
+  if (!envReady || phase === 'boot' || !section) return <div class="ob-app" />;
 
-  if (phase === 'boot' || !env) return <div class="wu-app" />;
-
-  const look = lookOf(draft, landed, { motionOff: stageStill });
-  const inStage = phase === 'stage' && plan && block;
-  const Block = block ? BLOCKS[block] : null;
-
-  const top = (
-    <header class="wu-top">
-      <Wordmark />
-      <div class="wu-top-center">{phase === 'stage' || phase === 'confirm' || phase === 'start' ? <Strip marks={marks} /> : null}</div>
-      <div class="wu-top-right">
-        {inStage ? (
-          <>
-            <Btn kind="quiet" onClick={togglePause} kbd="Esc" data="pause" disabled={!!beat}>
-              Pause
-            </Btn>
-            <Btn kind="quiet" onClick={skipPart} data="skip-part" disabled={!!beat}>
-              Skip this part
-            </Btn>
-          </>
-        ) : null}
-      </div>
-    </header>
-  );
-
-  let body: JSX.Element;
-  if (phase === 'start') {
-    body = (
-      <Start
-        settings={settings}
-        existing={existing}
-        onStart={start}
-        onSkip={() => setPhase('skipped')}
-        onReader={() => setPhase('reader')}
-      />
-    );
-  } else if (phase === 'skipped') {
-    body = <Skipped onClose={() => void closeThisTab()} onBack={() => setPhase('start')} />;
-  } else if (phase === 'reader') {
-    body = <ReaderPath onSave={() => void saveReader()} onBack={() => setPhase('start')} saving={saving} />;
-  } else if (phase === 'confirm' && confirmBase) {
-    body = (
-      <Confirm
-        base={confirmBase}
-        settings={settings}
-        colourDefault={plan?.colours ?? (settings?.colorScheme === 'dark' ? 'dark' : 'light')}
-        demoName={demoName ? demoName[0]!.toUpperCase() + demoName.slice(1) : undefined}
-        saving={saving}
-        onSave={(f, c) => void onSave(f, c)}
-        onRestart={() => (location.href = location.pathname)}
-      />
-    );
-  } else if (phase === 'done') {
-    body = (
-      <Done
-        saved={saved}
-        seconds={doneSeconds}
-        onOpenDemo={() => void openPage(`${serverOrigin || 'http://127.0.0.1:41741'}/demo/`)}
-        onClose={() => void closeThisTab()}
-        onExport={lastMetrics.current ? exportSession : null}
-      />
-    );
-  } else if (inStage && Block && plan) {
-    body = (
-      <div class={`wu-stagegrid ${beat ? 'is-beat' : ''}`} data-block={block}>
-        <div class="wu-frame wu-stage-frame">
-          <FrameBar site="The Daily Ledger" note="a made-up news page" />
-          <div class="wu-viewport">
-            <NewsPage look={look} showHits={beat?.mark === 'clicks'} />
-          </div>
-        </div>
-        {beat ? (
-          <>
-            <Instruction sub={beat.sub}>{beat.title}</Instruction>
-            <div class="wu-tray is-note" key={`beat-${beat.mark}`} />
-          </>
-        ) : (
-          <Block
-            key={block}
-            raw={raw}
-            env={env}
-            plan={plan}
-            settings={settings}
-            fit={draft}
-            paused={paused}
-            rng={rng}
-            onDone={(o) => finishBlock(o)}
-            onStopMotion={() => setStageStill(true)}
-          />
-        )}
-        <p class={`wu-idle ${idle ? 'is-on' : ''}`} aria-live="polite">
-          {idle ? 'Take your time, or skip this part.' : ''}
-        </p>
-      </div>
-    );
-  } else {
-    body = <div />;
-  }
+  const activeMeasures = replayMeasures.current ?? measures.current;
 
   return (
-    <div class={`wu-app is-${phase}`}>
-      {top}
-      <main class="wu-main">{body}</main>
-      {paused ? (
-        <div class="wu-pause" role="dialog" aria-modal="true" aria-labelledby="wu-pause-h">
-          <div class="wu-pause-card">
-            <h1 id="wu-pause-h" class="wu-title">
-              Paused
-            </h1>
-            <p class="wu-lede">Take as long as you like. Nothing is lost.</p>
-            <div class="wu-start-actions is-center">
-              <Btn kind="primary" onClick={togglePause} kbd="Esc" class="wu-btn-pill" data="resume">
-                Continue
-              </Btn>
-              <Btn kind="tonal" onClick={skipPart} class="wu-btn-pill" data="pause-skip">
-                Skip this part
-              </Btn>
+    <div class={`ob-app is-${phase}`} data-phase={phase} data-section={section.id} data-motion={reduced ? 'reduce' : 'ok'}>
+      <header class="ob-top">
+        <p class="ob-brand">WebAble</p>
+        {phase === 'welcome' || phase === 'results' ? <span /> : (
+          <ol class="ob-steps" aria-label={copy.header.step(index + 1, copy.sections[section.id].name)}>
+            {SECTIONS.map((s, i) => {
+              const wasSkipped = skipped.includes(s.id);
+              return (
+                <li
+                  key={s.id}
+                  class={i === index ? 'is-on' : wasSkipped ? 'is-skipped' : i < index ? 'is-done' : ''}
+                  aria-current={i === index ? 'step' : undefined}
+                  aria-label={wasSkipped ? `${copy.sections[s.id].name}. ${copy.header.skipped}` : undefined}
+                >
+                  <span class="ob-step-dot" aria-hidden="true" />
+                  <span class="ob-step-name">{wasSkipped ? copy.header.skipped : copy.sections[s.id].name}</span>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+        {phase === 'play' ? (
+          <button type="button" class="ob-link" data-answer="skip-section" onClick={skip}>{copy.skip}</button>
+        ) : <span />}
+      </header>
+      <main id="ob-main" class="ob-main">
+        {phase === 'welcome' && existing ? (
+          <Returning onContinue={continueSaved} onStartOver={start} />
+        ) : null}
+        {phase === 'welcome' && !existing ? (
+          <section class="ob-welcome">
+            <h1 class="ob-title">{copy.welcome.title}</h1>
+            <p class="ob-lede">{copy.welcome.body}</p>
+            <p>{copy.welcome.stays}</p>
+            <div class="ob-actions">
+              <Button kind="primary" onClick={start} data="start" focus>{copy.welcome.start}</Button>
             </div>
-          </div>
-        </div>
-      ) : null}
+            <button type="button" class="ob-link" data-answer="later" onClick={useStandard}>{copy.welcome.skip}</button>
+            <p class="ob-fine">{copy.welcome.menu}</p>
+          </section>
+        ) : null}
+        {phase === 'card' ? <Instruction id={section.id} onStart={() => setPhase('play')} onSkip={skip} /> : null}
+        {phase === 'play' ? (
+          <Game
+            id={section.id}
+            rng={rng}
+            reduced={reduced}
+            onResult={(line) => {
+              if (returnTo === 'results' && fit && replayMeasures.current) {
+                const next = applySession(fit, replayMeasures.current, settings);
+                const still = skipped.filter((id) => id !== section.id);
+                next.calibration = { ...next.calibration, skipped: still.map((id) => BLOCK_OF[id]) };
+                setFit(next);
+                void saveFit(next).then(setSaved);
+              }
+              showNote(line);
+            }}
+            raw={raw}
+            measures={activeMeasures}
+          />
+        ) : null}
+        {phase === 'note' ? (
+          <section class="ob-note-screen">
+            <h1 class="ob-title" ref={heading} tabIndex={-1}>
+              <button type="button" class="ob-note-go" onClick={forward} data-answer="continue">{note}</button>
+            </h1>
+          </section>
+        ) : null}
+        {phase === 'results' && fit ? (
+          <Results
+            fit={fit}
+            saved={saved}
+            skipped={skipped}
+            onRetake={() => {
+              setExisting(null);
+              setFit(null);
+              setSkipped([]);
+              setPhase('welcome');
+            }}
+            onPlay={playOne}
+            onSave={(next) => void publish(next)}
+            onRetry={retrySave}
+          />
+        ) : null}
+      </main>
+      <p class="ob-live-region" aria-live="polite">{phase === 'note' ? note : phase === 'results' ? copy.results.status : ''}</p>
+      {leave ? <Leave onKeep={() => setLeave(false)} onStop={stopForNow} /> : null}
     </div>
+  );
+}
+
+function Returning(props: { onContinue: () => void; onStartOver: () => void }): JSX.Element {
+  return (
+    <section class="ob-welcome">
+      <h1 class="ob-title">{copy.returning.title}</h1>
+      <div class="ob-actions">
+        <Button kind="primary" onClick={props.onContinue} data="continue" focus>{copy.returning.continue}</Button>
+        <Button kind="quiet" onClick={props.onStartOver} data="start-over">{copy.returning.startOver}</Button>
+      </div>
+    </section>
+  );
+}
+
+function Leave(props: { onKeep: () => void; onStop: () => void }): JSX.Element {
+  const trap = useFocusTrap(true);
+  return (
+    <div class="ob-modal" role="dialog" aria-modal="true" aria-labelledby="ob-leave-title" ref={trap.ref}>
+      <div class="ob-card">
+        <h2 id="ob-leave-title" class="ob-title ob-title-card">{copy.leave.ask}</h2>
+        <div class="ob-actions">
+          <Button kind="primary" onClick={props.onKeep} data="keep-going" focus>{copy.leave.keep}</Button>
+          <Button kind="quiet" onClick={props.onStop} data="stop-now">{copy.leave.stop}</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Game(props: {
+  id: SectionId;
+  rng: Rng;
+  reduced: boolean;
+  raw: RawCollector;
+  measures: SessionMeasures;
+  onResult: (line: string) => void;
+}): JSX.Element {
+  const done = (line: string, trials: number, stop: string) => {
+    const block = SECTIONS.find((s) => s.id === props.id)?.block;
+    if (block) props.raw.endBlock(block, { trials, stop });
+    props.onResult(line);
+  };
+  if (props.id === 'read') {
+    return (
+      <ReadGame
+        rng={props.rng}
+        onDone={(result) => {
+          for (const t of result.trials) {
+            props.raw.ladder.push({
+              px: props.raw.eff(t.px),
+              ms: Math.round(t.ms * (56 / Math.max(1, t.chars))),
+              correct: t.correct,
+            });
+          }
+          const scaled = result.trials.map((t) => ({ ...t, px: props.raw.eff(t.px) }));
+          props.measures.reading = estimateReading(scaled);
+          done(copy.sections.read.encourage, result.trials.length, result.stop);
+        }}
+      />
+    );
+  }
+  if (props.id === 'faint') {
+    return (
+      <FaintGame
+        rng={props.rng}
+        onDone={(result) => {
+          for (const t of result.trials) props.raw.faint.push({ contrast: t.ratio, correct: t.correct });
+          props.raw.stated = result.polarity === 'none' ? null : result.polarity;
+          props.measures.band = result.band;
+          props.measures.polarity = result.polarity;
+          done(copy.sections.faint.encourage, result.trials.length, result.stop);
+        }}
+      />
+    );
+  }
+  if (props.id === 'bubbles') {
+    return (
+      <BubbleGame
+        rng={props.rng}
+        onDone={(result) => {
+          const summary = summarizeBubbles(result.taps);
+          if (!props.measures.keyboard) {
+            props.raw.blocks = summary.blocks;
+            props.measures.minPx = summary.minPx;
+            props.measures.steady = summary.steady;
+            props.measures.debounce = summary.debounce;
+          }
+          done(copy.sections.bubbles.encourage, result.taps.length, result.reason);
+        }}
+      />
+    );
+  }
+  if (props.id === 'find') {
+    return (
+      <FindGame
+        reducedMotion={props.reduced}
+        onDone={(result) => {
+          props.raw.findTrials = [
+            { clutter: false, motion: false, ms: result.cleanMs, found: result.cleanFound },
+            { clutter: true, motion: false, ms: result.busyMs, found: result.busyFound },
+            { clutter: true, motion: true, ms: result.movingMs, found: result.movingFound },
+          ];
+          const att = attentionFromRounds(
+            { ms: result.cleanMs, found: result.cleanFound },
+            { ms: result.busyMs, found: result.busyFound },
+            { ms: result.movingMs, found: result.movingFound },
+          );
+          props.raw.preferredCalm = att.preferredCalm;
+          props.raw.notes = att.gotInWay;
+          props.measures.clutterP = att.clutterP;
+          props.measures.structureLevel = att.structureLevel;
+          props.measures.motionOn = att.motionOn;
+          props.measures.motionP = att.motionP;
+          done(copy.sections.find.encourage, 3, 'person');
+        }}
+      />
+    );
+  }
+  return (
+    <ColourGame
+      rng={props.rng}
+      onDone={(result) => {
+        props.measures.colour = scoreArrangement(result.placed);
+        done(copy.sections.colours.encourage, 1, 'person');
+      }}
+    />
   );
 }

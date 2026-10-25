@@ -44,6 +44,8 @@ export class RawCollector {
   findTrials: Array<{ clutter: boolean; motion: boolean; ms: number; found: boolean }> = [];
   preferredCalm = 0;
   stoppedMotion = false;
+  /** Extra "what got in the way" notes. Core reads "moving things" as a reason to hold motion still. */
+  notes: string[] = [];
   readonly presses: Array<{ slipped: boolean; repeat: boolean }> = [];
 
   private activeMs = 0;
@@ -180,6 +182,29 @@ export class RawCollector {
     this.skipped.delete(id);
   }
 
+  /** Drop trials so a retake starts from an empty session. */
+  reset(): void {
+    this.stopClock();
+    this.skipped.clear();
+    this.done.clear();
+    this.ladder = [];
+    this.faint = [];
+    this.stated = null;
+    this.blocks = [];
+    this.findTrials = [];
+    this.preferredCalm = 0;
+    this.stoppedMotion = false;
+    this.notes = [];
+    this.presses.length = 0;
+    this.activeMs = 0;
+    this.runningSince = null;
+    this.actionCount = 0;
+    this.clocks.clear();
+    this.current = null;
+    this.down = null;
+    this.lastUp = null;
+  }
+
   /** px as reported to core: CSS px scaled by the page zoom, so it means px at 100%. */
   eff(cssPx: number): number {
     return Math.round(cssPx * this.zoom * 10) / 10;
@@ -187,7 +212,7 @@ export class RawCollector {
 
   toRaw(): FittingRaw {
     const readingTouched = this.ladder.length > 0 || this.faint.length > 0 || this.stated !== null;
-    const gotInWay = this.stoppedMotion ? [STOPPED_MOTION] : [];
+    const gotInWay = [...(this.stoppedMotion ? [STOPPED_MOTION] : []), ...this.notes];
     const findingTouched = this.done.has('find') || this.done.has('pick');
     return {
       inputClass: this.inputClass,

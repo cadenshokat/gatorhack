@@ -180,6 +180,14 @@ export function lookOf(fit: FitProfile | null, landed: ReadonlySet<MarkId>, opts
   return look;
 }
 
+/** Every part of the fit, for the results-page samples. Text size is applied as font size by the sample, so zoom stays 1. */
+export function fullLook(fit: FitProfile): PageLook {
+  const all = new Set<MarkId>(['text', 'contrast', 'clicks', 'calm', 'colours']);
+  const look = lookOf(fit, all, { motionOff: fit.attention.motion.on });
+  look.zoom = 1;
+  return look;
+}
+
 /* ------------------------------------------------------------------ */
 /* The fit strip                                                       */
 /* ------------------------------------------------------------------ */
