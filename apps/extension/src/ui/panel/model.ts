@@ -1,4 +1,4 @@
-// Owner: P. What the WebAble sheet says, as pure functions: the site's name, the text size in px, which state the
+// Owner: P. What the WebAble sheet says, as pure functions: the site's name, the text size as a word, which state the
 // sheet is in, and the plain lines of "What WebAble did here". Lines come from the kind of each change and a count,
 // never from the engine's own titles, so they always read the same way.
 import type { OpKind, OpRecord, OverlayAction, OverlayKind } from '@webable/core';
@@ -189,8 +189,28 @@ export function shownTextPx(
   return pagePx * textZoomOf(s, pageZoom);
 }
 
-export function pxLabel(px: number | null): string {
-  return px === null ? '' : `${Math.round(px)} px`;
+/**
+ * Text size levels as people see them (round 8c point 3: words, never px). Same levels as the onboarding's results
+ * page (fitting/results/adjust.ts TEXT_LEVELS); the sizes stay in here.
+ */
+export const SIZE_WORDS: ReadonlyArray<{ px: number; word: string }> = [
+  { px: 16, word: 'Standard' },
+  { px: 18, word: 'Larger' },
+  { px: 20, word: 'Large' },
+  { px: 24, word: 'Extra large' },
+  { px: 28, word: 'Largest' },
+];
+
+/** The word for a shown text size: the nearest level by ratio; at or under about 16 is Standard. '' when unknown. */
+export function sizeWord(px: number | null): string {
+  if (px === null || !Number.isFinite(px) || px <= 0) return '';
+  if (px <= 16.5) return 'Standard';
+  let best = 0;
+  for (let i = 1; i < SIZE_WORDS.length; i++) {
+    const d = (j: number) => Math.abs(Math.log(px / (SIZE_WORDS[j] as { px: number }).px));
+    if (d(i) <= d(best)) best = i;
+  }
+  return (SIZE_WORDS[best] as { word: string }).word;
 }
 
 /** "nytimes.com" from an origin or URL; '' when there is none. */

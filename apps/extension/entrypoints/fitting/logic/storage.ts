@@ -2,6 +2,7 @@
 // opened outside the extension (development preview), so the flow never crashes.
 
 import { SERVER_ORIGIN, type FitProfile, type Settings } from '@webable/core';
+import type { RunEvidence } from './evidence';
 
 type ChromeLike = typeof chrome;
 
@@ -32,6 +33,41 @@ export async function saveFit(fit: FitProfile): Promise<boolean> {
   try {
     if (c) await c.storage.local.set({ fit });
     else localStorage.setItem(DEV_KEY, JSON.stringify(fit));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** What the person struggled with in their last run (round 8c), saved next to the settings. */
+export const EVIDENCE_KEY = 'webable.evidence';
+const DEV_EVIDENCE_KEY = 'webable.dev.evidence';
+
+function isEvidence(x: unknown): x is RunEvidence {
+  return !!x && typeof x === 'object' && Array.isArray((x as RunEvidence).sites) && Array.isArray((x as RunEvidence).gotInWay);
+}
+
+export async function loadEvidence(): Promise<RunEvidence | null> {
+  const c = ext();
+  try {
+    if (c) {
+      const got = (await c.storage.local.get(EVIDENCE_KEY)) as Record<string, unknown>;
+      const e = got[EVIDENCE_KEY];
+      return isEvidence(e) ? e : null;
+    }
+    const s = localStorage.getItem(DEV_EVIDENCE_KEY);
+    const e: unknown = s ? JSON.parse(s) : null;
+    return isEvidence(e) ? e : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveEvidence(evidence: RunEvidence): Promise<boolean> {
+  const c = ext();
+  try {
+    if (c) await c.storage.local.set({ [EVIDENCE_KEY]: evidence });
+    else localStorage.setItem(DEV_EVIDENCE_KEY, JSON.stringify(evidence));
     return true;
   } catch {
     return false;

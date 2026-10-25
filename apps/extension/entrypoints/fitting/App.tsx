@@ -1,8 +1,11 @@
-// The onboarding (docs/design/ONBOARDING.md): Welcome, then Reading · Pointing · Finding, one step at a time, each
-// opened by an instruction card. Every press anywhere counts toward steady clicks. At the end, core's deriveFit turns
-// the raw answers into the person's settings, which are saved and shown on Results.
+// The onboarding (docs/design/ONBOARDING.md, with round 8c winning): Welcome, then Reading · Pointing · Finding, one
+// step at a time, each opened by an instruction card. Finding happens on real websites. Every press anywhere (the
+// sites too) counts toward steady clicks. Nothing tells the person a result while the flow runs; at the end, core's
+// deriveFit turns the raw answers into the person's settings, buildEvidence turns them into what they struggled with,
+// and both are saved and shown once, on Results.
 //
-// Routes: fitting.html opens Welcome; fitting.html#settings opens Results with the saved settings (Welcome if none).
+// Routes: fitting.html opens Welcome; fitting.html#settings opens Results with the saved settings and evidence (Welcome
+// if there are no settings).
 
 import {
   DEMO_FITS, defaultFit, deriveFit, type BrowserSettings, type FitProfile, type InputClass, type WarmupMetrics,
@@ -13,21 +16,20 @@ import { SENTENCES } from './content/sentences';
 import { captureEnv, readBrowserSettings, readPageZoom, settingsUsed, type Env } from './logic/env';
 import { makeRng } from './logic/rand';
 import { RawCollector } from './logic/raw';
-import {
-  eyebrowFor, linesFor, mergeLines, PART_OF, partSetLine, PARTS, partsFor, planSteps, wordsFor,
-  type LearnedLine, type PartId, type StepId,
-} from './logic/steps';
-import { closeThisTab, loadFit, saveFit } from './logic/storage';
+import { demoEvidence } from './logic/demo';
+import { buildEvidence, type RunEvidence } from './logic/evidence';
+import { eyebrowFor, PART_OF, partSetLine, PARTS, partsFor, planSteps, wordsFor, type PartId, type StepId } from './logic/steps';
+import { closeThisTab, loadEvidence, loadFit, saveEvidence, saveFit } from './logic/storage';
 import { Results } from './results/Results';
 import { Welcome } from './screens/Welcome';
 import { DotsTask } from './tasks/Dots';
 import { FaintTask } from './tasks/Faint';
-import { FindTask } from './tasks/Find';
 import { LightDarkTask } from './tasks/LightDark';
+import { SitesTask } from './tasks/Sites';
 import { SizeTask } from './tasks/Size';
 import { TaskLayout, type StepOutcome, type TaskProps } from './tasks/Task';
 import { TrueFalseTask } from './tasks/TrueFalse';
-import { CheckIcon, Rail, TopBar } from './ui/Chrome';
+import { CheckIcon, TopBar } from './ui/Chrome';
 import { Instruction } from './ui/Modal';
 
 type View =
@@ -36,7 +38,7 @@ type View =
   | { kind: 'intro'; step: StepId }
   | { kind: 'task'; step: StepId }
   | { kind: 'closing' }
-  | { kind: 'results'; fit: FitProfile; measured: boolean };
+  | { kind: 'results'; fit: FitProfile; measured: boolean; evidence: RunEvidence | null };
 
 const TASKS: Record<StepId, (p: TaskProps) => JSX.Element> = {
   size: SizeTask,
@@ -44,7 +46,7 @@ const TASKS: Record<StepId, (p: TaskProps) => JSX.Element> = {
   faint: FaintTask,
   lightdark: LightDarkTask,
   dots: DotsTask,
-  find: FindTask,
+  find: SitesTask,
 };
 
 /** The stage size each step uses, so the card behind the instruction already has the right shape. */
@@ -54,11 +56,19 @@ const STAGE_CLASS: Record<StepId, string> = {
   faint: 'is-faint',
   lightdark: 'is-read',
   dots: 'is-dots',
-  find: 'is-find',
+  find: 'is-sites',
 };
 
 const CLOSING_MS = 1600;
 const newSeed = (): number => (Math.random() * 2 ** 31) | 0;
+
+function safeEvidence(raw: RawCollector): RunEvidence {
+  try {
+    return buildEvidence(raw.toRaw(), raw.sites);
+  } catch {
+    return { reading: null, faint: null, pointing: null, sites: [], busySlowdown: null, gotInWay: [] };
+  }
+}
 
 function safeDerive(raw: RawCollector, settings: BrowserSettings | null, metrics?: WarmupMetrics): FitProfile {
   try {
@@ -78,8 +88,6 @@ export function App(): JSX.Element {
   const [steps, setSteps] = useState<StepId[]>([]);
   const [prev, setPrev] = useState<StepId | null>(null);
   const [doneParts, setDoneParts] = useState<Set<PartId>>(new Set());
-  const [rail, setRail] = useState<LearnedLine[]>([]);
-  const [chip, setChip] = useState<LearnedLine | null>(null);
   const [draft, setDraft] = useState<FitProfile>(defaultFit);
   const [ticking, setTicking] = useState(false);
   const [announce, setAnnounce] = useState('');
@@ -101,7 +109,7 @@ export function App(): JSX.Element {
       if (location.hash === '#settings') {
         const saved = await loadFit();
         if (saved) {
-          setView({ kind: 'results', fit: saved, measured: false });
+          setView({ kind: 'results', fit: saved, measured: false, evidence: await loadEvidence() });
           return;
         }
       }
@@ -207,7 +215,8 @@ export function App(): JSX.Element {
     else if (step === 'lightdark') raw.skippedSteps.add('light or dark');
     else if (step === 'dots') raw.endBlock('point', { trials: 0, skipped: true });
     else if (step === 'find') {
-      raw.endBlock('find', { trials: raw.findTrials.length, skipped: true });
+      // The sites may be done already, with only the questions skipped.
+      if (!raw.done.has('find')) raw.endBlock('find', { trials: raw.findTrials.length, skipped: true });
       raw.endBlock('pick', { trials: 0, skipped: true });
     }
   };
@@ -221,17 +230,18 @@ export function App(): JSX.Element {
       settingsUsed: settings ? settingsUsed(settings) : [],
     });
     const fit = safeDerive(raw, settings, metrics);
+    const evidence = safeEvidence(raw);
     await saveFit(fit);
-    setView({ kind: 'results', fit, measured });
+    await saveEvidence(evidence);
+    setView({ kind: 'results', fit, measured, evidence });
   };
 
-  const advance = (step: StepId, added: LearnedLine | null) => {
+  const advance = (step: StepId) => {
     const i = steps.indexOf(step);
     const next = steps[i + 1];
     const part = PART_OF[step];
     if (!next || PART_OF[next] !== part) setDoneParts((s) => new Set(s).add(part));
     setPrev(step);
-    setChip(added);
     if (next) {
       openIntro(next, steps);
       return;
@@ -245,19 +255,17 @@ export function App(): JSX.Element {
     if (step === 'truefalse') raw.endBlock('read', o);
     else if (step === 'faint') raw.endBlock('faint', o);
     else if (step === 'dots') raw.endBlock('point', o);
-    else if (step === 'find') raw.endBlock('pick', { trials: 2, stop: 'person' });
+    else if (step === 'find') raw.endBlock('pick', { trials: o.trials, stop: 'person' });
     anyDone.current = true;
     touchedParts.current.add(PART_OF[step]);
-    const d = safeDerive(raw, settings);
-    setDraft(d);
-    const add = linesFor(step, d);
-    setRail((r) => mergeLines(r, add));
-    advance(step, add[add.length - 1] ?? null);
+    // The settings so far shape the next steps (sizes); they are never shown until the end.
+    setDraft(safeDerive(raw, settings));
+    advance(step);
   };
 
   const skipStep = (step: StepId) => {
     markSkipped(step);
-    advance(step, null);
+    advance(step);
   };
 
   /** "Skip for now": keep what was learned so far and show what WebAble will do. */
@@ -265,7 +273,7 @@ export function App(): JSX.Element {
     if (view.kind === 'welcome') {
       const saved = await loadFit();
       if (saved) {
-        setView({ kind: 'results', fit: saved, measured: false });
+        setView({ kind: 'results', fit: saved, measured: false, evidence: await loadEvidence() });
         return;
       }
       for (const s of planSteps(raw.inputClass, settings)) markSkipped(s);
@@ -290,8 +298,6 @@ export function App(): JSX.Element {
     setSteps([]);
     setPrev(null);
     setDoneParts(new Set());
-    setRail([]);
-    setChip(null);
     setDraft(defaultFit());
     touchedParts.current = new Set();
     anyDone.current = false;
@@ -305,17 +311,22 @@ export function App(): JSX.Element {
   };
 
   // Test hook for automation (scripts/eval): `__fitting.phase()` names the screen ('welcome', 'intro:size',
-  // 'task:find', 'results', ...); `__fitting.raw()` is the raw answers so far; `await __fitting.finish('rosa' | 'typical' | 'reader')` saves that demo fit from core's
-  // DEMO_FITS and jumps straight to Results, as if the steps had run.
+  // 'task:find', 'results', ...); `__fitting.raw()` is the raw answers so far; `__fitting.evidence()` is what the run
+  // shows so far; `await __fitting.finish('rosa' | 'typical' | 'reader')` saves that demo fit from core's DEMO_FITS and
+  // a matching demo evidence, and jumps straight to Results, as if the steps had run.
   useEffect(() => {
     (globalThis as { __fitting?: unknown }).__fitting = {
       phase: () => (view.kind === 'intro' || view.kind === 'task' ? `${view.kind}:${view.step}` : view.kind),
       raw: () => raw.toRaw(),
+      evidence: () => (view.kind === 'results' ? view.evidence : safeEvidence(raw)),
       finish: async (name: keyof typeof DEMO_FITS = 'rosa') => {
         window.clearTimeout(closingTimer.current);
-        const fit: FitProfile = { ...(JSON.parse(JSON.stringify(DEMO_FITS[name])) as FitProfile), createdAt: new Date().toISOString() };
+        const key: keyof typeof DEMO_FITS = name in DEMO_FITS ? name : 'rosa';
+        const fit: FitProfile = { ...(JSON.parse(JSON.stringify(DEMO_FITS[key])) as FitProfile), createdAt: new Date().toISOString() };
+        const evidence = demoEvidence(key);
         await saveFit(fit);
-        setView({ kind: 'results', fit, measured: true });
+        await saveEvidence(evidence);
+        setView({ kind: 'results', fit, measured: true, evidence });
       },
     };
   });
@@ -330,6 +341,7 @@ export function App(): JSX.Element {
         <Results
           fit={view.fit}
           measured={view.measured}
+          evidence={view.evidence}
           onChange={(next: FitProfile) => {
             void saveFit(next);
             setView((v) => (v.kind === 'results' ? { ...v, fit: next } : v));
@@ -343,7 +355,6 @@ export function App(): JSX.Element {
 
   const parts = steps.length ? partsFor(steps) : PARTS;
   const currentPart = view.kind === 'intro' || view.kind === 'task' ? PART_OF[view.step] : null;
-  const showRail = view.kind !== 'welcome';
 
   let body: JSX.Element;
   if (view.kind === 'welcome') {
@@ -376,7 +387,7 @@ export function App(): JSX.Element {
           <CheckIcon size={36} />
         </span>
         <h2 class="fl-closing-title">You’re all set.</h2>
-        <p class="fl-closing-deck">Here’s what WebAble will do for you.</p>
+        <p class="fl-closing-deck">Here’s what we found.</p>
       </section>
     );
   }
@@ -387,20 +398,18 @@ export function App(): JSX.Element {
   return (
     <div class="fl-app">
       <TopBar parts={parts} current={currentPart} done={doneParts} ticking={ticking} onSkip={view.kind === 'welcome' || view.kind === 'closing' ? null : () => void skipAll()} />
-      <main class={`fl-main ${showRail ? 'has-rail' : ''}`}>
+      <main class="fl-main">
         <div class="fl-col" inert={intro != null}>
           {body}
         </div>
-        {showRail ? <Rail lines={rail} /> : null}
       </main>
       {intro ? (
-        <div class={`fl-scrim ${showRail ? 'has-rail' : ''}`}>
+        <div class="fl-scrim">
           <Instruction
             step={intro}
             eyebrow={eyebrowFor(intro, steps)}
             words={wordsFor(intro, raw.inputClass)}
             setLine={setLine}
-            chip={chip}
             onStart={() => beginStep(intro)}
             onSkip={() => skipStep(intro)}
           />

@@ -1,7 +1,7 @@
 // Owner: P. The WebAble sheet, above the button. Six things, top to bottom:
 // 1. "WebAble" and the site, with Close;
 // 2. Simplified | Original, only where the simplified page is in use;
-// 3. Text size − / + with the size between them;
+// 3. Text size − / + with an "Aa" at the shown size and its word level between them (never px);
 // 4. What WebAble did here: plain lines, each with Undo (or "Show it" for a pop-up moved aside);
 // 5. Pause on this site;
 // 6. How WebAble read this page · Your settings.
@@ -29,11 +29,11 @@ import {
 import {
   didLines,
   pageUnread,
-  pxLabel,
   sheetMode,
   showViewSwitch,
   shownTextPx,
   siteName,
+  sizeWord,
   UNREAD,
   type DidIcon,
   type DidLine,
@@ -129,7 +129,9 @@ export function Sheet({ api, s, origin, side, maxHeightPx, pageZoom, gone, onGon
   const viewSwitch = on && showViewSwitch(s.calm);
   const simplified = Boolean(s.calm.open || (s.calm.loading && !s.calm.open));
   const px = on ? shownTextPx(s, pageZoom, s.calm.open ? null : measurePageTextPx()) : null;
-  const size = pxLabel(px);
+  const size = sizeWord(px);
+  // The "Aa" is drawn at the size the page shows (one CSS px is one design pixel in the chrome layer), kept in the row.
+  const aaPx = px === null ? null : Math.min(34, Math.max(12, Math.round(px)));
 
   const act = (l: DidLine) => {
     if (l.action.kind === 'undo') for (const id of l.action.opIds) api.undoOp(id);
@@ -213,7 +215,12 @@ export function Sheet({ api, s, origin, side, maxHeightPx, pageZoom, gone, onGon
                   <IconMinus size={20} />
                 </button>
                 <output class="wa-step-val" aria-live="polite">
-                  {size}
+                  {aaPx !== null && (
+                    <span class="wa-step-aa" aria-hidden="true" style={{ fontSize: `${aaPx}px` }}>
+                      Aa
+                    </span>
+                  )}
+                  <span class="wa-step-word">{size}</span>
                 </output>
                 <button class="wa-step" aria-label="Larger text" onClick={() => text(1)}>
                   <IconPlus size={20} />

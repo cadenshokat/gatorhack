@@ -97,17 +97,26 @@ function DotsDemo(): JSX.Element {
   );
 }
 
+/** A real website in a browser window, with WebAble's small card at the bottom naming what to find. */
 function FindDemo(): JSX.Element {
   return (
-    <div class="dm-col">
-      <span class="dm-findchip">Find: Gift cards</span>
-      <div class="dm-card dm-page">
-        <span class="dm-page-head" />
-        <div class="dm-page-grid">
-          {Array.from({ length: 8 }, (_, i) => (
-            <span class={`dm-tile ${i === 5 ? 'is-target' : ''}`} />
+    <div class="dm-browser">
+      <div class="dm-browser-bar">
+        <i />
+        <i />
+        <i />
+        <span class="dm-browser-url" />
+      </div>
+      <div class="dm-browser-page">
+        <div class="dm-browser-nav">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <span class={`dm-link ${i === 3 ? 'is-target' : ''}`} />
           ))}
         </div>
+        <Lines widths={[100, 90, 96, 72]} />
+      </div>
+      <div class="dm-taskcard">
+        Find and click: <b>Health</b>
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
-// The quiet frame around every step: the top bar with the Reading · Pointing · Finding ruler, and the
-// "What we've learned" slip (a chip on narrow windows).
+// The quiet frame around every step: the top bar with the Reading · Pointing · Finding ruler. Nothing in the frame
+// tells the person a result while the flow runs (round 8c); what we learned is shown once, at the end.
 
 import type { JSX } from 'preact';
-import type { LearnedLine, PartId } from '../logic/steps';
+import type { PartId } from '../logic/steps';
 
 export function CheckIcon(props: { size?: number }): JSX.Element {
   const s = props.size ?? 16;
@@ -67,46 +67,5 @@ export function TopBar(props: {
         ) : null}
       </div>
     </header>
-  );
-}
-
-function LineValue(props: { line: LearnedLine }): JSX.Element {
-  const l = props.line;
-  return (
-    <span class="fl-line-value">
-      {l.from ? <span class="fl-line-from">{l.from} → </span> : null}
-      <b class={l.changed ? 'is-changed' : ''}>{l.value}</b>
-    </span>
-  );
-}
-
-/** The tailor's slip: one line per finished step. Never changes while a step is running. */
-export function Rail(props: { lines: LearnedLine[] }): JSX.Element {
-  return (
-    <aside class="fl-rail card" aria-label="What we've learned">
-      <h2 class="fl-rail-title">What we’ve learned</h2>
-      {props.lines.length ? (
-        <ul class="fl-lines">
-          {props.lines.map((l) => (
-            <li class="fl-line" key={`${l.id}:${l.value}`}>
-              <span class="fl-line-label">{l.label}</span>
-              <LineValue line={l} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p class="fl-rail-empty">What we learn about you shows up here, one line at a time.</p>
-      )}
-    </aside>
-  );
-}
-
-/** Under 1180 px the newest line rides on the next instruction card instead. */
-export function Chip(props: { line: LearnedLine }): JSX.Element {
-  return (
-    <p class="fl-chip">
-      <span class="fl-chip-label">{props.line.label}</span>
-      <LineValue line={props.line} />
-    </p>
   );
 }

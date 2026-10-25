@@ -1,6 +1,6 @@
-// Line icons for the results page: 28 px, 1.75 px strokes, round ends, drawn in currentColor.
+// Line icons for the results page: 1.75 strokes, round ends, drawn in currentColor.
 import type { JSX } from 'preact';
-import type { NeedId } from './needs';
+import type { StruggleId } from './needs';
 
 const line = {
   fill: 'none',
@@ -18,8 +18,8 @@ function Svg({ size = 28, children }: { size?: number; children: JSX.Element | J
   );
 }
 
-/** One icon per area WebAble helps with. */
-export function NeedIcon({ id }: { id: NeedId }): JSX.Element {
+/** One icon per struggle. */
+export function StruggleIcon({ id }: { id: StruggleId }): JSX.Element {
   switch (id) {
     case 'text':
       // A large and a small letter A.
@@ -47,7 +47,7 @@ export function NeedIcon({ id }: { id: NeedId }): JSX.Element {
           <path d="M14.5 13.5l6.2 2.4-2.7 1.1 2.6 3.4-1.5 1.1-2.6-3.4-1.6 2.5Z" fill="currentColor" stroke-width="1.25" />
         </Svg>
       );
-    case 'steady':
+    case 'slips':
       // A target with the dot in the middle.
       return (
         <Svg>
@@ -56,23 +56,44 @@ export function NeedIcon({ id }: { id: NeedId }): JSX.Element {
           <circle cx="14" cy="14" r="1.2" fill="currentColor" />
         </Svg>
       );
-    case 'motion':
-      // Pause.
+    case 'busy':
+      // A crowded page.
       return (
         <Svg>
-          <circle cx="14" cy="14" r="9.25" />
-          <path d="M11.5 10.5v7M16.5 10.5v7" />
+          <rect x="4.75" y="3.75" width="18.5" height="20.5" rx="3" />
+          <path d="M8.5 8.5h11M8.5 12h4.5M8.5 15.5h4.5M8.5 19h11" />
+          <rect x="15.5" y="11.25" width="4" height="5" rx="1" />
         </Svg>
       );
-    case 'busy':
-      // A page with a few calm lines.
+    case 'motion':
+      // Something sliding past.
       return (
         <Svg>
-          <rect x="6" y="3.75" width="16" height="20.5" rx="3" />
-          <path d="M10 9.5h8M10 13.5h8M10 17.5h5" />
+          <rect x="9.5" y="7.5" width="14" height="13" rx="3" />
+          <path d="M3.5 11h3M2.5 14h4M3.5 17h3" />
         </Svg>
       );
   }
+}
+
+/** The accent check before "WebAble fixes this:". */
+export function CheckIcon(): JSX.Element {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...line} stroke-width={2.25}>
+      <circle cx="12" cy="12" r="10" fill="currentColor" stroke="none" />
+      <path d="M7.5 12.3l3 3 6-6.3" stroke="#fff" />
+    </svg>
+  );
+}
+
+/** Opens in a new tab. */
+export function OutIcon(): JSX.Element {
+  return (
+    <Svg size={24}>
+      <path d="M10 6.5h11.5V18" stroke-width="2" />
+      <path d="M21 7 7 21" stroke-width="2" />
+    </Svg>
+  );
 }
 
 export function MinusIcon(): JSX.Element {
@@ -88,14 +109,5 @@ export function PlusIcon(): JSX.Element {
     <Svg size={24}>
       <path d="M7 14h14M14 7v14" stroke-width="2.25" />
     </Svg>
-  );
-}
-
-export function LockIcon(): JSX.Element {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false" {...line} stroke-width={1.5}>
-      <rect x="2.75" y="6.25" width="8.5" height="6" rx="1.5" />
-      <path d="M4.75 6.25V4.5a2.25 2.25 0 0 1 4.5 0v1.75" />
-    </svg>
   );
 }

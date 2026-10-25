@@ -4,10 +4,25 @@
 import type {
   FittingRaw, InputClass, Polarity, ReadTrial, WarmupBlock, WarmupBlockMetrics, WarmupMetrics,
 } from '@webable/core';
+import type { SiteTaskResult } from '../../../src/sitetask/types';
 import type { RingPress } from './pointing';
 
-/** Added to gotInWay when the person pressed "Stop the moving parts" during Find (core reads it as the stop press). */
+/** Added to gotInWay when the person pressed a "stop the moving parts" control (core reads it as the stop press). */
 export const STOPPED_MOTION = 'pressed stop';
+
+type FindTrial = { clutter: boolean; motion: boolean; ms: number; found: boolean };
+
+/**
+ * One Finding trial from one real site (round 8c): `{ clutter: busy, motion: motionSeen, ms, found }`. A site the person
+ * never really tried (it didn't load, or they skipped it without searching) gives no trial; a site they searched and
+ * then skipped, or never found, is a trial that was not found.
+ */
+export function siteTrial(r: SiteTaskResult): FindTrial | null {
+  const tried = !r.skipped || (r.presses ?? 0) > 1 || (r.wrongClicks ?? 0) > 0 || (r.scrollScreens ?? 0) >= 0.5;
+  if (!tried) return null;
+  const found = !!r.found && r.ms != null && Number.isFinite(r.ms) && r.ms > 0;
+  return { clutter: !!r.busy, motion: !!r.motionSeen, ms: Math.round(found ? (r.ms as number) : Math.max(0, r.ms ?? 0)), found };
+}
 
 interface PressDown {
   x: number;
@@ -48,7 +63,9 @@ export class RawCollector {
   /** Steps with no block of their own in core's list ('size', 'light or dark'), when skipped. */
   readonly skippedSteps = new Set<string>();
   blocks: Array<{ sizePx: number; presses: RingPress[] }> = [];
-  findTrials: Array<{ clutter: boolean; motion: boolean; ms: number; found: boolean }> = [];
+  findTrials: FindTrial[] = [];
+  /** The real sites (round 8c), in the order visited, for the results page's evidence. */
+  sites: SiteTaskResult[] = [];
   preferredCalm = 0;
   stoppedMotion = false;
   /** Extra "what got in the way" notes. Core reads "moving things" as a reason to hold motion still. */
@@ -178,6 +195,26 @@ export class RawCollector {
     this.lastUp = { x: upX, y: upY, t: upT, el: null };
   }
 
+  /**
+   * The real sites' results: one Finding trial per site, and every press on the sites into allPresses (their slips
+   * count toward steady clicks like any other press). Call once per run. Returns the trials added.
+   */
+  addSites(results: readonly SiteTaskResult[]): number {
+    this.sites = results.map((r) => ({ ...r }));
+    let added = 0;
+    for (const r of results) {
+      const t = siteTrial(r);
+      if (t) {
+        this.findTrials.push(t);
+        added += 1;
+      }
+      const n = Math.max(0, Math.min(500, Math.round(r.presses ?? 0)));
+      const slips = Math.max(0, Math.min(n, Math.round(r.slips ?? 0)));
+      for (let k = 0; k < n; k++) this.presses.push({ slipped: k < slips, repeat: false });
+    }
+    return added;
+  }
+
   /* ---------------- outcomes ---------------- */
 
   skip(id: WarmupBlock): void {
@@ -203,6 +240,7 @@ export class RawCollector {
     this.skippedSteps.clear();
     this.blocks = [];
     this.findTrials = [];
+    this.sites = [];
     this.preferredCalm = 0;
     this.stoppedMotion = false;
     this.notes = [];

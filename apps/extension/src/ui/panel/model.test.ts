@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS, type ElementDecision, type OpRecord, type OverlayAction } from '@webable/core';
 import type { EngineState } from '../../contracts';
 import { pausedList } from './actions';
-import { changedHere, didLines, movedPopups, pageUnread, pxLabel, sheetMode, showViewSwitch, shownTextPx, siteName, UNREAD } from './model';
+import { changedHere, didLines, movedPopups, pageUnread, sheetMode, sizeWord, showViewSwitch, shownTextPx, siteName, UNREAD } from './model';
 
 const op = (id: string, kind: OpRecord['kind'], targets = 0, status: OpRecord['status'] = 'applied'): OpRecord => ({
   id,
@@ -95,12 +95,17 @@ describe('the sheet and the button', () => {
     expect(pageUnread({ phase: 'tailored', ledger: [{ at: 1, source: 'jev', title: UNREAD }], understanding: null })).toBe(true);
     expect(pageUnread({ phase: 'tailored', ledger: [], understanding: null })).toBe(false);
   });
-  it('shows the text size in px as the person sees it', () => {
+  it('names the text size in words as the person sees it, never in px', () => {
     const calm = { open: false, textStep: 0 } as EngineState['calm'];
-    expect(pxLabel(shownTextPx({ calm, fit: null, pageZoom: 1.5, textZoom: 1.5 }, 1.5, 14))).toBe('21 px');
+    expect(sizeWord(shownTextPx({ calm, fit: null, pageZoom: 1.5, textZoom: 1.5 }, 1.5, 14))).toBe('Large'); // 21
     const fit = { text: { bodyPx: 20 } } as EngineState['fit'];
-    expect(pxLabel(shownTextPx({ calm: { ...calm, open: true, textStep: 2 }, fit, pageZoom: 1, textZoom: 1 }, 1, null))).toBe('26 px');
-    expect(pxLabel(shownTextPx({ calm, fit, pageZoom: 1, textZoom: 1 }, 1, null))).toBe('');
+    expect(sizeWord(shownTextPx({ calm: { ...calm, open: true, textStep: 2 }, fit, pageZoom: 1, textZoom: 1 }, 1, null))).toBe('Largest'); // 26, nearer 28 than 24 by ratio
+    expect(sizeWord(shownTextPx({ calm, fit, pageZoom: 1, textZoom: 1 }, 1, null))).toBe('');
+    expect(sizeWord(15)).toBe('Standard');
+    expect(sizeWord(16)).toBe('Standard');
+    expect(sizeWord(18)).toBe('Larger');
+    expect(sizeWord(40)).toBe('Largest');
+    for (const px of [12, 16, 19, 22, 26, 30]) expect(sizeWord(px)).not.toMatch(/px|\d/);
   });
   it('names the site and pauses it without touching other sites', () => {
     expect(siteName('https://www.nytimes.com')).toBe('nytimes.com');

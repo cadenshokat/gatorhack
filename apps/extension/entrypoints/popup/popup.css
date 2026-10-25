@@ -1,7 +1,7 @@
-/* Owner: P, F. The toolbar popup, in the onboarding's look (docs/design/ONBOARDING.md): warm off-white canvas, white
-   card, near-black ink, one deep green accent for "WebAble is on". */
+/* Owner: P, F. The toolbar popup, in the onboarding's look (docs/design/ONBOARDING.md): pure white page (round 8c),
+   a white card with a hairline border, near-black ink, one deep green accent for "WebAble is on". */
 :root {
-  --canvas: #F5F4F0; --card: #FFFFFF; --ink: #16150F; --ink-2: #5E5C55; --ink-3: #8B8880;
+  --canvas: #FFFFFF; --card: #FFFFFF; --ink: #16150F; --ink-2: #5E5C55; --ink-3: #8B8880;
   --line: #E6E3DC; --line-strong: #D4D0C6; --accent: #17694A;
   --shadow-card: 0 1px 2px rgba(22, 21, 15, 0.04), 0 12px 40px rgba(22, 21, 15, 0.06);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -27,7 +27,7 @@ button { font: inherit; color: inherit; }
 .mark[data-on="true"] { box-shadow: inset 0 0 0 2.5px var(--accent); }
 .mark[data-on="true"] i { background: var(--accent); }
 
-.card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow-card); padding: 16px 16px 8px 20px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow-card); padding: 16px 16px 8px 20px; }
 .site { margin: 0; font-size: 15px; line-height: 20px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .site-none { margin: 0 0 8px; font-size: 16px; line-height: 22px; color: var(--ink-2); }
 .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; }

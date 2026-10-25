@@ -1,4 +1,5 @@
-// "Where WebAble helps you": a hand-built hexagon radar.
+// "What gets in your way": a hand-built hexagon radar of how strongly each struggle gets in the person's way.
+// No numbers anywhere on it; the hidden table says the amounts in words.
 // Three faint rings and hairline spokes; the shape in the accent (14% fill, 2.5 px line) with white vertex dots;
 // 15 px labels outside, the top three in ink. The SVG is drawn at its real pixel size (no viewBox scaling), so labels
 // stay 15 px at every width; the radius is solved from the measured label widths so labels never clip, and labels sit
@@ -211,11 +212,11 @@ export function Radar(props: RadarProps): JSX.Element {
         })}
       </svg>
       <table class="visually-hidden">
-        <caption>Where WebAble helps you</caption>
+        <caption>What gets in your way</caption>
         <thead>
           <tr>
-            <th scope="col">Area</th>
-            <th scope="col">How much WebAble helps</th>
+            <th scope="col">What</th>
+            <th scope="col">How much it gets in your way</th>
           </tr>
         </thead>
         <tbody>

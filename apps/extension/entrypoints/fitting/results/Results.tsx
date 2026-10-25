@@ -1,41 +1,62 @@
-// The last screen: what WebAble will now do for this person, shown on pages they know, and every setting in reach.
-// One column of calm sections: the promise (status, three plain helps, the chart), a page before and after, the
-// settings, and a footer. Every change saves at once through onChange and redraws the chart and the page live.
-import type { FitProfile } from '@webable/core';
+// The last screen (docs/design/ONBOARDING.md, round 8c point 5). It leads with what makes the web harder for this
+// person, strongly and in their own numbers, then what WebAble does about each. Then the chart of what gets in their
+// way, real websites to try it on, every setting in plain word levels, and a footer. Every change saves at once
+// through onChange. Nothing a person sees here is a pixel value or a technical word.
+import type { FitProfile, Polarity } from '@webable/core';
 import type { JSX } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { RunEvidence } from '../logic/evidence';
 import {
-  BUTTON_SIZES,
-  buttonChoice,
+  BUTTON_LEVELS,
+  buttonLabel,
+  buttonLevel,
+  canStepText,
   currentText,
   faintLevel,
-  nextTextSize,
   stepText,
-  withButtons,
+  textLabel,
+  textLevel,
+  withButtonLevel,
   withFaint,
   withMotion,
   withPolarity,
   withSteady,
-  type ButtonChoice,
+  type ButtonLevel,
   type FaintLevel,
 } from './adjust';
 import { Segmented, Stepper, Switch } from './controls';
-import { NeedIcon } from './icons';
-import { NEED_ORDER, amountWords, needValues, topNeeds, helpLine, type HelpLine } from './needs';
-import { Preview } from './Preview';
+import { CheckIcon, OutIcon, StruggleIcon } from './icons';
+import { FIX_OFF_LINE, STRUGGLE_LABELS, amountWords, anyStrong, fixOn, struggleCards, struggleValues } from './needs';
 import { Radar } from './Radar';
 import './results.css';
-import type { Polarity } from '@webable/core';
 
 export interface ResultsProps {
   fit: FitProfile; // what was just saved (or loaded)
   measured: boolean; // false when opened as settings without a fresh run
+  /** Their own numbers from the run (round 8c). Null or missing when opened later without them, or in the demo. */
+  evidence?: RunEvidence | null;
   onChange(next: FitProfile): void; // App saves via logic/storage.ts and re-renders
   onRetake(): void;
   onDone(): void; // closes the tab
 }
 
-const NEWS_URL = 'https://www.cnn.com';
+/** "See it on real websites": real pages WebAble changes by itself (round 8c point 5). */
+const REAL_SITES: ReadonlyArray<{ name: string; host: string; url: string; caption: string }> = [
+  { name: 'CNN', host: 'cnn.com', url: 'https://www.cnn.com', caption: 'News, as a clean page with the story first' },
+  {
+    name: 'Allrecipes',
+    host: 'allrecipes.com',
+    url: 'https://www.allrecipes.com/recipe/10813/best-chocolate-chip-cookies/',
+    caption: 'Just the ingredients and the steps',
+  },
+  {
+    name: 'Florida Gators',
+    host: 'floridagators.com',
+    url: 'https://floridagators.com/sports/football/opponent-history/university-of-kentucky/32',
+    caption: 'The score and the record, up front',
+  },
+  { name: 'IRS', host: 'irs.gov', url: 'https://www.irs.gov/refunds', caption: 'The same page, easier to read' },
+];
 
 function useReducedMotion(): boolean {
   const query = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -54,10 +75,15 @@ const listJoin = (xs: string[]): string =>
 
 export function Results(props: ResultsProps): JSX.Element {
   const { measured, onRetake, onDone } = props;
+  const evidence = props.evidence ?? null;
   const [fit, setFit] = useState<FitProfile>(props.fit);
   useEffect(() => setFit(props.fit), [props.fit]);
+  // What gets in their way is about them, not about the settings: read it from the fit as the page opened, so changing
+  // a setting below never rewrites their problems (only whether each fix is on).
+  const [opened] = useState<FitProfile>(props.fit);
   const reduced = useReducedMotion();
   const title = useRef<HTMLHeadingElement>(null);
+  const sitesRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     title.current?.focus({ preventScroll: true });
@@ -69,11 +95,27 @@ export function Results(props: ResultsProps): JSX.Element {
     props.onChange(next);
   };
 
-  const values = useMemo(() => needValues(fit), [fit]);
-  const top = useMemo(() => topNeeds(fit, values), [fit, values]);
-  const helps: HelpLine[] = top.map((n) => helpLine(n.id, fit));
-  const topIds = new Set(top.map((n) => n.id));
-  const summary = `Where WebAble helps you: most with ${listJoin(top.map((n) => n.label))}.`;
+  const values = useMemo(() => struggleValues(opened, evidence), [opened, evidence]);
+  const cards = useMemo(() => struggleCards(opened, evidence, values), [opened, evidence, values]);
+  const strong = anyStrong(values);
+  const cardIds = new Set(cards.map((c) => c.id));
+  const summary = cards.length
+    ? `What gets in your way: most of all ${listJoin(cards.map((c) => STRUGGLE_LABELS[c.id].toLowerCase()))}.`
+    : 'What gets in your way: hardly anything.';
+
+  const onReal = !evidence || evidence.sites.length > 0;
+  const h1 = strong ? 'Here’s what makes the web harder for you.' : 'The web mostly works for you.';
+  const deck = !strong
+    ? 'A few things still get in the way. WebAble takes care of them.'
+    : !measured
+      ? 'From what you did when you set up WebAble.'
+      : onReal
+        ? 'From what you just did, including on real websites.'
+        : 'From what you just did.';
+
+  const toSites = (): void => {
+    sitesRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  };
 
   return (
     <div class="rs">
@@ -85,33 +127,49 @@ export function Results(props: ResultsProps): JSX.Element {
 
       <main class="rs-wrap">
         <section class="rs-hero">
-          <div class="rs-hero-text">
+          <div class="rs-lead">
             <p class="rs-status">
               <span class="rs-status-dot" aria-hidden="true" />
               WebAble is on
             </p>
             <h1 class="rs-h1" ref={title} tabIndex={-1}>
-              {measured ? 'Here’s what changes for you.' : 'Your WebAble settings'}
+              {h1}
             </h1>
-            <p class="rs-deck">{measured ? 'On every website you visit, WebAble will:' : 'WebAble uses these on every website.'}</p>
-            <ul class="rs-helps">
-              {helps.map((h) => (
-                <li class="rs-help" key={h.id}>
-                  <span class="rs-help-icon">
-                    <NeedIcon id={h.id} />
-                  </span>
-                  <span>
-                    {h.lead}
-                    {h.strong && <strong>{h.strong}</strong>}
-                    {h.tail}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <p class="rs-deck">{deck}</p>
+
+            <ol class="rs-cards" aria-label="What makes the web harder for you">
+              {cards.map((c) => {
+                const on = fixOn(c.id, fit);
+                return (
+                  <li class="rs-card" key={c.id}>
+                    <span class="rs-card-icon">
+                      <StruggleIcon id={c.id} />
+                    </span>
+                    <div class="rs-card-body">
+                      <p class="rs-problem">{c.problem}</p>
+                      <p class="rs-evidence">{c.evidence}</p>
+                      {on ? (
+                        <p class="rs-fix">
+                          <span class="rs-fix-check">
+                            <CheckIcon />
+                          </span>
+                          <span>
+                            <strong>WebAble fixes this:</strong> {c.fix}
+                          </span>
+                        </p>
+                      ) : (
+                        <p class="rs-fix is-off">{FIX_OFF_LINE}</p>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+
             <div class="rs-actions">
-              <a class="btn btn-primary rs-btn" href={NEWS_URL} target="_blank" rel="noopener noreferrer">
-                Try it on a news site
-              </a>
+              <button type="button" class="btn btn-primary rs-btn" onClick={toSites}>
+                See it on real websites
+              </button>
               <button type="button" class="btn btn-secondary rs-btn" onClick={onDone}>
                 Done
               </button>
@@ -119,20 +177,48 @@ export function Results(props: ResultsProps): JSX.Element {
           </div>
 
           <figure class="rs-chart card">
-            <figcaption class="rs-chart-title">Where WebAble helps you</figcaption>
+            <figcaption class="rs-chart-title">What gets in your way</figcaption>
             <Radar
-              values={values.map((n) => n.value)}
-              labels={values.map((n) => n.label)}
-              emphasis={NEED_ORDER.map((id) => topIds.has(id))}
-              words={values.map((n) => amountWords(n.value))}
+              values={values.map((s) => s.value)}
+              labels={values.map((s) => s.label)}
+              emphasis={values.map((s) => cardIds.has(s.id))}
+              words={values.map((s) => amountWords(s.value))}
               summary={summary}
               reduced={reduced}
             />
-            <p class="rs-chart-note">The further out, the more WebAble does for you there.</p>
+            <p class="rs-chart-note">The further out, the more it gets in your way.</p>
           </figure>
         </section>
 
-        <Preview fit={fit} reduced={reduced} />
+        <section class="rs-section" aria-labelledby="rs-sites" ref={sitesRef}>
+          <div class="rs-section-head">
+            <div>
+              <h2 class="rs-h2" id="rs-sites">
+                See it on real websites
+              </h2>
+              <p class="rs-sub">WebAble is on. Open any of these and it works by itself.</p>
+            </div>
+          </div>
+          <ul class="rs-sites">
+            {REAL_SITES.map((s) => (
+              <li key={s.url}>
+                <a class="rs-site" href={s.url} target="_blank" rel="noopener noreferrer">
+                  <span class="rs-site-top">
+                    <span class="rs-site-name">{s.name}</span>
+                    <span class="rs-site-out">
+                      <OutIcon />
+                    </span>
+                  </span>
+                  <span class="rs-site-caption">{s.caption}</span>
+                  <span class="rs-site-host">
+                    {s.host}
+                    <span class="visually-hidden"> (opens in a new tab)</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <Adjust fit={fit} onChange={change} />
 
@@ -170,18 +256,7 @@ function Row(props: {
   );
 }
 
-function fromTo(from: number, to: number | null): JSX.Element | string {
-  if (to == null || Math.round(to) <= from) return 'No change';
-  return (
-    <>
-      {from} → <strong>{Math.round(to)} px</strong>
-    </>
-  );
-}
-
-const FAINT_WORDS: Record<FaintLevel, string | null> = { off: null, darker: 'Darker', darkest: 'Darkest' };
-const POLARITY_WORDS: Record<Polarity, string | null> = { none: null, light: 'Light', dark: 'Dark' };
-
+/** "Standard → Large", or "No change" when nothing moves. Words only. */
 function wordChange(from: string, to: string | null): JSX.Element | string {
   if (!to) return 'No change';
   return (
@@ -191,9 +266,12 @@ function wordChange(from: string, to: string | null): JSX.Element | string {
   );
 }
 
+const FAINT_WORDS: Record<FaintLevel, string | null> = { off: null, darker: 'Darker', darkest: 'Darkest' };
+const POLARITY_WORDS: Record<Polarity, string | null> = { none: null, light: 'Light', dark: 'Dark' };
+
 function Adjust({ fit, onChange }: { fit: FitProfile; onChange(next: FitProfile): void }): JSX.Element {
-  const text = currentText(fit);
-  const buttons = buttonChoice(fit);
+  const level = textLevel(fit);
+  const buttons = buttonLevel(fit);
   const polarity: Polarity = fit.polarity?.value ?? 'none';
   return (
     <section class="rs-section" aria-labelledby="rs-adjust">
@@ -206,13 +284,37 @@ function Adjust({ fit, onChange }: { fit: FitProfile; onChange(next: FitProfile)
         </div>
       </div>
       <div class="rs-rows card">
-        <Row label="Text size" hint="How big words are on every page." change={fromTo(16, text)}>
-          <Stepper
-            canDown={nextTextSize(fit, -1) != null}
-            canUp={nextTextSize(fit, 1) != null}
-            downLabel="Smaller text"
-            upLabel="Larger text"
-            onStep={(d) => onChange(stepText(fit, d))}
+        <Row
+          label="Text size"
+          hint="How big words are on every page."
+          change={wordChange('Standard', level > 0 ? textLabel(fit) : null)}
+          wide
+        >
+          <div class="rs-text-control">
+            <span class="rs-aa" aria-hidden="true">
+              <span style={{ fontSize: `${currentText(fit)}px` }}>Aa</span>
+            </span>
+            <Stepper
+              canDown={canStepText(fit, -1)}
+              canUp={canStepText(fit, 1)}
+              downLabel="Smaller text"
+              upLabel="Larger text"
+              onStep={(d) => onChange(stepText(fit, d))}
+            />
+          </div>
+        </Row>
+        <Row
+          label="Button size"
+          hint="How big buttons and links are to click."
+          change={wordChange('Standard', buttons === 'standard' ? null : buttonLabel(fit))}
+          wide
+        >
+          <Segmented<ButtonLevel>
+            label="Button size"
+            wide
+            options={BUTTON_LEVELS.map((l) => ({ value: l.value, label: l.label }))}
+            value={buttons}
+            onChange={(v) => onChange(withButtonLevel(fit, v))}
           />
         </Row>
         <Row label="Faint text" hint="Light grey words, made darker." change={wordChange('Grey', FAINT_WORDS[faintLevel(fit)])} wide>
@@ -220,7 +322,7 @@ function Adjust({ fit, onChange }: { fit: FitProfile; onChange(next: FitProfile)
             label="Faint text"
             wide
             options={[
-              { value: 'off', label: 'Off' },
+              { value: 'off', label: 'Leave as is' },
               { value: 'darker', label: 'Darker' },
               { value: 'darkest', label: 'Darkest' },
             ]}
@@ -228,7 +330,12 @@ function Adjust({ fit, onChange }: { fit: FitProfile; onChange(next: FitProfile)
             onChange={(v) => onChange(withFaint(fit, v))}
           />
         </Row>
-        <Row label="Light or dark" hint="Bright pages turned dark, or the other way." change={wordChange('Pages', POLARITY_WORDS[polarity])} wide>
+        <Row
+          label="Light or dark"
+          hint="Bright pages turned dark, or the other way."
+          change={wordChange('As the site', POLARITY_WORDS[polarity])}
+          wide
+        >
           <Segmented<Polarity>
             label="Light or dark"
             wide
@@ -242,30 +349,16 @@ function Adjust({ fit, onChange }: { fit: FitProfile; onChange(next: FitProfile)
           />
         </Row>
         <Row
-          label="Button size"
-          hint="The smallest size for anything you click."
-          change={fromTo(24, buttons === 'off' ? null : buttons)}
-          wide
-        >
-          <Segmented<ButtonChoice>
-            label="Button size"
-            wide
-            options={[{ value: 'off' as ButtonChoice, label: 'Off' }, ...BUTTON_SIZES.map((s) => ({ value: s as ButtonChoice, label: String(s) }))]}
-            value={buttons}
-            onChange={(v) => onChange(withButtons(fit, v))}
-          />
-        </Row>
-        <Row
-          label="Steady clicks"
+          label="Keep my clicks steady"
           hint="Your click stays on what you meant, even if your hand moves."
           change={fit.clicks.steady.on ? <strong>On</strong> : 'Off'}
         >
-          <Switch label="Steady clicks" checked={fit.clicks.steady.on} onChange={(on) => onChange(withSteady(fit, on))} />
+          <Switch label="Keep my clicks steady" checked={fit.clicks.steady.on} onChange={(on) => onChange(withSteady(fit, on))} />
         </Row>
         <Row
-          label="Moving things"
-          hint="Slideshows and moving ads are paused."
-          change={fit.attention.motion.on ? <strong>Paused</strong> : 'Off'}
+          label="Pause moving things"
+          hint="Slideshows and moving ads stand still."
+          change={fit.attention.motion.on ? <strong>On</strong> : 'Off'}
         >
           <Switch label="Pause moving things" checked={fit.attention.motion.on} onChange={(on) => onChange(withMotion(fit, on))} />
         </Row>

@@ -1,30 +1,49 @@
-import { deriveFit, DEMO_FITS } from '@webable/core';
+import { deriveFit } from '@webable/core';
 import { describe, expect, it } from 'vitest';
-import { planFind } from './finding';
+import type { SiteTaskResult } from '../../../src/sitetask/types';
 import { BlockWalk } from './pointing';
-import { makeRng } from './rand';
-import { RawCollector } from './raw';
+import { RawCollector, siteTrial } from './raw';
 import { ladderPx, ladderStartPx, ladderStop, LADDER } from './read';
-import { eyebrowFor, IN_THE_WAY, linesFor, mergeLines, partSetLine, planSteps, wordsFor, type StepId } from './steps';
+import { eyebrowFor, IN_THE_WAY, partSetLine, planSteps, wordsFor, type StepId } from './steps';
 
 const BANNED = /\b(test|score|results?|normal|calibrat\w*|profile|fit|calm view|lens|jev)\b/i;
+/** Round 8c: no pixels and no technical words in anything a person sees. */
+const TECHNICAL = /\b(px|pixels?|contrast|ratio|target|threshold|settings? values?)\b|\d\s*:\s*1\b/i;
+
+function site(over: Partial<SiteTaskResult> = {}): SiteTaskResult {
+  return {
+    id: 'cnn', name: 'CNN', busy: true, found: true, skipped: false, ms: 9000, wrongClicks: 0, nearMisses: 0, slips: 0,
+    presses: 3, scrollScreens: 1, motionSeen: true, adsSeen: 5, ...over,
+  };
+}
 const ALL: StepId[] = ['size', 'truefalse', 'faint', 'lightdark', 'dots', 'find'];
 
 describe('words', () => {
-  it('stay plain: no banned words in any step', () => {
+  it('stay plain: no banned or technical words in any step', () => {
     for (const input of ['mouse', 'touch'] as const) {
       for (const s of ALL) {
         const w = wordsFor(s, input);
-        for (const text of [w.title, w.todo, w.success]) expect(text).not.toMatch(BANNED);
+        for (const text of [w.title, w.todo, w.success]) {
+          expect(text).not.toMatch(BANNED);
+          expect(text).not.toMatch(TECHNICAL);
+        }
       }
     }
     for (const c of IN_THE_WAY) expect(c.label).not.toMatch(BANNED);
   });
 
-  it('counts steps within a part', () => {
+  it('uses the spec’s words for the real websites', () => {
+    expect(wordsFor('find', 'mouse')).toEqual({
+      title: 'Now, some real websites',
+      todo: 'We’ll open three websites, one at a time. On each one, find what we ask for and click it.',
+      success: 'WebAble stays off while you do this, so we see the web as it really is.',
+    });
+  });
+
+  it('counts steps within a part, and a finished part is a neutral line', () => {
     expect(eyebrowFor('truefalse', ALL)).toBe('Reading · 2 of 4');
     expect(eyebrowFor('dots', ALL)).toBe('Pointing');
-    expect(partSetLine('lightdark', 'dots')).toBe('Reading is set.');
+    expect(partSetLine('lightdark', 'dots')).toBe('Reading is done.');
     expect(partSetLine('size', 'truefalse')).toBeNull();
   });
 
@@ -32,19 +51,6 @@ describe('words', () => {
     expect(planSteps('keyboard', null)).not.toContain('dots');
     const forced = { forcedColors: true } as Parameters<typeof planSteps>[1];
     expect(planSteps('mouse', forced)).toEqual(['size', 'truefalse', 'dots', 'find']);
-  });
-});
-
-describe('what we have learned', () => {
-  it('shows the text change and refreshes it in place', () => {
-    const rosa = DEMO_FITS.rosa;
-    const first = linesFor('size', rosa);
-    expect(first[0]).toMatchObject({ label: 'Text', from: '16', value: '22 px', changed: true });
-    const merged = mergeLines(first, [{ ...first[0]!, value: '24 px' }]);
-    expect(merged).toHaveLength(1);
-    expect(merged[0]!.value).toBe('24 px');
-    expect(linesFor('dots', rosa).map((l) => l.value)).toEqual(['56 px', 'on']);
-    expect(linesFor('find', DEMO_FITS.typical).map((l) => l.value)).toEqual(['left alone', 'simplified']);
   });
 });
 
@@ -85,14 +91,34 @@ describe('dots walk', () => {
   });
 });
 
-describe('find plan', () => {
-  it('has 1 practice and 8 trials, two in each busy × moving cell, yoked by site', () => {
-    const { practice, trials } = planFind(makeRng(7));
-    expect(practice.clutter || practice.motion).toBe(false);
-    expect(trials).toHaveLength(8);
-    for (const c of [false, true]) for (const m of [false, true]) expect(trials.filter((t) => t.clutter === c && t.motion === m)).toHaveLength(2);
-    for (const t of trials) expect(trials.filter((x) => x.template === t.template)).toHaveLength(2);
-    for (const t of trials) expect(t.tiles.indexOf(t.target)).toBeLessThan(8);
+describe('real websites', () => {
+  it('makes one trial per site the person tried', () => {
+    expect(siteTrial(site())).toEqual({ clutter: true, motion: true, ms: 9000, found: true });
+    expect(siteTrial(site({ found: false, ms: null, skipped: false }))).toMatchObject({ found: false });
+    // Searched, then skipped: not found. Never loaded (or skipped untouched): no trial.
+    expect(siteTrial(site({ found: false, ms: null, skipped: true, wrongClicks: 2 }))).toMatchObject({ found: false });
+    expect(siteTrial(site({ found: false, ms: null, skipped: true, presses: 0, scrollScreens: 0 }))).toBeNull();
+  });
+
+  it('adds the sites to finding and every site press to allPresses', () => {
+    const raw = new RawCollector();
+    const n = raw.addSites([
+      site({ id: 'wikipedia', name: 'Wikipedia', busy: false, ms: 5000, presses: 2, slips: 1, motionSeen: false }),
+      site({ presses: 4, slips: 0 }),
+      site({ id: 'allrecipes', name: 'Allrecipes', skipped: true, found: false, ms: null, presses: 0, scrollScreens: 0 }),
+    ]);
+    expect(n).toBe(2);
+    raw.complete('find');
+    const r = raw.toRaw();
+    expect(r.finding?.trials).toEqual([
+      { clutter: false, motion: false, ms: 5000, found: true },
+      { clutter: true, motion: true, ms: 9000, found: true },
+    ]);
+    expect(r.allPresses).toHaveLength(6);
+    expect(r.allPresses.filter((p) => p.slipped)).toHaveLength(1);
+    expect(raw.sites).toHaveLength(3);
+    raw.reset();
+    expect(raw.sites).toEqual([]);
   });
 });
 

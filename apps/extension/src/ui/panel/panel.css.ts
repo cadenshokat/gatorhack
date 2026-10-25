@@ -266,7 +266,7 @@ export const rootCss = /* css */ `
 .wa-root[data-mode="max"] .wa-seg2 { box-shadow: inset 0 0 0 ${u(2)} #000000; }
 .wa-root[data-mode="max"] .wa-seg2 button[aria-pressed="true"] { background: #000000; color: #FFFFFF; }
 
-/* Text size − 21 px + */
+/* Text size − Aa + (a word level under the sample, never px) */
 .wa-sh-size { display: flex; align-items: center; justify-content: space-between; gap: ${u(12)}; }
 .wa-sh-label { font-size: ${u(16)}; font-weight: 600; color: var(--k-ink); }
 .wa-stepper { display: flex; align-items: center; gap: ${u(4)}; }
@@ -279,9 +279,11 @@ export const rootCss = /* css */ `
 .wa-step:hover { background: var(--k-canvas); }
 .wa-step:active { transform: scale(.94); }
 .wa-step-val {
-  min-width: ${u(64)}; text-align: center; font-size: ${u(17)}; font-weight: 600;
-  font-variant-numeric: tabular-nums; color: var(--k-accent); white-space: nowrap;
+  min-width: ${u(96)}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: ${u(2)};
+  text-align: center; color: var(--k-ink); white-space: nowrap;
 }
+.wa-step-aa { display: block; font-weight: 600; line-height: 1.05; color: var(--k-ink); }
+.wa-step-word { display: block; font-size: ${u(14)}; line-height: ${u(18)}; font-weight: 600; color: var(--k-accent); }
 .wa-sh-note { margin: ${u(10)} 0 0; font-size: ${u(15)}; line-height: ${u(21)}; color: var(--k-ink2); }
 
 /* What WebAble did here */
@@ -344,7 +346,7 @@ export const rootCss = /* css */ `
 /* ---------- the simplified page's loading screen ---------- */
 .wa-calm-loading {
   position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; pointer-events: auto;
-  background: var(--k-canvas); color: var(--k-ink);
+  background: var(--k-card); color: var(--k-ink);
 }
 .wa-calm-loading-card { display: grid; gap: ${u(16)}; justify-items: center; text-align: center; padding: ${u(32)}; max-width: ${u(480)}; }
 .wa-calm-loading-card h2 { margin: 0; font-family: ${DISPLAY_STACK}; font-size: ${u(30)}; line-height: ${u(36)}; font-weight: 600; letter-spacing: -0.02em; }

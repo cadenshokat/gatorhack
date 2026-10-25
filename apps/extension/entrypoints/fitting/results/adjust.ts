@@ -1,46 +1,79 @@
 // The "Adjust anything" rows: each control turns the current settings into the next FitProfile.
+// People only ever see word levels (round 8c point 3); the numbers behind them stay in here.
 // Kept in step with core's deriveFit(), so a value set here means the same thing to the engine as a measured one:
 // a text size the person picks goes in text.override; faint text moves the contrast band with its floor, weight and
-// line height; click areas set targets.minPx and the steady-click radius that follows from it.
+// line height; button size sets targets.minPx and the steady-click radius that follows from it.
 import type { ContrastBand, FitProfile, Polarity } from '@webable/core';
 
-export const TEXT_LADDER: readonly number[] = [16, 18, 20, 22, 24, 28, 32, 36];
-export const BUTTON_SIZES: readonly number[] = [32, 44, 56, 72, 96];
+/** Text size levels, smallest first. `px` is what the engine gets; people see `label` and an "Aa" drawn at that size. */
+export const TEXT_LEVELS: ReadonlyArray<{ px: number; label: string }> = [
+  { px: 16, label: 'Standard' },
+  { px: 18, label: 'Larger' },
+  { px: 20, label: 'Large' },
+  { px: 24, label: 'Extra large' },
+  { px: 28, label: 'Largest' },
+];
+
+export type ButtonLevel = 'standard' | 'larger' | 'largest';
+
+/** Button size levels. `minPx` is what the engine gets (null leaves buttons alone). */
+export const BUTTON_LEVELS: ReadonlyArray<{ value: ButtonLevel; label: string; minPx: number | null }> = [
+  { value: 'standard', label: 'Standard', minPx: null },
+  { value: 'larger', label: 'Larger', minPx: 44 },
+  { value: 'largest', label: 'Largest', minPx: 72 },
+];
 
 export type FaintLevel = 'off' | 'darker' | 'darkest';
-export type ButtonChoice = 'off' | number;
 
 const clamp = (v: number, lo: number, hi: number): number => (v < lo ? lo : v > hi ? hi : v);
 
 export const currentText = (fit: FitProfile): number => fit.text.override ?? fit.text.bodyPx;
 
-/** The next text size one ladder step up (+1) or down (-1), or null at either end. */
-export function nextTextSize(fit: FitProfile, dir: 1 | -1): number | null {
-  const now = currentText(fit);
-  if (dir > 0) return TEXT_LADDER.find((v) => v > now + 0.25) ?? null;
-  for (let i = TEXT_LADDER.length - 1; i >= 0; i--) {
-    const v = TEXT_LADDER[i] as number;
-    if (v < now - 0.25) return v;
+/** The nearest level to a size, by ratio (size is felt as a ratio). Anything above the top is the top. */
+function nearestIndex(px: number, sizes: number[]): number {
+  if (!Number.isFinite(px)) return 0;
+  let best = 0;
+  for (let i = 1; i < sizes.length; i++) {
+    if (Math.abs(Math.log(px / (sizes[i] as number))) <= Math.abs(Math.log(px / (sizes[best] as number)))) best = i;
   }
-  return null;
+  return best;
 }
 
-/** A size the person picks is stored as an override; picking the measured size again clears it. */
-export function withTextSize(fit: FitProfile, px: number): FitProfile {
-  const override = Math.abs(px - fit.text.bodyPx) < 0.25 ? null : px;
+export function textLevelOf(px: number): number {
+  if (!(px > 16.5)) return 0;
+  return nearestIndex(px, TEXT_LEVELS.map((l) => l.px));
+}
+
+/** The level the page shows now. */
+export const textLevel = (fit: FitProfile): number => textLevelOf(currentText(fit));
+
+export const textLabel = (fit: FitProfile): string => (TEXT_LEVELS[textLevel(fit)] as { label: string }).label;
+
+/**
+ * Picks a text size level. Picking the level their measured size falls in goes back to that exact measured size (no
+ * override), so stepping away and back never loses it.
+ */
+export function withTextLevel(fit: FitProfile, index: number): FitProfile {
+  const i = clamp(Math.round(index), 0, TEXT_LEVELS.length - 1);
+  const override = i === textLevelOf(fit.text.bodyPx) ? null : (TEXT_LEVELS[i] as { px: number }).px;
+  if (override === fit.text.override) return fit;
   return { ...fit, text: { ...fit.text, override } };
 }
 
+export const canStepText = (fit: FitProfile, dir: 1 | -1): boolean => {
+  const next = textLevel(fit) + dir;
+  return next >= 0 && next < TEXT_LEVELS.length;
+};
+
 export function stepText(fit: FitProfile, dir: 1 | -1): FitProfile {
-  const next = nextTextSize(fit, dir);
-  return next == null ? fit : withTextSize(fit, next);
+  return canStepText(fit, dir) ? withTextLevel(fit, textLevel(fit) + dir) : fit;
 }
 
 export function faintLevel(fit: FitProfile): FaintLevel {
   return fit.contrast.band === 'S' ? 'darkest' : fit.contrast.band === 'M' ? 'darker' : 'off';
 }
 
-/** Off keeps the basic 4.5:1 lift every page gets; darker is 7:1; darkest is the strongest. */
+/** Leave as is keeps the basic lift every page gets; darker and darkest go further. */
 export function withFaint(fit: FitProfile, level: FaintLevel): FitProfile {
   const band: ContrastBand = level === 'darkest' ? 'S' : level === 'darker' ? 'M' : 'N';
   const floor = band === 'S' ? 15 : band === 'M' ? 7 : 4.5;
@@ -58,16 +91,20 @@ export function withPolarity(fit: FitProfile, value: Polarity): FitProfile {
   return { ...fit, polarity: { value, stated: value } };
 }
 
-export function buttonChoice(fit: FitProfile): ButtonChoice {
+/** Which button level the settings sit at (a measured size in between goes to the nearest). */
+export function buttonLevel(fit: FitProfile): ButtonLevel {
   const t = fit.targets.minPx;
-  if (t == null || !Number.isFinite(t) || t <= 24) return 'off';
-  let best = BUTTON_SIZES[0] as number;
-  for (const s of BUTTON_SIZES) if (Math.abs(s - t) < Math.abs(best - t)) best = s;
-  return best;
+  if (t == null || !Number.isFinite(t) || t <= 24) return 'standard';
+  return t >= Math.sqrt(44 * 72) ? 'largest' : 'larger';
 }
 
-export function withButtons(fit: FitProfile, choice: ButtonChoice): FitProfile {
-  const minPx = choice === 'off' ? null : choice;
+export const buttonLabel = (fit: FitProfile): string =>
+  (BUTTON_LEVELS.find((l) => l.value === buttonLevel(fit)) as { label: string }).label;
+
+/** Sets the button size level. Picking the level they are already at changes nothing (a measured size is kept). */
+export function withButtonLevel(fit: FitProfile, level: ButtonLevel): FitProfile {
+  if (level === buttonLevel(fit)) return fit;
+  const minPx = (BUTTON_LEVELS.find((l) => l.value === level) as { minPx: number | null }).minPx;
   const radiusPx = minPx ? Math.round(clamp(minPx / 5, 6, minPx / 2)) : 10;
   return {
     ...fit,

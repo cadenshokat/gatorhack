@@ -73,7 +73,7 @@ export function SizeTask(props: TaskProps): JSX.Element {
       <p class="fl-para" style={{ fontSize: `${eff / zoom}px`, fontFamily: STIMULUS_FONT }} data-px={eff}>
         {COMFORT_PARAGRAPH}
       </p>
-      <span class="visually-hidden" aria-live="polite">{`${eff} pixels`}</span>
+      <span class="visually-hidden" aria-live="polite">{`Size ${idx + 1} of ${SIZE_STEPS.length}`}</span>
     </TaskLayout>
   );
 }

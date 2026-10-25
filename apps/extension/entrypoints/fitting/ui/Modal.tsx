@@ -3,8 +3,8 @@
 
 import type { JSX } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
-import type { LearnedLine, StepId, StepWords } from '../logic/steps';
-import { CheckIcon, Chip } from './Chrome';
+import type { StepId, StepWords } from '../logic/steps';
+import { CheckIcon } from './Chrome';
 import { Demo } from './Demo';
 import { useKeys } from './hooks';
 
@@ -12,8 +12,8 @@ export function Instruction(props: {
   step: StepId;
   eyebrow: string;
   words: StepWords;
+  /** A neutral transition ("Reading is done."), never a result. */
   setLine: string | null;
-  chip: LearnedLine | null;
   onStart: () => void;
   onSkip: () => void;
 }): JSX.Element {
@@ -33,15 +33,12 @@ export function Instruction(props: {
   return (
     <div class="fl-modal-wrap">
       <div class="fl-modal" role="dialog" aria-modal="true" aria-labelledby="fl-modal-title" aria-describedby="fl-modal-desc">
-        {props.setLine || props.chip ? (
+        {props.setLine ? (
           <div class="fl-modal-reward">
-            {props.setLine ? (
-              <p class="fl-modal-set">
-                <CheckIcon size={18} />
-                {props.setLine}
-              </p>
-            ) : null}
-            {props.chip ? <Chip line={props.chip} /> : null}
+            <p class="fl-modal-set">
+              <CheckIcon size={18} />
+              {props.setLine}
+            </p>
           </div>
         ) : null}
         <p class="fl-eyebrow">{props.eyebrow}</p>

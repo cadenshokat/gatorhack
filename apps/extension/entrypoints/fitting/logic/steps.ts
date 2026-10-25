@@ -1,7 +1,8 @@
-// The onboarding's steps, their words, and the "What we've learned" lines (docs/design/ONBOARDING.md, "The flow").
-// Pure data and functions, so the words can be checked without a browser.
+// The onboarding's steps and their words (docs/design/ONBOARDING.md, "The flow" and round 8c). Nothing here tells the
+// person a result: what we learned is shown once, at the end. Pure data and functions, so the words can be checked
+// without a browser.
 
-import type { BrowserSettings, FitProfile, InputClass } from '@webable/core';
+import type { BrowserSettings, InputClass } from '@webable/core';
 
 export type StepId = 'size' | 'truefalse' | 'faint' | 'lightdark' | 'dots' | 'find';
 export type PartId = 'reading' | 'pointing' | 'finding';
@@ -83,10 +84,11 @@ export function wordsFor(step: StepId, input: InputClass): StepWords {
         success: 'Close is fine. A miss tells us just as much.',
       };
     case 'find':
+      // Round 8c: the Finding part happens on real websites.
       return {
-        title: 'Find it',
-        todo: `We name a link on a made-up page. ${touch ? 'Tap' : 'Click'} it when you spot it.`,
-        success: 'Take your time. If it’s hard to spot, we’ll show you where it is.',
+        title: 'Now, some real websites',
+        todo: 'We’ll open three websites, one at a time. On each one, find what we ask for and click it.',
+        success: 'WebAble stays off while you do this, so we see the web as it really is.',
       };
   }
 }
@@ -100,79 +102,14 @@ export function eyebrowFor(step: StepId, steps: StepId[]): string {
   return `${label} · ${inPart.indexOf(step) + 1} of ${inPart.length}`;
 }
 
-/** "Reading is set." when the step before this one finished a part. */
+/** "Reading is done." when the step before this one finished a part. A neutral transition: it never says a result. */
 export function partSetLine(prev: StepId | null, next: StepId): string | null {
   if (!prev || PART_OF[prev] === PART_OF[next]) return null;
   const label = PARTS.find((p) => p.id === PART_OF[prev])?.label ?? '';
-  return `${label} is set.`;
+  return `${label} is done.`;
 }
 
-/* ------------------------------------------------------------------ */
-/* What we've learned                                                  */
-/* ------------------------------------------------------------------ */
-
-export type LineId = 'text' | 'faint' | 'colours' | 'buttons' | 'steady' | 'motion' | 'busy';
-
-export interface LearnedLine {
-  id: LineId;
-  label: string;
-  /** The usual value, shown before an arrow ("16"), when WebAble changes it. */
-  from: string | null;
-  value: string;
-  /** WebAble changes something here (the value shows in the accent colour). */
-  changed: boolean;
-}
-
-const halfPx = (v: number): string => `${Math.round(v * 2) / 2} px`;
-
-/** The rail lines one finished step adds (or refreshes, for the text size). */
-export function linesFor(step: StepId, fit: FitProfile): LearnedLine[] {
-  switch (step) {
-    case 'size':
-    case 'truefalse': {
-      const px = fit.text.override ?? fit.text.bodyPx;
-      return px > 16.25
-        ? [{ id: 'text', label: 'Text', from: '16', value: halfPx(px), changed: true }]
-        : [{ id: 'text', label: 'Text', from: null, value: 'as it is', changed: false }];
-    }
-    case 'faint': {
-      const b = fit.contrast.band;
-      return [{ id: 'faint', label: 'Faint text', from: null, value: b === 'S' ? 'darkest' : b === 'M' ? 'darker' : 'as it is', changed: b !== 'N' }];
-    }
-    case 'lightdark': {
-      const v = fit.polarity.value;
-      return [{ id: 'colours', label: 'Pages', from: null, value: v === 'dark' ? 'dark' : v === 'light' ? 'light' : 'as the site', changed: v !== 'none' }];
-    }
-    case 'dots': {
-      const T = fit.targets.minPx;
-      return [
-        T != null && T > 24
-          ? { id: 'buttons', label: 'Buttons', from: null, value: `${T} px`, changed: true }
-          : { id: 'buttons', label: 'Buttons', from: null, value: 'as they are', changed: false },
-        { id: 'steady', label: 'Steady clicks', from: null, value: fit.clicks.steady.on ? 'on' : 'off', changed: fit.clicks.steady.on },
-      ];
-    }
-    case 'find':
-      return [
-        { id: 'motion', label: 'Moving things', from: null, value: fit.attention.motion.on ? 'paused' : 'left alone', changed: fit.attention.motion.on },
-        // Simplified busy pages apply to everyone.
-        { id: 'busy', label: 'Busy pages', from: null, value: 'simplified', changed: true },
-      ];
-  }
-}
-
-/** Merge new lines into the rail: a line with the same id is refreshed in place, new ones go to the end. */
-export function mergeLines(rail: LearnedLine[], add: LearnedLine[]): LearnedLine[] {
-  const out = rail.slice();
-  for (const l of add) {
-    const i = out.findIndex((x) => x.id === l.id);
-    if (i >= 0) out[i] = l;
-    else out.push(l);
-  }
-  return out;
-}
-
-/** F3's chips, and the words core reads from them. */
+/** "Did anything get in your way?": the chips, and the words core reads from them (also RunEvidence.gotInWay ids). */
 export const IN_THE_WAY: Array<{ id: string; label: string }> = [
   { id: 'moving things', label: 'Moving things' },
   { id: 'popups', label: 'Pop-ups' },

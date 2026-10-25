@@ -231,3 +231,102 @@ If the page couldn't be read: "Couldn't read this page right now. Text size and 
 - the site with a "Pause on this site" switch;
 - [Your settings], which opens `fitting.html#settings`;
 - one muted line: "WebAble adjusts each page to you automatically."
+
+---
+
+## Round 8c: Caden's feedback (this section wins wherever it conflicts with anything above)
+
+1. **White, everywhere.** Every WebAble page background is pure white: the onboarding, the results page, the toolbar
+   popup and the in-page sheet. `tokens.css` is already white. On white, cards need a 1 px `--c-line` border as well as
+   the soft shadow. The modal dim is white at 82% with blur.
+2. **No "what we learned" while it's running.**
+   - Delete the right-hand rail and the chip fallback.
+   - Delete any line that tells people a result before the end ("Text · 21 px" and the like).
+   - Neutral transitions such as "Reading is done." stay.
+
+   People see what we learned once, at the end.
+3. **No pixels and no technical words in anything a person sees.** No "px", ratios, "contrast", "target",
+   "threshold" or "setting values". Sizes are words, and an "Aa" sample drawn at the real size does the showing:
+   - Text size: Standard · Larger · Large · Extra large · Largest
+   - Button size: Standard · Larger · Largest
+
+   This applies to the in-page sheet's text size too.
+4. **The Finding part happens on real websites.** Fake pages aren't believable, and real sites tell us more.
+   - **Instruction card:**
+     - Title: "Now, some real websites"
+     - What to do: "We'll open three websites, one at a time. On each one, find what we ask for and click it."
+     - What success looks like: "WebAble stays off while you do this, so we see the web as it really is."
+   - **The three sites, in order** (the site-task builder checks each target exists on the live page today and swaps
+     in another obvious, stable target on the same page if not):
+     1. Wikipedia, "Gainesville, Florida". Quiet. "Find and click: the link to the University of Florida."
+     2. CNN home. Busy. "Find and click: Sports."
+     3. Allrecipes, Best Chocolate Chip Cookies. Busy. "Find and click: Jump to Recipe."
+   - **On each site,** a white card sits at the bottom centre, 24 px from the edge and 520 px wide. It shows "WebAble ·
+     2 of 3", "Find and click: **Sports**" at 26/600, and a quiet "Skip this one" button. A found click shows a green
+     check with "Found it" for 700 ms, then the next site loads in the same tab.
+   - **During a task:**
+     - link clicks never navigate;
+     - buttons, menus and scrolling work normally;
+     - WebAble's engine does not start on that tab, so nothing is changed or simplified.
+   - **When it ends:** after the last site, the task tab closes and the onboarding tab comes back. If the person closes
+     the task tab early, we use what we have. If a site doesn't load in 20 s, it's skipped.
+   - **Back in the onboarding, two quick questions:**
+     - "Which site was easier to find things on?" [Wikipedia] [About the same] [CNN]
+     - "Did anything get in your way?" Chips: Moving things · Pop-ups · Too much on the page · Small text · Nothing.
+   - **What goes into `FittingRaw.finding.trials`:** one trial per site, `{ clutter: busy, motion: motionSeen, ms,
+     found }`. Site presses also go into `allPresses`, and their slips and near-misses count toward steady clicks and
+     buttons.
+5. **Results speak in problems, strongly, then the fix.** The page leads with what makes the web harder for this
+   person, in their own numbers from `RunEvidence` (`fitting/logic/evidence.ts`). Only after that does it say what
+   WebAble does. The fake sample pages are deleted.
+   - **Heading.**
+     - h1 "Here's what makes the web harder for you."
+     - Deck: "From what you just did, including on real websites."
+     - If nothing is strong: h1 "The web mostly works for you.", deck "A few things still get in the way. WebAble takes
+       care of them."
+   - **Struggle cards,** strongest first, at most four. Each card has:
+     - a bold problem line in 26/600;
+     - one evidence line in their own numbers, in ink-2;
+     - a fix line with an accent check, starting "WebAble fixes this:".
+
+| Struggle | Problem line | Evidence line (pick the first that has data) | Fix line |
+|---|---|---|---|
+| Small text | Small text slows you down. | "As the text got smaller, your reading slowed by about {pct}%." · "Some sentences were too small to read." | Text is made larger on every site, and headings stay in order. |
+| Faint text | Faint grey text is hard for you to read. | "You couldn't make out words in the light grey many websites use." | Faint text is made darker. |
+| Small buttons | Small buttons are easy to miss. | "You missed {n} of the {m} smaller dots." · "Some of your clicks on real sites landed just beside what you aimed for." | Buttons and links get easier to hit. |
+| Click slips | Your clicks sometimes land off target. | "{n} of your presses slipped off what you were pressing." | Your clicks stay on what you meant to press. |
+| Busy pages | Busy pages slow you down. | "Finding something on {busyName} took you {ratio} times as long as on {quietName}." · "You said there was too much on the page." | Busy pages become a clean, simple page. |
+| Moving things | Moving things pull your attention away. | "You said moving things got in your way." · "Something was moving on {site} while you searched." | Moving things are paused. |
+
+   - **Ratios and percentages** are rounded for speech: "about 40%", "twice as long", "three times as long",
+     "1.5 times as long". Never show more than one decimal.
+   - **The radar** is retitled "What gets in your way". Its six axes, in this order:
+     - Small text
+     - Faint text
+     - Small buttons
+     - Click slips
+     - Busy pages
+     - Moving things
+
+     The values are how strong each struggle is. Show no numbers on the chart.
+   - **"See it on real websites"** replaces the fake previews.
+     - h2 "See it on real websites", deck "WebAble is on. Open any of these and it works by itself."
+     - Four large link cards, each opening in a new tab:
+       - CNN: "News, as a clean page with the story first"
+       - Allrecipes: "Just the ingredients and the steps"
+       - Florida Gators: "The score and the record, up front"
+       - IRS: "The same page, easier to read"
+   - **"Adjust anything"** uses the word levels from point 3:
+     - Text size and Button size use those levels;
+     - Faint text: Leave as is · Darker · Darkest;
+     - Light or dark: Light · Dark · As the site;
+     - "Keep my clicks steady" and "Pause moving things" are switches.
+
+     No values in px. The "before → after" values become words ("Standard → Large").
+   - The status pill "WebAble is on", the footer line and [Done] stay.
+6. **The contracts are written; don't change them:**
+   - `apps/extension/src/sitetask/types.ts`: the site tasks and messages;
+   - `fitting/logic/evidence.ts`: `RunEvidence` and `buildEvidence`. The flow builder implements the body; the
+     interface is fixed.
+   - `Results` gains an optional prop, `evidence: RunEvidence | null`. The flow saves the evidence next to the settings
+     (`logic/storage.ts`: `saveEvidence`/`loadEvidence`), and `#settings` loads it.

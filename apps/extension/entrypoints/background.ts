@@ -25,6 +25,7 @@ import type {
 } from '@webable/core';
 import type { BusEnvelope, BusErrorCode, BusReply, ExtRequest, HealthInfo, ZoomInfo } from '../src/engine/bus';
 import { stripLocalData, stripOutlineData } from '../src/engine/extract/strip';
+import { registerSiteTasks } from '../src/sitetask/background';
 
 /* ------------------------------------------------------------------ */
 /* Errors                                                              */
@@ -700,6 +701,9 @@ export default defineBackground(() => {
 
   // Content scripts may read and write session storage (the Calm view cache).
   void chrome.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS' }).catch(() => undefined);
+
+  // Round 8c: the onboarding's real-website tasks (messages with a `siteTask` field; its own listener).
+  registerSiteTasks();
 
   chrome.runtime.onMessage.addListener((msg: unknown, sender, sendResponse) => {
     if (!isEnvelope(msg)) return false;
