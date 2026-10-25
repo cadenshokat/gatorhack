@@ -100,6 +100,7 @@ Notes for the shoot:
   fresh profile first; it worked on 2 of 4 tries in testing. If it doesn't hold, film the larger text without the zoom
   and change the line to "WebAble sets the text at the size you need, and keeps the photos that go with the story."
 - Fix the IRS body-text measurement first (see `docs/demo/pages.md`), or the IRS shot shows no change.
-- Accept or reject cookie notices before each take. WebAble won't close them, and they'd cover the shot.
+- Accept or reject cookie notices before each take. WebAble never answers them, and the bar it shows instead would be
+  in the shot.
 - Keep the narration in this voice: say what's on screen and what changed. No "revolutionary", no "seamless", nothing
   about compliance, and never name a condition.

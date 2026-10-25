@@ -99,8 +99,9 @@ shopping. WebAble puts the prescriptions first and makes Confirm the button you 
 **What gets in the way today:**
 - A scoreboard slider of this season's games across the top of every page ("Pause All Rotators" is the first link),
   then the site's main menu, before any of the record.
-- A cookie notice ("We use cookies and other technology") over the bottom of the page on first visit. WebAble never
-  closes consent notices, so the person has to.
+- A cookie notice ("We use cookies and other technology") over the bottom of the page on first visit. WebAble moves
+  consent notices aside and shows the site's own choices in a small bar, but never answers them; the person still
+  chooses.
 - A Google ad frame, plus Related Videos and Related News at the end (Coach Sumrall interviews, "SEC Nation set for
   Florida-Georgia Game").
 - Small labels and small targets: 328 clickable things, 51 of them under 24 px. The record's labels are small next to
@@ -250,7 +251,8 @@ and makes them easy to press."
 ## Before recording
 
 - Use exactly these URLs, the same ones every take, so Jev's answers are cached and repeatable.
-- Fresh Chrome profile per take. Accept or reject cookie notices by hand before WebAble runs; it won't close them.
+- Fresh Chrome profile per take. Accept or reject cookie notices by hand before filming; WebAble never answers them,
+  and the bar it shows instead would be in the shot.
 - Don't pause the floridagators slider or the Allrecipes video by hand. Let WebAble stop them, so the change shows on
   camera.
 - Check CNN loads in the demo Chrome on the day.
