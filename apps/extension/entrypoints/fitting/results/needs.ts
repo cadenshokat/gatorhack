@@ -24,7 +24,7 @@ export const PROBLEM_LINES: Record<StruggleId, string> = {
   text: 'Small text slows you down.',
   faint: 'Faint grey text is hard for you to read.',
   buttons: 'Small buttons are easy to miss.',
-  slips: 'Your clicks sometimes land off target.',
+  slips: 'Your clicks don't always land where you meant.',
   busy: 'Busy pages slow you down.',
   motion: 'Moving things pull your attention away.',
 };

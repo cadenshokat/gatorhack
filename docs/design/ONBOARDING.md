@@ -294,7 +294,7 @@ If the page couldn't be read: "Couldn't read this page right now. Text size and 
 | Small text | Small text slows you down. | "As the text got smaller, your reading slowed by about {pct}%." · "Some sentences were too small to read." | Text is made larger on every site, and headings stay in order. |
 | Faint text | Faint grey text is hard for you to read. | "You couldn't make out words in the light grey many websites use." | Faint text is made darker. |
 | Small buttons | Small buttons are easy to miss. | "You missed {n} of the {m} smaller dots." · "Some of your clicks on real sites landed just beside what you aimed for." | Buttons and links get easier to hit. |
-| Click slips | Your clicks sometimes land off target. | "{n} of your presses slipped off what you were pressing." | Your clicks stay on what you meant to press. |
+| Click slips | Your clicks don't always land where you meant. | "{n} of your presses slipped off what you were pressing." | Your clicks stay on what you meant to press. |
 | Busy pages | Busy pages slow you down. | "Finding something on {busyName} took you {ratio} times as long as on {quietName}." · "You said there was too much on the page." | Busy pages become a clean, simple page. |
 | Moving things | Moving things pull your attention away. | "You said moving things got in your way." · "Something was moving on {site} while you searched." | Moving things are paused. |
 
