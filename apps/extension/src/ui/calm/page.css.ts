@@ -74,6 +74,23 @@ ${C} .wa-sitelinks>li{min-width:0}
 ${C} .wa-sitelink{display:flex;align-items:center;min-height:max(44px,var(--wa-t));padding-block:8px;color:var(--wa-ink);text-decoration:none;overflow-wrap:break-word}
 ${C} .wa-sitelink:is(:hover,:focus-visible){text-decoration:underline;text-decoration-thickness:max(1px,.06em);text-underline-offset:.2em}
 ${C} .wa-sitelink:focus-visible{outline-offset:2px}
+/* Round 9: a paragraph rewritten for the person: its words in the page's type, a thin green mark in the gutter on its
+   left (hollow grey while it shows the page's own words). The mark's press area is wider than the line it draws. */
+${C}{--wa-rw:#17694A}
+${C}:is([data-mode=dark],[data-mode=max]){--wa-rw:var(--wa-accent)}
+${C} .wa-rw{position:relative}
+${C} .wa-rw__list{max-width:min(100ch,100%);margin:0}
+${C} .wa-rw-mark{appearance:none;position:absolute;top:0;bottom:0;left:-22px;width:18px;margin:0;padding:0;border:0;
+  border-radius:4px;background:transparent;cursor:pointer}
+${C} .wa-rw-mark::before{content:"";position:absolute;top:.15em;bottom:.15em;right:5px;width:3px;border-radius:2px;background:var(--wa-rw)}
+${C} .wa-rw-mark[data-showing=original]::before{background:transparent;box-shadow:inset 0 0 0 1px var(--wa-line-strong)}
+${C} .wa-rw-mark:hover::before{right:4px;width:5px}
+${C} .wa-rw-mark:focus-visible{outline-offset:0}
+@media (prefers-reduced-motion:no-preference){
+  ${C} .wa-rw:not([data-rw=original])>:not(.wa-rw-mark){animation:wa-rw-in .2s cubic-bezier(.2,.8,.2,1) both}
+}
+@keyframes wa-rw-in{from{opacity:0}to{opacity:1}}
+
 /* The closing "Original page" sits on the column's right edge, like the top bar's. */
 ${C} .wa-foot .wa-btn--quiet{margin-inline-end:calc(-1 * var(--wa-pill-pad))}
 `;

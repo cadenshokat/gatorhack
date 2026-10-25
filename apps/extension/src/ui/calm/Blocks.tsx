@@ -3,6 +3,7 @@
 import { STORY_RATIO, isWideFigure, loadedFrame, pictureFrame } from '@webable/core';
 import type { ComponentChildren, JSX } from 'preact';
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
+import type { EngineApi, RewordInline, RewordView } from '../../contracts';
 import { proxyCheck, proxyClick, proxyCommit, proxyInput, proxyKey, proxySelect, proxySubmit, renderLiveValue } from '../proxy';
 import { isIrreversible, useCalm } from './context';
 import * as I from './icons';
@@ -11,7 +12,7 @@ import { AdTag, Kicker, LIVE_MAX_CHARS, LiveDot, isAdItem, liveLabelFor } from '
 import {
   type Block, type CardLinkBlock, type ChoiceBlock, type ChoicesBlock, type ControlBlock, type FieldBlock, type FlowBlock,
   type ImageBlock, type Inline, type LinkPart, type ListBlock, type PeekBlock, type RichTableBlock, type SelectBlock, type TableBlock,
-  PRICE_RE, TOOL_RE, isDense, keepImage, splitParts, stripMarker,
+  PRICE_RE, RW_ATTR, TOOL_RE, isDense, keepImage, splitParts, stripMarker,
 } from './model';
 
 export { TOOL_RE, keepImage };
@@ -141,7 +142,76 @@ function renderParts(parts: Inline[]): JSX.Element[] {
   });
 }
 
+/** Round 9: a rewritten paragraph's words; its links are the page's own anchors, pressed through like any other. */
+function renderRw(parts: RewordInline[]): JSX.Element[] {
+  return parts.map((p, i) =>
+    p.t === 'text' ? <span key={i}>{p.text}</span> : <InlineLink key={i} p={{ t: 'link', el: p.el, text: p.text, href: p.href, help: false }} />,
+  );
+}
+
+/** The paragraph's rewrite for this person, or null (the page's own words). Never lets a lookup break the view. */
+function rewordOf(api: EngineApi, src: Node): RewordView | null {
+  try {
+    return typeof api.rewordFor === 'function' ? api.rewordFor(src) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The thin mark at a rewritten paragraph's left: green while it shows the rewrite, hollow grey while it shows the
+ * page's own words. Pressing it switches that one paragraph.
+ */
+export function RewordMark({ rv }: { rv: RewordView }): JSX.Element {
+  const ctx = useCalm();
+  const fresh = rv.showing === 'new';
+  const say = fresh ? 'Rewritten for you by WebAble. Click to see the original.' : "The page's own words. Click to see them rewritten for you.";
+  return (
+    <button
+      type="button"
+      class="wa-rw-mark"
+      data-showing={rv.showing}
+      title={say}
+      aria-label={fresh ? 'Rewritten for you by WebAble. Show the original.' : "The page's own words. Show them rewritten for you."}
+      onClick={() => ctx.api.toggleParagraph(rv.id)}
+    />
+  );
+}
+
 export function FlowView({ b, quiet = false, pageline = false }: { b: FlowBlock; quiet?: boolean; pageline?: boolean }): JSX.Element {
+  const ctx = useCalm();
+  const rv = rewordOf(ctx.api, b.src);
+  // The rewrite is drawn only from the rewritten paragraph's own block (model.ts reads it as one), so never twice; a
+  // block read before the rewrite landed shows the page's words until the view reads the page again.
+  if (rv && rv.showing === 'new' && b.src instanceof Element && b.src.hasAttribute(RW_ATTR)) {
+    const List = rv.ordered ? 'ol' : 'ul';
+    const pcls = `wa-p${quiet || pageline ? ' wa-p--quiet' : ''}`;
+    return (
+      <div class="wa-para wa-rw" data-rw={rv.kind}>
+        <RewordMark rv={rv} />
+        {rv.lead.length > 0 && <p class={pcls}>{renderRw(rv.lead)}</p>}
+        {rv.items.length > 0 && (
+          <List class={`wa-list wa-rw__list${rv.ordered ? ' wa-list--ol' : ''}`}>
+            {rv.items.map((it, i) => (
+              <li key={i}>{renderRw(it)}</li>
+            ))}
+          </List>
+        )}
+      </div>
+    );
+  }
+  const own = <FlowOwn b={b} quiet={quiet} pageline={pageline} />;
+  if (!rv || rv.showing === 'new') return own;
+  return (
+    <div class="wa-rw" data-rw="original">
+      <RewordMark rv={rv} />
+      {own}
+    </div>
+  );
+}
+
+/** A paragraph in the page's own words. */
+function FlowOwn({ b, quiet, pageline }: { b: FlowBlock; quiet: boolean; pageline: boolean }): JSX.Element {
   const ctx = useCalm();
   const ref = useRef<HTMLDivElement>(null);
   const price = b.text.length <= 40 && PRICE_RE.test(b.text);

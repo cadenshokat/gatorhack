@@ -12,6 +12,9 @@
 // SPA navigations re-run the element ops; zoom, column and behaviour ops stay. Nothing re-sizes a page on its own: late
 // Jev reads, learning, overlays and DOM changes never touch zoom or column; the person's A−/A+, width controls and
 // accepted offers do, in one step.
+// Round 9 (./reword): once the page is fitted, alongside Jev's read, paragraphs are rewritten the way the person likes
+// things explained (from their AI assistant's answer), swapped in place with a thin mark; one ledger entry and one
+// toast per page, Undo shows the page's own words, "Original page" shows the untouched page.
 
 import {
   DEFAULT_SETTINGS, candidateSource, chooseOfferForFit, columnLimits, decideElements, heuristicSpec, nearestPreset, personZoomLadder,
@@ -40,6 +43,7 @@ import { requestExplain } from './explain';
 import { PassiveObserver, readMediaFacts, watchMedia } from './passive';
 import { pageMeaning } from '../ui/calm/meaning';
 import { busyVerdict, distractionShare, isDistraction, type BusyVerdict } from './busy';
+import { MAX_PICKS, createReword, type RewordSummary } from './reword';
 
 export interface Controller {
   api: EngineApi;
@@ -366,6 +370,7 @@ function initialState(): EngineState {
     pageZoom: 1,
     passive: null,
     textZoom: 1,
+    reword: { status: 'off', source: null, items: [], showingOriginal: false, version: 0 },
   };
 }
 
@@ -610,6 +615,54 @@ export function createController(): Controller {
       setTimeout(() => store.set((s) => ({ toasts: s.toasts.filter((x) => x.id !== t.id) })), 6000);
     }
   };
+
+  /* ---------------- round 9: paragraphs rewritten the way the person likes things explained ---------------- */
+
+  /** The one ledger line for a page's rewrites (logged again after a refit clears the ledger). */
+  const logReword = (s: RewordSummary) => {
+    const n = (k: number, one: string, many = `${one}s`) => `${k} ${k === 1 ? one : many}`;
+    if (!s.changed) {
+      log({
+        source: 'jev',
+        title: s.picked ? 'Kept this page’s own words: no new version passed every check' : 'This page already reads the way you like things explained',
+        detail: `From what ${s.source} knows about you. Jev read ${n(s.looked, 'paragraph')} for you${s.picked ? ` and picked ${s.picked}; each new version dropped a number, a condition or a link, so the page keeps its own words` : ' and none was harder than it needs to be'}.`,
+        action: 'kept',
+      });
+      return;
+    }
+    const extra = [
+      s.failed ? `${n(s.failed, 'paragraph')} kept the page’s own words because a check failed.` : '',
+      s.overCap ? `${s.overCap} more stayed as they are (at most ${MAX_PICKS} a page).` : '',
+    ].filter(Boolean).join(' ');
+    log({
+      source: 'jev',
+      title: `Rewrote ${n(s.changed, 'paragraph')} the way you like things explained`,
+      detail: `From what ${s.source} knows about you. Jev picked ${s.picked} of ${n(s.looked, 'paragraph')}; ${s.changed === 1 ? 'the rewrite' : `every rewrite`} kept its numbers and facts (checked by code and by Jev).${extra ? ` ${extra}` : ''} Click the green line beside one to see the page’s own words.`,
+      action: 'applied',
+      opId: s.opId,
+    });
+  };
+  const reword = createReword({
+    ask: (req, timeoutMs) => ask(req, timeoutMs),
+    isOurs: (el) => safeOurs(el),
+    sensitive: () => !!read?.sensitive || !!store.get().digest?.hasSensitiveFields,
+    purpose: () => store.get().understanding?.purpose?.kind ?? null,
+    calmOpen: () => store.get().calm.open,
+    reducedMotion: () => {
+      try {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+      } catch {
+        /* no media queries */
+      }
+      return !!store.get().fit?.attention.motion.on;
+    },
+    publish: (next) => store.set({ reword: next }),
+    log,
+    finished: (s) => {
+      logReword(s);
+      if (s.changed) toast(`Rewrote ${s.changed} paragraph${s.changed === 1 ? '' : 's'} the way you like`, s.opId);
+    },
+  });
 
   /* ---------------- report to the background (throttled 500 ms) ---------------- */
 
@@ -1891,6 +1944,7 @@ export function createController(): Controller {
       }
       store.set({ phase: 'idle' });
       stopPassive();
+      reword.reset();
       if (!settings.enabled) log({ source: 'person', title: 'WebAble is turned off', action: 'skipped' });
       else log({ source: 'person', title: 'WebAble is paused on this site', action: 'skipped' });
       return;
@@ -1961,6 +2015,15 @@ export function createController(): Controller {
       }
       watchCarousels(gen, r);
       store.set({ phase: 'tailored' });
+      // Round 9: paragraphs fitted to the person, alongside Jev's read. A refit keeps the rewrites as they are (it
+      // starts them only when there are none, after WebAble was turned back on).
+      const last = kind === 'refit' ? reword.lastSummary() : null;
+      if (last) logReword(last);
+      else if (kind !== 'refit' || (store.get().reword?.status ?? 'off') === 'off') {
+        void reword.start().catch((err: unknown) => {
+          console.warn('[WebAble] paragraphs', err);
+        });
+      }
       startStruggle();
       watchLateContent();
       overlays.schedule('fitted');
@@ -3337,6 +3400,7 @@ export function createController(): Controller {
     });
     overlays.setHidden(store.get().showingOriginal);
     overlays.schedule('calm-closed');
+    reword.calmClosed();
   }
 
   /* ---------------- original page, undo ---------------- */
@@ -3349,12 +3413,14 @@ export function createController(): Controller {
       if (s.calm.open) closeCalm('internal');
       store.set({ showingOriginal: true });
       overlays.setHidden(true);
+      reword.pageOriginal(true);
       void (async () => {
         await revertAll(opsList);
       })();
       log({ source: 'person', title: 'Showing the original page', action: 'kept' });
     } else {
       store.set({ showingOriginal: false });
+      reword.pageOriginal(false);
       void (async () => {
         // Zoom and column come back in one tab zoom change: the zoom op sets the tab's zoom for the column's scale.
         const col = opsList.find((o) => o.rec.kind === 'column' && o.rec.status === 'applied' && !o.active) as ColumnOp | undefined;
@@ -3381,8 +3447,14 @@ export function createController(): Controller {
   }
 
   function undoOp(opId: string): void {
-    const op = opsList.find((o) => o.rec.id === opId);
     store.set((s) => ({ toasts: s.toasts.filter((t) => t.undoOpId !== opId) }));
+    if (reword.ownsOp(opId)) {
+      // Round 9: the rewritten paragraphs show the page's own words (each mark still flips one back).
+      reword.showOriginalWords(true);
+      log({ source: 'person', title: 'Showing the page’s own words in every paragraph WebAble rewrote', action: 'reversed', opId });
+      return;
+    }
+    const op = opsList.find((o) => o.rec.id === opId);
     if (!op || op.rec.status !== 'applied') return;
     // Moved overlays: the overlay module brings them back and remembers "leave" for this site and kind.
     if (op.rec.kind === 'unobstruct' && overlays.undo(opId)) return;
@@ -3466,6 +3538,7 @@ export function createController(): Controller {
       toasts: [],
       showingOriginal: false,
     });
+    reword.pageOriginal(false);
     syncOps();
     if (stopSignals) {
       stopSignals();
@@ -3503,6 +3576,7 @@ export function createController(): Controller {
       if (stopped) return;
       void (async () => {
         passiveObs.newPage();
+        reword.newPage();
         await teardownPage(false);
         errors = [];
         void boot('navigation');
@@ -3546,7 +3620,7 @@ export function createController(): Controller {
   const api: EngineApi = {
     getState: () => store.get(),
     subscribe: (l) => store.subscribe(l),
-    elementFor: (id) => reader.elementFor(id),
+    elementFor: (id) => (/^w\d+$/.test(id) ? reword.elementFor(id) : reader.elementFor(id)),
     toggleLens,
     openCalm: () => openCalm('person'),
     closeCalm: (how?: 'peek') => closeCalm(how === 'peek' ? 'peek' : undefined),
@@ -3577,6 +3651,12 @@ export function createController(): Controller {
       });
     },
     adjustText: (step) => personAction(() => adjustText(step)),
+    showOriginalWords: (on) => {
+      reword.showOriginalWords(on);
+      log({ source: 'person', title: on ? 'Showing the page’s own words in every paragraph WebAble rewrote' : 'Showing WebAble’s rewritten paragraphs again', action: on ? 'reversed' : 'applied' });
+    },
+    toggleParagraph: (id) => reword.toggleParagraph(id),
+    rewordFor: (node) => reword.rewordFor(node),
   };
 
   return {
@@ -3622,6 +3702,7 @@ export function createController(): Controller {
       }
       // The column's CSS comes off with the zoom: one tab zoom change back to the person's own.
       void revertAll(opsList).catch(() => undefined);
+      reword.dispose();
       tailor.sheets.clear();
       pushReport.cancel();
     },

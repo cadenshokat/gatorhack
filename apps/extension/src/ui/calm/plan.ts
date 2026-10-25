@@ -19,7 +19,7 @@ import { contentRoot, coverContent } from './meaning';
 import { type EndPart, Seen, findListen, normText, scrubBlocks, sortEnd } from './tidy';
 import {
   type Block, type CardLinkBlock, type ControlBlock, type FlowBlock, type ImageBlock, type Inline, type LinkPart, TOOL_RE,
-  chatContainer, clean, controlFor, flatten, imageFor, isGone, isProgressRail, keepImage, keyOf, nameOf, newCtx,
+  chatContainer, clean, controlFor, flatten, imageFor, isGone, isProgressRail, isRewritten, keepImage, keyOf, nameOf, newCtx,
   pageLeadImage, readBlocks, recordsOf, safeHref, siteName, siteStepText, splitParts, splitSentences, storyFromLink, textOf,
 } from './model';
 
@@ -422,7 +422,8 @@ function takeLead(p: PlanSection, article: boolean, protectedEls: Set<Element>):
     else intro.push(f);
   }
   // Intro paragraphs right after the title (never past a field, a list or a control).
-  while (i < bs.length && bs[i]!.b === 'flow' && intro.length < 4) {
+  // A paragraph rewritten for the person stays whole in the body (it is never split into the orientation line).
+  while (i < bs.length && bs[i]!.b === 'flow' && !isRewritten(bs[i]!) && intro.length < 4) {
     const f = bs[i] as FlowBlock;
     i++;
     if (STEP_RE.test(f.text) && f.text.length <= 80) continue; // "Step 2 of 5": shown with the site's progress

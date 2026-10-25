@@ -298,6 +298,8 @@ export const rootCss = /* css */ `
   font-size: ${u(15)}; font-weight: 600; color: var(--k-ink2); cursor: pointer;
 }
 .wa-did-act:hover { color: var(--k-ink); text-decoration: underline; text-underline-offset: ${u(3)}; }
+.wa-did-switch { padding-left: ${u(32)}; min-height: ${u(44)}; font-size: ${u(15)}; font-weight: 500; color: var(--k-ink2); }
+.wa-did-switch[aria-checked="true"] { color: var(--k-ink); }
 .wa-sh-quiet { margin: ${u(6)} 0 0; font-size: ${u(16)}; line-height: ${u(22)}; color: var(--k-ink2); }
 .wa-sh-sec > .wa-sh-quiet:first-child { margin-top: 0; }
 .wa-sh-quiet-top { margin: 0 0 ${u(8)}; }

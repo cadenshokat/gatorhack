@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS, type ElementDecision, type OpRecord, type OverlayAction } from '@webable/core';
 import type { EngineState } from '../../contracts';
 import { pausedList } from './actions';
-import { changedHere, didLines, movedPopups, pageUnread, sheetMode, sizeWord, showViewSwitch, shownTextPx, siteName, UNREAD } from './model';
+import { changedHere, didLines, movedPopups, pageUnread, rewordLine, sheetMode, sizeWord, showViewSwitch, shownTextPx, siteName, UNREAD } from './model';
 
 const op = (id: string, kind: OpRecord['kind'], targets = 0, status: OpRecord['status'] = 'applied'): OpRecord => ({
   id,
@@ -113,5 +113,44 @@ describe('the sheet and the button', () => {
     expect(pausedList(['https://a.com'], 'https://b.com', true)).toEqual(['https://a.com', 'https://b.com']);
     expect(pausedList(['https://a.com', 'https://b.com'], 'https://b.com', false)).toEqual(['https://a.com']);
     expect(pausedList(['https://b.com'], 'https://b.com', true)).toEqual(['https://b.com']);
+  });
+});
+
+describe('paragraphs rewritten for the person', () => {
+  const item = (id: string, state: NonNullable<EngineState['reword']>['items'][number]['state']) => ({
+    id, need: 0.8, how: { keep: 0.1, plain: 0.7, list: 0.1, shorter: 0.05, point_first: 0.05 }, pick: 'plain' as const, state, snippet: 'The IRS',
+  });
+  const rw = (status: NonNullable<EngineState['reword']>['status'], states: Array<Parameters<typeof item>[1]>, showingOriginal = false): EngineState['reword'] => ({
+    status, source: 'ChatGPT', items: states.map((st, i) => item(`w${i}`, st)), showingOriginal, version: 1,
+  });
+
+  it('says how many paragraphs were rewritten, in plain words, with the switch back', () => {
+    expect(rewordLine(rw('done', ['rewritten', 'rewritten', 'kept', 'failed', 'original']))).toEqual({
+      text: '3 paragraphs rewritten the way you like', busy: false, count: 3, showingOriginal: false,
+    });
+    expect(rewordLine(rw('done', ['rewritten']))?.text).toBe('1 paragraph rewritten the way you like');
+    expect(rewordLine(rw('done', ['rewritten'], true))?.showingOriginal).toBe(true);
+    for (const st of ['scoring', 'writing'] as const) {
+      const l = rewordLine(rw(st, []));
+      expect(l).toEqual({ text: 'Making hard paragraphs easier…', busy: true, count: 0, showingOriginal: false });
+      expect(l!.text).not.toMatch(BANNED);
+      expect(l!.text).not.toMatch(/reword/i);
+    }
+    expect(rewordLine(rw('done', ['rewritten', 'rewritten']))!.text).not.toMatch(BANNED);
+  });
+
+  it('says nothing when nothing was rewritten or WebAble is not doing this here', () => {
+    expect(rewordLine(undefined)).toBeNull();
+    expect(rewordLine(rw('off', []))).toBeNull();
+    expect(rewordLine(rw('none', ['kept', 'kept']))).toBeNull();
+    expect(rewordLine(rw('done', ['failed']))).toBeNull();
+  });
+
+  it('turns the button green while rewritten paragraphs are showing', () => {
+    const quiet = { ops: [] as OpRecord[], calm: { open: false } as EngineState['calm'], showingOriginal: false };
+    expect(changedHere(quiet)).toBe(false);
+    expect(changedHere({ ...quiet, reword: rw('done', ['rewritten']) })).toBe(true);
+    expect(changedHere({ ...quiet, reword: rw('done', ['rewritten'], true) })).toBe(false);
+    expect(changedHere({ ...quiet, reword: rw('done', ['kept']) })).toBe(false);
   });
 });

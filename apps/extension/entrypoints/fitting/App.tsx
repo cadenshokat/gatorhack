@@ -5,13 +5,16 @@
 // and both are saved and shown once, on Results.
 //
 // Routes: fitting.html opens Welcome; fitting.html#settings opens Results with the saved settings and evidence (Welcome
-// if there are no settings).
+// if there are no settings); fitting.html#ai opens the screens that bring in how the person likes things explained
+// (round 9), also reached from Results. Leaving #ai goes back to Results when it came from there.
 
 import {
-  DEMO_FITS, defaultFit, deriveFit, type BrowserSettings, type FitProfile, type InputClass, type WarmupMetrics,
+  DEMO_FITS, defaultFit, deriveFit, type BrowserSettings, type FitProfile, type InputClass, type ReaderProfile, type WarmupMetrics,
 } from '@webable/core';
 import type { JSX } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { AiScreen } from './ai/AiScreen';
+import { loadReader, readerHook } from './ai/reader';
 import { SENTENCES } from './content/sentences';
 import { captureEnv, readBrowserSettings, readPageZoom, settingsUsed, type Env } from './logic/env';
 import { makeRng } from './logic/rand';
@@ -38,7 +41,10 @@ type View =
   | { kind: 'intro'; step: StepId }
   | { kind: 'task'; step: StepId }
   | { kind: 'closing' }
-  | { kind: 'results'; fit: FitProfile; measured: boolean; evidence: RunEvidence | null };
+  | ResultsView
+  /** Round 9: bring in how the person likes things explained; `back` is the Results it was opened from. */
+  | { kind: 'ai'; back: ResultsView | null };
+type ResultsView = { kind: 'results'; fit: FitProfile; measured: boolean; evidence: RunEvidence | null };
 
 const TASKS: Record<StepId, (p: TaskProps) => JSX.Element> = {
   size: SizeTask,
@@ -91,6 +97,9 @@ export function App(): JSX.Element {
   const [draft, setDraft] = useState<FitProfile>(defaultFit);
   const [ticking, setTicking] = useState(false);
   const [announce, setAnnounce] = useState('');
+  const [reader, setReader] = useState<ReaderProfile | null>(null);
+  /** Bumped when the test hook saves or clears, so an open #ai screen starts again from what is saved. */
+  const [aiKey, setAiKey] = useState(0);
   const touchedParts = useRef(new Set<PartId>());
   const anyDone = useRef(false);
   const input = useRef<{ moved: boolean; pointerType: string | null }>({ moved: false, pointerType: null });
@@ -106,6 +115,11 @@ export function App(): JSX.Element {
       setEnv(captureEnv(SENTENCES.map((s) => s.text).join(' '), zoom));
       const s = await readBrowserSettings().catch(() => null);
       setSettings(s);
+      setReader(await loadReader());
+      if (location.hash === '#ai') {
+        setView({ kind: 'ai', back: null });
+        return;
+      }
       if (location.hash === '#settings') {
         const saved = await loadFit();
         if (saved) {
@@ -119,6 +133,50 @@ export function App(): JSX.Element {
       window.clearTimeout(tickTimer.current);
       window.clearTimeout(closingTimer.current);
     };
+  }, []);
+
+  /* ---------------- #ai: in-app navigation and the browser's Back ---------------- */
+
+  useEffect(() => {
+    const onHash = (): void => {
+      if (location.hash === '#ai') {
+        setView((v) => (v.kind === 'boot' || v.kind === 'ai' ? v : { kind: 'ai', back: v.kind === 'results' ? v : null }));
+        return;
+      }
+      setView((v) => (v.kind === 'ai' && v.back ? v.back : v));
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+
+  const openAi = (): void => {
+    setView((v) => ({ kind: 'ai', back: v.kind === 'results' ? v : null }));
+    try {
+      history.pushState(null, '', '#ai');
+    } catch {
+      /* fine */
+    }
+  };
+
+  const closeAi = (): void => {
+    if (view.kind !== 'ai' || !view.back) {
+      void closeThisTab();
+      return;
+    }
+    setView(view.back);
+    try {
+      if (location.hash === '#ai') history.back();
+    } catch {
+      /* fine */
+    }
+  };
+
+  // Test hook (round 9): `await __reader.load(text, 'ChatGPT')` reads an AI answer and saves it, `get()`, `clear()`.
+  useEffect(() => {
+    (globalThis as { __reader?: unknown }).__reader = readerHook((r) => {
+      setReader(r);
+      setAiKey((k) => k + 1);
+    });
   }, []);
 
   /* ---------------- input type: inferred from the first presses, never asked ---------------- */
@@ -335,6 +393,8 @@ export function App(): JSX.Element {
 
   if (view.kind === 'boot' || !env) return <div class="fl-app" />;
 
+  if (view.kind === 'ai') return <AiScreen key={aiKey} saved={reader} onSaved={setReader} onClose={closeAi} />;
+
   if (view.kind === 'results') {
     return (
       <div class="fl-results" key="results">
@@ -348,6 +408,8 @@ export function App(): JSX.Element {
           }}
           onRetake={retake}
           onDone={() => void closeThisTab()}
+          reader={reader}
+          onReader={openAi}
         />
       </div>
     );

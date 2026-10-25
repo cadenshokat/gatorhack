@@ -4,8 +4,36 @@
 import type {
   CheckResult, ElementDecision, ExplainResult, FitProfile, FitSpec, HealthStatus, LedgerEntry, Offer, OfferKind,
   OpRecord, OverlayAction, PageDigest, PageOutline, PageUnderstanding, PassiveFitState, FitDimension, RedesignResult, Settings, StruggleJudgment,
-  StruggleKind, VisualVerdict,
+  StruggleKind, VisualVerdict, RewordKind,
 } from '@webable/core';
+
+/** Round 9: one piece of a rewritten paragraph. Links are the page's own anchors, live in the page. */
+export type RewordInline = { t: 'text'; text: string } | { t: 'link'; el: Element; text: string; href: string | null };
+
+/** Round 9: a rewritten paragraph as the simplified page renders it (the same words the original page shows). */
+export interface RewordView {
+  id: string;
+  kind: RewordKind;
+  /** 'original' after the person clicked the mark (or "Original page"): render the page's own words. */
+  showing: 'new' | 'original';
+  lead: RewordInline[];
+  items: RewordInline[][];
+  ordered: boolean;
+}
+
+/** Round 9: one paragraph WebAble looked at for this person. */
+export interface RewordItem {
+  id: string; // 'w<k>'
+  /** Jev's probability that this paragraph is harder for this person than it needs to be. */
+  need: number;
+  how: Record<RewordKind | 'keep', number>;
+  pick: RewordKind | null;
+  state: 'kept' | 'waiting' | 'rewritten' | 'failed' | 'original';
+  /** Why a rewrite was not used ('numbers', 'dropped', 'late', 'layout'…). */
+  reason?: string;
+  /** The first words of the original, for the Jev view and the log. */
+  snippet: string;
+}
 
 export interface Toast {
   id: string;
@@ -76,6 +104,20 @@ export interface EngineState {
    * window, the tab's zoom is raised by screen ÷ column and the body is drawn back down by the same factor.
    */
   textZoom?: number;
+  /**
+   * Round 9: paragraphs rewritten for this person, from what their AI assistant knows about them.
+   * 'off': no AI answer imported, WebAble off, or not a page where it runs. 'none': nothing needed changing.
+   */
+  reword?: {
+    status: 'off' | 'scoring' | 'writing' | 'done' | 'none' | 'error';
+    /** The assistant the person's answer came from ('ChatGPT'), for plain lines like "from what ChatGPT knows about you". */
+    source: string | null;
+    items: RewordItem[];
+    /** Every rewritten paragraph is showing the page's own words. */
+    showingOriginal: boolean;
+    /** Bumps whenever any paragraph changes, so the simplified page re-renders. */
+    version: number;
+  };
 }
 
 export interface EngineApi {
@@ -106,4 +148,10 @@ export interface EngineApi {
   adjustText(step: -1 | 1): void;
   /** Round 4: the person corrects a learned need ('not_right' lowers it, 'forget' clears it, 'confirm' locks it). */
   passiveFeedback(dim: FitDimension, action: 'not_right' | 'forget' | 'confirm'): void;
+  /** Round 9: every rewritten paragraph shows the page's own words (true) or the rewritten ones again (false). */
+  showOriginalWords(on: boolean): void;
+  /** Round 9: one paragraph back to the page's own words, or forward to the rewrite again. */
+  toggleParagraph(id: string): void;
+  /** Round 9: the rewrite for the paragraph that contains this node, or null (render the page's own words). */
+  rewordFor(node: Node): RewordView | null;
 }

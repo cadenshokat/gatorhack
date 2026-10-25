@@ -57,3 +57,8 @@ export function openAiKey(): string | null {
   const k = process.env.OPENAI_API_KEY;
   return k && k.trim() ? k.trim() : null;
 }
+
+/** Round 9: breaking the person's AI answer down (READER_MODEL, once per import). */
+export const READER_TIMEOUT_MS = num('READER_TIMEOUT_MS', 25_000);
+/** Round 9: one paragraph rewrite (REWORD_MODEL); the extension shows the page's own words when it is late. */
+export const REWORD_TIMEOUT_MS = num('REWORD_TIMEOUT_MS', 8_000);

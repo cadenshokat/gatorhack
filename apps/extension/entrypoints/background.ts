@@ -13,15 +13,17 @@
 //   per need (core fit/passive.ts), stored on this laptop only: `passiveStore` (the evidence) and `passive` (the
 //   PassiveFitState pages read). Zoom changes the person made (not WebAble, not a navigation) are noted per tab, so a
 //   page can tell a held zoom from WebAble's own. `seedDemoHistory()` / `resetPassive()` for demos.
+// - Round 9: the person's AI answer goes to `/v1/reader` once; the points come back and are kept as `reader` in
+//   chrome.storage.local (the answer is not). Paragraph calls get the saved reader added here, points switched off left out.
 
 import {
-  DEFAULT_SETTINGS, DEMO_FITS, SERVER_ORIGIN, addEvidence, applyFeedback, buildPassiveState, demoHistory, emptyPassiveStore,
-  isPassiveStore, redactText, siteName, stillSensitive, withSettings,
+  AI_ANSWER_MAX_CHARS, AI_ANSWER_MIN_CHARS, DEFAULT_SETTINGS, DEMO_FITS, SERVER_ORIGIN, addEvidence, applyFeedback, buildPassiveState,
+  demoHistory, emptyPassiveStore, isPassiveStore, redactText, siteName, stillSensitive, withSettings,
 } from '@webable/core';
 import type {
   AttributionAnswer, BrowserSettings, ExplainResult, FitDimension, FitProfile, OverlayCloseResult, PageUnderstanding,
-  PassiveFitState, PassiveRecord, PassiveStore, RedesignResult, Settings, StruggleJudgment, TabReport, VisualVerdict,
-  VisualVerifyRequest,
+  PassiveFitState, PassiveRecord, PassiveStore, ReaderProfile, RedesignResult, RewordScoreResult, RewordWriteResult, Settings,
+  StruggleJudgment, TabReport, VisualVerdict, VisualVerifyRequest,
 } from '@webable/core';
 import type { BusEnvelope, BusErrorCode, BusReply, ExtRequest, HealthInfo, ZoomInfo } from '../src/engine/bus';
 import { stripLocalData, stripOutlineData } from '../src/engine/extract/strip';
@@ -83,6 +85,41 @@ async function getReport(tabId: number): Promise<TabReport | null> {
   const k = `report:${tabId}`;
   const got = await chrome.storage.session.get(k);
   return (got[k] as TabReport | undefined) ?? null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Round 9: how the person likes things explained (from their AI)      */
+/* ------------------------------------------------------------------ */
+
+const READER_KEY = 'reader';
+
+function isReader(x: unknown): x is ReaderProfile {
+  const r = x as Partial<ReaderProfile> | null;
+  return !!r && typeof r === 'object' && r.v === 'reader.1' && Array.isArray(r.points);
+}
+
+async function getReader(): Promise<ReaderProfile | null> {
+  const got = await chrome.storage.local.get(READER_KEY);
+  const r: unknown = got[READER_KEY];
+  return isReader(r) ? r : null;
+}
+
+async function setReader(reader: ReaderProfile | null): Promise<ReaderProfile | null> {
+  if (reader === null) await chrome.storage.local.remove(READER_KEY);
+  else {
+    if (!isReader(reader)) throw new BgError('refused', 'That is not something WebAble saved from an AI answer');
+    await chrome.storage.local.set({ [READER_KEY]: reader });
+  }
+  return reader;
+}
+
+/** The saved reader as the server sees it: only the points the person left on. */
+async function readerToSend(): Promise<ReaderProfile> {
+  const reader = await getReader();
+  if (!reader) throw new BgError('refused', 'No answer from an AI assistant has been added yet');
+  const points = reader.points.filter((p) => p.on);
+  if (!points.length) throw new BgError('refused', 'Every point from the AI answer is switched off');
+  return { ...reader, points };
 }
 
 /* ------------------------------------------------------------------ */
@@ -634,6 +671,30 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
     case 'meaning':
       // Round 7 meaning check: structure-only summaries of the original page and the Calm plan.
       return post<unknown>('/v1/meaning', { req: req.req }, 6000);
+    case 'readerImport': {
+      // The answer is sent once, broken down on the server and not kept; only the points are saved, on this laptop.
+      const text = String(req.req?.text ?? '').trim().slice(0, AI_ANSWER_MAX_CHARS);
+      if (text.length < AI_ANSWER_MIN_CHARS) throw new BgError('refused', 'That answer is too short to learn from. Paste the whole answer.');
+      const source = typeof req.req.source === 'string' && req.req.source ? req.req.source : undefined;
+      const reader = await post<ReaderProfile>('/v1/reader', { req: source ? { text, source } : { text } }, 45000);
+      if (!isReader(reader)) throw new BgError('bad_response', 'The WebAble server sent back something unexpected');
+      return setReader(reader);
+    }
+    case 'getReader':
+      return getReader();
+    case 'setReader':
+      return setReader(req.reader);
+    case 'rewordScore': {
+      // The saved reader goes with every call (points the person switched off never leave the laptop).
+      const reader = await readerToSend();
+      const paras = (Array.isArray(req.req.paras) ? req.req.paras : []).slice(0, 40);
+      return post<RewordScoreResult>('/v1/reword/score', { req: { ...req.req, paras, reader } }, 10000);
+    }
+    case 'rewordWrite': {
+      const reader = await readerToSend();
+      const items = (Array.isArray(req.req.items) ? req.req.items : []).slice(0, 8);
+      return post<RewordWriteResult>('/v1/reword/write', { req: { ...req.req, items, reader } }, 25000);
+    }
     default: {
       const never: never = req;
       throw new BgError('refused', `Unknown request ${(never as { type?: string }).type ?? ''}`);

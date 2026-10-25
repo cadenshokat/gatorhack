@@ -129,10 +129,37 @@ export function didLines(
   return lines.slice(0, Math.max(0, max));
 }
 
+/** Round 9: the one row about paragraphs rewritten for this person, or null when there is nothing to say. */
+export interface RewordLine {
+  text: string;
+  /** Still working and nothing rewritten yet: no switch. */
+  busy: boolean;
+  count: number;
+  /** "Show the page's own words" is on. */
+  showingOriginal: boolean;
+}
+
+export function rewordLine(r: EngineState['reword'] | undefined): RewordLine | null {
+  if (!r) return null;
+  const n = (r.items ?? []).filter((i) => i && (i.state === 'rewritten' || i.state === 'original')).length;
+  if (n === 0) {
+    return r.status === 'scoring' || r.status === 'writing'
+      ? { text: 'Making hard paragraphs easier…', busy: true, count: 0, showingOriginal: false }
+      : null;
+  }
+  return {
+    text: n === 1 ? '1 paragraph rewritten the way you like' : `${n} paragraphs rewritten the way you like`,
+    busy: false,
+    count: n,
+    showingOriginal: !!r.showingOriginal,
+  };
+}
+
 /** True when WebAble changed something on this page right now (the button's ring turns green). */
-export function changedHere(s: Pick<EngineState, 'ops' | 'calm' | 'showingOriginal'>): boolean {
+export function changedHere(s: Pick<EngineState, 'ops' | 'calm' | 'showingOriginal'> & Partial<Pick<EngineState, 'reword'>>): boolean {
   if (s.showingOriginal) return false;
   if (s.calm?.open) return true;
+  if (s.reword && !s.reword.showingOriginal && (s.reword.items ?? []).some((i) => i?.state === 'rewritten')) return true;
   return (s.ops ?? []).some((o) => o && o.status === 'applied' && o.kind !== 'calm_view');
 }
 

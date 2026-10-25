@@ -1153,7 +1153,7 @@ class Run {
     if (node.nodeType !== Node.ELEMENT_NODE) return;
     const el = node as Element;
     const ctx = this.ctx;
-    if (IGNORE.has(el.localName)) return;
+    if (IGNORE.has(el.localName) || el.hasAttribute(RW_MARK)) return;
     if (el !== this.root) {
       const p = ctx.placed.get(el);
       if (p !== undefined && p !== ctx.current) return;
@@ -1174,6 +1174,14 @@ class Run {
     if (hidden(el, cs)) return;
     const v = cs.visibility === 'visible' ? true : cs.visibility === 'hidden' || cs.visibility === 'collapse' ? false : vis;
     const block = !INLINE.has(cs.display);
+
+    // Round 9: a paragraph WebAble rewrote in place (its lead, any list, the mark) is one block, drawn from the rewrite.
+    if (el.hasAttribute(RW_ATTR)) {
+      if (!v) return;
+      this.close();
+      for (const b of finishFlow(rewrittenParts(el, (a, t) => this.isHelp(a, t)), el)) this.push(b);
+      return;
+    }
 
     // Choice rows: a checkbox or radio with its label and meta lines.
     const rowInput = this.prep.rows.get(el);
@@ -1497,6 +1505,54 @@ class Run {
       multiline: false, type: type || 'text', search, key, src: el,
     };
   }
+}
+
+/** Round 9: the engine marks a paragraph it rewrote in place with this attribute, and its in-page mark with RW_MARK. */
+export const RW_ATTR = 'data-wa-rw';
+export const RW_MARK = 'data-wa-rw-mark';
+
+/** A rewritten paragraph is a FlowBlock whose source is the paragraph itself. */
+export function isRewritten(b: Block): boolean {
+  return b.b === 'flow' && b.src instanceof Element && b.src.hasAttribute(RW_ATTR);
+}
+
+/** The words of a rewritten paragraph as one run of inline parts: list items run on, the in-page mark is skipped. */
+function rewrittenParts(p: Element, isHelp: (a: Element, text: string) => boolean): Inline[] {
+  const out: Inline[] = [];
+  const walk = (n: Node): void => {
+    if (n.nodeType === Node.TEXT_NODE) {
+      const s = (n as Text).data;
+      if (s) out.push({ t: 'text', text: s.replace(/[\s ]+/g, ' ') });
+      return;
+    }
+    if (n.nodeType !== Node.ELEMENT_NODE) return;
+    const e = n as Element;
+    if (IGNORE.has(e.localName) || e.hasAttribute(RW_MARK)) return;
+    try {
+      if (hidden(e, getComputedStyle(e))) return;
+    } catch {
+      /* detached */
+    }
+    if (e.localName === 'br') {
+      out.push({ t: 'br' });
+      return;
+    }
+    if (e.localName === 'a' && (e.hasAttribute('href') || e.hasAttribute('onclick'))) {
+      const text = nameOf(e);
+      if (!text) return;
+      const raw = e.textContent ?? '';
+      if (/^\s/.test(raw)) out.push({ t: 'text', text: ' ' });
+      out.push({ t: 'link', el: e, text, href: safeHref(e), help: isHelp(e, text) });
+      if (/\s$/.test(raw)) out.push({ t: 'text', text: ' ' });
+      return;
+    }
+    const item = e.localName === 'li' || e.localName === 'ul' || e.localName === 'ol';
+    if (item) out.push({ t: 'text', text: ' ' });
+    e.childNodes.forEach(walk);
+    if (item) out.push({ t: 'text', text: ' ' });
+  };
+  p.childNodes.forEach(walk);
+  return out;
 }
 
 function finishFlow(parts: Inline[], src: Node): Block[] {

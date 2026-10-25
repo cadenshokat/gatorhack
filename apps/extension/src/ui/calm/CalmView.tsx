@@ -116,6 +116,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
     }
   }, [api, outline, state.understanding]);
 
+  const rwVersion = state.reword?.version ?? 0;
   const plan = useMemo<CalmPlan | null>(() => {
     try {
       return buildPlan({
@@ -126,8 +127,8 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       console.warn('[WebAble] Calm view could not read this page', e);
       return null;
     }
-    // `version` re-reads the live page after it changes.
-  }, [api, spec, outline, state.decisions, version, params.listFirst, params.stepMax, params.groupSize, meaning]);
+    // `version` re-reads the live page after it changes; so does a paragraph rewritten (or switched back) for the person.
+  }, [api, spec, outline, state.decisions, version, rwVersion, params.listFirst, params.stepMax, params.groupSize, meaning]);
 
   // Round 8 markers: Jev's live badges and paid content, and "N min read" on an article that does not say it.
   const marks = useMemo(() => pageMarks(state.understanding, (id) => api.elementFor(id)), [api, state.understanding]);

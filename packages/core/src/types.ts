@@ -11,6 +11,10 @@ export const JEV_USD_PER_INPUT_TOKEN = 0.042 / 1_000_000;
 export const LAYOUT_MODEL = 'gpt-6-sol';
 export const DEEP_LAYOUT_MODEL = 'gpt-6.1-sol';
 export const EXPLAIN_MODEL = 'gpt-5.4-mini';
+/** Round 9: breaks the person's AI answer down into how they like things explained (one call per import). */
+export const READER_MODEL = 'gpt-6-sol';
+/** Round 9: rewrites the paragraphs Jev picked, in the way Jev picked (one call per paragraph, in parallel). */
+export const REWORD_MODEL = 'gpt-5.4-mini';
 
 /* ------------------------------------------------------------------ */
 /* The person's fit (from the fitting; never contains condition words) */
@@ -545,7 +549,136 @@ export type BgRequest =
   | { type: 'getZoom' }
   | { type: 'getFit' }
   | { type: 'getSettings' }
-  | { type: 'report'; report: TabReport };
+  | { type: 'report'; report: TabReport }
+  // Round 9. readerImport breaks the AI answer down and saves the result as 'reader' in chrome.storage.local.
+  // rewordScore/rewordWrite: the background adds the saved reader; with none saved it answers with an error.
+  | { type: 'readerImport'; req: ReaderImportRequest } // -> ReaderProfile
+  | { type: 'getReader' } // -> ReaderProfile | null
+  | { type: 'setReader'; reader: ReaderProfile | null } // -> ReaderProfile | null
+  | { type: 'rewordScore'; req: Omit<RewordScoreRequest, 'reader'> } // -> RewordScoreResult
+  | { type: 'rewordWrite'; req: Omit<RewordWriteRequest, 'reader'> }; // -> RewordWriteResult
+
+/* ------------------------------------------------------------------ */
+/* Round 9: paragraphs fitted to the person, from what their AI knows  */
+/* ------------------------------------------------------------------ */
+// The person pastes their AI assistant's answer about how they like things explained. READER_MODEL breaks it down
+// into ReaderPoints; Jev checks each point against the answer (unsupported points are dropped); the raw answer is
+// not kept. On a page, Jev scores each paragraph for this person (need + which change); code picks; REWORD_MODEL
+// rewrites the picked ones; code and Jev check every rewrite; anything that fails keeps the page's own words.
+// Never shown to the person: "reword", "profile", "score", "probability" (except inside the Jev view).
+
+/** The kinds of change a paragraph can get. Jev picks one per paragraph for this person ('keep' = leave it). */
+export type RewordKind = 'plain' | 'list' | 'shorter' | 'point_first';
+export const REWORD_KINDS: readonly RewordKind[] = ['plain', 'list', 'shorter', 'point_first'];
+
+/** One thing WebAble took from the person's AI answer, said plainly to them, with the answer's own words as evidence. */
+export interface ReaderPoint {
+  id: string; // 'r1'
+  kind: 'knows' | 'new_to' | 'length' | 'format' | 'words' | 'language' | 'avoid';
+  /** Second person, plain, at most about 90 characters: "You know software and data well." Never a condition. */
+  says: string;
+  /** A short quote from the AI's answer that shows it (at most about 160 characters). */
+  evidence: string;
+  /** Jev's probability that the AI's answer supports this point (points under the bar are dropped at import). */
+  support: number;
+  /** The person can switch any point off; points that are off are never sent. */
+  on: boolean;
+}
+
+/** How this person likes things explained. Saved as 'reader' in chrome.storage.local. The raw AI answer is not kept. */
+export interface ReaderProfile {
+  v: 'reader.1';
+  createdAt: string; // ISO
+  /** Which assistant the answer came from, as the person would say it: 'ChatGPT', 'Claude', 'Gemini' or 'your AI'. */
+  source: string;
+  /** One plain line: "Short answers, steps, and plain words for money and law." */
+  headline: string;
+  points: ReaderPoint[]; // 3–10
+  /** Defaults the writer follows where no point says otherwise. */
+  level: 'plain' | 'everyday' | 'expert';
+  length: 'shorter' | 'as_is';
+  shape: 'steps' | 'bullets' | 'prose';
+  answerFirst: boolean;
+  metrics?: { model: string; ms: number; jev: JevMetrics };
+}
+
+export interface ReaderImportRequest {
+  text: string; // the AI's answer, at most 20,000 characters
+  /** The button the person used ('ChatGPT', 'Claude'); without one the server guesses from the text or says 'your AI'. */
+  source?: string;
+}
+
+/** One paragraph as the models see it: the text with each link replaced by ⟦n⟧, n counting from 1 in reading order. */
+export interface RewordPara {
+  id: string; // 'w<k>', unique on the page
+  text: string; // at most 1,800 characters
+  links: number; // how many ⟦n⟧ markers the text has
+  /** The words of each link, in marker order, so the writer knows what ⟦n⟧ says. */
+  linkTexts?: string[];
+}
+
+export interface RewordPage {
+  title: string;
+  host: string;
+  /** Jev's page purpose when known ('news_article', 'government_info'…), else null. */
+  purpose: string | null;
+}
+
+export interface RewordScoreRequest {
+  reader: ReaderProfile;
+  page: RewordPage;
+  paras: RewordPara[]; // at most 40
+}
+
+export interface RewordScore {
+  id: string;
+  /** Jev's probability that this paragraph is harder for this person than it needs to be. */
+  need: number;
+  /** Jev's probabilities over the changes, 'keep' included. */
+  how: Record<RewordKind | 'keep', number>;
+  /** The change code chose from Jev's answers, or null to leave the paragraph as it is. */
+  pick: RewordKind | null;
+}
+
+export interface RewordScoreResult {
+  scores: RewordScore[];
+  jev: JevMetrics;
+  ms: number;
+}
+
+export interface RewordWriteRequest {
+  reader: ReaderProfile;
+  page: RewordPage;
+  items: Array<RewordPara & { kind: RewordKind }>; // at most 8
+}
+
+/**
+ * A rewritten paragraph as data: a lead sentence or two and, for 'list', the items. Across lead and items the text
+ * keeps every ⟦n⟧ marker of the original exactly once (the extension puts the page's own links back there).
+ */
+export interface RewordOut {
+  lead: string;
+  items: string[]; // [] unless kind is 'list'
+  ordered: boolean; // numbered steps rather than bullets
+}
+
+export interface RewordWritten {
+  id: string;
+  kind: RewordKind;
+  /** false: keep the page's own words (a check failed or nothing could be written). */
+  ok: boolean;
+  out: RewordOut | null;
+  checks: { numbersKept: boolean; conditionWordsKept: boolean; linksKept: boolean; dropped: number; added: number };
+  /** When !ok: 'numbers' | 'conditions' | 'links' | 'dropped' | 'added' | 'llm_unavailable' | 'check_unavailable'. */
+  reason?: string;
+}
+
+export interface RewordWriteResult {
+  results: RewordWritten[];
+  model: string;
+  ms: number;
+  jev: JevMetrics;
+}
 
 export interface Settings {
   enabled: boolean;

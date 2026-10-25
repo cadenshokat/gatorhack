@@ -130,8 +130,27 @@ function stateFor(mode: Mode): EngineState {
     textStep: 0,
     pageZoom: 1,
     passive: null,
+    ...(paras() ? { reword: sampleReword } : {}),
   };
 }
+
+/** Round 9: ?paras=1 adds three paragraphs Jev read for this person (two rewritten, one kept). */
+function paras(): boolean {
+  return new URLSearchParams(location.search).get('paras') === '1';
+}
+
+const how = (keep: number, plain: number, list: number) => ({ keep, plain, list, shorter: 0.05, point_first: 0.05 });
+const sampleReword: NonNullable<EngineState['reword']> = {
+  status: 'done',
+  source: 'ChatGPT',
+  showingOriginal: false,
+  version: 1,
+  items: [
+    { id: 'w1', need: 0.84, how: how(0.1, 0.7, 0.1), pick: 'plain', state: 'rewritten', snippet: 'The series dates to 1917' },
+    { id: 'w2', need: 0.77, how: how(0.15, 0.1, 0.65), pick: 'list', state: 'failed', reason: 'numbers', snippet: 'Tickets for the home game' },
+    { id: 'w3', need: 0.12, how: how(0.85, 0.05, 0.05), pick: null, state: 'kept', snippet: 'Florida leads the series' },
+  ],
+};
 
 const api: EngineApi = {
   getState: () => stateFor('present'),
@@ -153,11 +172,15 @@ const api: EngineApi = {
   adjustColumn: () => {},
   adjustText: () => {},
   passiveFeedback: () => {},
+  showOriginalWords: () => {},
+  toggleParagraph: () => {},
+  rewordFor: () => null,
 };
 
 const pageCss = `
 body { margin: 0; background: #f3f0e8; color: #1c1c1c; font-family: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif; }
 .gators { box-sizing: border-box; max-width: 920px; padding: 72px 28px 64px; }
+.gators.wide { margin-left: 320px; }
 .gators header { display: flex; align-items: center; gap: 18px; height: 52px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-weight: 650; letter-spacing: -0.01em; }
 .mark { width: 28px; height: 28px; border-radius: 6px; background: #0021a5; color: #fff; display: grid; place-items: center; font-size: 12px; }
 .gators h1 { margin: 18px 0 0; font-size: 42px; font-weight: 650; letter-spacing: -0.02em; }
@@ -179,6 +202,8 @@ body { margin: 0; background: #f3f0e8; color: #1c1c1c; font-family: Georgia, "Io
 .teaser h3, .ad h3 { margin: 0 0 6px; font-size: 14px; }
 .teaser p, .ad p { margin: 0; color: #444; font-size: 14px; line-height: 1.4; }
 .ad { background: #efe8da; min-height: 150px; }
+.story { margin-top: 24px; font-size: 18px; line-height: 1.55; }
+.story p { margin: 0 0 16px; }
 .help { display: inline-block; margin-top: 16px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 .switch { position: fixed; left: 16px; bottom: 16px; z-index: 40; display: flex; gap: 8px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; }
 .switch a { color: #1c1c1c; background: #fff; padding: 8px 12px; border-radius: 999px; text-decoration: none; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
@@ -187,7 +212,7 @@ body { margin: 0; background: #f3f0e8; color: #1c1c1c; font-family: Georgia, "Io
 
 function Page() {
   return (
-    <div class="gators">
+    <div class={paras() ? 'gators wide' : 'gators'}>
       <header id="n1"><span class="mark">UF</span> Florida Gators · Football</header>
       <div class="layout">
         <div>
@@ -206,6 +231,13 @@ function Page() {
             </div>
           </section>
           <a class="help" id="n13" href="#help">Help</a>
+          {paras() && (
+            <div class="story">
+              <p id="w1">The series dates to 1917, and the rivalry has been contested annually since 1967 under the conference's scheduling arrangement for divisional opponents.</p>
+              <p id="w2">Tickets for the home game are allocated first to season holders in priority order, then released to the general public on the Monday before kickoff at 10 a.m.</p>
+              <p id="w3">Florida leads the series 54 to 22.</p>
+            </div>
+          )}
         </div>
         <aside>
           <div class="teaser" id="n11">

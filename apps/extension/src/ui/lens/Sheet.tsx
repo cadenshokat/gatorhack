@@ -4,8 +4,10 @@
 import type { Ref } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { PageDigest, PageUnderstanding } from '@webable/core';
+import type { EngineState, RewordItem } from '../../contracts';
 import { GROUPS, type LensItem } from './display';
 import { ClassIcon, IArrowDown, IArrowUp, ICheck, IChevronDown, IChevronRight, IClose, ICopy } from './icons';
+import { paraCounts, paraFace, paraSummary } from './paragraphs';
 import { RawJson } from './RawJson';
 import { RULE_FOOTER, type RuleDiff } from './rule';
 import { fmtP, hasPageRead, mainRegionPick, purposeBars, purposeLine, regionLabel } from './words';
@@ -44,6 +46,67 @@ export interface SheetProps {
   raw: unknown;
   pendingText: string | null;
   sheetRef: Ref<HTMLDivElement>;
+  /** Round 9: the paragraphs WebAble read for this person (absent or 'off': no Paragraphs section). */
+  reword?: EngineState['reword'];
+  onParaClick?: (id: string) => void;
+}
+
+/** Round 9: one paragraph Jev read for this person: its first words, Jev's probability on a track, what WebAble did. */
+function ParaRow({ it, onClick }: { it: RewordItem; onClick?: (id: string) => void }) {
+  const face = paraFace(it);
+  return (
+    <li>
+      <button class="wa-lrow wa-lrow-para" data-id={it.id} data-c={`para-${face.tone}`} title={face.say} onClick={() => onClick?.(it.id)}>
+        <span class="wa-lrow-ic" data-c={`para-${face.tone}`} aria-hidden="true">
+          <ClassIcon cls={face.tone === 'new' ? 'guarded' : 'kept'} size={11} />
+        </span>
+        <span class="wa-lrow-mid">
+          <span class="wa-lrow-label">{it.snippet || 'Paragraph'}</span>
+          <span class="wa-lrow-track" aria-hidden="true">
+            <i class="wa-lrow-fill" style={{ width: pct(it.need) }} />
+          </span>
+          <span class="wa-lrow-sub">{face.why ? `${face.sub} (${face.why})` : face.sub}</span>
+        </span>
+        <span class="wa-lrow-end">
+          <b class="wa-lrow-p">{face.num}</b>
+        </span>
+      </button>
+    </li>
+  );
+}
+
+/** Round 9: "Paragraphs: Jev read 14 for you, picked 5, 5 rewritten, all checked", then one row per paragraph. */
+function ParaSection({ reword, onClick }: { reword: EngineState['reword']; onClick?: (id: string) => void }) {
+  const line = paraSummary(reword);
+  if (!reword || !line) return null;
+  const items = [...(reword.items ?? [])].sort((a, b) => b.need - a.need);
+  const c = paraCounts(items);
+  return (
+    <>
+      <section class="wa-lcmp wa-lparas-sum" aria-label="Paragraphs Jev read for you">
+        <h4>
+          Paragraphs
+          {c.read > 0 && <span class="wa-lgrp-n">{c.read}</span>}
+        </h4>
+        <p class="wa-lcmp-rule">{line}.</p>
+        {c.read > 0 && (
+          <p class="wa-lcmp-foot">
+            Each number is Jev's probability that the paragraph is harder than it needs to be for you
+            {reword.source ? `, from what ${reword.source} knows about you` : ''}.
+          </p>
+        )}
+      </section>
+      {items.length > 0 && (
+        <section class="wa-lgrp" data-g="paras">
+          <ul class="wa-lrows">
+            {items.map((it) => (
+              <ParaRow key={it.id} it={it} onClick={onClick} />
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
+  );
 }
 
 function Row(props: {
@@ -269,6 +332,7 @@ export function Sheet(p: SheetProps) {
           </div>
         ) : p.tab === 'elements' ? (
           <>
+            <ParaSection reword={p.reword} onClick={p.onParaClick} />
             {p.ruleOn && p.diff && (
               <section class="wa-lcmp" aria-label="Jev compared with a plain rule">
                 <h4>

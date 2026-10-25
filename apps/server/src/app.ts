@@ -11,10 +11,12 @@ import { JevError } from './jev';
 import { registerExplain } from './routes/explain';
 import { registerHealth } from './routes/health';
 import { registerOverlay } from './routes/overlay';
+import { registerReader } from './routes/reader';
 import { registerRedesign } from './routes/redesign';
 import { registerStruggle } from './routes/struggle';
 import { registerUnderstand } from './routes/understand';
 import { registerVisual } from './routes/visual';
+import { registerReword } from './routes/reword';
 import { recordRoute } from './stats';
 import { HttpError, errorMessage, log, round } from './util';
 
@@ -67,6 +69,8 @@ export function createApp(): Hono {
   registerExplain(app);
   registerVisual(app);
   registerOverlay(app);
+  registerReader(app);
+  registerReword(app);
 
   // Demo pages (package F writes apps/server/demo/**).
   if (!existsSync(DEMO_ROOT)) log('demo folder not found yet', { path: 'apps/server/demo' });
@@ -88,7 +92,7 @@ export function createApp(): Hono {
   app.get('/', (c) =>
     c.json({
       name: 'WebAble server',
-      routes: ['GET /health', 'GET /v1/stats', 'POST /v1/understand', 'POST /v1/struggle', 'POST /v1/redesign', 'POST /v1/explain', 'POST /v1/verify-visual', 'POST /v1/overlay-close', 'GET /demo/'],
+      routes: ['GET /health', 'GET /v1/stats', 'POST /v1/understand', 'POST /v1/struggle', 'POST /v1/redesign', 'POST /v1/explain', 'POST /v1/verify-visual', 'POST /v1/overlay-close', 'POST /v1/reader', 'POST /v1/reword/score', 'POST /v1/reword/write', 'GET /demo/'],
     }),
   );
 

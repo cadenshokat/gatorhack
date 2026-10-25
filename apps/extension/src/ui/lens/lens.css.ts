@@ -18,6 +18,8 @@ export const LENS_COLOR = {
   pending: '#86868B',
 } as const;
 
+/** Round 9: what WebAble changes for the person (the same green as the mark on a rewritten paragraph). */
+const PARA_GREEN = '#17694A';
 const HATCH = 'rgba(255,159,10,.22)';
 const SCRIM = 'rgba(11,13,18,.45)';
 const IN = `inset 0 0 0 ${L(1)} rgba(0,0,0,.55)`; // 1 px black inside the band
@@ -391,6 +393,40 @@ ${fitRules()}
 .wa-lrow-tick { position: absolute; top: ${L(-3)}; bottom: ${L(-3)}; width: ${L(1.5)}; margin-left: ${L(-0.75)}; background: var(--c-ink, #1D1D1F); }
 .wa-lrow-end { display: inline-flex; align-items: center; gap: ${L(4)}; color: var(--c-ink2, #5E5E63); }
 .wa-lrow-p { min-width: ${L(30)}; text-align: right; color: var(--c-ink, #1D1D1F); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---------- round 9: paragraphs read for this person (outline, gutter tag, sheet section) ---------- */
+.wa-lparas { position: absolute; inset: 0; pointer-events: none; }
+.wa-lpara {
+  position: absolute; left: 0; top: 0; box-sizing: border-box; border-radius: ${L(6)}; will-change: transform;
+  border: ${L(1.5)} dashed rgba(134,134,139,.9); box-shadow: 0 0 0 ${L(1)} rgba(255,255,255,.7);
+}
+.wa-lpara[data-tone="new"] { border: ${L(2)} solid ${PARA_GREEN}; box-shadow: ${IN}, ${OUT}; }
+.wa-lpara[data-tone="waiting"] { border: ${L(2)} dashed ${PARA_GREEN}; animation: wa-lpend 1.4s ease-in-out infinite; }
+.wa-lpara[data-tone="checked"] { border: ${L(2)} dashed ${LENS_COLOR.folded}; box-shadow: ${IN}, ${OUT}; }
+.wa-lpara[data-tone="original"] { border: ${L(2)} solid ${LENS_COLOR.kept}; box-shadow: ${IN}, ${OUT}; }
+.wa-lptag {
+  position: absolute; left: 0; top: 0; box-sizing: border-box; width: ${L(272)}; height: ${L(42)}; will-change: transform;
+  display: grid; align-content: center; gap: ${L(3)}; padding: 0 ${L(10)}; border-radius: ${L(8)};
+  color: #FFFFFF; background: ${LENS_COLOR.kept}; font: 400 ${L(11.5)}/1.15 ${FONT}; white-space: nowrap; overflow: hidden;
+  box-shadow: 0 0 0 ${L(1)} rgba(255,255,255,.9), 0 ${L(2)} ${L(10)} rgba(0,0,0,.28);
+}
+.wa-lptag[data-tone="new"], .wa-lptag[data-tone="waiting"] { background: ${PARA_GREEN}; }
+.wa-lptag[data-tone="checked"] { background: ${LENS_COLOR.folded}; }
+.wa-lptag-top { display: flex; align-items: baseline; gap: ${L(6)}; font-weight: 600; font-size: ${L(12)}; }
+.wa-lptag-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.wa-lptag-n { flex: none; margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+.wa-lptag-sub { overflow: hidden; text-overflow: ellipsis; opacity: .92; }
+.wa-lens[data-phase="enter"] .wa-lptag { animation: wa-lchip 220ms cubic-bezier(.2,.8,.3,1) both; animation-delay: 200ms; }
+.wa-lens[data-motion="reduce"] :is(.wa-lptag, .wa-lpara) { animation: none; }
+.wa-lparas-sum h4 { display: flex; align-items: center; gap: ${L(6)}; }
+.wa-lparas-sum h4 .wa-lgrp-n { margin-left: auto; font: 600 ${L(11.5)}/1.2 ${FONT}; }
+.wa-lrow-ic[data-c="para-new"], .wa-lrow-ic[data-c="para-waiting"] { background: ${PARA_GREEN}; }
+.wa-lrow-ic[data-c="para-checked"] { background: ${LENS_COLOR.folded}; }
+.wa-lrow-ic[data-c="para-original"] { background: ${LENS_COLOR.kept}; }
+.wa-lrow-ic[data-c="para-kept"] { background: var(--c-tonal, #E8E8ED); color: var(--c-ink2, #5E5E63); }
+.wa-lrow[data-c="para-new"] .wa-lrow-fill, .wa-lrow[data-c="para-waiting"] .wa-lrow-fill { background: ${PARA_GREEN}; }
+.wa-lrow[data-c="para-checked"] .wa-lrow-fill { background: ${LENS_COLOR.folded}; }
+.wa-lrow-para .wa-lrow-mid { gap: ${L(4)}; }
 
 /* plain-rule comparison */
 .wa-lcmp {

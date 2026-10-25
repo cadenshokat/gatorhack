@@ -1,10 +1,13 @@
 // The last screen (docs/design/ONBOARDING.md, round 8c point 5). It leads with what makes the web harder for this
 // person, strongly and in their own numbers, then what WebAble does about each. Then the chart of what gets in their
 // way, real websites to try it on, every setting in plain word levels, and a footer. Every change saves at once
-// through onChange. Nothing a person sees here is a pixel value or a technical word.
-import type { FitProfile, Polarity } from '@webable/core';
+// through onChange. Nothing a person sees here is a pixel value or a technical word. Round 9: after the struggle
+// cards, one card to bring in how the person likes things explained, from their AI assistant (fitting.html#ai).
+import type { FitProfile, Polarity, ReaderProfile } from '@webable/core';
 import type { JSX } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { ExplainIcon } from '../ai/icons';
+import { fromWords } from '../ai/reader';
 import type { RunEvidence } from '../logic/evidence';
 import {
   BUTTON_LEVELS,
@@ -38,6 +41,10 @@ export interface ResultsProps {
   onChange(next: FitProfile): void; // App saves via logic/storage.ts and re-renders
   onRetake(): void;
   onDone(): void; // closes the tab
+  /** Round 9: what WebAble took from the person's AI answer, when saved. */
+  reader?: ReaderProfile | null;
+  /** Round 9: opens fitting.html#ai. Without it the card is not shown. */
+  onReader?(): void;
 }
 
 /** "See it on real websites": real pages WebAble changes by itself (round 8c point 5). */
@@ -166,6 +173,8 @@ export function Results(props: ResultsProps): JSX.Element {
               })}
             </ol>
 
+            {props.onReader ? <ReaderCard reader={props.reader ?? null} onOpen={props.onReader} /> : null}
+
             <div class="rs-actions">
               <button type="button" class="btn btn-primary rs-btn" onClick={toSites}>
                 See it on real websites
@@ -230,6 +239,27 @@ export function Results(props: ResultsProps): JSX.Element {
         </footer>
       </main>
     </div>
+  );
+}
+
+/* ---------------- How you like things explained (round 9) ---------------- */
+
+function ReaderCard({ reader, onOpen }: { reader: ReaderProfile | null; onOpen(): void }): JSX.Element {
+  return (
+    <section class="rs-ai" aria-label="How you like things explained">
+      <span class="rs-card-icon">
+        <ExplainIcon />
+      </span>
+      <div class="rs-card-body">
+        <p class="rs-problem">{reader ? reader.headline : 'Pages can explain things the way you like'}</p>
+        <p class="rs-evidence">
+          {reader ? fromWords(reader.source) : 'Bring what your AI assistant already knows about how you like things explained.'}
+        </p>
+        <button type="button" class="btn btn-secondary rs-btn rs-ai-btn" onClick={onOpen} data-answer="reader">
+          {reader ? 'Change' : 'Bring it in'}
+        </button>
+      </div>
+    </section>
   );
 }
 

@@ -12,6 +12,7 @@ import { openSettings, setPaused } from './actions';
 import type { PillSide } from './hooks';
 import {
   IconClose,
+  IconBook,
   IconContrast,
   IconFade,
   IconFocus,
@@ -29,6 +30,7 @@ import {
 import {
   didLines,
   pageUnread,
+  rewordLine,
   sheetMode,
   showViewSwitch,
   shownTextPx,
@@ -37,6 +39,7 @@ import {
   UNREAD,
   type DidIcon,
   type DidLine,
+  type RewordLine,
 } from './model';
 
 const ICONS: Record<DidIcon, (p: { size?: number }) => JSX.Element> = {
@@ -106,6 +109,28 @@ function DidRow({ line, onAct }: { line: DidLine; onAct: (l: DidLine) => void })
   );
 }
 
+/** Round 9: paragraphs rewritten for this person, with one switch back to the page's own words. */
+function RewordRow({ line, onOriginal }: { line: RewordLine; onOriginal: (on: boolean) => void }) {
+  return (
+    <li class="wa-did-rw">
+      <div class="wa-did">
+        <span class="wa-did-ic" aria-hidden="true">
+          <IconBook size={20} />
+        </span>
+        <span class="wa-did-t" role={line.busy ? 'status' : undefined}>
+          {line.text}
+        </span>
+      </div>
+      {!line.busy && (
+        <button class="wa-sh-switch wa-did-switch" role="switch" aria-checked={line.showingOriginal} onClick={() => onOriginal(!line.showingOriginal)}>
+          <span>Show the page's own words</span>
+          <span class="wa-sh-track" aria-hidden="true" />
+        </button>
+      )}
+    </li>
+  );
+}
+
 export function Sheet({ api, s, origin, side, maxHeightPx, pageZoom, gone, onGone, note, onClose, onAdjust }: Props) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const didRef = useRef<HTMLHeadingElement>(null);
@@ -125,6 +150,7 @@ export function Sheet({ api, s, origin, side, maxHeightPx, pageZoom, gone, onGon
 
   const on = mode === 'on' && !paused;
   const lines = on ? didLines(s, gone) : [];
+  const rw = on ? rewordLine(s.reword) : null;
   const unread = on && pageUnread(s);
   const viewSwitch = on && showViewSwitch(s.calm);
   const simplified = Boolean(s.calm.open || (s.calm.loading && !s.calm.open));
@@ -241,8 +267,9 @@ export function Sheet({ api, s, origin, side, maxHeightPx, pageZoom, gone, onGon
               What WebAble did here
             </h3>
             {unread && <p class="wa-sh-quiet">{UNREAD}</p>}
-            {lines.length > 0 ? (
+            {lines.length > 0 || rw ? (
               <ul class="wa-did-list">
+                {rw && <RewordRow line={rw} onOriginal={(v) => api.showOriginalWords(v)} />}
                 {lines.map((l) => (
                   <DidRow key={l.key} line={l} onAct={act} />
                 ))}

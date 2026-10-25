@@ -4,15 +4,17 @@
 // When OpenAI says the account has no credits (or rejects the key), every call is skipped for AI_BLOCK_MS and a
 // one-token probe checks again when the block ends (ai.ts), so the product picks AI up again on its own.
 import OpenAI from 'openai';
-import { DEEP_LAYOUT_MODEL, EXPLAIN_MODEL, LAYOUT_MODEL } from '@webable/core';
+import { DEEP_LAYOUT_MODEL, EXPLAIN_MODEL, LAYOUT_MODEL, READER_MODEL, REWORD_MODEL } from '@webable/core';
+import type { ReaderProfile, RewordKind, RewordOut, RewordPage } from '@webable/core';
 import { aiBlockedUntil, aiState, aiStatus, classifyOpenAiFailure, markAiBlocked, markAiWorking } from './ai';
 import {
   AI_PROBE_MODEL, DEEP_CACHE_TTL_MS, DEEP_ENABLED, DEEP_TIMEOUT_MS, EXPLAIN_TIMEOUT_MS, LAYOUT_WAVE_MS, LLM_TIMEOUT_MS,
-  OPENAI_SERVICE_TIER, openAiKey,
+  OPENAI_SERVICE_TIER, READER_TIMEOUT_MS, REWORD_TIMEOUT_MS, openAiKey,
 } from './config';
 import { TtlLru } from './lru';
 import {
-  EXPLAIN_INSTRUCTIONS, EXPLAIN_SCHEMA, LAYOUT_INSTRUCTIONS, layoutInput, type ExplainOutput, type Stance,
+  EXPLAIN_INSTRUCTIONS, EXPLAIN_SCHEMA, LAYOUT_INSTRUCTIONS, READER_INSTRUCTIONS, READER_POINT_KINDS, READER_SCHEMA,
+  REWORD_INSTRUCTIONS, REWORD_SCHEMA, layoutInput, rewordInput, type ExplainOutput, type ReaderOutput, type Stance,
 } from './prompts';
 import { recordOpenAiCall, recordOpenAiError } from './stats';
 import { errorMessage, log, round } from './util';
@@ -170,6 +172,8 @@ interface JsonCall {
   timeoutMs: number;
   cacheKey: string;
   tag: string;
+  /** Reasoning effort for this call; without it, the model's default from EFFORT. */
+  effort?: 'none' | 'low';
 }
 
 /** One strict-JSON Responses call. Never throws: failures come back as { ok: false }. */
@@ -181,7 +185,7 @@ export async function respondJson(p: JsonCall): Promise<LlmResult<unknown>> {
     // No credits, key rejected or our spend cap: no call until the block ends (then it is tried again).
     return { ok: false, model: p.model, ms: 0, costUsd: 0, error: avail.reason ?? 'unavailable' };
   }
-  let effort: 'none' | 'low' = EFFORT[p.model] ?? 'none';
+  let effort: 'none' | 'low' = p.effort ?? EFFORT[p.model] ?? 'none';
   const t0 = performance.now();
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -413,4 +417,90 @@ export async function explainPassage(passage: string): Promise<LlmResult<Explain
     }
   }
   return last ?? { ok: false, model: EXPLAIN_MODEL, ms: 0, costUsd: spent, error: 'unknown' };
+}
+
+/* ------------------------------------------------------------------ */
+/* Round 9: the reader (from the person's AI answer) and the rewriter   */
+/* ------------------------------------------------------------------ */
+
+function asReaderOutput(data: unknown): ReaderOutput | null {
+  if (!data || typeof data !== 'object') return null;
+  const d = data as Record<string, unknown>;
+  if (!Array.isArray(d.points)) return null;
+  const points = d.points
+    .filter((p): p is { kind: string; says: string; evidence: string } =>
+      !!p && typeof p === 'object' && typeof (p as { says?: unknown }).says === 'string' && typeof (p as { evidence?: unknown }).evidence === 'string' && typeof (p as { kind?: unknown }).kind === 'string')
+    .filter((p) => (READER_POINT_KINDS as readonly string[]).includes(p.kind) && p.says.trim() !== '')
+    .map((p) => ({ kind: p.kind as ReaderOutput['points'][number]['kind'], says: p.says.trim(), evidence: p.evidence.trim() }));
+  if (points.length === 0) return null;
+  const pick = <T extends string>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback);
+  return {
+    points,
+    level: pick(d.level, ['plain', 'everyday', 'expert'] as const, 'everyday'),
+    length: pick(d.length, ['shorter', 'as_is'] as const, 'as_is'),
+    shape: pick(d.shape, ['steps', 'bullets', 'prose'] as const, 'prose'),
+    answer_first: d.answer_first === true,
+    headline: typeof d.headline === 'string' ? d.headline.trim() : '',
+    source_guess: typeof d.source_guess === 'string' ? d.source_guess : 'your AI',
+  };
+}
+
+/** READER_MODEL breaks the AI answer into points; EXPLAIN_MODEL is the fallback. The model sees only the answer. */
+export async function readerFromAnswer(answer: string): Promise<LlmResult<ReaderOutput>> {
+  let spent = 0;
+  let last: LlmFail | null = null;
+  for (const model of [READER_MODEL, EXPLAIN_MODEL]) {
+    const r = await respondJson({
+      model,
+      instructions: READER_INSTRUCTIONS,
+      input: `AI ANSWER\n${answer}`,
+      schemaName: 'reader',
+      schema: READER_SCHEMA,
+      maxOutputTokens: 1_600,
+      timeoutMs: READER_TIMEOUT_MS,
+      cacheKey: 'wa-reader-v1',
+      tag: 'reader',
+    });
+    spent += r.costUsd;
+    if (r.ok) {
+      const out = asReaderOutput(r.data);
+      if (out) return { ...r, data: out, costUsd: spent };
+      last = { ok: false, model, ms: r.ms, costUsd: spent, error: 'bad_shape' };
+    } else {
+      last = { ...r, costUsd: spent };
+      if (UNAVAILABLE_ERRORS.has(r.error)) break;
+    }
+  }
+  return last ?? { ok: false, model: READER_MODEL, ms: 0, costUsd: spent, error: 'unknown' };
+}
+
+function asRewordOut(data: unknown): RewordOut | null {
+  if (!data || typeof data !== 'object') return null;
+  const d = data as Record<string, unknown>;
+  if (typeof d.lead !== 'string') return null;
+  const items = Array.isArray(d.items) ? d.items.filter((x): x is string => typeof x === 'string') : [];
+  return { lead: d.lead, items, ordered: d.ordered === true };
+}
+
+/** REWORD_MODEL rewrites one paragraph in the given way. `retry` names what was wrong with the last try; `links` the words at each marker. */
+export async function rewordParagraph(
+  brief: string, level: ReaderProfile['level'], page: RewordPage, kind: RewordKind, text: string, retry?: string,
+  links?: Record<string, string> | null,
+): Promise<LlmResult<RewordOut>> {
+  const r = await respondJson({
+    model: REWORD_MODEL,
+    instructions: REWORD_INSTRUCTIONS,
+    input: rewordInput(brief, level, page, kind, text, retry, links),
+    schemaName: 'reword',
+    schema: REWORD_SCHEMA,
+    // Low effort: measured rewrites changed 21-55% of the wording vs 4-27% (near copies) at none, about 0.3 s slower.
+    effort: 'low',
+    maxOutputTokens: 2_000,
+    timeoutMs: REWORD_TIMEOUT_MS,
+    cacheKey: 'wa-reword-v1',
+    tag: `reword/${kind}`,
+  });
+  if (!r.ok) return r;
+  const out = asRewordOut(r.data);
+  return out ? { ...r, data: out } : { ok: false, model: r.model, ms: r.ms, costUsd: r.costUsd, error: 'bad_shape' };
 }

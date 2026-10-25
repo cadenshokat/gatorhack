@@ -15,6 +15,8 @@ import { CLASS_WEIGHT, fineChipFace, fineChipPriority, lensItems, mergedChip, ty
 import { ClassIcon, IChevronRight, IClose, IDiamond, IRule } from './icons';
 import { cellRegions, chipBudget, placeChips, rectsPath, type ChipPlan, type PlaceItem, type Rect } from './place';
 import { compareRule, plainRule } from './rule';
+import { Paras } from './Paras';
+import { paraSummary } from './paragraphs';
 import { Sheet, type RowStatus, type SheetTab } from './Sheet';
 import { usePageZoom } from '../zoom';
 import type { TodayMeter } from './today';
@@ -182,6 +184,8 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
   /** Real chip widths read back from the DOM after a render, so placement uses the font the page actually drew. */
   const measured = useRef(new Map<string, number>());
   const lbottom = useRef('');
+  /** Round 9: where the paragraph tags are, so element chips keep clear of them. */
+  const paraTags = useRef<Rect[]>([]);
   const ctx = useRef<CanvasRenderingContext2D | null>(null);
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -408,6 +412,7 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
     if (sb && sb.width > 0) reserved.push({ x: sb.left - 6, y: sb.top - 6, w: sb.width + 12, h: sb.height + 12 });
     // The rest of our chrome (pill, panel, offers, toasts, overlay chips), wherever the app put it.
     for (const r of chrome) reserved.push({ x: r.x - 6, y: r.y - 6, w: r.w + 12, h: r.h + 12 });
+    for (const r of paraTags.current) reserved.push({ x: r.x - 4, y: r.y - 4, w: r.w + 8, h: r.h + 8 });
     if (chrome.length === 0) {
       const pillW = 190 * sc;
       reserved.push({ x: vw - pillW, y: vh - L.bottomReserve, w: pillW, h: L.bottomReserve });
@@ -876,6 +881,17 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
     setPinnedId(pinnedId === id ? null : id);
   };
 
+  const paraClick = (id: string) => {
+    const el = api.elementFor(id);
+    if (!el) return;
+    try {
+      el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+    } catch {
+      el.scrollIntoView();
+    }
+  };
+  const paraLine = paraSummary(s.reword);
+
   const chips = [...plan.chips].sort((a, b) => Number(a.icon === 'page') - Number(b.icon === 'page'));
   const showCard = Boolean(cardItem && plan.status.get(cardItem.id) === 'shown');
   const tabShown: SheetTab = tab === 'page' && !hasPageRead(s.understanding) ? 'elements' : tab;
@@ -953,6 +969,16 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
           ))}
         </div>
       </div>
+
+      <Paras
+        api={api}
+        reword={s.reword}
+        scale={scale}
+        avoid={() => [headRef.current, sheetRef.current, cardRef.current]}
+        onTags={(r) => {
+          paraTags.current = r;
+        }}
+      />
 
       {showCard && cardItem && (
         <Card
@@ -1102,12 +1128,15 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
           raw={raw}
           pendingText={pendingText}
           sheetRef={sheetRef}
+          reword={s.reword}
+          onParaClick={paraClick}
         />
       )}
       <span class="wa-lsr" role="status">
         {answered && t.decisions > 0
           ? `Jev Lens: ${line ? `${line.spoken} ` : ''}${fmtCount(t.decisions)} decisions${t.cached ? ', from cache' : `, ${fmtMs(t.headlineMs)}, ${fmtCost(t.costUsd)}`}.${region ? ` What this page is for: ${regionName}, Jev's probability ${f2(region.p)}.` : ''}${mainItem ? ` Main action: ${mainItem.label}, Jev's probability ${f2(mainItem.p ?? 0)}.` : ''}`
           : `${line ? `${line.spoken} ` : ''}${pendingText ?? ''}`}
+        {paraLine ? ` Paragraphs: ${paraLine}.` : ''}
       </span>
     </div>
   );

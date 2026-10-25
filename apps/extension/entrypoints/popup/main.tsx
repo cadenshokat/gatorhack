@@ -1,5 +1,5 @@
-// Owner: P, F. The toolbar popup: WebAble on or off, this site's "Pause on this site", and Your settings. Nothing
-// else: everything about a page lives in the WebAble button on that page.
+// Owner: P, F. The toolbar popup: WebAble on or off, this site's "Pause on this site", Your settings, and (round 9) how
+// you like things explained. Nothing else: everything about a page lives in the WebAble button on that page.
 import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import type { Settings } from '@webable/core';
@@ -64,9 +64,9 @@ function Popup() {
     update({ pausedOrigins: v ? [...rest, origin] : rest });
   };
 
-  const openSettings = async () => {
+  const openFitting = async (hash: '#settings' | '#ai') => {
     try {
-      await chrome.tabs.create({ url: chrome.runtime.getURL('/fitting.html#settings') });
+      await chrome.tabs.create({ url: chrome.runtime.getURL(`/fitting.html${hash}`) });
     } finally {
       window.close();
     }
@@ -98,8 +98,11 @@ function Popup() {
         )}
       </section>
 
-      <button class="btn" onClick={() => void openSettings()}>
+      <button class="btn" onClick={() => void openFitting('#settings')}>
         Your settings
+      </button>
+      <button class="btn" onClick={() => void openFitting('#ai')} data-open="ai">
+        How you like things explained
       </button>
 
       <p class="foot">WebAble adjusts each page to you automatically.</p>

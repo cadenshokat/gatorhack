@@ -3,8 +3,10 @@
 import { z } from 'zod';
 import type {
   ElementEvidence, ExplainRequest, FitSummaryForModel, OutlineNode, OverlayButtonEvidence, OverlayEvidence, OverlayKind,
-  PageDigest, PageOutline, Role, StruggleSignals, VisualVerifyRequest,
+  PageDigest, PageOutline, ReaderImportRequest, ReaderPoint, ReaderProfile, Role, RewordPage, RewordScoreRequest,
+  RewordWriteRequest, StruggleSignals, VisualVerifyRequest,
 } from '@webable/core';
+import { AI_ANSWER_MAX_CHARS, AI_ANSWER_MIN_CHARS } from '@webable/core';
 
 const ID = /^n\d{1,6}$/;
 const id = z.string().regex(ID, 'ids look like n12');
@@ -166,3 +168,70 @@ export const OverlayCloseBody = z.object({
 export function zodIssues(err: z.ZodError): string[] {
   return err.issues.slice(0, 8).map((i) => `${i.path.join('.') || '(body)'}: ${i.message}`);
 }
+
+/* ------------------------------------------------------------------ */
+/* Round 9: the reader and paragraphs fitted to the person              */
+/* ------------------------------------------------------------------ */
+
+export const ReaderImportSchema: z.ZodType<ReaderImportRequest> = z.object({
+  text: z
+    .string()
+    .transform((s) => s.trim())
+    .pipe(z.string().min(AI_ANSWER_MIN_CHARS, 'the answer is too short').max(AI_ANSWER_MAX_CHARS, 'the answer is too long')),
+  source: text(40).optional(),
+}) as unknown as z.ZodType<ReaderImportRequest>;
+
+export const ReaderImportBody = z.object({ req: ReaderImportSchema });
+
+const ReaderPointSchema: z.ZodType<ReaderPoint> = z.object({
+  id: z.string().regex(/^r\d{1,3}$/, 'point ids look like r1'),
+  kind: z.enum(['knows', 'new_to', 'length', 'format', 'words', 'language', 'avoid']),
+  says: text(300),
+  evidence: text(400),
+  support: z.number().min(0).max(1),
+  on: z.boolean(),
+});
+
+/** Only what the models need from a saved reader; metrics and the rest are dropped. */
+export const ReaderProfileSchema: z.ZodType<ReaderProfile> = z.object({
+  v: z.literal('reader.1'),
+  createdAt: text(40),
+  source: text(40),
+  headline: text(300),
+  points: z.array(ReaderPointSchema).max(12),
+  level: z.enum(['plain', 'everyday', 'expert']),
+  length: z.enum(['shorter', 'as_is']),
+  shape: z.enum(['steps', 'bullets', 'prose']),
+  answerFirst: z.boolean(),
+});
+
+const RewordPageSchema: z.ZodType<RewordPage> = z.object({
+  title: text(400),
+  host: text(255),
+  purpose: text(60).nullable(),
+});
+
+const paraId = z.string().regex(/^w\d{1,6}$/, 'paragraph ids look like w12');
+const RewordParaSchema = z.object({
+  id: paraId,
+  text: z.string().min(1).max(1_800),
+  links: z.number().int().min(0).max(200),
+  /** Optional (round 9 addition): the words of each link, in marker order, so the models read the sentence as shown. */
+  linkTexts: z.array(text(200)).max(200).optional(),
+});
+
+export const RewordScoreBody = z.object({
+  req: z.object({
+    reader: ReaderProfileSchema,
+    page: RewordPageSchema,
+    paras: z.array(RewordParaSchema).max(40),
+  }) as z.ZodType<RewordScoreRequest>,
+});
+
+export const RewordWriteBody = z.object({
+  req: z.object({
+    reader: ReaderProfileSchema,
+    page: RewordPageSchema,
+    items: z.array(RewordParaSchema.extend({ kind: z.enum(['plain', 'list', 'shorter', 'point_first']) })).max(8),
+  }) as z.ZodType<RewordWriteRequest>,
+});
