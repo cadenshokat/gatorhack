@@ -10,7 +10,8 @@
 //
 // Pure: no DOM. The thresholds come from core's POLICY, so the Lens never restates them by hand.
 import { POLICY } from '@webable/core';
-import type { ElementDecision, ElementEvidence, ElementJudgment, PageDigest, PageUnderstanding, Role } from '@webable/core';
+import type { ElementDecision, ElementEvidence, ElementJudgment, FineRole, PageDigest, PageUnderstanding, Role } from '@webable/core';
+import { settledFine, type FineFamily, type OutlineWeight } from './words';
 
 export type LensClass = 'main' | 'popup' | 'folded' | 'guarded' | 'unsure' | 'kept' | 'pending';
 
@@ -85,6 +86,18 @@ export interface LensItem {
   /** For rows: the deciding number and its threshold (null when nothing to draw). */
   track: { p: number; at: number; dir: 'ge' | 'le'; label: string } | null;
   priority: number;
+  /**
+   * Round 7. Null when Jev did not send a fine role or an importance score.
+   * `chip` and `num` stay the policy text either way, so the decisions list does not change.
+   */
+  fine: FineRole | null;
+  fineP: number | null;
+  fineName: string | null;
+  family: FineFamily | null;
+  /** 0 (distraction) to 4 (essential), or null when the score was not sent. */
+  importance: number | null;
+  /** Outline weight. Null keeps the class outline from round 2. */
+  weight: OutlineWeight | null;
 }
 
 const f2 = (p: number): string => (Number.isFinite(p) ? Math.min(1, Math.max(0, p)).toFixed(2) : '0.00');
@@ -167,6 +180,7 @@ export function lensItem(ev: ElementEvidence, index: number, d: ElementDecision 
     return {
       ...base, decision: null, j: null, cls: 'pending', p: null, byRule: false, chip: 'Reading', num: '', kind: ev.role_hint || ev.tag,
       foldSum: 0, protectSum: 0, sentence: "Waiting for Jev's answer.", because: [], track: null, priority: 0,
+      ...settledFine(null),
     };
   }
   const j = d.judgment;
@@ -178,7 +192,7 @@ export function lensItem(ev: ElementEvidence, index: number, d: ElementDecision 
   const help = n(j?.help);
   const main = n(j?.main);
   const fk = j ? foldKind(j) : { one: 'ad', many: 'ads' };
-  const common = { ...base, decision: d, j, foldSum, protectSum };
+  const common = { ...base, decision: d, j, foldSum, protectSum, ...settledFine(j) };
 
   if (d.verdict === 'promote') {
     const sm = summedMainP(ev.id, digest, u);
@@ -323,6 +337,25 @@ export function classCounts(items: LensItem[]): ClassCounts {
   const c: ClassCounts = { main: 0, popup: 0, folded: 0, guarded: 0, unsure: 0, kept: 0, pending: 0 };
   for (const it of items) c[it.cls]++;
   return c;
+}
+
+/**
+ * Chip face for elements that share one fine role: "Scoreboard" / "Team logo ×2".
+ * Null when any member has no fine role, so the caller keeps the policy chip.
+ */
+export function fineChipFace(items: LensItem[]): { words: string; num: string } | null {
+  const first = items[0];
+  if (!first?.fine || !first.fineName) return null;
+  if (!items.every((i) => i.fine === first.fine && i.fineName)) return null;
+  const ps = items.map((i) => i.fineP).filter((p): p is number => p != null);
+  const range = ps.length === 0 ? '' : f2(Math.min(...ps)) === f2(Math.max(...ps)) ? f2(ps[0]!) : `${f2(Math.min(...ps))}–${f2(Math.max(...ps))}`;
+  if (items.length === 1) return { words: first.fineName, num: range };
+  return { words: `${first.fineName} ×${items.length}`, num: range };
+}
+
+/** Fine-role chips share the round-2 budget. Higher Jev's probability is placed first. The page label is separate. */
+export function fineChipPriority(it: LensItem): number {
+  return 45 + (it.fineP ?? 0);
 }
 
 /** Text for a chip that stands for several elements of one class: '4 folded · 0.96–1.00'. */

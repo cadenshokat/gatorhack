@@ -8,6 +8,9 @@ import { GROUPS, type LensItem } from './display';
 import { ClassIcon, IArrowDown, IArrowUp, ICheck, IChevronDown, IChevronRight, IClose, ICopy } from './icons';
 import { RawJson } from './RawJson';
 import { RULE_FOOTER, type RuleDiff } from './rule';
+import { fmtP, hasPageRead, mainRegionPick, purposeBars, purposeLine, regionLabel } from './words';
+
+export type SheetTab = 'page' | 'elements' | 'raw';
 
 export type RowStatus = 'shown' | 'up' | 'down' | 'hidden';
 
@@ -24,8 +27,8 @@ export interface SheetProps {
   status: Map<string, RowStatus>;
   covered: Map<string, string>;
   listed: Set<string>;
-  tab: 'elements' | 'raw';
-  onTab: (t: 'elements' | 'raw') => void;
+  tab: SheetTab;
+  onTab: (t: SheetTab) => void;
   hotId: string | null;
   pinnedId: string | null;
   /** Element hovered on the page: bring its row into view. */
@@ -167,6 +170,11 @@ export function Sheet(p: SheetProps) {
   const u = p.understanding;
   const digest = p.digest;
   const labelOf = new Map(p.items.map((i) => [i.id, i.label]));
+  const showPage = hasPageRead(u);
+  const line = purposeLine(u?.purpose);
+  const kinds = purposeBars(u?.purpose);
+  const region = mainRegionPick(u?.mainRegion);
+  const nameOf = (id: string) => regionLabel(id, labelOf, digest);
   const pickRows = u
     ? Object.entries(u.mainPick?.probs ?? {})
         .filter(([, v]) => typeof v === 'number')
@@ -196,6 +204,11 @@ export function Sheet(p: SheetProps) {
         </button>
       </div>
       <div class="wa-lseg" role="tablist" aria-label="View">
+        {showPage && (
+          <button role="tab" aria-selected={p.tab === 'page'} onClick={() => p.onTab('page')}>
+            Page
+          </button>
+        )}
         <button role="tab" aria-selected={p.tab === 'elements'} onClick={() => p.onTab('elements')}>
           Decisions
         </button>
@@ -204,7 +217,57 @@ export function Sheet(p: SheetProps) {
         </button>
       </div>
       <div class="wa-lsheet-body" ref={bodyRef}>
-        {p.tab === 'elements' ? (
+        {p.tab === 'page' && showPage ? (
+          <div class="wa-lraw">
+            {kinds.length > 0 && (
+              <section aria-label="Kind of page">
+                <h4>Kind of page</h4>
+                <p>
+                  {line ? `${line.sentence}. ` : ''}
+                  Jev's probability for each kind, highest first.
+                </p>
+                <ul class="wa-lpick">
+                  {kinds.map((bar) => (
+                    <li key={bar.id} data-top={String(bar.id === u?.purpose?.kind)}>
+                      <span class="wa-lpick-l">{bar.name}</span>
+                      <span class="wa-lpick-bar" aria-hidden="true">
+                        <i style={{ width: pct(bar.p) }} />
+                      </span>
+                      <b class="wa-num">{fmtP(bar.p)}</b>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {region && (
+              <section aria-label="What this page is for">
+                <h4>What this page is for</h4>
+                <p>
+                  The region that holds it, then the runner-up. Each number is Jev's probability.
+                  {region.runnerUp ? '' : ' No runner-up on this page.'}
+                </p>
+                <ul class="wa-lpick">
+                  <li data-top="true">
+                    <span class="wa-lpick-l">{nameOf(region.id)}</span>
+                    <span class="wa-lpick-bar" aria-hidden="true">
+                      <i style={{ width: pct(region.p) }} />
+                    </span>
+                    <b class="wa-num">{fmtP(region.p)}</b>
+                  </li>
+                  {region.runnerUp && (
+                    <li data-top="false">
+                      <span class="wa-lpick-l">Runner-up · {nameOf(region.runnerUp.id)}</span>
+                      <span class="wa-lpick-bar" aria-hidden="true">
+                        <i style={{ width: pct(region.runnerUp.p) }} />
+                      </span>
+                      <b class="wa-num">{fmtP(region.runnerUp.p)}</b>
+                    </li>
+                  )}
+                </ul>
+              </section>
+            )}
+          </div>
+        ) : p.tab === 'elements' ? (
           <>
             {p.ruleOn && p.diff && (
               <section class="wa-lcmp" aria-label="Jev compared with a plain rule">
