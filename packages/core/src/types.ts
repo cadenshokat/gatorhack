@@ -140,6 +140,8 @@ export interface PageDigest {
   mainCandidates: string[]; // ids, DOM order, <= 30
   hasSensitiveFields: boolean; // password or payment fields: no generative AI on this page
   lang: string;
+  /** Round 7: top-level content regions (structure-only evidence) for Jev's "what does this page exist to show?" pick. */
+  regions?: ElementEvidence[];
 }
 
 /* ------------------------------------------------------------------ */
