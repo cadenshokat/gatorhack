@@ -6,11 +6,14 @@ import { HOST, PORT, jevKey, openAiKey } from './config';
 import { startKeepWarm, warmJev } from './jev';
 import { startAiWatch } from './openai';
 import { registerAttribute } from './routes/attribute';
+import { registerMeaning } from './routes/meaning';
 import { log } from './util';
 
 const app = createApp();
 // Round 4 (passive fit): Jev attribution for held zooms and missed clicks.
 registerAttribute(app);
+// Round 7: the meaning check before Calm view (structure only: fine roles and the page purpose).
+registerMeaning(app);
 
 const server = serve({ fetch: app.fetch, port: PORT, hostname: HOST }, (info) => {
   log('listening', { url: `http://${HOST}:${info.port}`, jevKey: jevKey() !== null, openaiKey: openAiKey() !== null, model: JEV_MODEL });

@@ -4,6 +4,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { EngineApi, EngineState } from '../../contracts';
 import { ask } from '../../engine/bus';
 import { calmCss } from '../base.css';
+import { componentsCss } from './components';
+import { purposeCss } from './purpose.css';
+
+/** Calm view's whole stylesheet: the view, the meaning components (round 7) and the purpose template around them. */
+export const calmSheetCss = (): string => `${calmCss}\n${componentsCss}\n${purposeCss}`;
 import { liveKey, renderLiveValue, type LiveValue } from '../proxy';
 
 /** The engine's state, re-rendering on every change. */
@@ -158,7 +163,7 @@ function sheet(): CSSStyleSheet | null {
   if (calmSheet !== undefined) return calmSheet;
   try {
     const s = new CSSStyleSheet();
-    s.replaceSync(calmCss);
+    s.replaceSync(calmSheetCss());
     calmSheet = s;
   } catch {
     calmSheet = null;

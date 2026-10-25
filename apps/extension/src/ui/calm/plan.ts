@@ -10,8 +10,12 @@
 // Round 4 adds the page's kind, read from the page itself whatever layout was picked (design.md §2): an article (kicker ·
 // date, title, dek, byline once, lead picture with its caption), a news index (the page's most prominent story with its
 // picture, six more as rows with thumbnails, then the page's own sections), a form, a product, a portal or a page.
-import { type ElementDecision, type FitSection, type FitSpec, type PageOutline, type SectionLabel, hrefKey, isKickerText, isTimeText, storyScore } from '@webable/core';
+import {
+  type ElementDecision, type ExtractedData, type FineRole, type FitSection, type FitSpec, type PageMeaning, type PageOutline,
+  type PagePurpose, PURPOSE_MIN_P, type PurposeTemplate, type SectionLabel, hrefKey, isKickerText, isTimeText, storyScore,
+} from '@webable/core';
 import { isResultsUrl } from './context';
+import { contentRoot, coverContent } from './meaning';
 import {
   type Block, type CardLinkBlock, type ControlBlock, type FlowBlock, type ImageBlock, type Inline, type LinkPart, TOOL_RE,
   chatContainer, clean, controlFor, flatten, imageFor, isGone, isProgressRail, keepImage, keyOf, nameOf, newCtx,
@@ -86,6 +90,29 @@ export interface Portal {
 
 export type PageKind = 'article' | 'index' | 'form' | 'product' | 'portal' | 'page';
 
+/** One piece of structured content a purpose component draws (round 7), with the part's own links beside it. */
+export interface MeaningItem {
+  key: string;
+  data: ExtractedData;
+  /** The part of the page it was read from (left out of the sections: the component shows it). */
+  el: Element | null;
+  /** The part's links that are not content ("Full box score", a table's row buttons): drawn with the component. */
+  links: ControlBlock[];
+}
+
+/** What the purpose template draws before the page's own sections (round 7, meaning first). */
+export interface MeaningPlan {
+  template: PurposeTemplate;
+  purpose: PagePurpose | null;
+  items: MeaningItem[];
+  /** A status lookup's main action ("Use refund tracker"), drawn right under the title as the one filled button. */
+  action: ControlBlock | null;
+  /** The page's own orientation drawn above that action: its heading and first sentence (and the list it introduces). */
+  orient: { title: string | null; blocks: Block[] } | null;
+  /** The template draws the page's title itself (a recipe card): no separate title band. */
+  hideLead: boolean;
+}
+
 /** One of the page's own sections on a news index: its title, its first stories, and the rest behind "More in X (n)". */
 export interface IndexSection {
   key: string;
@@ -117,6 +144,8 @@ export interface CalmPlan {
   siteName: string;
   /** What kind of page this is, from the page itself (sets the Calm view's arrangement). */
   kind: PageKind;
+  /** Round 7: the purpose template and the content it draws first (null without Jev's page model or page content). */
+  meaning: MeaningPlan | null;
   index: IndexPlan | null;
   article: ArticleHead | null;
   /** Home pages and portals: the main links first. */
@@ -154,6 +183,8 @@ export interface PlanInput {
   stepMax?: number;
   /** Stories per section on a news index before "More in X (n)" (the fit's group size). */
   groupSize?: number;
+  /** Round 7: what the page is for, from Jev's page model v2 and the content read on the device. */
+  meaning?: PageMeaning | null;
 }
 
 const FIELDISH = 'input:not([type=hidden]),select,textarea,[role=checkbox],[role=radio],[role=switch],[role=textbox],[role=combobox]';
@@ -487,12 +518,48 @@ export function buildPlan(o: PlanInput): CalmPlan {
   if (progressEl) placed.set(progressEl, 'progress');
   const special = (e: Element): boolean => inChat(e) || (!!progressEl && within(progressEl, e));
 
+  // Round 7, meaning first: the content a purpose component draws (a scoreboard, the record, a table, a recipe) was read
+  // from the page itself; the page elements that hold only that content are left out of the sections (the component
+  // shows them) and the part's own links ("Full box score") go with the component. Everything else stays in place.
+  const m = o.meaning ?? null;
+  const tpl: PurposeTemplate | null = m?.template ?? null;
+  const meaningEls: Element[] = [];
+  const pending: Array<{ key: string; data: ExtractedData; el: Element | null; links: Element[] }> = [];
+  if (m) {
+    for (const d of m.data) {
+      const start = el(d.id);
+      if (!start || special(start)) continue;
+      let root = start;
+      let cov: { covered: Element[]; links: Element[] } = { covered: [], links: [] };
+      try {
+        root = contentRoot(start, d.data);
+        cov = coverContent(root, d.data);
+      } catch {
+        /* the component still draws it; the page part also stays in its section */
+      }
+      for (const c of cov.covered) {
+        if (special(c) || (primary && within(c, primary)) || placed.has(c)) continue;
+        placed.set(c, 'meaning');
+        meaningEls.push(c);
+      }
+      const links = cov.links.filter((l) => !placed.has(l) && !special(l) && l !== primary);
+      for (const l of links) placed.set(l, 'meaning');
+      pending.push({ key: keyOf(root, `m${pending.length}`), data: d.data, el: root, links });
+    }
+  }
+  const inMeaning = (e: Element): boolean => meaningEls.some((c) => within(c, e));
+  const readingTemplate = tpl === 'record_stats' || tpl === 'recipe' || tpl === 'article' || tpl === 'news_index' || tpl === 'status_lookup';
+  // A status lookup ("Where's my refund?") leads with its main action, right under the title.
+  let actionEl: Element | null = m && tpl === 'status_lookup' ? statusAction(m, o, el) : null;
+  if (actionEl && (special(actionEl) || inMeaning(actionEl) || placed.has(actionEl))) actionEl = null;
+  if (actionEl) placed.set(actionEl, 'meaning');
+
   // Placement: strip first, then sections in order; an element renders in exactly one place.
-  const stripRoots = dedupe(o.spec.strip.map(el)).filter((e) => !special(e) && stripWorthy(e)).slice(0, 6);
+  const stripRoots = dedupe(o.spec.strip.map(el)).filter((e) => !special(e) && !inMeaning(e) && stripWorthy(e)).slice(0, 6);
   for (const e of stripRoots) placed.set(e, 'strip');
   const secs = o.spec.sections.map((sec, i) => {
     const hEl = el(sec.heading_ref);
-    return { sec, i, hEl, roots: dedupe(sec.nodes.map(el)).filter((r) => r !== hEl && !special(r)) };
+    return { sec, i, hEl, roots: dedupe(sec.nodes.map(el)).filter((r) => r !== hEl && !special(r) && !inMeaning(r) && r !== actionEl) };
   });
   // On a results page the results are the page (Jev may call them recommendations): a "related" part inside another
   // part stays there in page order (title, address, snippet together), and any other one opens in place.
@@ -565,7 +632,11 @@ export function buildPlan(o: PlanInput): CalmPlan {
       }
       for (const p of protectedEls) {
         if (!within(r, p) || help.has(p)) continue;
-        if (p.matches(FIELDISH) || p.querySelector(FIELDISH) || p.matches('[role=alert],[role=status],[aria-live]')) {
+        // On a page that is for reading or looking something up (a record, a recipe, an article), a filled filter in a
+        // rail of other content does not pull that rail open; notices still do.
+        const field = p.matches(FIELDISH) || !!p.querySelector(FIELDISH);
+        if (field && readingTemplate && e.state === 'end_drawer') continue;
+        if (field || p.matches('[role=alert],[role=status],[aria-live]')) {
           e.state = 'open';
           return;
         }
@@ -609,8 +680,40 @@ export function buildPlan(o: PlanInput): CalmPlan {
     const e = el(n.id);
     if (e) consider(e, n.jevRole === 'advertising' ? 'Sponsored' : 'Related items');
   }
+  // Round 7: parts Jev's page model calls a teaser for other content, an ad, an upsell or a newsletter box go to the end
+  // drawer even when Jev's older "keep in view" covers them (only help, fields, alerts and the main action stay).
+  if (m) {
+    for (const id of [...m.drawer, ...m.chrome]) {
+      const e = el(id);
+      if (!e || placed.has(e) || folded.has(e) || special(e) || inMeaning(e)) continue;
+      if (primary && within(e, primary)) continue;
+      if (Array.from(help).some((h) => within(e, h))) continue;
+      if (placedRoots.some((r) => e.contains(r))) continue;
+      if (e.matches(FIELDISH) || e.querySelector('input:not([type=hidden]),select,textarea,[role=alert]')) continue;
+      folded.add(e);
+      foldLabel.set(e, drawerLabelOf(m.fine[id]));
+    }
+  }
 
-  const ctx = newCtx({ placed, primary, help, folded });
+  // Logos that identify something on the page (a team's mark next to its name) are content, not the site's chrome.
+  const keepLogos = new Set<Element>();
+  if (m) for (const id of m.logos) {
+    const e = el(id);
+    if (e) keepLogos.add(e);
+  }
+  const ctx = newCtx({ placed, primary, help, folded, keepLogos });
+  const items: MeaningItem[] = pending.map((x) => ({
+    key: x.key, data: x.data, el: x.el,
+    links: x.links.map((l) => controlFor(l, ctx)).filter((b): b is ControlBlock => !!b && !!b.text),
+  }));
+  let action: ControlBlock | null = null;
+  if (actionEl) {
+    action = controlFor(actionEl, ctx);
+    if (action) {
+      action.primary = false;
+      if (actionEl === primary) ctx.primarySeen = true;
+    }
+  }
   const read = (key: string, roots: Element[], foldOn: boolean): Block[] => {
     ctx.current = key;
     const keep = ctx.folded;
@@ -622,7 +725,9 @@ export function buildPlan(o: PlanInput): CalmPlan {
   for (const s of secs) if (s.hEl) ctx.skip.add(s.hEl);
 
   // An article's byline, date and dek are read once, into its header: the body never repeats them.
-  const articleish = !formSec && o.spec.page_type !== 'product_detail' && (o.spec.page_type === 'article' || o.spec.task === 'read' || articleLike());
+  // Jev's page purpose decides when it is sure: a record, a recipe or a status check is never drawn as an article.
+  const notArticle = tpl === 'record_stats' || tpl === 'recipe' || tpl === 'status_lookup' || tpl === 'form_task' || tpl === 'search_results';
+  const articleish = !formSec && !notArticle && o.spec.page_type !== 'product_detail' && (tpl === 'article' || o.spec.page_type === 'article' || o.spec.task === 'read' || articleLike());
   const artDom = articleish ? articleDom() : null;
   if (artDom) for (const e of artDom.skip) {
     ctx.skip.add(e);
@@ -744,6 +849,34 @@ export function buildPlan(o: PlanInput): CalmPlan {
   // No heading to lead with (a news or utility home page): the page's own title, without the site's name.
   const lead = (leadSec ? takeLead(leadSec, article || leadSec.layout === 'reading', protectedEls) : null) ?? titleLead();
 
+  // A status lookup: the part that holds the main action gives its heading and first sentence (with the list it
+  // introduces) as the orientation drawn above the action ("Where's my refund? Your refund status is available: ...").
+  let orient: MeaningPlan['orient'] = null;
+  if (action && actionEl) {
+    const host = main.find((p) => p.state === 'open' && !p.cards && (secs[p.index]?.roots ?? []).some((r) => within(r, actionEl!)));
+    if (host && host.key !== lead?.from) {
+      const bs = host.blocks;
+      const take: Block[] = [];
+      let i = 0;
+      while (i < bs.length && take.length < 2) {
+        const b = bs[i]!;
+        if (b.b !== 'flow' || b.text.length > 240) break;
+        take.push(b);
+        i++;
+        if (/:\s*$/.test(b.text) && bs[i]?.b === 'list') {
+          take.push(bs[i]!);
+          i++;
+          break;
+        }
+      }
+      if (take.length) {
+        orient = { title: host.title, blocks: take };
+        host.blocks = bs.slice(i);
+        host.title = null;
+      }
+    }
+  }
+
   // The form: all at once when it is short (or already one page of a site's own steps), else one step at a time.
   let form: FormPlan | null = null;
   const formBuilt = formSec ? built.get(formSec.i) : undefined;
@@ -766,7 +899,7 @@ export function buildPlan(o: PlanInput): CalmPlan {
     const button = primary.matches('button,input[type=submit],input[type=button],input[type=image],[role=button]');
     const words = label.split(/\s+/).filter(Boolean).length;
     const taskPage = !!form || ['buy', 'book', 'pay', 'sign_in', 'fill_form', 'contact'].includes(o.spec.task) || o.spec.page_type === 'product_detail';
-    const dock = label.length <= 48 && words <= 7 && (button || taskPage) && o.spec.page_type !== 'article';
+    const dock = label.length <= 48 && words <= 7 && (button || taskPage) && o.spec.page_type !== 'article' && !action;
     if (!dock) {
       primaryOut = null;
       for (const p of sections) for (const b of flatten(allBlocks(p))) if (b.b === 'control' && b.primary) b.primary = false;
@@ -817,7 +950,11 @@ export function buildPlan(o: PlanInput): CalmPlan {
   const promoted = o.decisions.filter((d) => d.verdict === 'promote').map((d) => el(d.id)).filter((x): x is Element => !!x);
   let kind: PageKind = form ? 'form' : o.spec.page_type === 'product_detail' ? 'product' : articleish ? 'article' : 'page';
   let index: IndexPlan | null = null;
-  if (kind === 'page' && o.spec.page_type !== 'form' && o.spec.page_type !== 'docs') {
+  // A news index or a portal is drawn only when the page is one: Jev's purpose says so, or it has none to give. A
+  // record page with a "Related news" rail is not a news page (round 7: the Gators opponent history).
+  const sure = m && m.purpose && m.purposeP >= PURPOSE_MIN_P ? m.purpose : null;
+  const allowIndex = !m || tpl === 'news_index' || (tpl === 'page' && (!sure || sure === 'home_portal' || sure === 'other'));
+  if (kind === 'page' && allowIndex && o.spec.page_type !== 'form' && o.spec.page_type !== 'docs') {
     index = indexOf(main, promoted, o.groupSize ?? 4);
     if (index) {
       kind = 'index';
@@ -856,13 +993,14 @@ export function buildPlan(o: PlanInput): CalmPlan {
   const progress = progressEl ? { el: progressEl, blocks: read('progress', [progressEl], false), stepText: siteStepText() } : null;
   const chat = chats[0] ?? null;
 
-  const portal = kind === 'page' && !form && !primaryOut ? portalOf(o, main, promoted) : null;
+  const portal = kind === 'page' && allowIndex && !form && !primaryOut ? portalOf(o, main, promoted) : null;
   if (portal) kind = 'portal';
 
   const totalBlocks = sections.reduce((a, p) => a + flatten(allBlocks(p)).length, 0);
   return {
     siteName: siteName(),
     kind,
+    meaning: m && tpl ? { template: tpl, purpose: m.purpose, items, action, orient, hideLead: tpl === 'recipe' && items.some((x) => x.data.kind === 'recipe') } : null,
     index,
     article: articleHead,
     portal,
@@ -1298,3 +1436,44 @@ export function splitActions(blocks: Block[]): { rest: Block[]; primary: Control
   });
   return { rest, primary, secondary };
 }
+
+/* ------------------------------------------------------------------ */
+/* Meaning first (round 7)                                             */
+/* ------------------------------------------------------------------ */
+
+function drawerLabelOf(f: FineRole | undefined): SectionLabel {
+  if (f === 'advertising' || f === 'sponsored') return 'Sponsored';
+  if (f === 'legal_footer' || f === 'site_nav') return 'Site links';
+  if (f === 'upsell_promo' || f === 'newsletter_signup') return 'Offers';
+  return 'Related items';
+}
+
+const ACTION_SEL = 'a[href],button,[role=button],[role=link],input[type=submit],input[type=button]';
+
+/**
+ * A status lookup's main action: the button Jev promoted (main pick >= 0.90), else the control Jev's page model calls
+ * the primary action, inside what the page exists to show (its main region or most important part) first, then the one
+ * Jev thinks most likely the main action, then the more important; else the layout's primary action.
+ */
+function statusAction(m: PageMeaning, o: PlanInput, el: (id: string | null | undefined) => Element | null): Element | null {
+  const promoted = o.decisions.find((d) => d.verdict === 'promote');
+  const pe = promoted ? el(promoted.id) : null;
+  if (pe && pe.matches(ACTION_SEL)) return pe;
+  const asControl = (e: Element | null): Element | null => {
+    if (!e) return null;
+    if (e.matches(ACTION_SEL)) return e;
+    const inner = e.querySelectorAll(ACTION_SEL);
+    return inner.length === 1 ? inner[0]! : null;
+  };
+  const leadEls = (m.main.length ? m.main.slice(0, 1) : m.lead.ids).map(el).filter((x): x is Element => !!x);
+  const order = new Map(o.outline.nodes.map((n, i) => [n.id, i] as const));
+  const cands = Object.entries(m.fine)
+    .filter(([, f]) => f === 'primary_action')
+    .map(([id]) => ({ id, e: asControl(el(id)) }))
+    .filter((x): x is { id: string; e: Element } => !!x.e && !x.e.closest('header,footer,nav,[role=banner],[role=contentinfo],[role=navigation]'))
+    .map((x) => ({ ...x, inLead: leadEls.some((l) => within(l, x.e)), main: m.mainP[x.id] ?? 0, imp: m.importance[x.id] ?? 2, ord: order.get(x.id) ?? 0 }))
+    .sort((a, b) => Number(b.inLead) - Number(a.inLead) || b.main - a.main || b.imp - a.imp || a.ord - b.ord);
+  if (cands[0]) return cands[0].e;
+  return asControl(el(o.spec.primary_action));
+}
+

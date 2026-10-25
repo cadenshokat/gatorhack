@@ -58,6 +58,13 @@ class Heuristic {
     const ov = overlayRoot(this.ix, id);
     if (ov === id && role === 'popup_overlay' && isWarningOverlay(this.ix, id, this.roles)) return 'alert';
     if (prot === 'alert') return 'alert';
+    // Round 7: Jev's fine role. Teasers for other content, ads, upsells and newsletter boxes are never the page.
+    const fine = n.fine;
+    if (fine === 'advertising' || fine === 'sponsored') return 'ads';
+    if (fine === 'teaser_other_content' || fine === 'social_share' || fine === 'video_autoplay') return 'related';
+    if (fine === 'upsell_promo' || fine === 'newsletter_signup') return 'promo';
+    // A team or organisation logo labels the content it sits in (a scoreboard): it stays with it.
+    if (fine === 'team_or_org_logo') return null;
     // A logo is the site's name, shown in the top bar: never a card in the page.
     if (this.isLogo(id)) return 'header';
     if (role === 'advertising' || (!action && RE.ad.test(label))) return 'ads';
@@ -148,7 +155,8 @@ class Heuristic {
 
   isLogo(id: string): boolean {
     const n = this.ix.nodes.get(id);
-    return !!n && (n.kind === 'image' || n.kind === 'link') && RE.logo.test(lower(n.label));
+    if (!n || n.fine === 'team_or_org_logo') return false;
+    return n.fine === 'site_logo' || ((n.kind === 'image' || n.kind === 'link') && RE.logo.test(lower(n.label)));
   }
 
   isShelf(id: string): boolean {

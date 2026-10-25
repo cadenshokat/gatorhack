@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementEvidence, PageDigest } from '../../src/types';
 import {
-  JEV_CAUTION, HELP_CRITERIA, MAIN_CRITERIA, MAX_ELEMENTS_PER_CALL, NONE_OPTION, Q_MAIN, Q_ROLE, Q_TASK, ROLE_CRITERIA,
-  TASK_CRITERIA, buildPageCalls, parsePageAnswers,
+  FINE_CRITERIA, HELP_CRITERIA, IMPORTANCE_LEVELS, JEV_CAUTION, MAIN_CRITERIA, MAX_ELEMENTS_PER_CALL, MAIN_PICK_ID, NONE_OPTION,
+  Q_FINE, Q_IMPORTANCE, Q_MAIN, Q_TASK, TASK_CRITERIA, buildPageCalls, parsePageAnswers,
 } from '../../src/jev/page';
 import { JEV_MAX_CHOICE_OPTIONS, emptyJevMetrics, metricsFrom } from '../../src/jev/api';
 import type { JevAnswer, JevQuestion } from '../../src/jev/api';
-import { ALDERRA, choice, noul, response } from './fixtures';
+import { ALDERRA, choice, noul, response, score } from './fixtures';
 
 function bigDigest(n: number): PageDigest {
   const base = ALDERRA.elements[8]!;
@@ -15,40 +15,41 @@ function bigDigest(n: number): PageDigest {
 }
 
 const criteriaOf = (q: JevQuestion): string => JSON.stringify('criteria' in q ? q.criteria : null);
+const elementCalls = <T extends { elementIds: string[] }>(calls: T[]): T[] => calls.filter((c) => c.elementIds.length > 0);
 
-describe('buildPageCalls (design B)', () => {
-  it('puts each element in its own questions, 4 per element, <= 25 elements per call', () => {
+describe('buildPageCalls (design B, catalog wa-jev-2)', () => {
+  it('puts each element in its own questions, <= 12 subjects per call, main only for candidates', () => {
     const calls = buildPageCalls(ALDERRA);
-    expect(calls).toHaveLength(2);
-    for (const c of calls) {
+    const cands = new Set(ALDERRA.mainCandidates);
+    for (const c of elementCalls(calls)) {
       expect(c.elementIds.length).toBeLessThanOrEqual(MAX_ELEMENTS_PER_CALL);
       for (const id of c.elementIds) {
-        for (const k of ['role', 'task', 'main', 'help']) {
+        for (const k of ['fine', 'task', 'help', 'importance']) {
           const q = c.questions[`${id}__${k}`]!;
           expect(q, `${id}__${k}`).toBeDefined();
           const ins = q.instructions as Record<string, unknown>;
           expect(Object.keys(ins).slice(0, 2)).toEqual(['question', 'element']);
           expect((ins.element as Record<string, unknown>).id).toBe(id);
         }
+        expect(`${id}__main` in c.questions, id).toBe(cands.has(id));
       }
-      // the shared state holds page context only
-      expect(Object.keys(c.state as object)).toEqual(['page']);
+      // the shared state holds page context (and the caution line), never element rows
+      expect(Object.keys(c.state as object).sort()).toEqual(['caution', 'page']);
     }
-    const ids = calls.flatMap((c) => c.elementIds);
+    const ids = elementCalls(calls).flatMap((c) => c.elementIds);
     expect(new Set(ids).size).toBe(ALDERRA.elements.length);
   });
 
-  it('splits 40 elements into balanced calls of 20', () => {
+  it('splits 40 elements into balanced calls plus one page call', () => {
     const calls = buildPageCalls(bigDigest(40));
-    expect(calls.map((c) => c.elementIds.length)).toEqual([20, 20]);
-    expect(calls.map((c) => Object.keys(c.questions).length)).toEqual([81, 80]);
+    expect(calls.map((c) => c.elementIds.length)).toEqual([10, 10, 10, 10, 0]);
+    expect(Object.keys(calls[4]!.questions).sort()).toEqual([MAIN_PICK_ID, 'page_purpose']);
   });
 
-  it('asks main_pick once, in the first call, over full evidence objects plus none, <= 255 options', () => {
+  it('asks main_pick once, in the page call, over full evidence objects plus none, <= 255 options', () => {
     const calls = buildPageCalls(bigDigest(40));
-    expect(calls[0]!.questions.main_pick).toBeDefined();
-    expect(calls[1]!.questions.main_pick).toBeUndefined();
-    const pick = calls[0]!.questions.main_pick!;
+    expect(calls.filter((c) => MAIN_PICK_ID in c.questions)).toHaveLength(1);
+    const pick = calls[calls.length - 1]!.questions[MAIN_PICK_ID]!;
     expect(pick.type).toBe('choice');
     const crit = (pick as Extract<JevQuestion, { type: 'choice' }>).criteria;
     const keys = Object.keys(crit);
@@ -62,20 +63,26 @@ describe('buildPageCalls (design B)', () => {
     ]);
   });
 
-  it('includes the escape option in every role Choice and keeps criteria byte-stable', () => {
+  it('asks the fine role over every FineRole with the escape last, and keeps criteria byte-stable', () => {
     const a = buildPageCalls(ALDERRA);
     const b = buildPageCalls(bigDigest(12));
-    const roleA = a[0]!.questions.n1__role!;
-    const roleB = b[0]!.questions.n7__role!;
-    expect(Object.keys((roleA as Extract<JevQuestion, { type: 'choice' }>).criteria)).toContain('other');
-    expect(criteriaOf(roleA)).toBe(criteriaOf(roleB));
-    expect(criteriaOf(roleA)).toBe(JSON.stringify(ROLE_CRITERIA));
+    const fineA = a[0]!.questions.n1__fine!;
+    const fineB = b[0]!.questions.n7__fine!;
+    expect(fineA.type).toBe('choice');
+    const keys = Object.keys((fineA as Extract<JevQuestion, { type: 'choice' }>).criteria);
+    expect(keys[keys.length - 1]).toBe('other');
+    expect(criteriaOf(fineA)).toBe(criteriaOf(fineB));
+    expect(criteriaOf(fineA)).toBe(JSON.stringify(FINE_CRITERIA));
     expect(criteriaOf(a[0]!.questions.n2__task!)).toBe(JSON.stringify(TASK_CRITERIA));
-    expect(criteriaOf(a[1]!.questions.n20__main!)).toBe(JSON.stringify(MAIN_CRITERIA));
+    expect(criteriaOf(a[0]!.questions.n3__main!)).toBe(JSON.stringify(MAIN_CRITERIA));
     expect(criteriaOf(b[0]!.questions.n3__help!)).toBe(JSON.stringify(HELP_CRITERIA));
-    expect((roleA.instructions as Record<string, unknown>).question).toBe(Q_ROLE);
+    const imp = a[0]!.questions.n1__importance!;
+    expect(imp.type).toBe('score');
+    expect(criteriaOf(imp)).toBe(JSON.stringify(IMPORTANCE_LEVELS));
+    expect((fineA.instructions as Record<string, unknown>).question).toBe(Q_FINE);
+    expect((imp.instructions as Record<string, unknown>).question).toBe(Q_IMPORTANCE);
     expect((a[0]!.questions.n2__task!.instructions as Record<string, unknown>).question).toBe(Q_TASK);
-    expect((a[0]!.questions.n2__main!.instructions as Record<string, unknown>).question).toBe(Q_MAIN);
+    expect((a[0]!.questions.n3__main!.instructions as Record<string, unknown>).question).toBe(Q_MAIN);
   });
 
   it('uses the measured wording for the task Noul', () => {
@@ -84,13 +91,14 @@ describe('buildPageCalls (design B)', () => {
     );
   });
 
-  it('adds the caution field on pages with ad iframes or off-site links, unless turned off', () => {
+  it('puts the caution line in the shared state on pages with ad iframes or off-site links, unless turned off', () => {
     const on = buildPageCalls(ALDERRA);
-    expect((on[0]!.questions.n1__role!.instructions as Record<string, unknown>).caution).toBe(JEV_CAUTION);
+    expect((on[0]!.state as Record<string, unknown>).caution).toBe(JEV_CAUTION);
+    expect((on[0]!.questions.n1__fine!.instructions as Record<string, unknown>).caution).toBeUndefined();
     const off = buildPageCalls(ALDERRA, { caution: false });
-    expect((off[0]!.questions.n1__role!.instructions as Record<string, unknown>).caution).toBeUndefined();
+    expect((off[0]!.state as Record<string, unknown>).caution).toBeUndefined();
     const plain = buildPageCalls(bigDigest(5));
-    expect((plain[0]!.questions.n1__role!.instructions as Record<string, unknown>).caution).toBeUndefined();
+    expect((plain[0]!.state as Record<string, unknown>).caution).toBeUndefined();
   });
 
   it('redacts labels and the page title again before they go to Jev', () => {
@@ -107,16 +115,17 @@ describe('buildPageCalls (design B)', () => {
 describe('parsePageAnswers', () => {
   it('builds typed judgments and leaves out elements with a missing answer', () => {
     const calls = buildPageCalls(ALDERRA);
-    const responses = calls.map((c, ci) => {
+    const responses = calls.map((c) => {
       const answers: Record<string, JevAnswer> = {};
       for (const id of c.elementIds) {
         if (id === 'n2') continue; // simulate a missing element
-        answers[`${id}__role`] = choice({ advertising: 0.97, main_content: 0.03 });
+        answers[`${id}__fine`] = choice({ advertising: 0.9, upsell_promo: 0.07, body_text: 0.03 });
         answers[`${id}__task`] = noul(0.02);
-        answers[`${id}__main`] = noul(0.01);
+        if (`${id}__main` in c.questions) answers[`${id}__main`] = noul(0.01);
         answers[`${id}__help`] = noul(0.01);
+        answers[`${id}__importance`] = score(0.4, 5);
       }
-      if (ci === 0) answers.main_pick = choice({ n19: 0.98, n26: 0.01, none: 0.01 });
+      if (MAIN_PICK_ID in c.questions) answers[MAIN_PICK_ID] = choice({ n19: 0.98, n26: 0.01, none: 0.01 });
       return response(answers, 20_000);
     });
     const m = metricsFrom(responses.map((body) => ({ body, wallMs: 300, serverMs: 200, questions: 50 })));
@@ -124,10 +133,13 @@ describe('parsePageAnswers', () => {
     expect(u.elements).toHaveLength(ALDERRA.elements.length - 1);
     expect(u.elements.find((e) => e.id === 'n2')).toBeUndefined();
     const n1 = u.elements.find((e) => e.id === 'n1')!;
-    expect(n1).toMatchObject({ role: 'advertising', roleP: 0.97, task: 0.02, main: 0.01, help: 0.01 });
+    // fine roles sum into their family: ad + upsell are both advertising
+    expect(n1).toMatchObject({ role: 'advertising', roleP: 0.97, task: 0.02, main: 0, help: 0.01, fine: 'advertising', fineP: 0.9, importance: 0.4 });
+    expect(n1.roleProbs).toEqual({ advertising: 0.97, main_content: 0.03 });
+    expect(u.elements.find((e) => e.id === 'n3')!.main).toBe(0.01); // a candidate: its main Noul was asked
     expect(u.mainPick).toEqual({ id: 'n19', p: 0.98, probs: { n19: 0.98, n26: 0.01, none: 0.01 } });
     expect(u.cached).toBe(false);
-    expect(u.metrics.inputTokens).toBe(40_000);
+    expect(u.metrics.inputTokens).toBe(20_000 * calls.length);
   });
 
   it('fails closed when a call has no response', () => {
@@ -135,6 +147,8 @@ describe('parsePageAnswers', () => {
     const u = parsePageAnswers(ALDERRA, calls, [], emptyJevMetrics());
     expect(u.elements).toEqual([]);
     expect(u.mainPick.id).toBe('none');
+    expect(u.purpose).toBeUndefined();
+    expect(u.mainRegion).toBeUndefined();
   });
 });
 

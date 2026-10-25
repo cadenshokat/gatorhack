@@ -15,6 +15,8 @@ export {
 } from './outline';
 // Calm view v3's picture, story and type rules (D, round 4), re-exported here so index.ts needs no new line.
 export * from './pictures';
+// Round 7: the meaning-first Calm planner (purpose templates, lead, drawer, the meaning check), re-exported the same way.
+export * from './purpose';
 
 /* ------------------------------------------------------------------ */
 /* Enums (single source for zod and the JSON schema)                   */

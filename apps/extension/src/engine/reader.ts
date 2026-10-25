@@ -7,12 +7,18 @@
 //  - samples the tailor needs (text, controls, sticky bars, carousels),
 //  - an id -> Element map (WeakRef) and Element -> id (WeakMap).
 // Never reads input values (only whether a field is empty), never sends hostnames, never writes to the DOM.
+//
+// Round 7: the walk also builds a light tree of the visible page (extract/SNode, no extra layout work). From it the
+// reader reads structured content on the device (stats, scoreboards, tables, schedules, recipes, article metadata,
+// logos) into `OutlineNode.data`, and the page's top-level content regions into `PageDigest.regions`.
 
 import { allowlistWords, bodySizeFromBlocks, safeClassWords, uiLabel } from '@webable/core';
 import type {
-  BodyBlock, ElementEvidence, LocalFacts, OutlineKind, OutlineNode, PageDigest, PageOutline, Zone,
+  BodyBlock, ElementEvidence, ExtractedData, LocalFacts, OutlineKind, OutlineNode, PageDigest, PageOutline, Zone,
 } from '@webable/core';
 import { isOurUi } from '../ui/mount';
+import { extractPage, type ArticleMeta, type PageExtract, type SNode } from './extract';
+import { readLdTexts, readSiteName, snapNode, svgDataUrl } from './extract/dom';
 
 /* ------------------------------------------------------------------ */
 /* Public types                                                        */
@@ -129,6 +135,24 @@ export interface ReadResult {
   stickyBars: Element[];
   carousels: Element[];
   stats: { visited: number; nodes: number; ms: number };
+  /** Round 7: structured content read on the device (the data itself is on the outline nodes) and the regions. */
+  extracted: ExtractSummary;
+}
+
+/** Round 7: what extraction found, by outline id. Local only. */
+export interface ExtractSummary {
+  /** Outline nodes that carry `data`, with its kind. */
+  items: Array<{ id: string; kind: ExtractedData['kind'] }>;
+  /** `PageDigest.regions` ids, in document order. */
+  regions: string[];
+  /** Structure-only description of what each region holds (also in its digest `role_hint`). */
+  regionNotes: Record<string, string>;
+  /** Article metadata with the ids of its headline, byline, lead image, date and body nodes, when the page is one. */
+  article: ArticleMeta | null;
+  /** The node carrying the site's logo (`data.kind === 'logo'`), when found. */
+  siteLogoId: string | null;
+  ms: number;
+  error?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -602,6 +626,8 @@ interface Draft {
   node: OutlineNode;
   score: number;
   order: number;
+  /** Round 7: added after the walk for a region or a data box (never in `digest.elements`, never capped away). */
+  forced?: boolean;
 }
 
 export class PageReader {
@@ -672,12 +698,20 @@ export class PageReader {
     const mainIsBody = !!body && mainRoot === body;
     const bands = { headerBottom: 0, footerTop: docH };
 
-    const stack: Array<{ el: Element; ctx: Ctx }> = [];
+    const stack: Array<{ el: Element; ctx: Ctx; ps: SNode; ci: number }> = [];
     const rootCtx: Ctx = {
       parentId: null, landmark: 'none', sectioning: false, fixed: false, inMain: mainIsBody, inControl: false,
       hLevel: null, inText: false, inTable: false, pointer: false, opacity: 1,
     };
-    const pushChildren = (el: Element, ctx: Ctx) => {
+    // Round 7: the light tree of the visible page, built as the walk goes (see extract/types.ts).
+    const snapRoot: SNode = {
+      tag: 'body', cls: body ? `${body.id ?? ''} ${body.getAttribute('class') ?? ''}`.toLowerCase().trim() : '', text: '',
+      x: 0, y: 0, w: Math.max(vw, document.documentElement.scrollWidth), h: docH, fs: 16, fw: 400, kids: [],
+    };
+    if (body) snapRoot.el = body;
+    const snapByEl = new Map<Element, SNode>();
+    if (body) snapByEl.set(body, snapRoot);
+    const pushChildren = (el: Element, ctx: Ctx, ps: SNode) => {
       let kids: Element[];
       const sr = (el as HTMLElement).shadowRoot;
       if (sr) kids = Array.from(sr.children);
@@ -687,7 +721,7 @@ export class PageReader {
       } else kids = Array.from(el.children);
       for (let i = kids.length - 1; i >= 0; i--) {
         const k = kids[i];
-        if (k) stack.push({ el: k, ctx });
+        if (k) stack.push({ el: k, ctx, ps, ci: i });
       }
     };
     const add = (d: Draft) => {
@@ -695,13 +729,13 @@ export class PageReader {
       draftById.set(d.info.id, d);
       return d;
     };
-    if (body) pushChildren(body, rootCtx);
+    if (body) pushChildren(body, rootCtx, snapRoot);
 
     let order = 0;
     while (stack.length) {
       const item = stack.pop();
       if (!item) break;
-      const { el, ctx } = item;
+      const { el, ctx, ps } = item;
       if (++visited > MAX_VISITED) break;
       const tag = el.tagName.toUpperCase();
       if (SKIP_TAGS.has(tag)) continue;
@@ -709,7 +743,7 @@ export class PageReader {
       const cs = getComputedStyle(el);
       if (cs.display === 'none') continue;
       if (cs.display === 'contents') {
-        pushChildren(el, ctx);
+        pushChildren(el, ctx, ps);
         continue;
       }
       if (!el.checkVisibility({ contentVisibilityAuto: true, visibilityProperty: true })) continue;
@@ -725,6 +759,10 @@ export class PageReader {
       const fixed = ctx.fixed || selfFixed;
       if (!fixed && (rect.right + sx < 0 || rect.bottom + sy < 0)) continue;
       if (cs.animationName && cs.animationName !== 'none' && cs.animationIterationCount === 'infinite') animated++;
+      const sn = snapNode(el, tag, cs, rect, sx, sy, item.ci);
+      if (position === 'fixed' || ps.fixed) sn.fixed = true;
+      ps.kids.push(sn);
+      snapByEl.set(el, sn);
 
       const role = (el.getAttribute('role') ?? '').toLowerCase();
       const lm = landmarkOfTag(el, ctx.sectioning);
@@ -763,7 +801,7 @@ export class PageReader {
 
       // Images, video, canvas and SVG are leaves.
       if (tag === 'PICTURE') {
-        pushChildren(el, ctx);
+        pushChildren(el, ctx, sn);
         continue;
       }
       if (tag === 'IMG' || tag === 'SVG' || tag === 'CANVAS' || tag === 'VIDEO' || tag === 'AUDIO') {
@@ -784,7 +822,7 @@ export class PageReader {
       // Inside a control: only text samples (label spans), no nodes.
       if (ctx.inControl) {
         if (dtext) this.textSample(el, cs, texts, ctx, inMain, true, opacity, disabled);
-        pushChildren(el, base);
+        pushChildren(el, base, sn);
         continue;
       }
 
@@ -806,7 +844,7 @@ export class PageReader {
         const inline = ck === 'link' && ctx.inText && cs.display.startsWith('inline') && cs.display !== 'inline-block' && cs.display !== 'inline-flex';
         controls.push({ el, id: d.info.id, kind: ck, inline, disabled, fixed });
         if (dtext) this.textSample(el, cs, texts, ctx, inMain, true, opacity, disabled);
-        pushChildren(el, { ...base, inControl: true, parentId: d.info.id });
+        pushChildren(el, { ...base, inControl: true, parentId: d.info.id }, sn);
         continue;
       }
 
@@ -823,7 +861,7 @@ export class PageReader {
         }
         const hctx: Ctx = { ...base, hLevel: hl, parentId: d.info.id };
         if (dtext) this.textSample(el, cs, texts, hctx, inMain, false, opacity, false);
-        pushChildren(el, hctx);
+        pushChildren(el, hctx, sn);
         continue;
       }
 
@@ -898,8 +936,12 @@ export class PageReader {
         stickyBars.push(el);
       }
 
-      pushChildren(el, next);
+      pushChildren(el, next, sn);
     }
+
+    // Round 7: structured content and the page's regions, read from the tree the walk built. Adds nodes for regions and
+    // data boxes the walk did not make into nodes (before zones, so they get theirs).
+    const ext = this.applyExtract(snapRoot, mainRoot ? snapByEl.get(mainRoot) ?? null : null, drafts, draftById, mainRoot, vw, vh);
 
     // Zones and positions need the header/footer bands, so compute them after the walk.
     const forms = mainRoot
@@ -955,9 +997,20 @@ export class PageReader {
     const elementCount = kept.filter((d) => d.info.kind !== 'region' && d.info.kind !== 'list').length;
 
     // Digest: the most decision-worthy elements, scored, with quotas; then DOM order.
-    for (const d of kept) d.score = digestScore(d.info, vw);
-    const picked = pickDigest(kept);
+    const keptById = new Map(kept.map((d) => [d.info.id, d] as const));
+    for (const d of kept) d.score = digestScore(d.info, vw) + contentBonus(d, keptById);
+    // Nodes added only as regions are not candidates for element judgments (they go in `regions`); data boxes are.
+    const picked = pickDigest(kept.filter((d) => !d.forced || d.node.data));
     const evidence: ElementEvidence[] = picked.map((d) => toEvidence(d, forms, vw, vh, sx, sy, docH, kept));
+    const keptIds = new Set(kept.map((d) => d.info.id));
+    const regionDrafts = ext.regions.filter((d) => keptIds.has(d.info.id));
+    const regionEvidence: ElementEvidence[] = regionDrafts.map((d) => {
+      const ev = toEvidence(d, forms, vw, vh, sx, sy, docH, kept);
+      const note = ext.notes.get(d.info.id);
+      if (note) ev.role_hint = `${ev.role_hint} holding ${note}`;
+      if (ev.text_chars === undefined && d.info.textChars > 0) ev.text_chars = d.info.textChars;
+      return ev;
+    });
     const mainCandidates = picked
       .filter((d) => (d.info.kind === 'button' || d.info.kind === 'link') && !d.info.disabled
         && d.info.zone !== 'header_band' && d.info.zone !== 'footer_band' && d.info.landmark !== 'navigation')
@@ -1007,6 +1060,17 @@ export class PageReader {
       hasSensitiveFields: sensitive,
       lang: (document.documentElement.lang || navigator.language || 'en').slice(0, 5).toLowerCase(),
     };
+    if (regionEvidence.length) digest.regions = regionEvidence;
+
+    const extracted: ExtractSummary = {
+      items: kept.filter((d) => d.node.data).map((d) => ({ id: d.info.id, kind: (d.node.data as ExtractedData).kind })),
+      regions: regionDrafts.map((d) => d.info.id),
+      regionNotes: Object.fromEntries(regionDrafts.map((d) => [d.info.id, ext.notes.get(d.info.id) ?? ''] as const).filter(([, v]) => v)),
+      article: ext.article,
+      siteLogoId: ext.siteLogoId && keptIds.has(ext.siteLogoId) ? ext.siteLogoId : null,
+      ms: ext.ms,
+    };
+    if (ext.error) extracted.error = ext.error;
 
     return {
       at: performance.now(),
@@ -1027,7 +1091,160 @@ export class PageReader {
       stickyBars,
       carousels,
       stats: { visited, nodes: kept.length, ms: Math.round((performance.now() - t0) * 10) / 10 },
+      extracted,
     };
+  }
+
+  /* -------------------------------------------------------------- */
+  /* Round 7: structured content and regions                         */
+  /* -------------------------------------------------------------- */
+
+  /**
+   * Run extraction over the walk's tree, put each item's data on its node (adding a node for a data box or a region
+   * the walk did not make one for), and return the region nodes and notes. Never throws: a failure leaves the outline
+   * as the walk made it.
+   */
+  private applyExtract(
+    root: SNode, main: SNode | null, drafts: Draft[], draftById: Map<string, Draft>, mainRoot: Element | null,
+    vw: number, vh: number,
+  ): { regions: Draft[]; notes: Map<string, string>; article: ArticleMeta | null; siteLogoId: string | null; ms: number; error?: string } {
+    const t0 = performance.now();
+    const empty = { regions: [] as Draft[], notes: new Map<string, string>(), article: null, siteLogoId: null };
+    let ex: PageExtract;
+    try {
+      ex = extractPage({ root, main, ld: readLdTexts(), siteName: readSiteName(), url: location.href, vw, vh });
+    } catch (err) {
+      return { ...empty, ms: Math.round(performance.now() - t0), error: `extract: ${String(err instanceof Error ? err.message : err).slice(0, 160)}` };
+    }
+    try {
+      const byEl = new Map<Element, Draft>(drafts.map((d) => [d.info.el, d] as const));
+      const ensure = (sn: SNode | null | undefined): Draft | null => {
+        const el = sn?.el;
+        if (!el || !el.isConnected) return null;
+        return byEl.get(el) ?? this.forceDraft(el, sn, drafts, byEl, draftById, mainRoot);
+      };
+      const idNear = (sn: SNode | null | undefined): string | undefined => {
+        const el = sn?.el;
+        if (!el) return undefined;
+        const own = byEl.get(el);
+        if (own) return own.info.id;
+        const inside = drafts.find((d) => el.contains(d.info.el));
+        if (inside) return inside.info.id;
+        return nearestDraft(el, byEl)?.info.id;
+      };
+      for (const it of ex.items) {
+        if (it.data.kind === 'logo') {
+          const d = it.node.el ? byEl.get(it.node.el) : undefined;
+          if (!d || d.node.data) continue;
+          let src = it.data.src;
+          if (!src && it.mark?.el && it.mark.tag === 'svg') src = svgDataUrl(it.mark.el);
+          if (src) d.node.data = { kind: 'logo', src, label: it.data.label };
+          continue;
+        }
+        const d = ensure(it.node);
+        if (!d) continue;
+        let data: ExtractedData = it.data;
+        if (data.kind === 'stats' && it.valueNodes) {
+          const ids = it.valueNodes.map((v) => idNear(v));
+          data = { ...data, items: data.items.map((x, i) => (ids[i] ? { ...x, nodeId: ids[i] } : x)) };
+        } else if (data.kind === 'schedule' && it.rowNodes) {
+          const ids = it.rowNodes.map((v) => idNear(v));
+          data = { ...data, items: data.items.map((x, i) => (ids[i] ? { ...x, nodeId: ids[i] } : x)) };
+        }
+        d.node.data = data;
+      }
+      let article: ArticleMeta | null = null;
+      if (ex.article) {
+        article = { ...ex.article.meta };
+        const set = (k: 'headlineId' | 'bylineId' | 'leadImageId' | 'dateId', sn: SNode | null) => {
+          const id = idNear(sn);
+          if (id) article![k] = id;
+        };
+        set('headlineId', ex.article.headline);
+        set('bylineId', ex.article.byline);
+        set('leadImageId', ex.article.leadImage);
+        set('dateId', ex.article.date);
+        const body = ensure(ex.article.body);
+        if (body) article.bodyId = body.info.id;
+      }
+      const regions: Draft[] = [];
+      const notes = new Map<string, string>();
+      for (const r of ex.regions) {
+        const d = ensure(r);
+        if (!d || regions.includes(d)) continue;
+        regions.push(d);
+        const note = ex.regionNotes.get(r);
+        if (note) notes.set(d.info.id, note);
+      }
+      const siteLogoId = ex.siteLogo?.el ? byEl.get(ex.siteLogo.el)?.info.id ?? null : null;
+      drafts.forEach((d, i) => {
+        d.order = i;
+      });
+      return { regions, notes, article, siteLogoId, ms: Math.round((performance.now() - t0) * 10) / 10 };
+    } catch (err) {
+      return { ...empty, ms: Math.round(performance.now() - t0), error: `apply: ${String(err instanceof Error ? err.message : err).slice(0, 160)}` };
+    }
+  }
+
+  /** A node for an element the walk passed over (a region or a data box), placed in document order under its parent. */
+  private forceDraft(
+    el: Element, sn: SNode, drafts: Draft[], byEl: Map<Element, Draft>, draftById: Map<string, Draft>, mainRoot: Element | null,
+  ): Draft | null {
+    const parent = nearestDraft(el, byEl);
+    // Never inside a control or a heading (their insides are never nodes).
+    if (parent && (CONTROL_KINDS.has(parent.info.kind) || parent.info.kind === 'heading')) return null;
+    const tag = el.tagName.toUpperCase();
+    const kind: OutlineKind = tag === 'TABLE' ? 'table' : (tag === 'UL' || tag === 'OL' || tag === 'DL') ? 'list' : 'region';
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) return null;
+    const sectioning = !!el.parentElement?.closest('article, aside, main, nav, section');
+    const lm = landmarkOfTag(el, sectioning);
+    const landmark = lm ?? parent?.info.landmark ?? 'none';
+    const ctx: Ctx = {
+      parentId: parent?.info.id ?? null, landmark, sectioning, fixed: sn.fixed === true, inMain: false, inControl: false,
+      hLevel: null, inText: false, inTable: false, pointer: false, opacity: 1,
+    };
+    const inMain = !!mainRoot && (mainRoot === el || mainRoot.contains(el)) && lm !== 'banner' && lm !== 'contentinfo' && lm !== 'navigation';
+    const d = this.draft(el, kind, tag, ctx, landmark, sn.fixed === true, rect, rect.left + scrollX, rect.top + scrollY, classWordsOf(el), inMain, 0);
+    d.forced = true;
+    d.info.textChars = collapse(el.textContent ?? '').length;
+    if (kind === 'table') {
+      const t = el as HTMLTableElement;
+      d.node.shape = `table ${t.rows?.length ?? 0} x ${t.rows?.[0]?.cells.length ?? 0}`;
+      d.info.roleHint = 'table';
+    } else if (kind === 'list') {
+      d.node.shape = `list x ${countVisibleChildren(el)}`;
+      d.info.roleHint = 'list';
+    } else {
+      const role = (el.getAttribute('role') ?? '').toLowerCase();
+      d.info.roleHint = roleHintForRegion(el, tag, role, lm, d.info);
+      const cards = repeatedCards(el);
+      if (cards >= 4) d.info.cards = cards;
+    }
+    // Document order: before the first node inside or after this element.
+    let at = drafts.length;
+    for (let i = 0; i < drafts.length; i++) {
+      const other = (drafts[i] as Draft).info.el;
+      const pos = el.compareDocumentPosition(other);
+      if (pos & Node.DOCUMENT_POSITION_CONTAINED_BY || (pos & Node.DOCUMENT_POSITION_FOLLOWING && !(pos & Node.DOCUMENT_POSITION_CONTAINS))) {
+        at = i;
+        break;
+      }
+    }
+    drafts.splice(at, 0, d);
+    byEl.set(el, d);
+    draftById.set(d.info.id, d);
+    // Nodes inside it that hung from its parent now hang from it.
+    const parentId = parent?.info.id;
+    for (let j = at + 1; j < drafts.length; j++) {
+      const x = drafts[j] as Draft;
+      if (!el.contains(x.info.el)) break;
+      if (x.node.parent === parentId) {
+        x.node.parent = d.info.id;
+        x.info.parent = d.info.id;
+      }
+    }
+    return d;
   }
 
   /* -------------------------------------------------------------- */
@@ -1121,6 +1338,20 @@ export class PageReader {
 /* ------------------------------------------------------------------ */
 /* Walk helpers                                                        */
 /* ------------------------------------------------------------------ */
+
+const CONTROL_KINDS = new Set<OutlineKind>(['button', 'link', 'field', 'select', 'checkbox', 'radio']);
+
+/** The nearest ancestor (across shadow roots) that is a node. */
+function nearestDraft(el: Element, byEl: Map<Element, Draft>): Draft | null {
+  let p: Element | null = el.parentElement ?? ((el.getRootNode() as ShadowRoot).host ?? null);
+  let guard = 0;
+  while (p && guard++ < 200) {
+    const d = byEl.get(p);
+    if (d) return d;
+    p = p.parentElement ?? ((p.getRootNode() as ShadowRoot).host ?? null);
+  }
+  return null;
+}
 
 const SENSITIVE_SELECTOR = [
   'input[type="password"]', 'input[autocomplete^="cc-"]', 'input[autocomplete="one-time-code"]',
@@ -1259,6 +1490,18 @@ function markPromo(info: NodeInfo, el: Element, cwStr: string): void {
   if (info.consent) return;
   const sample = visibleTextOf(el, 300);
   info.promo = PROMO_WORDS.test(sample) || /promo|upsell|offer|deal|sponsor|recommend|related|trending|newsletter|membership|marketing|spotlight|hero/.test(cwStr);
+}
+
+/** The heading just before an element (its own or an ancestor's previous siblings, two levels up), or ''. */
+function headingBefore(el: Element): string {
+  let a: Element | null = el;
+  for (let up = 0; a && up < 3; up++, a = a.parentElement) {
+    for (let s = a.previousElementSibling, k = 0; s && k < 3; s = s.previousElementSibling, k++) {
+      const h = /^H[1-6]$/.test(s.tagName) || s.getAttribute('role') === 'heading' ? s : s.querySelector('h1, h2, h3, h4, [role="heading"]');
+      if (h) return visibleTextOf(h, 120);
+    }
+  }
+  return '';
 }
 
 function regionTitle(el: Element): string {
@@ -1440,6 +1683,8 @@ function visualWeightOf(el: Element): ElementEvidence['visual_weight'] {
 function nodePriority(d: Draft, vh: number): number {
   const k = d.info.kind;
   let p = 0;
+  if (d.forced) p += 100; // regions and data boxes always stay
+  if (d.node.data) p += 50;
   if (k === 'region' || k === 'list' || k === 'notice') p += 5;
   if (k === 'heading') p += 4;
   if (k === 'button' || k === 'field' || k === 'select' || k === 'checkbox' || k === 'radio') p += 4;
@@ -1484,10 +1729,47 @@ function digestScore(n: NodeInfo, vw: number): number {
   return s;
 }
 
+/**
+ * Round 7: the parts of a page Jev must see to say what it is for. Boxes that carry extracted data (a stats grid, a
+ * scoreboard, a data table, a recipe) and logos get a place in the digest; so do card grids in the main content (news
+ * teasers, related items), which are what "teaser for other content" is about.
+ */
+function contentBonus(d: Draft, byId: Map<string, Draft>): number {
+  const data = d.node.data;
+  if (data) return data.kind === 'logo' ? 4 : 8;
+  const n = d.info;
+  const teaserGrid = isTeaserGrid;
+  if (teaserGrid(n)) return 5;
+  if (n.kind === 'image' && n.inMain && n.rect.w * n.rect.h >= 15000 && n.zone !== 'header_band') return 1.5;
+  // A card's own buttons and links: the card grid stands for them.
+  if (n.kind === 'button' || n.kind === 'link') {
+    let p = d.node.parent ? byId.get(d.node.parent) : undefined;
+    for (let up = 0; p && up < 6; up++, p = p.node.parent ? byId.get(p.node.parent) : undefined) {
+      if (teaserGrid(p.info)) return -2.5;
+    }
+  }
+  return 0;
+}
+
+function isTeaserGrid(x: NodeInfo): boolean {
+  return x.kind === 'list' && x.cards >= 4 && x.inMain && x.zone !== 'header_band' && x.zone !== 'footer_band';
+}
+
+/** Near-duplicates (twenty "Links for game on …" buttons): kind, role, first three label words and size. */
+function dupSignature(n: NodeInfo): string | null {
+  if (n.kind === 'field' || n.kind === 'select' || n.kind === 'checkbox' || n.kind === 'radio' || n.help || n.consent) return null;
+  const head = collapse(n.name.toLowerCase().replace(/\d+/g, '#')).split(' ').slice(0, 3).join(' ');
+  return `${n.kind}|${n.roleHint}|${head}|${Math.round(n.rect.w / 20)}x${Math.round(n.rect.h / 20)}`;
+}
+
+const MAX_SAME = 3;
+
 function pickDigest(drafts: Draft[]): Draft[] {
-  const quotas: Record<string, number> = { overlay: 6, container: 12, help: 5, field: 5, content: 4, nav: 3, action: 18, other: 6 };
-  const bucketOf = (n: NodeInfo): string => {
+  const quotas: Record<string, number> = { overlay: 6, container: 12, help: 5, field: 5, content: 4, nav: 3, action: 18, other: 6, data: 10 };
+  const bucketOf = (n: NodeInfo, d: Draft): string => {
     if (n.overlay || n.consent) return 'overlay';
+    // Data boxes, logos and teaser card grids in the main content: what Jev needs to tell what the page is for.
+    if (d.node.data || isTeaserGrid(n)) return 'data';
     if (n.help && n.kind !== 'region') return 'help';
     if (n.kind === 'region' || n.kind === 'list' || n.kind === 'notice' || (n.kind === 'media' && n.iframeKind)) {
       return n.roleHint === 'navigation' ? 'nav' : 'container';
@@ -1499,17 +1781,28 @@ function pickDigest(drafts: Draft[]): Draft[] {
   };
   const ranked = [...drafts].filter((d) => d.score > 0.5).sort((a, b) => b.score - a.score || a.order - b.order);
   const used: Record<string, number> = {};
+  const same = new Map<string, number>();
   const chosen: Draft[] = [];
   const leftovers: Draft[] = [];
+  const repeats: Draft[] = [];
   for (const d of ranked) {
-    const b = bucketOf(d.info);
+    const sig = dupSignature(d.info);
+    if (sig) {
+      const k = (same.get(sig) ?? 0) + 1;
+      same.set(sig, k);
+      if (k > MAX_SAME) {
+        repeats.push(d);
+        continue;
+      }
+    }
+    const b = bucketOf(d.info, d);
     if ((used[b] ?? 0) < (quotas[b] ?? 4)) {
       used[b] = (used[b] ?? 0) + 1;
       chosen.push(d);
       if (chosen.length >= MAX_DIGEST) break;
     } else leftovers.push(d);
   }
-  for (const d of leftovers) {
+  for (const d of [...leftovers, ...repeats]) {
     if (chosen.length >= MAX_DIGEST) break;
     chosen.push(d);
   }
@@ -1595,7 +1888,13 @@ function evidenceLabel(n: NodeInfo, all: Draft[]): string {
         .map((x) => firstWords(x.info.name, n.tag === 'fieldset' ? 6 : 4));
       const body = visibleTextOf(el, 200);
       let head = title ? firstWords(title, 7) : firstWords(body, 8);
-      if (n.cards >= 4) head = `${title ? firstWords(title, 6) : 'Cards'}: ${n.cards} cards`;
+      if (n.cards >= 4) {
+        // Round 7: name a card grid by its section's heading and its first card ("Related News: 4 cards, first: …"),
+        // so Jev can tell news teasers from the page's own content.
+        const named = title || headingBefore(el);
+        const first = el.firstElementChild ? firstWords(visibleTextOf(el.firstElementChild, 160), 6) : '';
+        head = `${named ? firstWords(named, 6) : 'Cards'}: ${n.cards} cards${first ? `, first: ${first}` : ''}`;
+      }
       else if (n.kind === 'list' && !title) head = `List of ${countVisibleChildren(el)} items, begins: ${firstWords(body, 6)}`;
       else if (!title && buttons.length && collapse(body).startsWith(collapse(buttons[0] ?? '').replace(/…$/, ''))) {
         // The region is mostly its links (a promo bar, a menu): list them once.

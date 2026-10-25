@@ -24,6 +24,7 @@ import type {
   VisualVerifyRequest,
 } from '@webable/core';
 import type { BusEnvelope, BusErrorCode, BusReply, ExtRequest, HealthInfo, ZoomInfo } from '../src/engine/bus';
+import { stripLocalData, stripOutlineData } from '../src/engine/extract/strip';
 
 /* ------------------------------------------------------------------ */
 /* Errors                                                              */
@@ -326,7 +327,8 @@ async function post<T>(path: string, body: unknown, timeoutMs: number): Promise<
     res = await fetch(`${origin}${path}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-webable': '1' },
-      body: JSON.stringify(body),
+      // Round 7: structured content read on the device (OutlineNode.data) never leaves it, whatever the request.
+      body: JSON.stringify(stripLocalData(body)),
       signal: ctrl.signal,
     });
   } catch (err) {
@@ -509,7 +511,7 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
     case 'struggle':
       return post<StruggleJudgment>('/v1/struggle', { signals: req.signals }, 6000);
     case 'redesign':
-      return post<RedesignResult>('/v1/redesign', { outline: req.outline, fit: req.fit, roles: req.roles }, 22000);
+      return post<RedesignResult>('/v1/redesign', { outline: stripOutlineData(req.outline), fit: req.fit, roles: req.roles }, 22000);
     case 'explain': {
       // Second redaction pass (the server runs a third); fail closed when redaction is unavailable.
       let passage: string;

@@ -184,10 +184,18 @@ function emptyNotice(ix: OutlineIndex, id: string): boolean {
   });
 }
 
-/** Cookie wording counts as a consent notice only on banners, notices and their controls, not in articles. */
+/**
+ * Cookie wording counts as a consent notice only on banners, notices and their controls, not in articles. A region
+ * counts by its name only when the name is about cookie choices ("Cookie settings", "We use cookies", "Consent"), so a
+ * recipe called "Best Chocolate Chip Cookies" is never taken for a cookie banner; Jev's fine role decides when it has one.
+ */
 function looksLikeBanner(n: OutlineNode): boolean {
+  if (n.fine) return n.fine === 'consent_notice';
   const zone = n.zone ?? '';
-  return zone.startsWith('overlay') || n.kind === 'notice' || (n.kind === 'region' && /\b(cookie|cookies|consent)\b/.test(lower(n.label)));
+  if (zone.startsWith('overlay') || n.kind === 'notice') return true;
+  if (n.kind !== 'region') return false;
+  const l = lower(n.label);
+  return /\bconsent\b|\bwe use cookies\b|\bcookies? (settings|preferences|policy|notice|choices|banner|consent)\b|\b(manage|accept|reject|allow)( all)? cookies\b/.test(l);
 }
 
 /** True when one of the two nearest ancestors holds form fields (the control sits in a form). */

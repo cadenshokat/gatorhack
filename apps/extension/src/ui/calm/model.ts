@@ -93,6 +93,8 @@ export interface ReadCtx {
   pairs: StoryPairs;
   /** Drawn elsewhere (an article's byline, date and dek in its header): never read, even as a placed root. */
   elsewhere: Set<Element>;
+  /** Round 7: logos Jev's page model says identify something (a team's mark): shown like content pictures. */
+  keepLogos?: Set<Element>;
 }
 
 export function newCtx(partial: Partial<ReadCtx> = {}): ReadCtx {
@@ -1264,7 +1266,9 @@ class Run {
     }
     if (tag === 'img' || tag === 'picture' || tag === 'svg') {
       if (!v) return;
-      const img = imageFor(el);
+      const keep = !!ctx.keepLogos?.size && keptLogo(el, ctx.keepLogos);
+      const img = imageFor(el, keep ? { important: true } : {});
+      if (img && keep) img.logo = false;
       if (img) {
         this.close();
         this.push(img);
@@ -1563,6 +1567,12 @@ function readBlocksFrom(el: Element, ctx: ReadCtx, root: Element, vis: boolean, 
 }
 
 /** Read one placed element (and its subtree) into blocks. */
+/** A picture that is (or sits in) a logo Jev's page model says to keep: up to two wrappers (a link around the image). */
+function keptLogo(el: Element, keep: Set<Element>): boolean {
+  for (let x: Element | null = el, i = 0; x && i < 3; x = x.parentElement, i++) if (keep.has(x)) return true;
+  return false;
+}
+
 export function readBlocks(root: Element, ctx: ReadCtx): Block[] {
   if (!root.isConnected) return [];
   // A placed element that is drawn elsewhere (an article's byline or date in its header, a caption under its picture,

@@ -15,12 +15,14 @@ import {
   DEFAULT_SETTINGS, candidateSource, chooseOfferForFit, columnLimits, decideElements, heuristicSpec, nearestPreset, personZoomLadder,
   planColumn, repairSpec, stepColumn, stepZoom, summarizeDecisions, summarizeFitForModel,
   effectiveFit, effectiveFitSources, fitSignature, passiveOffer, PASSIVE_OFFER_KIND,
+  applyMeaning, DRAWER_FINE, FINE_MIN_P, leadWords, localMeaningVerdict, meaningPasses, meaningRequest, purposeWords,
 } from '@webable/core';
 import type {
   BgRequest, CheckName, CheckResult, ElementDecision, ElementEvidence, ElementJudgment, FitProfile, FitSpec, FitSummaryForModel, HealthStatus,
   JevMetrics, LedgerEntry, Offer, OfferKind, OpKind, OutlineNode, OverlayAction, PageDigest, PageOutline, PageUnderstanding,
   RedesignResult, Role, Settings, StruggleJudgment, StruggleKind, TabReport, VisualVerdict, ZoomPlan,
   DimensionBelief, FitDimension, PassiveFitState,
+  FineRole, MeaningVerdict, PageMeaning,
 } from '@webable/core';
 import type { EngineApi, EngineState, Toast } from '../contracts';
 import { isOurUi } from '../ui/mount';
@@ -34,6 +36,7 @@ import { Verifier, calmCoverage, completeSpec, plainCheck, type Snapshot } from 
 import { noteOfferOutcome, startSignals, type SignalsHost } from './signals';
 import { requestExplain } from './explain';
 import { PassiveObserver, readMediaFacts, watchMedia } from './passive';
+import { pageMeaning } from '../ui/calm/meaning';
 
 export interface Controller {
   api: EngineApi;
@@ -313,6 +316,15 @@ function fallbackSummary(fit: FitProfile): FitSummaryForModel {
   };
 }
 
+/** The meaning check's answer for one page (round 7). */
+interface MeaningGate {
+  key: string;
+  pass: boolean;
+  by: 'jev' | 'device';
+  leadsWithMain: number;
+  missingMain: number;
+}
+
 function initialState(): EngineState {
   return {
     phase: 'idle',
@@ -509,6 +521,10 @@ export function createController(): Controller {
   let pendingAi: { spec: FitSpec; result: RedesignResult } | null = null;
   let calmWasOpen = false;
   const redesignCache = new Map<string, RedesignResult>();
+  // Round 7: the meaning check. Calm view is opened or offered on a page only when it leads with what the page exists
+  // to show and leaves none of it out (Jev's verdict on a structure-only summary; checked on the device without Jev).
+  let meaningGate: MeaningGate | null = null;
+  let meaningRun: Promise<MeaningGate | null> | null = null;
   const dismissedOffers = new Map<OfferKind, number>();
   // The passive fit (round 4): the stored warm-up fit (state.fit is effectiveFit(baseFit, state.passive)), offers on
   // screen that came from what WebAble learned, and ops whose Undo also tells WebAble the learned need was wrong.
@@ -943,6 +959,7 @@ export function createController(): Controller {
     });
     const s = store.get();
     if (s.struggle.offers.length || (dismissedOffers.get('calm_view') ?? 0) > Date.now()) return;
+    if (meaningGate && !meaningGate.pass) return;
     const offer: Offer = {
       kind: 'calm_view',
       question: 'Show this page at your text size?',
@@ -1961,7 +1978,11 @@ export function createController(): Controller {
     await applyDecisions(decisions, r, null);
     if (gen !== generation) return;
     overlays.schedule('jev');
-    maybeAutoCalm(r, decisions);
+    // Round 7: before Calm view is opened or offered, check that it keeps what this page is for.
+    meaningRun = checkMeaning(gen, r);
+    const gate = await meaningRun;
+    if (gen !== generation) return;
+    maybeAutoCalm(r, decisions, gate);
     // Overlays that appeared while Jev was answering (cookie banners at 0.8 s, chat panels) get their own read.
     if (pendingLate) {
       pendingLate = false;
@@ -2197,10 +2218,12 @@ export function createController(): Controller {
     return null;
   }
 
-  function maybeAutoCalm(r: ReadResult, decisions: ElementDecision[]): void {
+  function maybeAutoCalm(r: ReadResult, decisions: ElementDecision[], gate: MeaningGate | null): void {
     const fit = getFit();
     const s = store.get();
     if (!fit || s.calm.open || s.showingOriginal) return;
+    // A Calm plan that would change what the page means is neither opened nor offered (the ledger already says why).
+    if (gate && !gate.pass) return;
     const folded = decisions.filter((d) => d.verdict === 'fold').length;
     const busy = folded >= 3 || r.digest.page.element_count >= 60;
     if (!busy || fit.attention.structureLevel < 1) return;
@@ -2329,7 +2352,9 @@ export function createController(): Controller {
     }
     const fresh = r.digest.elements.filter((e) => !judged.has(e.id)).slice(0, 40);
     if (!fresh.length) return;
-    const partial: PageDigest = { ...r.digest, elements: fresh, mainCandidates: [] };
+    // New items only: the page's purpose and main region were read with the whole page (round 7), so no regions here.
+    const { regions: _regions, ...rest } = r.digest;
+    const partial: PageDigest = { ...rest, elements: fresh, mainCandidates: [] };
     let u: PageUnderstanding;
     try {
       const res = await ask<PageUnderstanding>({ type: 'understand', digest: partial });
@@ -2343,6 +2368,7 @@ export function createController(): Controller {
     for (const e of u.elements) judged.add(e.id);
     for (const e of fresh) jevEls.set(e.id, e);
     const latest = store.get().understanding ?? u0;
+    const surer = !!u.purpose && !!latest.purpose && latest.purpose.p < 0.8 && u.purpose.p >= 0.9 && u.purpose.kind !== latest.purpose.kind;
     const merged: PageUnderstanding = {
       elements: [...latest.elements.filter((e) => !u.elements.some((x) => x.id === e.id)), ...u.elements],
       mainPick: latest.mainPick,
@@ -2350,10 +2376,20 @@ export function createController(): Controller {
       // The page read stays "from cache" when it was; later reads of new items add their own cost to this view.
       cached: latest.cached,
       ...(latest.firstRead ? { firstRead: latest.firstRead } : {}),
+      // What the page is for and its main region come from the whole-page read; a read of a few new items keeps them,
+      // unless the first read was unsure of the purpose (< 0.8) and this one is sure (>= 0.9) of another.
+      ...(surer ? { purpose: u.purpose! } : latest.purpose ? { purpose: latest.purpose } : u.purpose ? { purpose: u.purpose } : {}),
+      ...(latest.mainRegion ? { mainRegion: latest.mainRegion } : {}),
     };
     const union = judgedDigest(r.digest);
     const decisions = decide(merged, union, r);
     store.set({ understanding: merged, decisions, digest: union });
+    // Jev became sure what the page is for: check the Calm plan's meaning again (it is not opened or offered by this).
+    if (surer && !store.get().calm.open) {
+      log({ source: 'jev', title: `Jev is now sure this page is ${purposeWords(merged.purpose?.kind ?? null)} (${p2(merged.purpose?.p ?? 0)})`, action: 'kept' });
+      meaningRun = checkMeaning(gen, r);
+      void meaningRun;
+    }
     log({
       source: 'jev',
       title: `Jev read ${u.elements.length} new item${u.elements.length === 1 ? '' : 's'} on the page (${u.cached ? 'from the cache' : `${(u.metrics.wallMs / 1000).toFixed(2)} s`})`,
@@ -2681,18 +2717,25 @@ export function createController(): Controller {
       }
       return false;
     };
+    // Round 7: Jev's fine role per element (page model v2), when it is probable enough.
+    const fine = new Map<string, FineRole>();
+    for (const e of u?.elements ?? []) if (e.fine && (e.fineP ?? 1) >= FINE_MIN_P) fine.set(e.id, e.fine);
     const prot = new Set<string>();
     for (const d of decisions) {
       const j = d.judgment;
+      const distraction = DRAWER_FINE.has(fine.get(d.id) as FineRole);
       if (d.verdict === 'promote' || d.verdict === 'keep_popup') prot.add(d.id);
       else if (d.verdict !== 'protect') continue;
       else if (d.reasons.some((x) => x.includes('(rule)')) || j.help >= 0.3 || j.role === 'consent_notice') prot.add(d.id);
-      else if (!FOLD_ROLES.includes(j.role) && !underFold(d.id)) prot.add(d.id);
+      // A teaser for other content, an ad or an upsell is never kept in view for the layout, whatever the coarse role.
+      else if (!FOLD_ROLES.includes(j.role) && !underFold(d.id) && !distraction) prot.add(d.id);
     }
     const nodes: OutlineNode[] = outline.nodes.map((n) => {
       const out: OutlineNode = { ...n };
       const r = role.get(n.id);
       if (r) out.jevRole = r;
+      const f = fine.get(n.id);
+      if (f) out.fine = f;
       if (prot.has(n.id)) out.protected = true;
       return out;
     });
@@ -2712,7 +2755,108 @@ export function createController(): Controller {
     } catch {
       /* keep as is */
     }
-    return alignPrimary(completeSpec(spec, outline).spec);
+    return withMeaning(alignPrimary(completeSpec(spec, outline).spec), outline);
+  }
+
+  /** What this page is for (round 7), from Jev's page model v2 and the content read on this device. */
+  function meaningNow(outline?: PageOutline | null): PageMeaning | null {
+    const o = outline ?? read?.outline ?? null;
+    if (!o) return null;
+    try {
+      return pageMeaning({ outline: o, understanding: store.get().understanding, elementFor: (id) => reader.elementFor(id) });
+    } catch {
+      return null;
+    }
+  }
+
+  /** A Calm spec, meaning first: the main information leads, teasers, ads and offers go to the end drawer. */
+  function withMeaning(spec: FitSpec, outline: PageOutline): FitSpec {
+    const m = meaningNow(outline);
+    if (!m) return spec;
+    try {
+      return applyMeaning(spec, outline, m).spec;
+    } catch {
+      return spec;
+    }
+  }
+
+  /**
+   * The meaning check (round 7): the Calm plan this page would get, summarised as fine roles only (no page text or
+   * numbers), and Jev's answer to "does it lead with what the page exists to show?" and "is main information missing?".
+   * Without Jev the same question is answered on this device. A failed check keeps Calm view off this page.
+   */
+  async function checkMeaning(gen: number, r: ReadResult): Promise<MeaningGate | null> {
+    if (!r.outline.nodes.length) return null;
+    const m = meaningNow(r.outline);
+    if (!m) return null;
+    let spec: FitSpec;
+    let req: ReturnType<typeof meaningRequest>;
+    try {
+      const fit = getFit() ?? fallbackFitLike();
+      let summary: FitSummaryForModel;
+      try {
+        summary = summarizeFitForModel(fit);
+      } catch {
+        summary = fallbackSummary(fit);
+      }
+      const outline = enrichOutline(r.outline);
+      spec = buildHeuristic(outline, summary, rolesNow());
+      req = meaningRequest(spec, outline, m);
+    } catch {
+      return null;
+    }
+    const key = location.href;
+    let by: MeaningGate['by'] = 'jev';
+    let leads: number;
+    let missing: number;
+    let pass: boolean;
+    let cost = '';
+    try {
+      const v = await ask<MeaningVerdict>({ type: 'meaning', req }, 6500);
+      if (!v || typeof v.leadsWithMain !== 'number' || typeof v.missingMain !== 'number') throw new Error('Unexpected answer');
+      leads = v.leadsWithMain;
+      missing = v.missingMain;
+      pass = typeof v.pass === 'boolean' ? v.pass : meaningPasses(v);
+      if (v.metrics) cost = ` · ${Math.round(v.metrics.wallMs)} ms, $${v.metrics.costUsd.toFixed(4)}`;
+    } catch {
+      const v = localMeaningVerdict(req);
+      by = 'device';
+      leads = v.leadsWithMain;
+      missing = v.missingMain;
+      pass = v.pass;
+    }
+    if (gen !== generation || stopped) return null;
+    const gate: MeaningGate = { key, pass, by, leadsWithMain: leads, missingMain: missing };
+    meaningGate = gate;
+    const page = m.purpose ? `This page is ${purposeWords(m.purpose)} (${p2(m.purposeP)}). ` : '';
+    const nums = `Leads with the main information ${p2(leads)}; something main missing ${p2(missing)}.`;
+    const how = by === 'jev'
+      ? ` Jev saw page roles only, no page text or numbers${cost}.`
+      : ' Checked on this device: Jev’s meaning check was not available.';
+    if (pass) {
+      log({
+        source: by === 'jev' ? 'jev' : 'check',
+        title: `${by === 'jev' ? 'Jev checked' : 'Checked'} that Calm view keeps what this page is for: it leads with ${leadWords(m)}`,
+        detail: `${page}${nums}${how}`,
+        p: leads,
+        action: 'kept',
+      });
+    } else {
+      const reason = leads < 0.8 ? 'it would not lead with what the page is for' : 'it would leave out part of the main information';
+      log({
+        source: by === 'jev' ? 'jev' : 'check',
+        title: `Calm view is not offered on this page: ${reason}`,
+        detail: `${page}${nums}${how} The page stays as it is, fitted to you.`,
+        p: leads,
+        action: 'skipped',
+      });
+      // An offer to open Calm view made before the check (text short of your size) is taken back.
+      const st = store.get();
+      if (st.struggle.offers.some((o) => o.kind === 'calm_view')) {
+        store.set({ struggle: { ...st.struggle, offers: st.struggle.offers.filter((o) => o.kind !== 'calm_view') } });
+      }
+    }
+    return gate;
   }
 
   /**
@@ -2738,6 +2882,20 @@ export function createController(): Controller {
   };
 
   async function openCalm(by: 'auto' | 'person' = 'person', why?: string): Promise<void> {
+    if (store.get().calm.open) return;
+    // Round 7: a page whose Calm plan failed the meaning check keeps its own layout (the check is usually done by now).
+    let gate = meaningGate;
+    if (!gate && meaningRun) gate = await Promise.race([meaningRun, sleep(2500).then(() => null)]);
+    if (gate && !gate.pass && gate.key === location.href) {
+      toast('Calm view stays off here: it would change what this page shows first');
+      log({
+        source: 'check',
+        title: 'Calm view did not open: it would not keep what this page is for',
+        detail: `Leads with the main information ${p2(gate.leadsWithMain)}; something main missing ${p2(gate.missingMain)}. The page stays as it is, fitted to you.`,
+        action: 'skipped',
+      });
+      return;
+    }
     const s = store.get();
     if (s.calm.open) return;
     if (s.showingOriginal) showOriginal(false);
@@ -2787,9 +2945,11 @@ export function createController(): Controller {
       calm: { open: true, loading: wantAi && !cached, spec: first, source, aiReady: false, redesign: cached ?? st.calm.redesign, visual: null },
     }));
     overlays.setHidden(true);
+    const m = meaningNow(r.outline);
+    const leading = m && (m.template !== 'page' || m.lead.why !== 'none') ? `, leading with ${leadWords(m)}` : '';
     log({
       source: by === 'auto' ? 'layout' : 'person',
-      title: why ?? (source === 'cached' ? 'Opened Calm view with the layout Jev picked last time' : 'Opened Calm view'),
+      title: why ?? (source === 'cached' ? 'Opened Calm view with the layout Jev picked last time' : `Opened Calm view${leading}`),
       detail: `Every item on the page is in this view (${Math.round(cov.coverage * 100)}% placed${cov.missing.length ? `, ${cov.missing.length} added to “More on this page”` : ''}). Every control still drives the original page.`,
       action: 'applied',
     });
@@ -2822,7 +2982,7 @@ export function createController(): Controller {
     } catch {
       /* the server repaired it already */
     }
-    return alignPrimary(completeSpec(out, outline).spec);
+    return withMeaning(alignPrimary(completeSpec(out, outline).spec), outline);
   }
 
   async function readCachedRedesign(key: string): Promise<RedesignResult | undefined> {
@@ -2977,9 +3137,10 @@ export function createController(): Controller {
       /* keep */
     }
     const done = completeSpec(spec, outline);
-    const next = alignPrimary(done.spec);
+    const aligned = alignPrimary(done.spec);
+    const next = done.added || aligned !== s.calm.spec ? withMeaning(aligned, outline) : aligned;
     if (done.added || next !== s.calm.spec) store.set({ calm: { ...s.calm, spec: next } });
-    if (heuristicSpecCache) heuristicSpecCache = alignPrimary(completeSpec(heuristicSpecCache, outline).spec);
+    if (heuristicSpecCache) heuristicSpecCache = withMeaning(alignPrimary(completeSpec(heuristicSpecCache, outline).spec), outline);
   }
 
   function closeCalm(): void {
@@ -3109,6 +3270,8 @@ export function createController(): Controller {
     judged = new Set();
     decided = new Set();
     jevEls = new Map();
+    meaningGate = null;
+    meaningRun = null;
     incrementalRounds = 0;
     pendingLate = false;
     overlays.reset();

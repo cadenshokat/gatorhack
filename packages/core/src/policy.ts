@@ -9,7 +9,15 @@
 //   fold        P(advertising + recommendations + popup_overlay) >= 0.90 and task <= 0.20 and help <= 0.10 and not
 //               protected.
 //   keep        everything else, including elements Jev did not answer (fail closed).
-import type { ElementDecision, ElementEvidence, ElementJudgment, OverlayKind, PageDigest, PageUnderstanding, Role } from './types';
+//
+// Round 7 (Jev page model v2): the coarse role probabilities are the fine-role probabilities summed into their
+// family (jev/page.ts FINE_FAMILY), so the thresholds above keep their measured meaning. One addition: importance
+// >= 3 of 4 ("part of what the page is for") also protects. Page-level answers are acted on only when confident:
+// the purpose at 0.60, the main region at 0.80 in both option orders, a fine role at 0.50.
+import type {
+  ElementDecision, ElementEvidence, ElementJudgment, FineRole, OverlayKind, PageDigest, PagePurpose, PageUnderstanding, Role,
+} from './types';
+import { DISTRACTION_ROLES } from './jev/page';
 
 export interface LocalFacts { focusedIds: string[]; requiredIds: string[]; filledIds: string[]; consentIds: string[]; offsiteIds: string[] }
 
@@ -25,6 +33,14 @@ export const POLICY = Object.freeze({
   promotePick: 0.9,
   promoteMainNoul: 0.7,
   noneVeto: 0.6,
+  /** Round 7: importance (0 distraction .. 4 essential) at or above which an element is protected. */
+  protectImportance: 3,
+  /** Round 7: page purpose, main region and fine role are acted on only at these probabilities. */
+  purposeAccept: 0.6,
+  mainRegionAccept: 0.8,
+  fineAccept: 0.5,
+  /** Round 7: importance below this, with no task or help, marks a distraction even without a distraction role. */
+  distractionImportance: 0.75,
 });
 
 const PROTECT_ROLES: readonly Role[] = [
@@ -144,6 +160,7 @@ export function decideElements(u: PageUnderstanding, digest: PageDigest, local: 
     const why: string[] = [...localReasons];
     if (j.help >= POLICY.protectHelp) why.push(`help ${f2(j.help)}`);
     if (j.task >= POLICY.protectTask) why.push(`task ${f2(j.task)}`);
+    if (typeof j.importance === 'number' && j.importance >= POLICY.protectImportance) why.push(`importance ${j.importance.toFixed(1)} of 4`);
     if (protectSum >= POLICY.protectRoleSum) {
       const top = PROTECT_ROLES.filter((r) => (j.roleProbs[r] ?? 0) > 0).sort((a, b) => (j.roleProbs[b] ?? 0) - (j.roleProbs[a] ?? 0))[0];
       why.push(top === j.role ? roleText : `${ROLE_WORDS[top ?? j.role]} ${f2(j.roleProbs[top ?? j.role] ?? 0)}`);
@@ -156,6 +173,7 @@ export function decideElements(u: PageUnderstanding, digest: PageDigest, local: 
       const reasons = [roleText];
       if (!FOLD_ROLES.includes(j.role) || Math.abs(foldSum - j.roleP) >= 0.005) reasons.push(`ads, teasers and popups ${f2(foldSum)}`);
       reasons.push(`task ${f2(j.task)}`, `help ${f2(j.help)}`);
+      if (j.fine && typeof j.fineP === 'number') reasons.push(`${FINE_WORDS[j.fine]} ${f2(j.fineP)}`);
       out.push({ id: e.id, verdict: 'fold', reasons, judgment: j });
       continue;
     }
@@ -166,6 +184,65 @@ export function decideElements(u: PageUnderstanding, digest: PageDigest, local: 
 
 function dedupe(xs: string[]): string[] {
   return [...new Set(xs)];
+}
+
+/* ------------------------------------------------------------------ */
+/* Round 7: page model v2 answers, acted on only when confident        */
+/* ------------------------------------------------------------------ */
+
+/** Plain words for each fine role, for the ledger and reasons. */
+export const FINE_WORDS: Readonly<Record<FineRole, string>> = Object.freeze({
+  page_title: 'page title', headline: 'headline', dek_summary: 'summary line', body_text: 'main text', byline: 'byline',
+  dateline: 'date', lead_image: 'lead picture', figure: 'picture', caption: 'caption', quote: 'quote', key_fact: 'key fact',
+  stat_value: 'stat', stat_label: 'stat label', scoreboard: 'scoreboard', team_or_org_logo: 'team logo',
+  data_table: 'data table', table_row: 'table row', chart: 'chart', schedule_item: 'schedule item', standings: 'standings',
+  price: 'price', rating: 'rating', comparison_row: 'comparison row', ingredient_list: 'ingredients',
+  instruction_steps: 'steps', recipe_meta: 'recipe details', form_field: 'form field', primary_action: 'main button',
+  secondary_action: 'button', step_indicator: 'step indicator', search_box: 'search', filter_sort: 'filters',
+  result_item: 'result', status_message: 'status message', site_logo: 'site logo', site_nav: 'site menu',
+  section_nav: 'section menu', breadcrumb: 'breadcrumb', tabs: 'tabs', pagination: 'page links', back_link: 'back link',
+  jump_link: 'jump link', help_link: 'help link', contact_info: 'contact details', warning_notice: 'warning',
+  consent_notice: 'consent notice', popup: 'popup', advertising: 'ad', sponsored: 'sponsored content',
+  upsell_promo: 'promotion', newsletter_signup: 'newsletter signup', teaser_other_content: 'teaser for other pages',
+  social_share: 'share buttons', comments: 'comments', video_autoplay: 'autoplaying video', carousel: 'carousel',
+  account_utility: 'account links', legal_footer: 'legal links', decorative: 'decoration', other: 'other',
+});
+
+/** The page's purpose when Jev named it with p >= 0.60, else null. */
+export function acceptedPurpose(u: PageUnderstanding | null | undefined): PagePurpose | null {
+  const p = u?.purpose;
+  return p && p.kind !== 'other' && p.p >= POLICY.purposeAccept ? p.kind : null;
+}
+
+/** The main region's id when both option orders gave it 0.80 or more, else null. */
+export function acceptedMainRegion(u: PageUnderstanding | null | undefined): string | null {
+  const r = u?.mainRegion;
+  return r && r.id !== 'none' && r.p >= POLICY.mainRegionAccept ? r.id : null;
+}
+
+/** The element's fine role when Jev named it with p >= 0.50, else null. */
+export function acceptedFine(j: ElementJudgment | null | undefined): FineRole | null {
+  return j?.fine && typeof j.fineP === 'number' && j.fineP >= POLICY.fineAccept ? j.fine : null;
+}
+
+/** Importance on the 0..4 scale, 2 ("supporting") when Jev was not asked. */
+export function importanceOf(j: ElementJudgment | null | undefined): number {
+  return typeof j?.importance === 'number' && Number.isFinite(j.importance) ? j.importance : 2;
+}
+
+const DISTRACTION_SET = new Set<FineRole>(DISTRACTION_ROLES);
+
+/**
+ * A distraction from what the page is for: a confident distraction role (ad, teaser for other content, promotion,
+ * newsletter box...) or importance below 0.75, and never something Jev ties to the task or to help.
+ */
+export function isDistraction(j: ElementJudgment | null | undefined): boolean {
+  if (!j) return false;
+  if (j.task >= POLICY.protectTask || j.help >= POLICY.protectHelp) return false;
+  if (typeof j.importance === 'number' && j.importance >= POLICY.protectImportance) return false;
+  const fine = acceptedFine(j);
+  if (fine && DISTRACTION_SET.has(fine)) return true;
+  return typeof j.importance === 'number' && j.importance < POLICY.distractionImportance;
 }
 
 /* ------------------------------------------------------------------ */

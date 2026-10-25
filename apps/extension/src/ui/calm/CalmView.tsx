@@ -12,7 +12,7 @@ import type { FitProfile, FitSpec, PageOutline } from '@webable/core';
 import { Fragment, type JSX } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { EngineApi } from '../../contracts';
-import { calmChromeCss, calmCss } from '../base.css';
+import { calmChromeCss } from '../base.css';
 import { focusOriginal, proxyClick, proxyKey } from '../proxy';
 import { calmMetrics, structureParams, themeModeFor, tokensFor, tokensToStyle } from '../tokens';
 import { Blocks } from './Blocks';
@@ -23,10 +23,12 @@ import { Dock } from './Dock';
 import * as I from './icons';
 import { IndexView } from './Index';
 import { ArticleHeader, LeadBand } from './Lead';
-import { tickNow, useCalmStyles, useDomVersion, useEngineState, useReducedMotion } from './live';
+import { calmSheetCss, tickNow, useCalmStyles, useDomVersion, useEngineState, useReducedMotion } from './live';
+import { pageMeaning } from './meaning';
 import { type Block, isShown, keyOf, newCtx, pagePopups, readBlocks, textOf } from './model';
 import { useOutcome } from './outcome';
 import { type CalmPlan, buildPlan } from './plan';
+import { PurposeView } from './Purpose';
 import { stepOf } from './sections/FormSteps';
 import { HelpCard } from './sections/layouts';
 import { Drawer, SectionView } from './sections/Section';
@@ -104,18 +106,28 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
   const m = calmMetrics(fit, { zoom, density: spec.density, scale, surface: 'calm' });
   const style = useMemo(() => tokensToStyle(tokens), [tokens]);
 
+  // Round 7: what this page is for (Jev's page model v2 and the content read on this device), so the view leads with it.
+  const meaning = useMemo(() => {
+    try {
+      return pageMeaning({ outline, understanding: state.understanding, elementFor: (id) => api.elementFor(id) });
+    } catch (e) {
+      console.warn('[WebAble] Calm view could not read what this page is for', e);
+      return null;
+    }
+  }, [api, outline, state.understanding]);
+
   const plan = useMemo<CalmPlan | null>(() => {
     try {
       return buildPlan({
         spec, outline, elementFor: (id) => api.elementFor(id), decisions: state.decisions ?? [], listFirst: params.listFirst,
-        stepMax: params.stepMax, groupSize: params.groupSize,
+        stepMax: params.stepMax, groupSize: params.groupSize, meaning,
       });
     } catch (e) {
       console.warn('[WebAble] Calm view could not read this page', e);
       return null;
     }
     // `version` re-reads the live page after it changes.
-  }, [api, spec, outline, state.decisions, version, params.listFirst, params.stepMax, params.groupSize]);
+  }, [api, spec, outline, state.decisions, version, params.listFirst, params.stepMax, params.groupSize, meaning]);
 
   // A different layout (Jev's pick arrived) starts the form again at its first step.
   useEffect(() => setStep(0), [spec]);
@@ -369,6 +381,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       data-motion={reduceMotion ? 'reduce' : undefined}
       data-f={String(m.F)}
       data-kind={plan?.kind}
+      data-template={plan?.meaning?.template}
       data-docked={plan?.primary || plan?.form?.steps ? 'true' : undefined}
       style={style}
       onKeyDown={onKeyDown}
@@ -376,7 +389,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       onPointerDown={signalInteraction}
       onInput={signalInteraction}
     >
-      {needInline && <style>{calmCss}</style>}
+      {needInline && <style>{calmSheetCss()}</style>}
       <Calm.Provider value={ctx}>
         <Strip api={api} state={state} plan={plan} scale={scale} setScale={setScale} />
         <main ref={mainRef} class="wa-page" tabIndex={-1}>
@@ -399,7 +412,13 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
                 {plan.kind === 'article' && plan.article && !success ? (
                   <ArticleHeader lead={plan.lead} art={plan.article} />
                 ) : (
-                  plan.lead && !success && <LeadBand lead={plan.lead} small={plan.kind === 'index'} />
+                  plan.lead && !success && !plan.meaning?.hideLead && <LeadBand lead={plan.lead} small={plan.kind === 'index'} />
+                )}
+                {/* Round 7: what the page exists to show comes right after its title (a recipe card carries its own title;
+                    the page's intro follows it). */}
+                {plan.meaning && !success && <PurposeView meaning={plan.meaning} leadTitle={plan.lead?.title ?? null} listFirst={params.listFirst} />}
+                {plan.meaning?.hideLead && plan.lead && !success && (plan.lead.orient || plan.lead.pinned || plan.lead.about.length > 0) && (
+                  <LeadBand lead={{ ...plan.lead, title: null, eyebrow: null }} />
                 )}
                 {searchFirst && plan.kind !== 'index' && <SubStrip plan={plan} />}
                 {result && (
