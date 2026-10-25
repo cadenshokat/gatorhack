@@ -41,6 +41,12 @@ export const POLICY = Object.freeze({
   fineAccept: 0.5,
   /** Round 7: importance below this, with no task or help, marks a distraction even without a distraction role. */
   distractionImportance: 0.75,
+  /**
+   * Round 8: "live or updating right now" and "paid content styled as a story" are acted on (a Live dot, an Ad tag)
+   * only at these probabilities. Measured on 4 live pages: asked negatives topped out at 0.45 (live) and 0.21 (paid).
+   */
+  liveAccept: 0.6,
+  paidAsStoryAccept: 0.6,
 });
 
 const PROTECT_ROLES: readonly Role[] = [
@@ -192,19 +198,38 @@ function dedupe(xs: string[]): string[] {
 
 /** Plain words for each fine role, for the ledger and reasons. */
 export const FINE_WORDS: Readonly<Record<FineRole, string>> = Object.freeze({
-  page_title: 'page title', headline: 'headline', dek_summary: 'summary line', body_text: 'main text', byline: 'byline',
-  dateline: 'date', lead_image: 'lead picture', figure: 'picture', caption: 'caption', quote: 'quote', key_fact: 'key fact',
+  page_title: 'page title', headline: 'headline', dek_summary: 'summary line', subheading: 'section heading', body_text: 'main text',
+  byline: 'byline', author_bio: 'author bio', dateline: 'date', last_updated: 'updated time', read_time: 'reading time',
+  lead_image: 'lead picture', figure: 'picture', gallery: 'photo gallery', video_player: 'video player', map_embed: 'map',
+  caption: 'caption', quote: 'quote', pull_quote: 'pull quote', key_fact: 'key fact', correction_notice: 'correction',
+  breaking_banner: 'breaking news banner', live_badge: 'live badge',
   stat_value: 'stat', stat_label: 'stat label', scoreboard: 'scoreboard', team_or_org_logo: 'team logo',
   data_table: 'data table', table_row: 'table row', chart: 'chart', schedule_item: 'schedule item', standings: 'standings',
-  price: 'price', rating: 'rating', comparison_row: 'comparison row', ingredient_list: 'ingredients',
-  instruction_steps: 'steps', recipe_meta: 'recipe details', form_field: 'form field', primary_action: 'main button',
-  secondary_action: 'button', step_indicator: 'step indicator', search_box: 'search', filter_sort: 'filters',
-  result_item: 'result', status_message: 'status message', site_logo: 'site logo', site_nav: 'site menu',
-  section_nav: 'section menu', breadcrumb: 'breadcrumb', tabs: 'tabs', pagination: 'page links', back_link: 'back link',
-  jump_link: 'jump link', help_link: 'help link', contact_info: 'contact details', warning_notice: 'warning',
-  consent_notice: 'consent notice', popup: 'popup', advertising: 'ad', sponsored: 'sponsored content',
-  upsell_promo: 'promotion', newsletter_signup: 'newsletter signup', teaser_other_content: 'teaser for other pages',
-  social_share: 'share buttons', comments: 'comments', video_autoplay: 'autoplaying video', carousel: 'carousel',
+  price: 'price', discount_badge: 'discount tag', rating: 'rating', comparison_row: 'comparison row', player_card: 'player card',
+  play_by_play: 'play by play', ticker: 'ticker',
+  ingredient_list: 'ingredients', instruction_steps: 'steps', recipe_meta: 'recipe details',
+  product_title: 'product name', product_image: 'product picture', product_card: 'product tile', product_options: 'product options',
+  shipping_returns: 'shipping and returns', review_item: 'review', cart_item: 'cart item', order_summary: 'order summary',
+  countdown_timer: 'countdown', stock_warning: 'stock warning', account_balance: 'balance', transaction_row: 'transaction',
+  course_module: 'course module', lesson_content: 'lesson', feature_list: 'feature list', faq_item: 'question and answer',
+  person_profile: 'person', due_date: 'due date', grade_score: 'grade', food_menu_item: 'menu item',
+  prescription_item: 'prescription', opening_hours: 'opening hours', address: 'address', phone_number: 'phone number',
+  form_field: 'form field', date_picker: 'date picker', file_upload: 'file upload', choice_group: 'choices',
+  dropdown_select: 'drop down', password_field: 'password field', payment_field: 'payment field', terms_consent: 'terms checkbox',
+  captcha: 'human check', quiz_question: 'quiz question', appointment_slot: 'appointment slot', primary_action: 'main button',
+  add_to_cart: 'add to cart', secondary_action: 'button', accordion_item: 'expandable section', step_indicator: 'step indicator', progress_bar: 'progress bar',
+  search_box: 'search', filter_sort: 'filters', result_item: 'result', status_message: 'status message',
+  error_message: 'error message', success_message: 'success message',
+  site_logo: 'site logo', site_nav: 'site menu', section_nav: 'section menu', breadcrumb: 'breadcrumb', tabs: 'tabs',
+  pagination: 'page links', back_link: 'back link', jump_link: 'jump link', skip_link: 'skip link',
+  table_of_contents: 'contents list', tag_list: 'topic tags',
+  help_link: 'help link', contact_info: 'contact details', chat_widget: 'chat', warning_notice: 'warning',
+  consent_notice: 'consent notice', popup: 'popup', login_prompt: 'sign in prompt',
+  advertising: 'ad', sponsored: 'sponsored content', ad_disclosure: 'ad label', upsell_promo: 'promotion',
+  app_install_banner: 'app banner', paywall_prompt: 'paywall', betting_odds: 'betting odds',
+  newsletter_signup: 'newsletter signup', teaser_other_content: 'teaser for other pages', related_links: 'related links',
+  testimonial: 'testimonial', social_share: 'share buttons', comments: 'comments', video_autoplay: 'autoplaying video',
+  carousel: 'carousel',
   account_utility: 'account links', legal_footer: 'legal links', decorative: 'decoration', other: 'other',
 });
 
@@ -228,6 +253,21 @@ export function acceptedFine(j: ElementJudgment | null | undefined): FineRole | 
 /** Importance on the 0..4 scale, 2 ("supporting") when Jev was not asked. */
 export function importanceOf(j: ElementJudgment | null | undefined): number {
   return typeof j?.importance === 'number' && Number.isFinite(j.importance) ? j.importance : 2;
+}
+
+/** Round 8: Jev named this a live badge (a "Live" dot or label) with p >= 0.50. */
+export function isLiveBadge(j: ElementJudgment | null | undefined): boolean {
+  return acceptedFine(j) === 'live_badge';
+}
+
+/** Round 8: Jev says this is live or updating right now (p >= 0.60), or named it a live badge. Asked only of plausible candidates. */
+export function isLive(j: ElementJudgment | null | undefined): boolean {
+  return isLiveBadge(j) || (typeof j?.liveP === 'number' && j.liveP >= POLICY.liveAccept);
+}
+
+/** Round 8: Jev says this is paid content styled as a story (p >= 0.60), or sponsored content (fine role). Asked only of candidates. */
+export function isPaidAsStory(j: ElementJudgment | null | undefined): boolean {
+  return acceptedFine(j) === 'sponsored' || (typeof j?.paidAsStoryP === 'number' && j.paidAsStoryP >= POLICY.paidAsStoryAccept);
 }
 
 const DISTRACTION_SET = new Set<FineRole>(DISTRACTION_ROLES);

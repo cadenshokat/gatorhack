@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementEvidence, FineRole, PageDigest, Role } from '../../src/types';
 import {
-  DISTRACTION_ROLES, FINE_CRITERIA, FINE_FAMILY, FINE_ROLES, MAIN_PICK_ID, PAGE_PURPOSES, PURPOSE_CRITERIA, PURPOSE_ID,
+  DISTRACTION_ROLES, FINE_CRITERIA, FINE_FAMILY, FINE_ROLES, fineGuide, MAIN_PICK_ID, PAGE_PURPOSES, PURPOSE_CRITERIA, PURPOSE_ID,
   Q_REGION, REGION_FWD_ID, REGION_NONE_OPTION, REGION_REV_ID, buildPageCalls, coarseFromFine, combineRegionPicks,
   parsePageAnswers, regionsOf, structureSummary,
 } from '../../src/jev/page';
@@ -11,6 +11,7 @@ import type { JevAnswer, JevQuestion } from '../../src/jev/api';
 import { ALDERRA, choice, noul, response, score } from '../a1/fixtures';
 
 const ALL_FINE: FineRole[] = [
+  // round 7 (60)
   'page_title', 'headline', 'dek_summary', 'body_text', 'byline', 'dateline', 'lead_image', 'figure', 'caption', 'quote',
   'key_fact', 'stat_value', 'stat_label', 'scoreboard', 'team_or_org_logo', 'data_table', 'table_row', 'chart',
   'schedule_item', 'standings', 'price', 'rating', 'comparison_row', 'ingredient_list', 'instruction_steps',
@@ -19,6 +20,17 @@ const ALL_FINE: FineRole[] = [
   'back_link', 'jump_link', 'help_link', 'contact_info', 'warning_notice', 'consent_notice', 'popup', 'advertising',
   'sponsored', 'upsell_promo', 'newsletter_signup', 'teaser_other_content', 'social_share', 'comments', 'video_autoplay',
   'carousel', 'account_utility', 'legal_footer', 'decorative', 'other',
+  // round 8 (65)
+  'subheading', 'author_bio', 'last_updated', 'read_time', 'gallery', 'video_player', 'map_embed', 'pull_quote',
+  'correction_notice', 'breaking_banner', 'live_badge', 'discount_badge', 'player_card', 'play_by_play', 'ticker',
+  'product_title', 'product_image', 'product_card', 'product_options', 'shipping_returns', 'review_item', 'cart_item',
+  'order_summary', 'countdown_timer', 'stock_warning', 'account_balance', 'transaction_row', 'course_module',
+  'lesson_content', 'feature_list', 'faq_item', 'person_profile', 'due_date', 'grade_score', 'food_menu_item',
+  'prescription_item', 'opening_hours', 'address', 'phone_number', 'date_picker', 'file_upload', 'choice_group',
+  'dropdown_select', 'password_field', 'payment_field', 'terms_consent', 'captcha', 'quiz_question', 'appointment_slot',
+  'add_to_cart', 'accordion_item', 'progress_bar', 'error_message', 'success_message', 'skip_link', 'table_of_contents',
+  'tag_list', 'chat_widget', 'login_prompt', 'ad_disclosure', 'app_install_banner', 'paywall_prompt', 'betting_odds',
+  'related_links', 'testimonial',
 ];
 
 function region(id: string, label: string, extra: Partial<ElementEvidence> = {}): ElementEvidence {
@@ -62,9 +74,15 @@ describe('fine roles', () => {
     for (const d of DISTRACTION_ROLES) expect(FINE_ROLES).toContain(d);
   });
 
-  it('keep the fine-role Choice short: it is asked of every element and sets most of the cost', () => {
-    // about 1,300 input tokens per question measured live; this bounds it.
-    expect(JSON.stringify(FINE_CRITERIA).length).toBeLessThan(3600);
+  it('has about 125 roles, with live_badge among them', () => {
+    expect(FINE_ROLES.length).toBe(125);
+    expect(FINE_ROLES).toContain('live_badge');
+    expect(FINE_FAMILY.live_badge).toBe('main_content'); // protected: never folded or dimmed
+  });
+
+  it('keeps the role guide to a size one call carries once (about 3,000 tokens), never once per element', () => {
+    expect(JSON.stringify(fineGuide()).length).toBeLessThan(13_000);
+    expect(Object.keys(fineGuide()).length).toBe(FINE_ROLES.length);
   });
 
   it('map content, data and recipe roles to main content, and distractions to the fold families', () => {
@@ -109,7 +127,7 @@ describe('page questions', () => {
     const calls = buildPageCalls(GATORS);
     const regionIds = calls.flatMap((c) => c.regionIds ?? []);
     expect(regionIds.sort()).toEqual(['n9002', 'n9004', 'n9006']);
-    const all = Object.assign({}, ...calls.map((c) => c.questions)) as Record<string, JevQuestion>;
+    const all = Object.assign({}, ...calls.map((c) => c.questions)) as Record<string, JevQuestion>; // fine questions sit in the fine calls
     for (const id of regionIds) {
       for (const k of ['fine', 'task', 'help', 'importance']) expect(all[`${id}__${k}`], `${id}__${k}`).toBeDefined();
       expect(all[`${id}__main`]).toBeUndefined();
@@ -170,12 +188,13 @@ describe('parsePageAnswers v2', () => {
     const calls = buildPageCalls(digest);
     const responses = calls.map((c) => {
       const a: Record<string, JevAnswer> = {};
-      for (const id of [...c.elementIds, ...(c.regionIds ?? [])]) {
-        a[`${id}__fine`] = choice(fine[id] ?? { other: 1 });
-        a[`${id}__task`] = noul(0.5);
-        a[`${id}__help`] = noul(0.02);
-        a[`${id}__importance`] = score(fine[id]?.teaser_other_content ? 1 : 3.8, 5);
-        if (`${id}__main` in c.questions) a[`${id}__main`] = noul(0.03);
+      for (const q of Object.keys(c.questions)) {
+        const [id, kind] = q.split('__') as [string, string];
+        if (kind === 'fine') a[q] = choice(fine[id] ?? { other: 1 });
+        else if (kind === 'task') a[q] = noul(0.5);
+        else if (kind === 'help') a[q] = noul(0.02);
+        else if (kind === 'importance') a[q] = score(fine[id]?.teaser_other_content ? 1 : 3.8, 5);
+        else if (kind === 'main') a[q] = noul(0.03);
       }
       for (const [k, v] of Object.entries(page)) if (k in c.questions) a[k] = v;
       return response(a, 1000);
@@ -209,11 +228,12 @@ describe('parsePageAnswers v2', () => {
     const calls = buildPageCalls(ALDERRA);
     const responses = calls.map((c) => {
       const a: Record<string, JevAnswer> = {};
-      for (const id of c.elementIds) {
-        a[`${id}__fine`] = choice({ form_field: 1 });
-        a[`${id}__task`] = noul(0.9);
-        a[`${id}__help`] = noul(0.01);
-        if (`${id}__main` in c.questions) a[`${id}__main`] = noul(0.1);
+      for (const q of Object.keys(c.questions)) {
+        const [id, kind] = q.split('__') as [string, string];
+        if (kind === 'fine') a[q] = choice({ form_field: 1 });
+        else if (kind === 'task') a[q] = noul(0.9);
+        else if (kind === 'help') a[q] = noul(0.01);
+        else if (kind === 'main') a[q] = noul(0.1);
       }
       if (PURPOSE_ID in c.questions) a[PURPOSE_ID] = { type: 'choice', choice: 'banana', probabilities: { banana: 0.7, form_task: 0.3 }, confidence: 0.7 };
       return response(a, 1000);

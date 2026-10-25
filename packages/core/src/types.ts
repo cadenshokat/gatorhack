@@ -176,6 +176,10 @@ export interface ElementJudgment {
   fineP?: number;
   /** Round 7: how much this element matters to the page's purpose, 0 (distraction) to 4 (essential). */
   importance?: number;
+  /** Round 8: P(this is live or updating right now). Asked only of plausible candidates; unset when not asked. */
+  liveP?: number;
+  /** Round 8: P(this is paid content styled to look like an article or story). Asked only of plausible candidates. */
+  paidAsStoryP?: number;
 }
 
 export interface PageUnderstanding {
@@ -642,27 +646,43 @@ export type PagePurpose =
   | 'record_stats' | 'scoreboard' | 'schedule' | 'standings' | 'roster' | 'article' | 'news_index' | 'recipe'
   | 'product' | 'search_results' | 'form_task' | 'checkout' | 'sign_in' | 'account_dashboard' | 'bill_statement'
   | 'appointment' | 'status_lookup' | 'info_guide' | 'faq' | 'directory_listing' | 'location_hours' | 'calendar_dates'
-  | 'comparison' | 'video' | 'gallery' | 'home_portal' | 'other';
+  | 'comparison' | 'video' | 'gallery' | 'home_portal'
+  // round 8
+  | 'course_lesson' | 'course_overview' | 'live_blog' | 'product_listing' | 'game_detail'
+  | 'other';
 
 /** Fine roles: what an element is for. Grouped by family; the coarse `Role` stays for the existing policy. */
 export type FineRole =
   // content
-  | 'page_title' | 'headline' | 'dek_summary' | 'body_text' | 'byline' | 'dateline' | 'lead_image' | 'figure'
-  | 'caption' | 'quote' | 'key_fact'
+  | 'page_title' | 'headline' | 'dek_summary' | 'subheading' | 'body_text' | 'byline' | 'author_bio' | 'dateline'
+  | 'last_updated' | 'read_time' | 'lead_image' | 'figure' | 'gallery' | 'video_player' | 'map_embed' | 'caption' | 'quote'
+  | 'pull_quote' | 'key_fact' | 'correction_notice' | 'breaking_banner' | 'live_badge'
   // data
   | 'stat_value' | 'stat_label' | 'scoreboard' | 'team_or_org_logo' | 'data_table' | 'table_row' | 'chart'
-  | 'schedule_item' | 'standings' | 'price' | 'rating' | 'comparison_row'
+  | 'schedule_item' | 'standings' | 'price' | 'discount_badge' | 'rating' | 'comparison_row' | 'player_card'
+  | 'play_by_play' | 'ticker'
   // recipe and instructions
   | 'ingredient_list' | 'instruction_steps' | 'recipe_meta'
+  // shopping and money
+  | 'product_title' | 'product_image' | 'product_card' | 'product_options' | 'shipping_returns' | 'review_item'
+  | 'cart_item' | 'order_summary' | 'countdown_timer' | 'stock_warning' | 'account_balance' | 'transaction_row'
+  // learning, people and places
+  | 'course_module' | 'lesson_content' | 'feature_list' | 'faq_item' | 'person_profile' | 'due_date' | 'grade_score'
+  | 'food_menu_item' | 'prescription_item' | 'opening_hours' | 'address' | 'phone_number'
   // task
-  | 'form_field' | 'primary_action' | 'secondary_action' | 'step_indicator' | 'search_box' | 'filter_sort'
-  | 'result_item' | 'status_message'
+  | 'form_field' | 'date_picker' | 'file_upload' | 'choice_group' | 'dropdown_select' | 'password_field'
+  | 'payment_field' | 'terms_consent' | 'captcha' | 'quiz_question' | 'appointment_slot' | 'primary_action'
+  | 'add_to_cart' | 'secondary_action' | 'accordion_item' | 'step_indicator' | 'progress_bar' | 'search_box' | 'filter_sort'
+  | 'result_item' | 'status_message' | 'error_message' | 'success_message'
   // navigation and identity
   | 'site_logo' | 'site_nav' | 'section_nav' | 'breadcrumb' | 'tabs' | 'pagination' | 'back_link' | 'jump_link'
+  | 'skip_link' | 'table_of_contents' | 'tag_list'
   // help and notices
-  | 'help_link' | 'contact_info' | 'warning_notice' | 'consent_notice' | 'popup'
+  | 'help_link' | 'contact_info' | 'chat_widget' | 'warning_notice' | 'consent_notice' | 'popup'
+  | 'login_prompt'
   // distractions
-  | 'advertising' | 'sponsored' | 'upsell_promo' | 'newsletter_signup' | 'teaser_other_content' | 'social_share'
+  | 'advertising' | 'sponsored' | 'ad_disclosure' | 'upsell_promo' | 'app_install_banner' | 'paywall_prompt'
+  | 'betting_odds' | 'newsletter_signup' | 'teaser_other_content' | 'related_links' | 'testimonial' | 'social_share'
   | 'comments' | 'video_autoplay' | 'carousel'
   // other
   | 'account_utility' | 'legal_footer' | 'decorative' | 'other';

@@ -32,11 +32,16 @@ export const IMPORTANCE_BAND = 0.35;
 /** Distractions: always to the end drawer, never the lead. */
 export const DRAWER_FINE: ReadonlySet<FineRole> = new Set<FineRole>([
   'advertising', 'sponsored', 'upsell_promo', 'newsletter_signup', 'teaser_other_content', 'social_share', 'video_autoplay',
+  // round 8: finer roles that used to be answered as the ones above
+  'ad_disclosure', 'app_install_banner', 'paywall_prompt', 'betting_odds', 'related_links', 'testimonial',
 ]);
 /** Never what Calm view leads with (chrome, notices, distractions). */
 export const NEVER_LEAD_FINE: ReadonlySet<FineRole> = new Set<FineRole>([
   ...DRAWER_FINE, 'carousel', 'comments', 'popup', 'consent_notice', 'legal_footer', 'site_nav', 'section_nav', 'breadcrumb',
   'account_utility', 'decorative', 'pagination', 'site_logo', 'tabs', 'jump_link', 'back_link', 'help_link', 'other',
+  // round 8: finer roles that used to be answered as the ones above
+  'skip_link', 'table_of_contents', 'tag_list', 'login_prompt', 'chat_widget', 'ticker', 'countdown_timer',
+  'stock_warning', 'captcha',
 ]);
 /** Logos that identify something on the page: kept and shown. */
 export const KEEP_LOGO_FINE: ReadonlySet<FineRole> = new Set<FineRole>(['team_or_org_logo', 'site_logo']);
@@ -45,11 +50,14 @@ const TEMPLATE_OF: Partial<Record<PagePurpose, PurposeTemplate>> = {
   record_stats: 'record_stats', scoreboard: 'record_stats', standings: 'record_stats', schedule: 'record_stats', comparison: 'record_stats',
   recipe: 'recipe', article: 'article', news_index: 'news_index', search_results: 'search_results',
   form_task: 'form_task', checkout: 'form_task', sign_in: 'form_task', appointment: 'form_task', status_lookup: 'status_lookup',
+  // round 8: new kinds keep the layout their old answer got (a game page was a record, a store listing a result list)
+  game_detail: 'record_stats', product_listing: 'search_results', live_blog: 'article',
 };
 
 /** Purposes that are a task: their own layout (a form, a cart, results) wins over content read from the page. */
 const TASK_PURPOSES: ReadonlySet<PagePurpose> = new Set<PagePurpose>([
   'form_task', 'checkout', 'sign_in', 'appointment', 'account_dashboard', 'bill_statement', 'product', 'search_results',
+  'product_listing',
 ]);
 
 /** Data kinds each data template draws, in the order it draws them. */
@@ -284,9 +292,9 @@ function isChrome(n: OutlineNode): boolean {
 const CONTENT_ROLES: ReadonlySet<FitSection['role']> = new Set<FitSection['role']>(['primary', 'orient', 'supporting', 'reference', 'social_proof', 'other']);
 
 function drawerSectionFor(f: FineRole): { label: SectionLabel; role: FitSection['role']; why: FitSection['why'] } {
-  if (f === 'advertising' || f === 'sponsored') return { label: 'Sponsored', role: 'ads', why: 'advertising' };
+  if (f === 'advertising' || f === 'sponsored' || f === 'ad_disclosure' || f === 'betting_odds') return { label: 'Sponsored', role: 'ads', why: 'advertising' };
   if (f === 'legal_footer' || f === 'site_nav') return { label: 'Site links', role: 'navigation', why: 'navigation' };
-  if (f === 'upsell_promo' || f === 'newsletter_signup') return { label: 'Offers', role: 'promo', why: 'promotion' };
+  if (f === 'upsell_promo' || f === 'newsletter_signup' || f === 'app_install_banner' || f === 'paywall_prompt') return { label: 'Offers', role: 'promo', why: 'promotion' };
   return { label: 'Related items', role: 'related', why: 'not_needed_for_task' };
 }
 
@@ -533,7 +541,9 @@ const PURPOSE_WORDS: Record<PagePurpose, string> = {
   form_task: 'a form to fill in', checkout: 'a checkout', sign_in: 'a sign-in page', account_dashboard: 'an account page',
   bill_statement: 'a bill', appointment: 'an appointment page', status_lookup: 'a status check', info_guide: 'a guide',
   faq: 'questions and answers', directory_listing: 'a directory', location_hours: 'a location and hours', calendar_dates: 'a calendar',
-  comparison: 'a comparison', video: 'a video', gallery: 'a gallery', home_portal: 'a home page', other: 'a page',
+  comparison: 'a comparison', video: 'a video', gallery: 'a gallery', home_portal: 'a home page', course_lesson: 'a lesson',
+  course_overview: 'a course page', live_blog: 'a live blog', product_listing: 'a product listing', game_detail: 'a game page',
+  other: 'a page',
 };
 
 /** "a record and stats", for the ledger. */

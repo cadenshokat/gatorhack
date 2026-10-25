@@ -1,4 +1,4 @@
-// Page understanding v2: question catalog wa-jev-2, design B. Owner: J (round 7).
+// Page understanding v3: question catalog wa-jev-3 (wa-jev-2 plus a finer vocabulary and two optional questions), design B. Owner: J (rounds 7 and 8).
 //
 // Jev reads the page the way a person does, then WebAble rebuilds it around what the page is for. Per element (and
 // per content region) Jev answers:
@@ -8,6 +8,8 @@
 //   task/help   the measured Nouls, unchanged.
 //   main        the measured Noul, asked of main-action candidates only (the policy promotes nothing else).
 //   importance  a 5-level Score, from "a distraction" to "essential to what this page is for".
+//   live, paid  (round 8) two more Nouls, "live or updating right now?" and "paid content dressed as a story?",
+//               asked only of elements whose evidence makes them plausible (liveCandidate, paidCandidate).
 // Once per page: the page's purpose (a Choice over PagePurpose, from the page evidence plus a structure summary), the
 // main region (a Choice over digest.regions with full evidence plus `none`, asked in both option orders; accepted only
 // when both orders give the same region 0.80 or more), and the main-action pick (unchanged).
@@ -24,12 +26,17 @@ import type { JevQuestion, JevResponse } from './api';
 // The meaning check lives in its own file; re-exported here so `@webable/core` carries it.
 export * from './meaning';
 
-export const PAGE_CATALOG_VERSION = 'wa-jev-2';
+export const PAGE_CATALOG_VERSION = 'wa-jev-3';
 /**
  * Elements and regions per call. A subject costs about 2,300 input tokens with its five questions (the fine-role
  * criteria are most of it), so 12 keep a call near 28k tokens (cap 64k) and the slowest parallel call short.
  */
 export const MAX_ELEMENTS_PER_CALL = 12;
+/**
+ * Round 8: with the fine role asked in its own calls (role guide in their state), a subject has about half the
+ * questions per call, so a call carries twice as many. A fine call costs about 1,000 tokens a subject plus the guide.
+ */
+export const MAX_SUBJECTS_PER_SPLIT_CALL = 24;
 export const MAX_MAIN_CANDIDATES = 30;
 /** Regions offered to the main-region pick (the reader sends 4 to 12). */
 export const MAX_REGIONS = 14;
@@ -41,124 +48,232 @@ export const MAX_REGIONS = 14;
 /** Every fine role, in the order Jev sees them; `other` (the escape) last. */
 export const FINE_ROLES: readonly FineRole[] = [
   // content
-  'page_title', 'headline', 'dek_summary', 'body_text', 'byline', 'dateline', 'lead_image', 'figure', 'caption', 'quote',
-  'key_fact',
+  'page_title', 'headline', 'dek_summary', 'subheading', 'body_text', 'byline', 'author_bio', 'dateline', 'last_updated',
+  'read_time', 'lead_image', 'figure', 'gallery', 'video_player', 'map_embed', 'caption', 'quote', 'pull_quote', 'key_fact',
+  'correction_notice', 'breaking_banner', 'live_badge',
   // data
   'stat_value', 'stat_label', 'scoreboard', 'team_or_org_logo', 'data_table', 'table_row', 'chart', 'schedule_item',
-  'standings', 'price', 'rating', 'comparison_row',
+  'standings', 'price', 'discount_badge', 'rating', 'comparison_row', 'player_card', 'play_by_play', 'ticker',
   // recipe and instructions
   'ingredient_list', 'instruction_steps', 'recipe_meta',
+  // shopping and money
+  'product_title', 'product_image', 'product_card', 'product_options', 'shipping_returns', 'review_item', 'cart_item',
+  'order_summary', 'countdown_timer', 'stock_warning', 'account_balance', 'transaction_row',
+  // learning, people and places
+  'course_module', 'lesson_content', 'feature_list', 'faq_item', 'person_profile', 'due_date', 'grade_score',
+  'food_menu_item', 'prescription_item', 'opening_hours', 'address', 'phone_number',
   // task
-  'form_field', 'primary_action', 'secondary_action', 'step_indicator', 'search_box', 'filter_sort', 'result_item',
-  'status_message',
+  'form_field', 'date_picker', 'file_upload', 'choice_group', 'dropdown_select', 'password_field', 'payment_field',
+  'terms_consent', 'captcha', 'quiz_question', 'appointment_slot', 'primary_action', 'add_to_cart', 'secondary_action',
+  'accordion_item', 'step_indicator', 'progress_bar', 'search_box', 'filter_sort', 'result_item', 'status_message', 'error_message',
+  'success_message',
   // navigation and identity
-  'site_logo', 'site_nav', 'section_nav', 'breadcrumb', 'tabs', 'pagination', 'back_link', 'jump_link',
+  'site_logo', 'site_nav', 'section_nav', 'breadcrumb', 'tabs', 'pagination', 'back_link', 'jump_link', 'skip_link',
+  'table_of_contents', 'tag_list',
   // help and notices
-  'help_link', 'contact_info', 'warning_notice', 'consent_notice', 'popup',
+  'help_link', 'contact_info', 'chat_widget', 'warning_notice', 'consent_notice', 'popup', 'login_prompt',
   // distractions
-  'advertising', 'sponsored', 'upsell_promo', 'newsletter_signup', 'teaser_other_content', 'social_share', 'comments',
+  'advertising', 'sponsored', 'ad_disclosure', 'upsell_promo', 'app_install_banner', 'paywall_prompt', 'betting_odds',
+  'newsletter_signup', 'teaser_other_content', 'related_links', 'testimonial', 'social_share', 'comments',
   'video_autoplay', 'carousel',
   // other
   'account_utility', 'legal_footer', 'decorative', 'other',
 ];
 
 /**
- * The coarse role each fine role sums into. Content, data, recipe, results and task status are the page's own
- * content; the step indicator and logo link home are navigation (as in the v1 criteria); paid and self-promotion are
- * advertising; teasers and promo carousels are recommendations; share tools, comments, autoplay and decoration are other.
+ * The coarse role each fine role sums into. Content, data, recipe, shopping details, learning, results and task
+ * status are the page's own content; the step indicator, logo link home, skip links, contents and topic tags are
+ * navigation (as in the v1 criteria); paid and self-promotion (ads, disclosures, app and paywall pitches, betting
+ * odds) are advertising; teasers, related links, testimonials and promo carousels are recommendations; the form
+ * inputs and pickers are form fields; chat is help; urgency and tickers, share tools, comments, autoplay and
+ * decoration are other.
  */
 export const FINE_FAMILY: Readonly<Record<FineRole, Role>> = Object.freeze({
-  page_title: 'main_content', headline: 'main_content', dek_summary: 'main_content', body_text: 'main_content',
-  byline: 'main_content', dateline: 'main_content', lead_image: 'main_content', figure: 'main_content',
-  caption: 'main_content', quote: 'main_content', key_fact: 'main_content',
+  page_title: 'main_content', headline: 'main_content', dek_summary: 'main_content', subheading: 'main_content',
+  body_text: 'main_content', byline: 'main_content', author_bio: 'main_content', dateline: 'main_content',
+  last_updated: 'main_content', read_time: 'main_content', lead_image: 'main_content', figure: 'main_content',
+  gallery: 'main_content', video_player: 'main_content', map_embed: 'main_content', caption: 'main_content',
+  quote: 'main_content', pull_quote: 'main_content', key_fact: 'main_content', correction_notice: 'main_content',
+  breaking_banner: 'main_content', live_badge: 'main_content',
   stat_value: 'main_content', stat_label: 'main_content', scoreboard: 'main_content', team_or_org_logo: 'main_content',
   data_table: 'main_content', table_row: 'main_content', chart: 'main_content', schedule_item: 'main_content',
-  standings: 'main_content', price: 'main_content', rating: 'main_content', comparison_row: 'main_content',
+  standings: 'main_content', price: 'main_content', discount_badge: 'main_content', rating: 'main_content',
+  comparison_row: 'main_content', player_card: 'main_content', play_by_play: 'main_content', ticker: 'other',
   ingredient_list: 'main_content', instruction_steps: 'main_content', recipe_meta: 'main_content',
-  form_field: 'form_field', primary_action: 'action_button', secondary_action: 'action_button',
-  step_indicator: 'navigation', search_box: 'search', filter_sort: 'form_field', result_item: 'main_content',
-  status_message: 'main_content',
+  product_title: 'main_content', product_image: 'main_content', product_card: 'main_content',
+  product_options: 'form_field', shipping_returns: 'main_content', review_item: 'main_content', cart_item: 'main_content',
+  order_summary: 'main_content', countdown_timer: 'other', stock_warning: 'other', account_balance: 'main_content',
+  transaction_row: 'main_content',
+  course_module: 'main_content', lesson_content: 'main_content', feature_list: 'main_content', faq_item: 'main_content',
+  person_profile: 'main_content', due_date: 'main_content', grade_score: 'main_content', food_menu_item: 'main_content',
+  prescription_item: 'main_content', opening_hours: 'main_content', address: 'help_contact', phone_number: 'help_contact',
+  form_field: 'form_field', date_picker: 'form_field', file_upload: 'form_field', choice_group: 'form_field',
+  dropdown_select: 'form_field', password_field: 'form_field', payment_field: 'form_field', terms_consent: 'form_field',
+  captcha: 'form_field', quiz_question: 'form_field', appointment_slot: 'form_field', primary_action: 'action_button',
+  add_to_cart: 'action_button', secondary_action: 'action_button', accordion_item: 'action_button', step_indicator: 'navigation', progress_bar: 'main_content',
+  search_box: 'search', filter_sort: 'form_field', result_item: 'main_content', status_message: 'main_content',
+  error_message: 'main_content', success_message: 'main_content',
   site_logo: 'navigation', site_nav: 'navigation', section_nav: 'navigation', breadcrumb: 'navigation', tabs: 'navigation',
-  pagination: 'navigation', back_link: 'navigation', jump_link: 'navigation',
-  help_link: 'help_contact', contact_info: 'help_contact', warning_notice: 'main_content', consent_notice: 'consent_notice',
-  popup: 'popup_overlay',
-  advertising: 'advertising', sponsored: 'advertising', upsell_promo: 'advertising', newsletter_signup: 'advertising',
-  teaser_other_content: 'recommendations', social_share: 'other', comments: 'other', video_autoplay: 'other',
+  pagination: 'navigation', back_link: 'navigation', jump_link: 'navigation', skip_link: 'navigation',
+  table_of_contents: 'navigation', tag_list: 'navigation',
+  help_link: 'help_contact', contact_info: 'help_contact', chat_widget: 'help_contact', warning_notice: 'main_content',
+  consent_notice: 'consent_notice', popup: 'popup_overlay', login_prompt: 'account_utility',
+  advertising: 'advertising', sponsored: 'advertising', ad_disclosure: 'advertising', upsell_promo: 'advertising',
+  app_install_banner: 'advertising', paywall_prompt: 'advertising', betting_odds: 'advertising',
+  newsletter_signup: 'advertising', teaser_other_content: 'recommendations', related_links: 'recommendations',
+  testimonial: 'recommendations', social_share: 'other', comments: 'other', video_autoplay: 'other',
   carousel: 'recommendations',
   account_utility: 'account_utility', legal_footer: 'legal_footer', decorative: 'other', other: 'other',
 });
 
 /** Fine roles that pull away from what the page is for (Calm view's end drawer, never its lead). */
 export const DISTRACTION_ROLES: readonly FineRole[] = [
-  'advertising', 'sponsored', 'upsell_promo', 'newsletter_signup', 'teaser_other_content', 'social_share', 'comments',
-  'video_autoplay', 'carousel',
+  'advertising', 'sponsored', 'ad_disclosure', 'upsell_promo', 'app_install_banner', 'paywall_prompt', 'betting_odds',
+  'newsletter_signup', 'teaser_other_content', 'related_links', 'testimonial', 'social_share', 'comments', 'video_autoplay',
+  'carousel',
 ];
 
 /**
  * One short line per fine role: what it is, then what it is not when a neighbour is easy to confuse. Roles whose name
  * says it all (byline, breadcrumb) carry null, the API's "no extra detail": every option costs about 7 input tokens
  * plus its text, and this Choice is asked of every element, so its length sets most of a page read's cost.
+ * Round 8 (about 125 roles): each new role says what it is and, where a neighbour is easy to confuse, "Not X".
  */
 export const FINE_CRITERIA: Readonly<Record<FineRole, string | null>> = Object.freeze({
+  // content
   page_title: "The page's one main heading, or the block holding it. Not a news headline.",
   headline: 'The headline of the news story this page shows, or its block with the byline.',
   dek_summary: 'Summary line under the main heading.',
-  body_text: 'Main text: paragraphs and section headings.',
-  byline: null,
-  dateline: null,
+  subheading: "A heading inside the main text, above one section. Not the page's main heading.",
+  body_text: 'Main text paragraphs. Not headings, captions or links to other pages.',
+  byline: 'The author line: "By Name".',
+  author_bio: 'About the author: short bio, photo, more by them. Not the byline line.',
+  dateline: 'Publication date, or a place-and-date line. Not an updated stamp.',
+  last_updated: "An 'Updated' or 'last reviewed' stamp: 'Updated 2 hours ago', 'Page last reviewed 16 Oct'. Not the first publication date.",
+  read_time: "Reading time such as '6 min read'.",
   lead_image: 'Main photo or video at the top of the article or item.',
   figure: 'Another picture or video in the main content.',
-  caption: null,
-  quote: null,
+  gallery: 'A set of photos to browse in the content, such as thumbnails that open a photo viewer. Not a carousel of other pages.',
+  video_player: "A video or audio player for this page's own media. Not an extra autoplay clip.",
+  map_embed: 'A map of a place or route the page is about.',
+  caption: 'Caption or credit under a picture.',
+  quote: 'A quotation inside the text.',
+  pull_quote: 'A big quote lifted out of the text for show. Not a quotation inside the text.',
   key_fact: 'Highlighted fact or summary box within text.',
+  correction_notice: "A correction, clarification or editor's note about the content.",
+  breaking_banner: 'An urgent news strip or banner: breaking news, alert.',
+  live_badge: "A 'Live' dot or label on something happening now: a live game, blog, stream or event. Not the word 'live' in plain text.",
+  // data
   stat_value: 'A stat card or its number: wins 54, a 30-6 record, a total.',
   stat_label: "A stat's label: Wins, Home record.",
   scoreboard: 'The matchup result the page is about: two sides, scores, often logos. Not a strip of other games.',
   team_or_org_logo: "Logo of a team or organisation in the content. Not the site's brand mark.",
   data_table: "Table of the page's records or numbers.",
   table_row: 'One row of such a table.',
-  chart: null,
+  chart: 'A chart or graph.',
   schedule_item: "One dated event in the page's own schedule.",
-  standings: null,
-  price: 'Price of the item this page offers.',
+  standings: 'A league table or ranking.',
+  price: 'Price of the item this page offers. Not a discount tag.',
+  discount_badge: "A sale tag: '40% off', 'Save $20', a crossed-out price.",
   rating: "Star rating or review score of the page's item.",
-  comparison_row: 'Row comparing options side by side.',
-  ingredient_list: null,
+  comparison_row: 'A row comparing options side by side.',
+  player_card: "One person's card: photo, name, position, stat line.",
+  play_by_play: 'A running log of plays or events in a game.',
+  ticker: 'A strip of updating or scrolling items: stock prices, scores, headlines. Not a carousel of other pages.',
+  // recipe and instructions
+  ingredient_list: 'The list of ingredients.',
   instruction_steps: 'Steps or directions.',
   recipe_meta: 'Recipe times, servings, nutrition.',
-  form_field: "Input for the page's task. Not site search.",
-  primary_action: "The one control that submits or starts the page's task. Reading pages have none.",
+  // shopping and money
+  product_title: 'The name of the one product this page sells.',
+  product_image: 'Photos of the product being sold.',
+  product_card: "One product tile in a rail or listing: picture, name, price. Not the page's own product.",
+  product_options: 'Pickers for size, colour, variant or quantity.',
+  shipping_returns: 'Shipping, delivery, returns or warranty details.',
+  review_item: 'One customer or learner review, with its author and stars.',
+  cart_item: 'One line in the cart or an order: item, quantity, price.',
+  order_summary: 'Subtotal, shipping, tax and order total.',
+  countdown_timer: 'A clock counting down to a sale end, deadline or event start.',
+  stock_warning: "A scarcity message: 'only 3 left', 'selling fast'.",
+  account_balance: 'The amount of money in or owed on an account.',
+  transaction_row: 'One transaction line: date, description, amount.',
+  // learning, people and places
+  course_module: 'One module, week or lesson in a course outline.',
+  lesson_content: 'The lesson itself: explanation, worked example or exercise to learn from. Not a news article.',
+  feature_list: "A list of what the item offers or teaches: 'what you'll learn', skills, benefits.",
+  faq_item: 'A question phrased as a question (How, When, What, Can I) with its answer, or its collapsed line in an FAQ list. Not a topic heading or a link to a help page.',
+  person_profile: "A person's name, photo and role: instructor, speaker, staff member. Not the author byline.",
+  due_date: 'A due date or deadline for work.',
+  grade_score: 'A grade, points or mark earned.',
+  food_menu_item: 'One dish or drink on a menu, with its price.',
+  prescription_item: 'One prescription or refill: drug, dose, status.',
+  opening_hours: 'When a place or service is open.',
+  address: 'A street address, place or directions.',
+  phone_number: 'A phone number to call or text.',
+  // task
+  form_field: "A text input for the page's task: name, email, address. Not site search.",
+  date_picker: 'A date or time input, or a calendar picker.',
+  file_upload: 'A control to upload or attach a file or photo.',
+  choice_group: 'Radio buttons or checkboxes that offer options.',
+  dropdown_select: 'A drop-down list that picks one value.',
+  password_field: 'A password, PIN or security code input.',
+  payment_field: 'A card number, expiry, CVV or bank details input.',
+  terms_consent: 'A checkbox or line to agree to terms inside a form. Not a cookie banner.',
+  captcha: "A human check: 'I'm not a robot', an image puzzle.",
+  quiz_question: 'A quiz, test or survey question with answer choices.',
+  appointment_slot: 'A bookable day or time slot.',
+  primary_action: "The one control that submits or starts the page's task. Reading pages have none. Not Add to cart or a membership pitch.",
+  add_to_cart: 'A button that adds the item to the cart or buys it now.',
   secondary_action: "Another control of the page's task or content: back, edit, save, rate, print, show more.",
-  step_indicator: null,
+  accordion_item: 'A collapsible heading line that opens or closes more text, such as one line of an Expand all list. Not a question (faq_item) or a tab.',
+  step_indicator: 'Step 2 of 4 style progress through a task.',
+  progress_bar: 'A bar or ring showing percent done: course progress, upload.',
   search_box: 'Site search field or button.',
   filter_sort: 'Filters or sorting for results.',
   result_item: 'One result of the listing this page shows.',
   status_message: "Message about the visitor's own task or status.",
+  error_message: 'An error or failed-validation message.',
+  success_message: 'A confirmation that something worked: saved, sent, ordered.',
+  // navigation and identity
   site_logo: "The site's brand mark.",
   site_nav: 'Site header, main menu or links to other sections.',
   section_nav: "This section's sub-menu.",
-  breadcrumb: null,
+  breadcrumb: 'Home > Section > Page trail.',
   tabs: "Tabs switching this page's views.",
-  pagination: null,
+  pagination: 'Page numbers and next or previous page links.',
   back_link: 'Link back to the parent page.',
-  jump_link: 'Links within this page: skip, contents, jump to.',
+  jump_link: 'Other links within this page: jump to, anchors.',
+  skip_link: "A 'Skip to content' link.",
+  table_of_contents: "A contents list linking to this page's sections.",
+  tag_list: 'Topic tags that link to topic pages.',
+  // help and notices
   help_link: 'Help, FAQ or how-to, or a field hint.',
-  contact_info: 'Phone, email, chat or contact page.',
+  contact_info: 'Email, contact page or support options. Not a phone number or address.',
+  chat_widget: 'A chat launcher or chat window with an assistant or agent.',
   warning_notice: 'Warning affecting the task, money or safety.',
-  consent_notice: 'Cookie, privacy or terms notice asking the visitor to agree or choose.',
-  popup: 'Modal or floating prompt: survey, feedback, session warning.',
+  consent_notice: 'A cookie, privacy or terms notice asking the visitor to agree or choose. Not a plain link to a policy.',
+  popup: "A modal or floating prompt: survey, feedback tab, session warning. Not a header, menu or page section.",
+  login_prompt: 'A box, wall or button asking the visitor to sign in or join to continue. Not the header sign-in link.',
+  // distractions
   advertising: 'Ad slot or ad-network frame.',
   sponsored: 'Paid partner content styled like the page.',
-  upsell_promo: "The site's own promotion and its buttons: offers, memberships, tickets, shop, app.",
-  newsletter_signup: null,
-  teaser_other_content: 'Teasers for other pages: related, more stories, videos, other events.',
+  ad_disclosure: "An 'Advertisement', 'Sponsored' or 'Paid content' label itself.",
+  upsell_promo: "The site's own promotion and its buttons: offers, memberships, free trials, tickets, shop. Not app or paywall pitches.",
+  app_install_banner: "A banner or button pushing the site's mobile app: 'Get the app', 'Save favorites in the app'.",
+  paywall_prompt: 'A subscribe or register-to-read wall or meter message.',
+  betting_odds: 'Betting odds, lines or sportsbook offers.',
+  newsletter_signup: 'An email box or banner to join a mailing list.',
+  teaser_other_content: 'Rails and grids of teasers for other pages: more stories, most read, videos, other events.',
+  related_links: "A short block or list of links tied to this story: 'Related', 'See also', 'Read more'. Not one link inside a sentence, a table or a toolbar.",
+  testimonial: "A customer or learner quote used to promote. Not a review of the page's item.",
   social_share: 'Share or follow buttons.',
-  comments: 'Reader comments, questions or reviews.',
+  comments: 'Reader comments, questions or discussion.',
   video_autoplay: 'Self-playing video that is not the lead.',
   carousel: 'Sliding strip of slides about other games, events, pages or offers, and its arrows.',
+  // other
   account_utility: 'Sign in, account, cart, language, settings.',
   legal_footer: 'Privacy, terms, copyright or site map links.',
-  decorative: null,
+  decorative: 'A decorative image or spacer.',
   other: 'Something else, or too little evidence.',
 });
 
@@ -179,7 +294,7 @@ export const PAGE_PURPOSES: readonly PagePurpose[] = [
   'record_stats', 'scoreboard', 'schedule', 'standings', 'roster', 'article', 'news_index', 'recipe', 'product',
   'search_results', 'form_task', 'checkout', 'sign_in', 'account_dashboard', 'bill_statement', 'appointment',
   'status_lookup', 'info_guide', 'faq', 'directory_listing', 'location_hours', 'calendar_dates', 'comparison', 'video',
-  'gallery', 'home_portal', 'other',
+  'gallery', 'home_portal', 'course_lesson', 'course_overview', 'live_blog', 'product_listing', 'game_detail', 'other',
 ];
 
 export const PURPOSE_CRITERIA: Readonly<Record<PagePurpose, string>> = Object.freeze({
@@ -209,6 +324,11 @@ export const PURPOSE_CRITERIA: Readonly<Record<PagePurpose, string>> = Object.fr
   video: 'A page that exists to play one video.',
   gallery: 'A page of photos to browse.',
   home_portal: "A site's home page or portal pointing to many sections.",
+  course_lesson: 'A lesson to learn from: explanation, video, worked examples, exercises or a quiz in a course or class.',
+  course_overview: "A course or program's own page: what you'll learn, syllabus, instructors, reviews and a button to enrol.",
+  live_blog: 'A live blog or live event page: a running feed of timed updates while something happens.',
+  product_listing: 'A store or category page with many products to browse, with deals and filters. Not one product.',
+  game_detail: "One game or match: its score, leaders, team stats, box score and play-by-play. Not a page of many games.",
   other: 'None of these, or too little evidence to tell.',
 });
 
@@ -225,6 +345,10 @@ export const Q_HELP =
   'Is the element described in `element` a way for the visitor to get help or reach a person, such as help pages, FAQs, contact details, a phone number or a support chat?';
 export const Q_IMPORTANCE =
   'How much does the element described in `element` matter to what the page described in `page` exists to show or do?';
+export const Q_LIVE =
+  'Is the element described in `element` live or updating right now: something in progress, a running clock or countdown, or a feed that refreshes by itself?';
+export const Q_PAID =
+  'Is the element described in `element` paid content dressed up as an article or story of the page described in `page`: a headline, picture or teaser that is really an advertisement or a partner\'s content?';
 export const Q_PICK =
   "Which of these candidate elements is the main action of the page described in `page`: the one control a visitor uses to complete or move forward in the page's main job?";
 export const Q_PURPOSE =
@@ -243,6 +367,15 @@ export const MAIN_CRITERIA = Object.freeze({
 export const HELP_CRITERIA = Object.freeze({
   true: 'Help pages, FAQs, hints that explain a field, contact links, phone numbers, support or pharmacist chat.',
   false: "Anything else, including legal and privacy links, ads, general menus and the task's own fields and buttons.",
+});
+/** Round 8: asked only of plausible candidates (liveCandidate, paidCandidate), so most elements never pay for them. */
+export const LIVE_CRITERIA = Object.freeze({
+  true: "Marked 'Live' or 'Now': a game, blog, stream or event in progress; a running clock, countdown or ticker; a feed that refreshes by itself.",
+  false: 'Static content, even if recent: dated stories, final scores, upcoming events, ordinary links, menus, prices.',
+});
+export const PAID_CRITERIA = Object.freeze({
+  true: "A card, headline or block styled like the page's own stories that a business paid for: sponsored or partner content, promoted stories, 'You may like' or 'From around the web' recommendation widgets, and a box that holds such cards.",
+  false: "The site's own editorial stories and links, its own promotions, plain ad banners and slots, menus, and the main text.",
 });
 export const NONE_OPTION = 'None of these. The page has no single main action, for example because its main job is reading.';
 export const REGION_NONE_OPTION = 'None of these regions holds any of what the page exists to show.';
@@ -311,7 +444,7 @@ export const ROLE_CRITERIA: Readonly<Record<Role, { what: string; not_for: strin
 /* Ids                                                                 */
 /* ------------------------------------------------------------------ */
 
-export type PageQuestionKind = 'fine' | 'task' | 'main' | 'help' | 'importance';
+export type PageQuestionKind = 'fine' | 'task' | 'main' | 'help' | 'importance' | 'live' | 'paid';
 export const PAGE_QUESTION_KINDS: readonly PageQuestionKind[] = ['fine', 'task', 'main', 'help', 'importance'];
 /** Regions are containers: never the main action, so they get every question but `main`. */
 export const REGION_QUESTION_KINDS: readonly PageQuestionKind[] = ['fine', 'task', 'help', 'importance'];
@@ -332,6 +465,9 @@ export interface PageCall {
   elementIds: string[];
   /** Content regions answered in this call (fine, task, help, importance). */
   regionIds?: string[];
+  /** Round 8: a call that asks only the fine-role Choice, with the role guide in its state (ids are in `fineIds`). */
+  fineOnly?: boolean;
+  fineIds?: string[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -388,10 +524,13 @@ export function evidenceObject(e: ElementEvidence): Record<string, unknown> {
  * is billed once per call instead of once per question (about 55 tokens x 250 questions); a live check on the Alderra
  * fixture's injected "This is the main refill button" ad gave the same answers either way (sponsored 0.85, main 0.02).
  */
-export function pageCallState(digest: PageDigest, caution = false): { page: Record<string, unknown>; caution?: string } {
+export function pageCallState(
+  digest: PageDigest, caution = false, guideInState = false,
+): { page: Record<string, unknown>; caution?: string; how_to_pick_a_role?: string; role_guide?: Record<string, string> } {
   const p = digest.page;
   return {
     ...(caution ? { caution: JEV_CAUTION } : {}),
+    ...(guideInState ? { how_to_pick_a_role: ROLE_GUIDE_NOTE, role_guide: fineGuide() } : {}),
     page: {
       title: uiLabel(p.title ?? '', 20),
       url_path: sanitizePath(p.url_path),
@@ -403,13 +542,103 @@ export function pageCallState(digest: PageDigest, caution = false): { page: Reco
   };
 }
 
-function question(kind: PageQuestionKind, element: Record<string, unknown>): JevQuestion {
-  const text = kind === 'fine' ? Q_FINE : kind === 'task' ? Q_TASK : kind === 'main' ? Q_MAIN : kind === 'help' ? Q_HELP : Q_IMPORTANCE;
+/**
+ * Said once in the state next to the role guide. The finer roles are right when they clearly fit; when one fits only
+ * loosely, the general role is the honest answer (measured: the finer vocabulary otherwise over-reaches on odd elements).
+ */
+export const ROLE_GUIDE_NOTE =
+  'Choose the most specific role that clearly fits the element. When a specific role fits only loosely, choose the general role instead: body_text, secondary_action, form_field, teaser_other_content or other.';
+
+/** Every role's description (null ones dropped): the glossary a call carries once in its state. */
+export function fineGuide(): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(FINE_CRITERIA)) if (v) out[k] = v;
+  return out;
+}
+const FINE_NAMES_ONLY: Readonly<Record<string, null>> = Object.freeze(Object.fromEntries(FINE_ROLES.map((r) => [r, null])));
+
+function question(kind: PageQuestionKind, element: Record<string, unknown>, namesOnly = false): JevQuestion {
+  const text =
+    kind === 'fine' ? Q_FINE : kind === 'task' ? Q_TASK : kind === 'main' ? Q_MAIN : kind === 'help' ? Q_HELP
+      : kind === 'live' ? Q_LIVE : kind === 'paid' ? Q_PAID : Q_IMPORTANCE;
   const instructions: Record<string, unknown> = { question: text, element };
-  if (kind === 'fine') return { type: 'choice', instructions, criteria: FINE_CRITERIA as unknown as Record<string, string | null> };
+  if (kind === 'fine') {
+    return { type: 'choice', instructions, criteria: (namesOnly ? FINE_NAMES_ONLY : FINE_CRITERIA) as unknown as Record<string, string | null> };
+  }
   if (kind === 'importance') return { type: 'score', instructions, criteria: [...IMPORTANCE_LEVELS] };
-  const criteria = kind === 'task' ? TASK_CRITERIA : kind === 'main' ? MAIN_CRITERIA : HELP_CRITERIA;
+  const criteria =
+    kind === 'task' ? TASK_CRITERIA : kind === 'main' ? MAIN_CRITERIA : kind === 'live' ? LIVE_CRITERIA : kind === 'paid' ? PAID_CRITERIA : HELP_CRITERIA;
   return { type: 'noul', instructions, criteria: { true: criteria.true, false: criteria.false } };
+}
+
+/* ------------------------------------------------------------------ */
+/* Who is asked "live?" and "paid as a story?"                          */
+/* ------------------------------------------------------------------ */
+
+/** At most this many elements and regions per page are asked each optional question (cost bound: about 300 tokens each). */
+export const MAX_LIVE_CANDIDATES = 14;
+export const MAX_PAID_CANDIDATES = 12;
+
+const LIVE_LABEL = /\blive\b|happening now|\bnow (?:live|streaming|on)\b|breaking|\bupdat|countdown|\b(?:ends?|starts?|begins?) in\b|\b\d{1,2}:\d\d\b|\b\d+ ?(?:s|sec|secs|seconds?|m|min|mins|minutes?|h|hr|hrs|hours?) ago\b|\bin progress\b|\b(?:1st|2nd|3rd|4th|first|second|third|fourth) (?:quarter|half|period|inning)\b|\bhalftime\b|\bticker\b|\bon air\b/i;
+const LIVE_CLASS = /^(?:live|livestream\w*|ticker|clock|countdown|timer|updating|updates?|timeline|pulse|pulsing|blink\w*|stream\w*|breaking|onair|inprogress|scoreboard|scores?|marquee|refresh\w*)$/;
+const PAID_CLASS = /^(?:sponsor\w*|promoted|partners?|paid|native|nativo|advert\w*|outbrain|taboola|dianomi|revcontent|mgid|zergnet|brandcontent|recirc\w*|trc|obw)$/;
+const PAID_LABEL = /\bsponsored\b|\bpromoted\b|\bpartner content\b|\bpaid (?:post|content|partnership)\b|\badvertis|\bfrom around the web\b|\byou may like\b/i;
+const FRAME_ZONES = new Set(['header_band', 'footer_band']);
+
+function words(e: ElementEvidence): string[] {
+  return (e.class_words ?? []).map((w) => String(w).toLowerCase());
+}
+
+/** How strongly the evidence suggests "live": a Live word counts most, then a clock or live class word. */
+function liveScore(e: ElementEvidence): number {
+  const label = e.label ?? '';
+  let r = 0;
+  if (/\blive\b|breaking|happening now/i.test(label)) r += 3;
+  if (words(e).some((w) => LIVE_CLASS.test(w))) r += 2;
+  if (e.tag === 'time' || /\b(?:timer|status|log|marquee|progressbar|meter|alert)\b/.test(e.role_hint ?? '')) r += 2;
+  if (LIVE_LABEL.test(label)) r += 1;
+  return r;
+}
+
+/**
+ * Could this element be live or updating? From the evidence only: a "live", clock, countdown, score or "x minutes
+ * ago" word in the (redacted) label, a live-ish class word, a <time> tag, or a timer, status or log role. Most
+ * elements are not, so most never pay for the question.
+ */
+export function liveCandidate(e: ElementEvidence): boolean {
+  return liveScore(e) > 0;
+}
+
+/** How strongly the evidence suggests "paid as a story": a paid-content word, an ad-network frame, an off-site story link. */
+function paidScore(e: ElementEvidence): number {
+  if (FRAME_ZONES.has(e.zone)) return 0;
+  let r = 0;
+  if (words(e).some((w) => PAID_CLASS.test(w)) || PAID_LABEL.test(e.label ?? '')) r += 3;
+  if (e.iframe_kind === 'other_site') r += 2;
+  const labelWords = (e.label ?? '').split(/\s+/).filter(Boolean).length;
+  if (e.link_target === 'another website' && (e.tag === 'a' || e.tag === 'article') && labelWords >= 6) r += 1;
+  return r;
+}
+
+/**
+ * Could this element be paid content styled as a story? A paid-content class or label word, an ad-network frame, or
+ * a headline-length link to another website, outside the page's header and footer bands. Menus, plain ad slots on
+ * the site's own domain and the main text are not asked.
+ */
+export function paidCandidate(e: ElementEvidence): boolean {
+  return paidScore(e) > 0;
+}
+
+/** The ids of the best `max` subjects that pass `score` (highest score first, DOM order within a score). */
+function pickCandidates(subjects: ElementEvidence[], score: (e: ElementEvidence) => number, max: number): Set<string> {
+  return new Set(
+    subjects
+      .map((e, i) => ({ e, i, r: score(e) }))
+      .filter((x) => x.r > 0)
+      .sort((a, b) => b.r - a.r || a.i - b.i)
+      .slice(0, max)
+      .map((x) => x.e.id),
+  );
 }
 
 /** Main-action candidates: the digest's list (DOM order, <= 30), else every button or link in the digest. */
@@ -489,15 +718,25 @@ export function structureSummary(digest: PageDigest): Record<string, unknown> {
 }
 
 /**
- * Split the digest into parallel calls: elements and regions together, <= 12 per call (their own questions each), and
- * one page call with the purpose, the main region in both option orders and the main-action pick. Answers are
- * batch-size invariant in design B, so the split only trades call count against the slowest call.
+ * Split the digest into parallel calls: elements and regions together, and one page call with the purpose, the main
+ * region in both option orders and the main-action pick. Answers are batch-size invariant in design B, so the split
+ * only trades call count against the slowest call.
+ *
+ * Round 8 (default, `guideInState`): the fine role has about 125 options, too many to describe inside every
+ * element's question (measured: $0.0089 a page read). The fine Choice is asked in its own calls with names-only
+ * options and the role guide once in the call's state (billed once per call). The other questions stay in calls whose
+ * state has no guide, so task, help, main and importance see exactly the prompts the policy thresholds were measured
+ * on (a guide in their state moved 4.8% of verdicts; run to run is 0.4%). `guideInState: false` asks everything in
+ * one call with the criteria inside each question (the round 7 shape).
  */
 export function buildPageCalls(
-  digest: PageDigest, opts?: { caution?: boolean; pageQuestions?: boolean },
+  digest: PageDigest, opts?: { caution?: boolean; pageQuestions?: boolean; optionalQuestions?: boolean; guideInState?: boolean },
 ): PageCall[] {
   const caution = opts?.caution ?? wantsCaution(digest);
-  const state = pageCallState(digest, caution);
+  const guideInState = opts?.guideInState ?? true;
+  // The state of every call except the fine calls carries no role guide: its answers stay as measured.
+  const state = pageCallState(digest, caution, false);
+  const fineState = pageCallState(digest, caution, true);
   const seen = new Set<string>();
   const elements = digest.elements.filter((e) => {
     if (!e || typeof e.id !== 'string' || seen.has(e.id)) return false;
@@ -514,8 +753,13 @@ export function buildPageCalls(
     ...elements.map((e) => ({ e, region: false })),
     ...regionSubjects.map((e) => ({ e, region: true })),
   ];
+  // Round 8: "live?" and "paid as a story?" are asked only of plausible candidates (the evidence decides, in code).
+  const optional = opts?.optionalQuestions ?? true;
+  const liveIds = optional ? pickCandidates(subjects.map((x) => x.e), liveScore, MAX_LIVE_CANDIDATES) : new Set<string>();
+  const paidIds = optional ? pickCandidates(subjects.map((x) => x.e), paidScore, MAX_PAID_CANDIDATES) : new Set<string>();
   const n = subjects.length;
-  const nCalls = Math.max(1, Math.ceil(n / MAX_ELEMENTS_PER_CALL));
+  const maxPer = guideInState ? MAX_SUBJECTS_PER_SPLIT_CALL : MAX_ELEMENTS_PER_CALL;
+  const nCalls = Math.max(1, Math.ceil(n / maxPer));
   const per = Math.max(1, Math.ceil(n / nCalls));
   const calls: PageCall[] = [];
   for (let c = 0; c < nCalls; c++) {
@@ -526,11 +770,20 @@ export function buildPageCalls(
     const regionIds: string[] = [];
     for (const { e, region } of chunk) {
       const ev = evidenceObject(e);
-      const kinds = region ? REGION_QUESTION_KINDS : PAGE_QUESTION_KINDS.filter((k) => k !== 'main' || candidateIds.has(e.id));
+      const kinds = (region ? REGION_QUESTION_KINDS : PAGE_QUESTION_KINDS.filter((k) => k !== 'main' || candidateIds.has(e.id)))
+        .filter((k) => !guideInState || k !== 'fine');
       for (const k of kinds) questions[pageQuestionId(e.id, k)] = question(k, ev);
+      if (!guideInState) questions[pageQuestionId(e.id, 'fine')] = question('fine', ev);
+      if (liveIds.has(e.id)) questions[pageQuestionId(e.id, 'live')] = question('live', ev);
+      if (paidIds.has(e.id)) questions[pageQuestionId(e.id, 'paid')] = question('paid', ev);
       (region ? regionIds : elementIds).push(e.id);
     }
     calls.push({ state, questions, elementIds, ...(regionIds.length ? { regionIds } : {}) });
+    if (guideInState) {
+      const fine: Record<string, JevQuestion> = {};
+      for (const { e } of chunk) fine[pageQuestionId(e.id, 'fine')] = question('fine', evidenceObject(e), true);
+      calls.push({ state: fineState, questions: fine, elementIds: [], fineOnly: true, fineIds: chunk.map((x) => x.e.id) });
+    }
   }
 
   // The page call: purpose, main region (both orders) and main action. A whole-page read carries main-action
@@ -583,7 +836,9 @@ export function coarseFromFine(fineProbs: Record<string, number>): Partial<Recor
   return out;
 }
 
-function judgmentFrom(id: string, resp: JevResponse, opts: { askedMain: boolean }): ElementJudgment | null {
+function judgmentFrom(
+  id: string, resp: JevResponse, opts: { askedMain: boolean; askedLive?: boolean; askedPaid?: boolean },
+): ElementJudgment | null {
   const fine = choiceOf(resp, pageQuestionId(id, 'fine'));
   const task = noulOf(resp, pageQuestionId(id, 'task'));
   const help = noulOf(resp, pageQuestionId(id, 'help'));
@@ -602,6 +857,15 @@ function judgmentFrom(id: string, resp: JevResponse, opts: { askedMain: boolean 
   const j: ElementJudgment = { id, role, roleP: Math.max(0, roleP), roleProbs, task, main, help, fine: top, fineP: fine.probs[top] ?? 0 };
   const imp = scoreOf(resp, pageQuestionId(id, 'importance'));
   if (imp) j.importance = Math.max(0, Math.min(4, imp.score));
+  // Round 8 optional questions: only when they were asked; a missing answer leaves the field unset, never the element out.
+  if (opts.askedLive) {
+    const live = noulOf(resp, pageQuestionId(id, 'live'));
+    if (live !== null) j.liveP = round4(live);
+  }
+  if (opts.askedPaid) {
+    const paid = noulOf(resp, pageQuestionId(id, 'paid'));
+    if (paid !== null) j.paidAsStoryP = round4(paid);
+  }
   return j;
 }
 
@@ -638,17 +902,30 @@ export function parsePageAnswers(
   let purpose: PageUnderstanding['purpose'];
   let fwd: { choice: string; probs: Record<string, number> } | null = null;
   let rev: { choice: string; probs: Record<string, number> } | null = null;
+  // Question ids are unique across calls, so an element's fine role (asked in a fine call) and its other answers join here.
+  const merged: JevResponse = {
+    model: responses.find((r) => r?.model)?.model ?? '',
+    usage: { input_tokens: 0, output_tokens: 0 },
+    answers: Object.assign({}, ...responses.map((r) => r?.answers ?? {})),
+  };
   calls.forEach((call, i) => {
-    const resp = responses[i];
-    if (!resp) return;
+    const own = responses[i];
+    if (!own) return;
+    const resp = call.elementIds.length || call.regionIds?.length ? merged : own;
     for (const id of call.elementIds) {
       if (!known.has(id)) continue;
-      const j = judgmentFrom(id, resp, { askedMain: pageQuestionId(id, 'main') in call.questions });
+      const j = judgmentFrom(id, resp, {
+        askedMain: pageQuestionId(id, 'main') in call.questions,
+        askedLive: pageQuestionId(id, 'live') in call.questions,
+        askedPaid: pageQuestionId(id, 'paid') in call.questions,
+      });
       if (j) elements.push(j);
     }
     for (const id of call.regionIds ?? []) {
       if (!regionIds.has(id)) continue;
-      const j = judgmentFrom(id, resp, { askedMain: false });
+      const j = judgmentFrom(id, resp, {
+        askedMain: false, askedLive: pageQuestionId(id, 'live') in call.questions, askedPaid: pageQuestionId(id, 'paid') in call.questions,
+      });
       if (j) elements.push(j);
     }
     if (MAIN_PICK_ID in call.questions) {

@@ -17,9 +17,12 @@ function bigDigest(n: number): PageDigest {
 const criteriaOf = (q: JevQuestion): string => JSON.stringify('criteria' in q ? q.criteria : null);
 const elementCalls = <T extends { elementIds: string[] }>(calls: T[]): T[] => calls.filter((c) => c.elementIds.length > 0);
 
-describe('buildPageCalls (design B, catalog wa-jev-2)', () => {
+/** The round 7 shape: every question of an element in one call, the role criteria inside each fine question. */
+const INLINE = { guideInState: false } as const;
+
+describe('buildPageCalls (design B, inline shape, catalog wa-jev-3)', () => {
   it('puts each element in its own questions, <= 12 subjects per call, main only for candidates', () => {
-    const calls = buildPageCalls(ALDERRA);
+    const calls = buildPageCalls(ALDERRA, INLINE);
     const cands = new Set(ALDERRA.mainCandidates);
     for (const c of elementCalls(calls)) {
       expect(c.elementIds.length).toBeLessThanOrEqual(MAX_ELEMENTS_PER_CALL);
@@ -41,13 +44,13 @@ describe('buildPageCalls (design B, catalog wa-jev-2)', () => {
   });
 
   it('splits 40 elements into balanced calls plus one page call', () => {
-    const calls = buildPageCalls(bigDigest(40));
+    const calls = buildPageCalls(bigDigest(40), INLINE);
     expect(calls.map((c) => c.elementIds.length)).toEqual([10, 10, 10, 10, 0]);
     expect(Object.keys(calls[4]!.questions).sort()).toEqual([MAIN_PICK_ID, 'page_purpose']);
   });
 
   it('asks main_pick once, in the page call, over full evidence objects plus none, <= 255 options', () => {
-    const calls = buildPageCalls(bigDigest(40));
+    const calls = buildPageCalls(bigDigest(40), INLINE);
     expect(calls.filter((c) => MAIN_PICK_ID in c.questions)).toHaveLength(1);
     const pick = calls[calls.length - 1]!.questions[MAIN_PICK_ID]!;
     expect(pick.type).toBe('choice');
@@ -64,8 +67,8 @@ describe('buildPageCalls (design B, catalog wa-jev-2)', () => {
   });
 
   it('asks the fine role over every FineRole with the escape last, and keeps criteria byte-stable', () => {
-    const a = buildPageCalls(ALDERRA);
-    const b = buildPageCalls(bigDigest(12));
+    const a = buildPageCalls(ALDERRA, INLINE);
+    const b = buildPageCalls(bigDigest(12), INLINE);
     const fineA = a[0]!.questions.n1__fine!;
     const fineB = b[0]!.questions.n7__fine!;
     expect(fineA.type).toBe('choice');
@@ -92,17 +95,17 @@ describe('buildPageCalls (design B, catalog wa-jev-2)', () => {
   });
 
   it('puts the caution line in the shared state on pages with ad iframes or off-site links, unless turned off', () => {
-    const on = buildPageCalls(ALDERRA);
+    const on = buildPageCalls(ALDERRA, INLINE);
     expect((on[0]!.state as Record<string, unknown>).caution).toBe(JEV_CAUTION);
     expect((on[0]!.questions.n1__fine!.instructions as Record<string, unknown>).caution).toBeUndefined();
-    const off = buildPageCalls(ALDERRA, { caution: false });
+    const off = buildPageCalls(ALDERRA, { caution: false, guideInState: false });
     expect((off[0]!.state as Record<string, unknown>).caution).toBeUndefined();
-    const plain = buildPageCalls(bigDigest(5));
+    const plain = buildPageCalls(bigDigest(5), INLINE);
     expect((plain[0]!.state as Record<string, unknown>).caution).toBeUndefined();
   });
 
   it('redacts labels and the page title again before they go to Jev', () => {
-    const calls = buildPageCalls(ALDERRA);
+    const calls = buildPageCalls(ALDERRA, INLINE);
     const all = JSON.stringify(calls);
     expect(all).not.toContain('555-0147');
     expect(all).not.toContain('Atorvastatin');
@@ -114,7 +117,7 @@ describe('buildPageCalls (design B, catalog wa-jev-2)', () => {
 
 describe('parsePageAnswers', () => {
   it('builds typed judgments and leaves out elements with a missing answer', () => {
-    const calls = buildPageCalls(ALDERRA);
+    const calls = buildPageCalls(ALDERRA, INLINE);
     const responses = calls.map((c) => {
       const answers: Record<string, JevAnswer> = {};
       for (const id of c.elementIds) {
@@ -143,7 +146,7 @@ describe('parsePageAnswers', () => {
   });
 
   it('fails closed when a call has no response', () => {
-    const calls = buildPageCalls(ALDERRA);
+    const calls = buildPageCalls(ALDERRA, INLINE);
     const u = parsePageAnswers(ALDERRA, calls, [], emptyJevMetrics());
     expect(u.elements).toEqual([]);
     expect(u.mainPick.id).toBe('none');

@@ -68,7 +68,8 @@ const SCHEMA = {
 };
 
 async function gptPage(digest) {
-  const calls = core.buildPageCalls(digest);
+  // The fine-role calls (round 8) are Jev-only: GPT is asked the coarse roles of the same elements.
+  const calls = core.buildPageCalls(digest).filter((c) => !c.fineOnly);
   const byId = new Map(digest.elements.map((e) => [e.id, core.evidenceObject(e)]));
   const t0 = performance.now();
   const res = await Promise.all(calls.map(async (c, i) => {
