@@ -8,7 +8,7 @@ Matches main at 3079808 (round 9). Numbers come only from docs/CLAIMS.md "Say no
 
 ## Inspiration
 
-In high school, during COVID-19, we started a club to help senior citizens learn to use Zoom and online chat, so they could talk to their families while they couldn't see them in person. Sitting beside them, we saw how much of the web assumes sharp eyes, a steady hand and time to spare. That stayed with us.
+In high school, during COVID-19, we started a club to help senior citizens learn to use Zoom and online chat, so they could talk to their families during isolation/quarantine. We noticed that teaching them to use this technology improved their lives in a meaningful way. However, sitting beside them, we also noticed that much of the web assumes sharp eyes, a steady hand and time to spare. That stayed with us.
 
 Reading the news, checking a tax refund or refilling a prescription gets hard when the text is too small, the buttons are hard to hit, and the page keeps competing for your attention. Finding and changing accessibility settings, site by site, adds even more work.
 
@@ -26,13 +26,17 @@ Setup takes a few minutes, and every part can be skipped. An instruction card be
 
 - **Reading.** First the person picks a comfortable size on a real paragraph. Then short true-or-false sentences step down in size, in the style of the MNREAD reading test, until reading slows. That finds the critical print size (CPS), the smallest text before reading slows down, and body text is set just above it:
 
-$$\text{body} = 10^{\,\log_{10}\mathrm{CPS} + 0.06} \approx 1.15 \times \mathrm{CPS}.$$
+$$
+\text{body} = 10^{\log_{10} \mathrm{CPS} + 0.06} \approx 1.15 \times \mathrm{CPS}
+$$
 
 - **Faint words.** Four-choice trials with words that get fainter, placed adaptively by a Bayesian method (QUEST+), so a few trials are enough. The result is a band, never a score: faint text is darkened to at least 4.5:1 or 7:1 contrast, or as dark as it goes.
 - **Light or dark.** The same sentences on light and dark backgrounds. Dark wins only when it measurably helps, or when the measurement agrees with what the person says they prefer.
 - **Pointing.** A ring of nine dots, in the style of the ISO 9241-9 pointing test, stepping through sizes to find the smallest button the person hits reliably. Clicks that slip off what the person pressed count everywhere in the flow. "Steady clicks" turns on only when the evidence is strong: with k slips in n presses (at least 8 presses),
 
-$$P(\theta \ge 0.05 \mid k, n) \ge 0.70, \qquad \theta \sim \mathrm{Beta}\!\left(k + \tfrac12,\; n - k + \tfrac12\right).$$
+$$
+P(\theta \ge 0.05 \mid k, n) \ge 0.70 \quad \text{where} \quad \theta \sim \mathrm{Beta}\left(k + \tfrac{1}{2}, n - k + \tfrac{1}{2}\right)
+$$
 
 - **Finding, on real websites.** We open three real sites in turn with WebAble switched off: Wikipedia (quiet), CNN's home page (busy) and an Allrecipes recipe (busy). On each, the person finds and clicks one thing. We time it and count wrong clicks and near misses; links don't navigate, so nothing happens by accident. Then two questions: which site was easier, and what got in the way.
 
@@ -55,11 +59,15 @@ A typical page is about 178 decisions, asked in parallel.
 
 Code decides what's allowed. A part is folded away only when Jev is very sure it's clutter and fairly sure it isn't needed:
 
-$$\text{fold}(e) \iff P_{\text{ad}} + P_{\text{teaser}} + P_{\text{pop-up}} \ge 0.90 \;\wedge\; P_{\text{task}} \le 0.20 \;\wedge\; P_{\text{help}} \le 0.10.$$
+$$
+\text{fold}(e) \iff P_{\text{ad}} + P_{\text{teaser}} + P_{\text{pop-up}} \ge 0.90 \quad \text{and} \quad P_{\text{task}} \le 0.20 \quad \text{and} \quad P_{\text{help}} \le 0.10
+$$
 
 Anything with even a 5% chance of being content, a field, a button or help is protected. Jev charges only for input, so a typical read of about 81,000 tokens costs
 
-$$81{,}000 \times \frac{0.042\ \text{dollars}}{10^{6}} \approx 0.0034\ \text{dollars per page}.$$
+$$
+81000 \times \frac{0.042 \text{ dollars}}{10^{6}} \approx 0.0034 \text{ dollars per page}
+$$
 
 ### 4. Change the page
 
@@ -93,7 +101,9 @@ We're a team of two, Caden and Sid. We worked with several AI coding agents that
 
 **More categories didn't mean more accuracy.** Going from 60 kinds of element to 125 let Jev name more things, but on pages we hadn't tuned on, its accuracy held steady rather than improving. It also spread 1-2% across dozens of unlikely kinds; summed into families, that crossed our 5% "protect" line on things Jev was sure were ads, so WebAble stopped hiding them. We now count any single kind at or below 0.02 as zero:
 
-$$P_{\text{family}} = \sum_{r \in \text{family}} P_r \cdot \mathbf{1}[P_r > 0.02].$$
+$$
+P_{\text{family}} = \sum_{r \in \text{family}} P_r \cdot \mathbf{1}(P_r > 0.02)
+$$
 
 **Rewriting without changing the facts.** A rewrite that loses a deadline or a dosage condition is worse than no rewrite. So every rewrite goes through code checks for numbers, conditions, quotes and links, then Jev's check that nothing was dropped or added. If it still fails after one retry, the person keeps the original, and the original is always one click away.
 
