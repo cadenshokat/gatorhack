@@ -31,6 +31,16 @@ export interface CalmCtx {
   kind: PageKind;
   /** The text column in the view's px (a figure at least 1.4 × as wide goes to the picture column). */
   textCol: number;
+  /** A search results page (Google, Bing, a site's own search): results are a plain list, not cards. */
+  results?: boolean;
+}
+
+/** A results page by its address (the layout may not say so): a search engine's, or a site's own /search?q=… page. */
+export function isResultsUrl(u: URL | Location = location): boolean {
+  const host = u.hostname.replace(/^www\./, '');
+  const engine = /^(google\.[a-z.]+|bing\.com|duckduckgo\.com|search\.yahoo\.com|search\.brave\.com|ecosia\.org)$/i.test(host);
+  if (engine) return /^\/(search|html|web)?\/?$/i.test(u.pathname) && /[?&](q|p)=/.test(u.search);
+  return /(^|\/)search(\/|$)/i.test(u.pathname) && /[?&](q|query|search|term|keywords?)=[^&]/i.test(u.search);
 }
 
 export const Calm = createContext<CalmCtx | null>(null);

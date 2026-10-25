@@ -1,8 +1,13 @@
-// Owner: C. The frosted top bar: the site's short name, the provenance chip ("Calm view · Arranged by Jev") with a
-// popover that says how the layout was chosen, the page's help link, text size, "Original page" and Close.
-// The page's own search, account and cart sit in a small row under the task (SubStrip).
+// Owner: C, U (round 6: the strip never overlaps). The frosted top bar: the site's short name, the provenance chip
+// ("Calm view · Arranged by Jev") with a popover that says how the layout was chosen, the page's help link, text size,
+// "Original page" and Close. The page's own search, account and cart sit in a small row under the task (SubStrip).
+//
+// The bar never overlaps or clips. It measures itself and, when space runs short, collapses in this order (the
+// lowest priority first): the site name shrinks (at most about 20 characters, with an ellipsis); the chip becomes a
+// dot and "Calm view"; A− / A+ move into a small "⋯" menu; then the help link; then the site name leaves. Close and
+// "Original page" are always there. "New layout ready · Use it" is never in the bar: it is a slim line under it.
 import type { JSX } from 'preact';
-import { useEffect, useId, useRef, useState } from 'preact/hooks';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { EngineApi, EngineState } from '../../contracts';
 import { proxyInput, proxySubmit } from '../proxy';
 import { PillButton } from './Blocks';
@@ -230,10 +235,11 @@ function Popover({ s, plan, onClose, anchor }: { s: EngineState; plan: CalmPlan 
   );
 }
 
-function ProvenanceChip({ api, s, plan }: { api: EngineApi; s: EngineState; plan: CalmPlan | null }): JSX.Element {
+function ProvenanceChip({ s, plan, short }: { s: EngineState; plan: CalmPlan | null; short: boolean }): JSX.Element {
   const [open, setOpen] = useState(false);
   const btn = useRef<HTMLButtonElement>(null);
   const text = chipText(s);
+  const full = !s.calm.aiReady && !short;
   return (
     <div class="wa-prov">
       <button
@@ -242,31 +248,130 @@ function ProvenanceChip({ api, s, plan }: { api: EngineApi; s: EngineState; plan
         class="wa-provchip"
         aria-expanded={open}
         aria-haspopup="dialog"
+        aria-label={full ? undefined : `Calm view · ${text}`}
         data-loading={s.calm.loading || undefined}
         onClick={() => setOpen(!open)}
       >
         <span class="wa-provchip__dot" aria-hidden="true" />
-        {s.calm.aiReady ? (
-          <span>Calm view</span>
-        ) : (
+        {full ? (
           <span>
             Calm view <span aria-hidden="true">·</span>{' '}
             <span class="wa-provchip__src" key={text}>
               {text}
             </span>
           </span>
+        ) : (
+          <span>Calm view</span>
         )}
       </button>
-      {s.calm.aiReady && (
-        <button type="button" class="wa-btn wa-btn--soft wa-aiready" onClick={() => api.useAiLayout()}>
-          <I.Spark />
-          <span>New layout ready · Use it</span>
-        </button>
-      )}
       {open && <Popover s={s} plan={plan} anchor={btn.current} onClose={() => setOpen(false)} />}
     </div>
   );
 }
+
+/** The slim line under the bar when Jev's layout is ready (never inside the bar, where it crowded the buttons). */
+function AiReadyLine({ api }: { api: EngineApi }): JSX.Element {
+  return (
+    <div class="wa-strip__note" role="status">
+      <div class="wa-strip__notein">
+        <I.Spark />
+        <span class="wa-strip__notetext">New layout ready</span>
+        <button type="button" class="wa-btn wa-btn--link wa-strip__use" onClick={() => api.useAiLayout()}>
+          Use it
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Close on Escape or a press outside (shared by the "⋯" menu). */
+function useDismiss(ref: { current: HTMLElement | null }, anchor: HTMLElement | null, onClose: () => void): void {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      e.preventDefault();
+      onClose();
+      anchor?.focus({ preventScroll: true });
+    };
+    const onDown = (e: PointerEvent): void => {
+      const path = e.composedPath();
+      if (ref.current && !path.includes(ref.current) && (!anchor || !path.includes(anchor))) onClose();
+    };
+    const root = ref.current?.getRootNode() as ShadowRoot | Document | undefined;
+    root?.addEventListener('keydown', onKey as EventListener, true);
+    root?.addEventListener('pointerdown', onDown as EventListener, true);
+    return () => {
+      root?.removeEventListener('keydown', onKey as EventListener, true);
+      root?.removeEventListener('pointerdown', onDown as EventListener, true);
+    };
+  }, []);
+}
+
+function TextSize({ scale, step }: { scale: number; step: (d: number) => void }): JSX.Element {
+  return (
+    <div class="wa-seg" role="group" aria-label="Text size in this view">
+      <button type="button" class="wa-btn" aria-label="Smaller text" disabled={scale <= 0.85} onClick={() => step(-0.15)}>
+        A−
+      </button>
+      <button type="button" class="wa-btn" aria-label="Larger text" disabled={scale >= 1.6} onClick={() => step(0.15)}>
+        A+
+      </button>
+    </div>
+  );
+}
+
+function MoreMenu({ help, scale, step }: { help: ControlBlock | null; scale: number; step: (d: number) => void }): JSX.Element {
+  const [open, setOpen] = useState(false);
+  const btn = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  const id = useId();
+  return (
+    <div class="wa-strip__more">
+      <button
+        type="button"
+        ref={btn}
+        class="wa-btn wa-btn--quiet wa-strip__dots"
+        aria-label="More: text size and help"
+        title="More"
+        aria-expanded={open}
+        aria-controls={open ? id : undefined}
+        onClick={() => setOpen(!open)}
+      >
+        <span aria-hidden="true">⋯</span>
+      </button>
+      {open && <MenuPanel id={id} menu={menu} anchor={btn.current} help={help} scale={scale} step={step} onClose={() => setOpen(false)} />}
+    </div>
+  );
+}
+
+function MenuPanel(props: {
+  id: string;
+  menu: { current: HTMLDivElement | null };
+  anchor: HTMLElement | null;
+  help: ControlBlock | null;
+  scale: number;
+  step: (d: number) => void;
+  onClose: () => void;
+}): JSX.Element {
+  useDismiss(props.menu, props.anchor, props.onClose);
+  return (
+    <div class="wa-menu" id={props.id} ref={props.menu} role="group" aria-label="More">
+      <div class="wa-menu__row">
+        <span>Text size</span>
+        <TextSize scale={props.scale} step={props.step} />
+      </div>
+      {props.help && (
+        <div class="wa-menu__row wa-menu__help">
+          <StripLink b={props.help} cls="wa-btn wa-btn--link wa-btn--helplink" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Collapse levels, lowest priority first (see the header). */
+const LEVEL_MAX = 4;
 
 export function Strip(props: {
   api: EngineApi;
@@ -278,31 +383,69 @@ export function Strip(props: {
   const { api, plan, state } = props;
   const step = (d: number): void => props.setScale(Math.round(Math.min(1.6, Math.max(0.85, props.scale + d)) * 100) / 100);
   const name = plan?.siteName ?? location.hostname;
+  const help = plan?.helpLink ?? null;
+  const inRef = useRef<HTMLDivElement>(null);
+  const [level, setLevel] = useState(0);
+  const width = useRef(0);
+  // What the bar holds: when it changes, measure again from the fullest bar.
+  const content = `${name}|${chipText(state)}|${state.calm.aiReady ? 1 : 0}|${help?.text ?? ''}`;
+  const seen = useRef(content);
+  useLayoutEffect(() => {
+    if (seen.current === content) return;
+    seen.current = content;
+    setLevel(0);
+  }, [content]);
+  // After every render: if the last item reaches past the bar's edge, take the next step down. (The site name
+  // shrinks first by itself: it is the only item that may, down to its CSS min-width.)
+  useLayoutEffect(() => {
+    const el = inRef.current;
+    if (!el || level >= LEVEL_MAX) return;
+    const last = el.lastElementChild as HTMLElement | null;
+    if (!last) return;
+    const box = el.getBoundingClientRect();
+    // Rects are in the zoomed space (the host is CSS-zoomed by 1 ÷ page zoom); computed padding is not.
+    const k = el.offsetWidth > 0 ? box.width / el.offsetWidth : 1;
+    const pad = (parseFloat(getComputedStyle(el).paddingRight) || 0) * k;
+    if (last.getBoundingClientRect().right > box.right - pad + 0.5 * k) setLevel(level + 1);
+  });
+  // A wider or narrower window: start again from the fullest bar.
+  useEffect(() => {
+    const el = inRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      const w = el.clientWidth;
+      if (Math.abs(w - width.current) < 0.5) return;
+      width.current = w;
+      setLevel(0);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const shortChip = level >= 1;
+  const sizeInMenu = level >= 2;
+  const helpInMenu = level >= 3;
+  const noBrand = level >= 4;
   return (
-    <header class="wa-strip">
-      <div class="wa-strip__in">
-        <div class="wa-brand">
-          <span class="wa-dot" aria-hidden="true" />
-          <span class="wa-brand__name" title={name}>
-            {name}
-          </span>
-        </div>
-        <ProvenanceChip api={api} s={state} plan={plan} />
+    <header class="wa-strip" data-level={level}>
+      <div class="wa-strip__in" ref={inRef}>
+        {!noBrand && (
+          <div class="wa-brand">
+            <span class="wa-dot" aria-hidden="true" />
+            <span class="wa-brand__name" title={name}>
+              {name}
+            </span>
+          </div>
+        )}
+        <ProvenanceChip s={state} plan={plan} short={shortChip} />
         <div class="wa-strip__tools">
-          {plan?.helpLink && (
+          {help && !helpInMenu && (
             <span class="wa-strip__help">
-              <StripLink b={plan.helpLink} cls="wa-btn wa-btn--quiet wa-btn--helplink" />
+              <StripLink b={help} cls="wa-btn wa-btn--quiet wa-btn--helplink" />
             </span>
           )}
-          <div class="wa-seg" role="group" aria-label="Text size in this view">
-            <button type="button" class="wa-btn" aria-label="Smaller text" disabled={props.scale <= 0.85} onClick={() => step(-0.15)}>
-              A−
-            </button>
-            <button type="button" class="wa-btn" aria-label="Larger text" disabled={props.scale >= 1.6} onClick={() => step(0.15)}>
-              A+
-            </button>
-          </div>
-          <button type="button" class="wa-btn wa-btn--tonal" onClick={() => api.showOriginal(true)}>
+          {!sizeInMenu && <TextSize scale={props.scale} step={step} />}
+          {sizeInMenu && <MoreMenu help={helpInMenu ? help : null} scale={props.scale} step={step} />}
+          <button type="button" class="wa-btn wa-btn--tonal wa-strip__orig" onClick={() => api.showOriginal(true)}>
             Original page
           </button>
           <button type="button" class="wa-btn wa-btn--quiet wa-close" aria-label="Close Calm view" title="Close Calm view" onClick={() => api.closeCalm()}>
@@ -310,6 +453,7 @@ export function Strip(props: {
           </button>
         </div>
       </div>
+      {state.calm.aiReady && <AiReadyLine api={api} />}
     </header>
   );
 }

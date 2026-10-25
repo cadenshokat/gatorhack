@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   calmMeasureCh, calmMetaPx, calmTypeRatios, cleanAlt, hrefKey, isKickerText, isLogoPicture, isPlaceholderSrc, isTimeText,
-  isWideFigure, parseSrcset, pickSrcset, pictureFrame, storyScore,
+  isWideFigure, loadedFrame, parseSrcset, pickSrcset, pictureFrame, storyScore,
 } from '../../src/index';
 
 describe('alt text', () => {
@@ -41,6 +41,15 @@ describe('frames', () => {
     expect(pictureFrame(800, 800).ratio).toBeCloseTo(4 / 3);
     expect(pictureFrame(3000, 1000)).toMatchObject({ fit: 'contain', well: true });
     expect(pictureFrame(0, 0)).toMatchObject({ fit: 'contain', well: true });
+  });
+  it('takes the loaded picture\'s own shape (no band above a lead picture)', () => {
+    expect(loadedFrame(0, 0)).toBeNull();
+    expect(loadedFrame(1600, 900)).toMatchObject({ fit: 'cover', well: false });
+    expect(loadedFrame(1600, 900)!.ratio).toBeCloseTo(16 / 9);
+    expect(loadedFrame(800, 1000)).toMatchObject({ fit: 'cover', ratio: 0.8 });
+    expect(loadedFrame(800, 800)).toMatchObject({ fit: 'cover', ratio: 1 });
+    expect(loadedFrame(3000, 1000)).toMatchObject({ fit: 'contain', ratio: 2.4 });
+    expect(loadedFrame(500, 2000)).toMatchObject({ fit: 'contain', ratio: 0.75 });
   });
   it('goes wide at 1.4 × the text column', () => {
     expect(isWideFigure(1260, 900)).toBe(true);
@@ -114,10 +123,13 @@ describe('prominence (F3)', () => {
 
 describe('type ramp', () => {
   it('matches the anchors at F = 17 / 24 / 32 / 40', () => {
-    expect(calmTypeRatios(17)).toEqual({ page: 3.0, section: 1.75, title: 1.25 });
-    expect(calmTypeRatios(24)).toEqual({ page: 2.2, section: 1.45, title: 1.17 });
-    expect(calmTypeRatios(32)).toEqual({ page: 1.7, section: 1.3, title: 1.12 });
-    expect(calmTypeRatios(40)).toEqual({ page: 1.4, section: 1.2, title: 1.08 });
+    expect(calmTypeRatios(17)).toEqual({ page: 2.0, section: 1.45, title: 1.2 });
+    expect(calmTypeRatios(24)).toEqual({ page: 1.8, section: 1.35, title: 1.15 });
+    expect(calmTypeRatios(32)).toEqual({ page: 1.55, section: 1.25, title: 1.1 });
+    expect(calmTypeRatios(40)).toEqual({ page: 1.35, section: 1.18, title: 1.07 });
+  });
+  it('never makes the page title more than 2 × the body size', () => {
+    for (let F = 12; F <= 64; F += 0.5) expect(calmTypeRatios(F).page).toBeLessThanOrEqual(2);
   });
   it('is flat outside the anchors and shrinks as F grows', () => {
     expect(calmTypeRatios(12)).toEqual(calmTypeRatios(17));

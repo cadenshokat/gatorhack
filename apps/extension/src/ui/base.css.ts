@@ -110,49 +110,62 @@ ${C} .wa-btn--soft:hover{background:var(--wa-hover)}
 ${C} .wa-btn[data-selected]{background:var(--wa-ink);color:var(--wa-canvas)}
 ${C} :focus-visible{outline:var(--wa-ring) solid var(--wa-focus);outline-offset:2px}
 
-/* ---------- the top bar ---------- */
+/* ---------- the top bar ----------
+   Round 6: it never overlaps or clips. Controls are the fit's target size but at most 48 px tall (--wa-strip-ctl),
+   labels 15–19 px (--wa-strip-f). Every item keeps its size (flex:none) except the site name, which shrinks to an
+   ellipsis; Strip.tsx measures the bar and collapses it a step at a time when the last item would pass the edge. */
 ${C} .wa-strip{position:sticky;top:0;z-index:5;background:var(--wa-glass);
   -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
-  box-shadow:0 var(--wa-hair) 0 var(--wa-line)}
-${C} .wa-strip__in{max-width:var(--wa-page-max);margin:0 auto;min-height:var(--wa-strip-h);padding:6px var(--wa-side-pad);
-  display:flex;flex-wrap:nowrap;align-items:center;gap:10px 12px}
-${C} .wa-brand{flex:0 1 auto;display:flex;align-items:center;gap:10px;min-width:3em;max-width:14em;font-weight:var(--wa-w-head)}
-${C} .wa-brand__name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-${C} .wa-strip__tools{flex:0 1 auto;min-width:0;margin-left:auto;display:flex;align-items:center;flex-wrap:nowrap;justify-content:flex-end;gap:8px}
-${C} .wa-strip .wa-btn{flex:none;min-height:max(44px,var(--wa-chip-h));padding-inline:max(14px,calc(var(--wa-pill-pad)*.7))}
-${C} .wa-strip .wa-close{min-width:max(44px,var(--wa-chip-h));padding-inline:0;border-radius:50%}
+  box-shadow:0 var(--wa-hair) 0 var(--wa-line);font-size:var(--wa-strip-f);line-height:1.25}
+${C} .wa-strip__in{max-width:var(--wa-page-max);margin:0 auto;min-height:var(--wa-strip-h);padding:8px var(--wa-side-pad);
+  display:flex;flex-wrap:nowrap;align-items:center;gap:10px}
+${C} .wa-brand{flex:0 1 auto;display:flex;align-items:center;gap:8px;min-width:5.5em;max-width:16ch;font-weight:var(--wa-w-head)}
+${C} .wa-brand__name{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+${C} .wa-brand .wa-dot{width:8px;height:8px}
+${C} .wa-strip__tools{flex:none;margin-left:auto;display:flex;align-items:center;flex-wrap:nowrap;justify-content:flex-end;gap:8px}
+${C} .wa-strip .wa-btn{position:relative;flex:none;font-size:var(--wa-strip-f);min-height:var(--wa-strip-ctl);min-width:var(--wa-strip-ctl);
+  padding-inline:max(12px,calc(var(--wa-strip-ctl)*.34));white-space:nowrap}
+/* The hit area is the fit's full target size even where the drawn pill is capped at 48 px. */
+${C} .wa-strip .wa-btn::after,${C} .wa-provchip::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,var(--wa-t));transform:translateY(-50%)}
+${C} .wa-strip .wa-close{min-width:var(--wa-strip-ctl);width:var(--wa-strip-ctl);padding-inline:0;border-radius:50%}
 ${C} .wa-strip .wa-btn--quiet{box-shadow:inset 0 0 0 var(--wa-edge) var(--wa-edge-color)}
-${C} .wa-strip .wa-btn--helplink{color:var(--wa-ink);padding-inline:10px;flex:0 1 auto;min-width:44px;max-width:100%;font-weight:var(--wa-w-body)}
+${C} .wa-strip .wa-btn--helplink{color:var(--wa-ink);padding-inline:10px;flex:0 1 auto;min-width:var(--wa-strip-ctl);max-width:100%;font-weight:var(--wa-w-body)}
 ${C} .wa-strip .wa-btn--helplink svg{color:var(--wa-ink-2)}
-${C} .wa-strip__help{display:inline-flex;flex:0 1 auto;min-width:44px;max-width:14em;overflow:hidden}
+${C} .wa-strip__help{display:inline-flex;flex:none;max-width:14em;overflow:hidden}
 ${C} .wa-strip__help .wa-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-${C} .wa-seg{display:inline-flex;align-items:center;padding:3px;gap:2px;border-radius:var(--wa-r-pill);background:var(--wa-tonal);
+${C} .wa-seg{flex:none;display:inline-flex;align-items:center;padding:3px;gap:2px;border-radius:var(--wa-r-pill);background:var(--wa-tonal);
   box-shadow:inset 0 0 0 var(--wa-edge) var(--wa-edge-color)}
-${C} .wa-seg .wa-btn{background:transparent;box-shadow:none;min-width:max(44px,var(--wa-chip-h));min-height:calc(max(44px,var(--wa-chip-h)) - 6px);padding-inline:12px}
+${C} .wa-seg .wa-btn{background:transparent;box-shadow:none;min-width:var(--wa-strip-ctl);min-height:calc(var(--wa-strip-ctl) - 6px);padding-inline:10px}
 ${C} .wa-seg .wa-btn:hover{background:var(--wa-hover)}
-@container wa (max-width: 1060px){
-  ${C} .wa-strip__help{display:none}
-}
-@container wa (max-width: 860px){
-  ${C} .wa-seg{display:none}
-  ${C} .wa-brand{display:none}
-}
+/* "⋯": text size and help when the bar is short of room. */
+${C} .wa-strip__more{position:relative;flex:none;display:inline-flex}
+${C} .wa-strip .wa-strip__dots{width:var(--wa-strip-ctl);padding-inline:0;border-radius:50%;font-size:calc(var(--wa-strip-f)*1.3);line-height:1;font-weight:var(--wa-w-head)}
+${C} .wa-menu{position:absolute;z-index:8;top:calc(100% + 10px);right:0;min-width:15em;display:flex;flex-direction:column;gap:6px;padding:12px 16px;
+  border-radius:14px;background:var(--wa-raised);color:var(--wa-ink);box-shadow:var(--wa-shadow-float),inset 0 0 0 1px var(--wa-line);animation:wa-in .16s ease-out both}
+${C} .wa-menu__row{display:flex;align-items:center;justify-content:space-between;gap:16px;white-space:nowrap}
+${C} .wa-menu__help{justify-content:flex-start;box-shadow:inset 0 var(--wa-hair) 0 var(--wa-line);padding-top:6px}
+${C} .wa-menu .wa-btn--helplink{text-decoration:underline;text-underline-offset:.2em;padding-inline:0}
+/* "New layout ready · Use it": one slim line under the bar, never inside it. */
+${C} .wa-strip__note{box-shadow:inset 0 var(--wa-hair) 0 var(--wa-line);background:var(--wa-accent-tint)}
+${C} .wa-strip__notein{max-width:var(--wa-page-max);margin:0 auto;padding:0 var(--wa-side-pad);display:flex;align-items:center;gap:10px;
+  min-height:calc(var(--wa-strip-ctl) - 4px);color:var(--wa-ink);font-weight:var(--wa-w-body);white-space:nowrap;overflow:hidden;animation:wa-in .25s ease-out both}
+${C} .wa-strip__notein>svg{flex:none;width:1em;height:1em;color:var(--wa-accent)}
+${C} .wa-strip__notetext{min-width:0;overflow:hidden;text-overflow:ellipsis}
+${C} .wa-strip .wa-strip__use{min-height:calc(var(--wa-strip-ctl) - 8px);min-width:0;padding-inline:4px;font-weight:var(--wa-w-ctl)}
 
 /* ---------- provenance chip and popover ---------- */
 ${C} .wa-prov{flex:none;position:relative;display:flex;align-items:center;gap:10px;min-width:0}
-${C} .wa-provchip{appearance:none;border:0;margin:0;position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;
-  min-height:var(--wa-chip-h);padding:0 max(14px,calc(var(--wa-f)*.7));border-radius:var(--wa-r-pill);
+${C} .wa-provchip{appearance:none;border:0;margin:0;position:relative;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  min-height:var(--wa-strip-ctl);padding:0 max(12px,calc(var(--wa-strip-ctl)*.3));border-radius:var(--wa-r-pill);
   background:var(--wa-tonal);color:var(--wa-ink-2);font:inherit;font-weight:var(--wa-w-body);white-space:nowrap;
   box-shadow:inset 0 0 0 var(--wa-edge) var(--wa-edge-color);transition:background-color .18s ease}
-${C} .wa-provchip::before{content:"";position:absolute;inset:calc((var(--wa-chip-h) - max(var(--wa-t),var(--wa-chip-h))) / 2) -4px}
 ${C} .wa-provchip:hover{background:var(--wa-hover);color:var(--wa-ink)}
 ${C} .wa-provchip__dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--wa-accent)}
 ${C} .wa-provchip[data-loading] .wa-provchip__dot{animation:wa-pulse 1.4s ease-in-out infinite}
 ${C} .wa-provchip__src{display:inline-block;animation:wa-swap .2s ease-out both}
-${C} .wa-aiready{min-height:var(--wa-chip-h)!important;white-space:nowrap;animation:wa-in .25s ease-out both}
 ${C} .wa-popover{position:absolute;z-index:8;top:calc(100% + 10px);left:0;width:min(440px,calc(var(--wa-vw,100vw) - 32px));
-  display:flex;flex-direction:column;gap:16px;padding:22px 24px;border-radius:16px;background:var(--wa-raised);color:var(--wa-ink);
-  font-weight:var(--wa-w-body);white-space:normal;box-shadow:var(--wa-shadow-float),inset 0 0 0 1px var(--wa-line);
+  display:flex;flex-direction:column;gap:16px;padding:22px 24px;border-radius:16px;background:var(--wa-raised);color:var(--wa-ink);font-size:var(--wa-f);
+  font-weight:var(--wa-w-body);white-space:normal;line-height:1.45;box-shadow:var(--wa-shadow-float),inset 0 0 0 1px var(--wa-line);
   animation:wa-in .18s ease-out both}
 ${C} .wa-popover:focus{outline:none}
 ${C} .wa-popover__title{font-weight:var(--wa-w-head)}
@@ -186,7 +199,8 @@ ${C} .wa-panel{background:transparent;padding:0;border-radius:0;box-shadow:none}
 ${C} :is(.wa-panel,.wa-band,.wa-result,.wa-disc,.wa-notice,.wa-story,.wa-isec){scroll-margin-top:calc(var(--wa-strip-h) + 20px);scroll-margin-bottom:calc(var(--wa-dock-h) + 24px)}
 
 /* ---------- type ---------- */
-${C} .wa-h-page{font-family:var(--wa-font-display);font-size:var(--wa-f-page);line-height:var(--wa-lh-page);font-weight:var(--wa-w-head);
+/* The page title: at most 2 × the body (tokens) and under 5.5 % of the window, never below 1.25 × the body. */
+${C} .wa-h-page{font-family:var(--wa-font-display);font-size:max(calc(var(--wa-f)*1.25),min(var(--wa-f-page),calc(var(--wa-vw,100vw)*.055)));line-height:var(--wa-lh-page);font-weight:var(--wa-w-head);
   letter-spacing:var(--wa-tr-page);text-wrap:balance;overflow-wrap:break-word}
 ${C} .wa-h-section{font-family:var(--wa-font-display);font-size:var(--wa-f-section);line-height:var(--wa-lh-section);font-weight:var(--wa-w-head);
   letter-spacing:var(--wa-tr-section);text-wrap:balance;overflow-wrap:break-word}
@@ -224,7 +238,7 @@ ${C} .wa-equal .wa-btn{width:100%}
 ${C} .wa-lead{display:flex;flex-direction:column;margin-bottom:var(--wa-task-gap)}
 ${C} .wa-lead .wa-h-page,${C} .wa-lead .wa-h-section{max-width:100%}
 ${C} .wa-lead__eyebrow{margin-bottom:calc(var(--wa-lead-gap)*.8)}
-${C} .wa-orient{margin-top:var(--wa-lead-gap);max-width:min(var(--wa-measure),100%);font-size:var(--wa-f-title);line-height:1.45;color:var(--wa-ink-2)}
+${C} .wa-orient{margin-top:var(--wa-lead-gap);max-width:min(var(--wa-measure),100%);font-size:var(--wa-f);line-height:var(--wa-lh-body);color:var(--wa-ink-2)}
 ${C} .wa-orient__line{color:var(--wa-ink-2)}
 ${C} .wa-orient__pin{color:var(--wa-ink);font-weight:var(--wa-w-ctl)}
 ${C} .wa-about{appearance:none;border:0;background:transparent;font:inherit;font-size:var(--wa-f);color:var(--wa-ink);cursor:pointer;white-space:nowrap;
@@ -578,6 +592,25 @@ ${C} .wa-search input{width:100%;min-height:max(44px,var(--wa-t));padding:0 16px
   background:var(--wa-tonal);color:var(--wa-ink);box-shadow:inset 0 0 0 max(1px,var(--wa-edge)) var(--wa-edge-color)}
 ${C} .wa-search input:focus{outline:none;box-shadow:0 0 0 2px var(--wa-ink)}
 
+/* ---------- links that hold a heading, and search results: text links, never pills or cards ---------- */
+${C} .wa-headlink{appearance:none;border:0;background:transparent;padding:0;margin:0;cursor:pointer;align-self:flex-start;text-align:left;
+  font-family:var(--wa-font-display);font-size:var(--wa-f-title);line-height:var(--wa-lh-title);font-weight:var(--wa-w-head);
+  letter-spacing:var(--wa-tr-title);color:var(--wa-link);overflow-wrap:break-word;text-wrap:pretty;
+  text-decoration:underline;text-decoration-thickness:max(1px,.05em);text-underline-offset:.18em}
+${C} .wa-headlink:hover{text-decoration-thickness:max(2px,.09em)}
+${C} .wa-chiplink{min-height:max(40px,var(--wa-chip-h))}
+${C} .wa-results{display:flex;flex-direction:column;gap:calc(var(--wa-f)*1.6)}
+${C} .wa-res{display:flex;flex-direction:column;gap:4px;min-width:0;max-width:min(var(--wa-measure),100%)}
+${C} .wa-res__title{appearance:none;border:0;background:transparent;padding:0;margin:0;cursor:pointer;align-self:flex-start;text-align:left;
+  font-family:var(--wa-font-display);font-size:var(--wa-f-title);line-height:var(--wa-lh-title);font-weight:var(--wa-w-ctl);
+  color:var(--wa-link);overflow-wrap:break-word;text-wrap:pretty;
+  text-decoration:underline;text-decoration-thickness:max(1px,.05em);text-underline-offset:.18em}
+${C} .wa-res__title:hover{text-decoration-thickness:max(2px,.09em)}
+${C} .wa-res__url{color:var(--wa-ink-2);font-size:var(--wa-f-meta);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+${C} .wa-res__snip,${C} .wa-res .wa-p{color:var(--wa-ink);margin-top:2px}
+/* A result's snippet that the page keeps outside the link sits right under it, not a band away. */
+${C} .wa-results+.wa-p,${C} .wa-results+.wa-para{margin-top:calc(var(--wa-gap)*-.5)}
+
 /* ---------- page results and page popups ---------- */
 ${C} .wa-result{display:flex;flex-direction:column;gap:var(--wa-gap);background:var(--wa-raised);border-radius:12px;padding:var(--wa-card-pad);
   box-shadow:inset 0 0 0 2px var(--wa-ink)}
@@ -606,7 +639,8 @@ ${C}[data-mode=max] :is(a,.wa-btn--link,.wa-inline-link,.wa-about,.wa-notice__li
 ${C}[data-mode=max] :is(.wa-provchip,.wa-btn--soft,.wa-btn--tonal,.wa-btn--done,.wa-btn:not(.wa-btn--primary):not(.wa-btn--continue):not(.wa-btn--link):not(.wa-btn--quiet):not(.wa-btn--tool)){background:var(--wa-canvas)!important;color:var(--wa-ink)!important;box-shadow:inset 0 0 0 2px var(--wa-ink)!important}
 ${C}[data-mode=max] :focus-visible{outline:3px solid var(--wa-focus);outline-offset:3px}
 ${C}[data-mode=max] .wa-input{border-width:2px;border-color:var(--wa-ink)}
-${C}[data-mode=max] .wa-pic__box{background:transparent;box-shadow:inset 0 0 0 2px var(--wa-ink)}
+/* Pictures get no frame in any mode (round 6: a 2 px box around the lead picture read as an empty form field). */
+${C}[data-mode=max] .wa-pic__box{background:transparent;box-shadow:none}
 /* A story is one link: only its headline is underlined, not its kicker, dek and time. */
 ${C}[data-mode=max] :is(a.wa-story,a.wa-leadstory,a.wa-row){text-decoration:none}
 ${C}[data-mode=max] .wa-seg .wa-btn{box-shadow:none!important}

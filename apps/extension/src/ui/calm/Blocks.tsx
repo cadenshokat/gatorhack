@@ -1,7 +1,7 @@
 // Owner: C, D (round 4: pictures in reserved boxes, story rows). Draws the block model. Every control proxies its
 // original; every word is the page's own visible text. Alt text is only ever an <img> alt, never visible text.
-import { isWideFigure, pictureFrame } from '@webable/core';
-import type { JSX } from 'preact';
+import { STORY_RATIO, isWideFigure, loadedFrame, pictureFrame } from '@webable/core';
+import type { ComponentChildren, JSX } from 'preact';
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { proxyCheck, proxyClick, proxyCommit, proxyInput, proxyKey, proxySelect, proxySubmit, renderLiveValue } from '../proxy';
 import { isIrreversible, useCalm } from './context';
@@ -19,11 +19,21 @@ export type Variant = 'default' | 'quiet' | 'prose';
 
 /** Blocks in page order; runs of adjacent buttons or links share one wrapping row. */
 export function Blocks({ blocks, variant = 'default' }: { blocks: Block[]; variant?: Variant }): JSX.Element {
+  const ctx = useCalm();
   const out: JSX.Element[] = [];
   let run: ControlBlock[] = [];
   let cards: CardLinkBlock[] = [];
   const flushCards = (): void => {
-    if (cards.length) {
+    if (cards.length && cards.every((c) => isResultCard(c, !!ctx.results))) {
+      // Search results: a plain list (title link, the address in grey); the snippet follows in page order.
+      out.push(
+        <div class="wa-results" key={`${cards[0]!.key}c`}>
+          {cards.map((c) => (
+            <ResultItem key={c.key} link={c} title={c.title} lines={c.lines} dek={c.dek} />
+          ))}
+        </div>,
+      );
+    } else if (cards.length) {
       const thumbs = cards.filter((c) => c.image && keepImage(c.image, true)).length * 2 >= cards.length;
       out.push(
         <div class="wa-rows" key={`${cards[0]!.key}c`}>
@@ -55,7 +65,7 @@ export function Blocks({ blocks, variant = 'default' }: { blocks: Block[]; varia
       cards.push(b);
       continue;
     }
-    if (b.b === 'control' && !b.primary) {
+    if (b.b === 'control' && !b.primary && !b.head) {
       flushCards();
       run.push(b);
       continue;
@@ -194,12 +204,19 @@ export function ControlView({ b, variant }: { b: ControlBlock; variant?: 'pill' 
   // The page's main action lives in the dock (one filled button on screen at most).
   if (b.primary) return null;
   if (TOOL_RE.test(b.text.trim())) return <ToolButton b={b} />;
+  if (b.head && b.role === 'link') return <HeadLink b={b} />;
   if (variant === 'chip') return <PillButton b={b} cls="wa-chip" />;
   if (b.role === 'link' || variant === 'link') return <LinkButton b={b} />;
   return <PillButton b={b} cls={variant === 'quiet' ? 'wa-btn--quiet' : ''} />;
 }
 
 export function PillButton({ b, cls = '' }: { b: ControlBlock; cls?: string }): JSX.Element | null {
+  // Only real buttons are pills: a link (a result title, a heading link, a tab) is always drawn as a text link.
+  if (b.role === 'link') return <LinkButton b={b} cls={cls.includes('wa-chip') ? 'wa-chiplink' : ''} />;
+  return <ButtonPill b={b} cls={cls} />;
+}
+
+function ButtonPill({ b, cls }: { b: ControlBlock; cls: string }): JSX.Element | null {
   const ctx = useCalm();
   const live = useLive(b.el);
   if (live.kind === 'gone') return null;
@@ -250,6 +267,78 @@ export function LinkButton({ b, cls = '' }: { b: ControlBlock; cls?: string }): 
     <a class={`wa-btn wa-btn--link ${cls}`} href={b.href} data-selected={b.selected || undefined} aria-current={b.selected ? 'page' : undefined} onClick={press}>
       {body}
     </a>
+  );
+}
+
+/** A link around one of the page's headings: a heading-sized text link (underlined), never a pill. */
+export function HeadLink({ b }: { b: ControlBlock }): JSX.Element {
+  const ctx = useCalm();
+  const press = (e: MouseEvent): void => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    ctx.click(b.el);
+  };
+  return b.href ? (
+    <a class="wa-headlink" href={b.href} onClick={press}>
+      {b.text}
+    </a>
+  ) : (
+    <button type="button" class="wa-headlink" onClick={() => ctx.click(b.el)}>
+      {b.text}
+    </button>
+  );
+}
+
+/** An address line under a result title ("https://example.com › path", "example.com", "www.example.org/…"). */
+const URL_LINE_RE = /(^|\s)(https?:\/\/|www\.)\S|^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}(\s*[›»/]|$)/i;
+
+export function isUrlLine(l: string): boolean {
+  return URL_LINE_RE.test(l.trim());
+}
+
+/** A card link that reads as a search result: a title and an address line, no picture to show (or on a results page). */
+export function isResultCard(c: CardLinkBlock, resultsPage: boolean): boolean {
+  if (!c.title) return false;
+  if (resultsPage) return true;
+  const pic = c.image && keepImage(c.image, true);
+  return !pic && c.lines.some(isUrlLine);
+}
+
+/** One search result: the title as a link at headline size, the address in grey, then any snippet lines. */
+export function ResultItem({ link, title, lines, dek, children }: {
+  link: ControlBlock | CardLinkBlock; title: string; lines: string[]; dek?: string | null; children?: ComponentChildren;
+}): JSX.Element {
+  const ctx = useCalm();
+  const press = (e: MouseEvent): void => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    ctx.click(link.el);
+  };
+  const all = dek && isUrlLine(dek) ? [...lines, dek] : lines;
+  if (dek && isUrlLine(dek)) dek = null;
+  const url = all.filter(isUrlLine);
+  const other = all.filter((l) => !isUrlLine(l));
+  const addr = [...other.slice(0, 1), ...url.slice(0, 1)].join(' · ');
+  return (
+    <div class="wa-res">
+      {link.href ? (
+        <a class="wa-res__title" href={link.href} onClick={press}>
+          {title}
+        </a>
+      ) : (
+        <button type="button" class="wa-res__title" onClick={() => ctx.click(link.el)}>
+          {title}
+        </button>
+      )}
+      {addr && <span class="wa-res__url">{addr}</span>}
+      {other.slice(1).map((l, i) => (
+        <span key={i} class="wa-res__snip">
+          {l}
+        </span>
+      ))}
+      {dek && <span class="wa-res__snip">{dek}</span>}
+      {children}
+    </div>
   );
 }
 
@@ -464,20 +553,28 @@ const failed = new Set<string>();
 
 type PicState = 'loading' | 'ok' | 'error';
 
-function usePicture(url: string, keepWaiting: boolean): { state: PicState; attempt: number; onLoad: (e: Event) => void; onError: () => void } {
+/** Natural sizes of pictures that loaded, so a box drawn again starts at the picture's own shape. */
+const natural = new Map<string, { w: number; h: number }>();
+
+function usePicture(url: string, keepWaiting: boolean): {
+  state: PicState; attempt: number; size: { w: number; h: number } | null; onLoad: (e: Event) => void; onError: () => void;
+} {
   const [state, setState] = useState<PicState>(() => (failed.has(url) ? 'error' : 'loading'));
   const [attempt, setAttempt] = useState(0);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(() => natural.get(url) ?? null);
   useEffect(() => {
     setState(failed.has(url) ? 'error' : 'loading');
     setAttempt(0);
+    setSize(natural.get(url) ?? null);
   }, [url]);
   useEffect(() => {
     if (state !== 'loading') return;
-    // Not here in 4 s: ask again once; not here after that: give the space back (the lead and story pictures keep their box).
+    // Not here in 4 s: ask again once; not here after that: give the space back. The lead and story pictures keep
+    // their box a while longer (12 s), then collapse too, so an empty reserved box never stays on the page.
     const t = window.setTimeout(() => {
       if (attempt === 0) setAttempt(1);
-      else if (!keepWaiting) setState('error');
-    }, 4000);
+      else setState('error');
+    }, attempt === 0 ? 4000 : keepWaiting ? 12000 : 4000);
     return () => window.clearTimeout(t);
   }, [state, attempt, keepWaiting]);
   const onLoad = (e: Event): void => {
@@ -486,6 +583,11 @@ function usePicture(url: string, keepWaiting: boolean): { state: PicState; attem
       failed.add(url);
       setState('error');
       return;
+    }
+    if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+      const n = { w: img.naturalWidth, h: img.naturalHeight };
+      natural.set(url, n);
+      setSize(n);
     }
     setState('ok');
   };
@@ -497,7 +599,7 @@ function usePicture(url: string, keepWaiting: boolean): { state: PicState; attem
     failed.add(url);
     setState('error');
   };
-  return { state, attempt, onLoad, onError };
+  return { state, attempt, size, onLoad, onError };
 }
 
 export interface PictureProps {
@@ -517,11 +619,17 @@ export interface PictureProps {
 
 /** One picture in a reserved box, with its caption and then its credit in meta style. */
 export function Picture({ b, ratio, lead = false, caption = true, wide = false, fit: fitIn, cls = '' }: PictureProps): JSX.Element | null {
-  const { state, attempt, onLoad, onError } = usePicture(b.url, lead || b.important);
+  const { state, attempt, size, onLoad, onError } = usePicture(b.url, lead || b.important);
   if (state === 'error') return null;
-  const frame = pictureFrame(b.nw || b.w, b.nh || b.h);
-  const fit: 'cover' | 'contain' = fitIn ?? (ratio ? 'cover' : b.fit === 'contain' || frame.well ? 'contain' : 'cover');
-  const r = ratio ?? (frame.well || b.fit === 'contain' ? 4 / 3 : frame.ratio);
+  // Before it loads: the shape the page drew it at (16:9 when unknown, never a tall 4:3 well that leaves an empty band
+  // above a wide photo). Once loaded: the picture's own shape (loadedFrame), unless a story forces 16:9.
+  const known = (b.nw || b.w) > 0 && (b.nh || b.h) > 0;
+  const before = known ? pictureFrame(b.nw || b.w, b.nh || b.h) : { ratio: STORY_RATIO, fit: 'cover' as const, well: false };
+  const after = size ? loadedFrame(size.w, size.h) : null;
+  const frame = after ?? before;
+  const product = b.fit === 'contain' && !after;
+  const fit: 'cover' | 'contain' = fitIn ?? (ratio ? 'cover' : product || frame.well ? 'contain' : 'cover');
+  const r = ratio ?? (after ? after.ratio : frame.well || product ? 4 / 3 : frame.ratio);
   const cap = caption ? b.caption : '';
   const credit = caption ? b.credit : '';
   const imgProps: Record<string, string> = lead ? { fetchpriority: 'high' } : {};
@@ -558,9 +666,19 @@ function onlyControls(items: Block[][]): ControlBlock[] | null {
 }
 
 function ListView({ b, variant }: { b: ListBlock; variant: Variant }): JSX.Element {
+  const ctx = useCalm();
   // A list of card links is one grouped list of rows.
   if (b.items.length >= 2 && b.items.every((it) => it.length === 1 && it[0]!.b === 'cardlink')) {
     const cards = b.items.map((it) => it[0] as CardLinkBlock);
+    if (cards.every((c) => isResultCard(c, !!ctx.results))) {
+      return (
+        <div class="wa-results">
+          {cards.map((c) => (
+            <ResultItem key={c.key} link={c} title={c.title} lines={c.lines} dek={c.dek} />
+          ))}
+        </div>
+      );
+    }
     const thumbs = cards.filter((c) => c.image && keepImage(c.image, true)).length * 2 >= cards.length;
     return (
       <div class="wa-rows">
@@ -767,6 +885,14 @@ function CardLinkRow({ b, thumbs = true }: { b: CardLinkBlock; thumbs?: boolean 
 }
 
 export function CardLinkView({ b }: { b: CardLinkBlock }): JSX.Element {
+  const ctx = useCalm();
+  if (isResultCard(b, !!ctx.results)) {
+    return (
+      <div class="wa-results">
+        <ResultItem link={b} title={b.title} lines={b.lines} dek={b.dek} />
+      </div>
+    );
+  }
   return (
     <div class="wa-rows">
       <CardLinkRow b={b} />

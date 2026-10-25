@@ -50,6 +50,11 @@ export interface Op {
 export interface ColumnOp extends Op {
   spec: ColumnSpec;
   setWidth(widthPx: number, zoom: number): void;
+  /**
+   * Take the column's CSS off without touching the tab's zoom (round 6): the caller sets the tab's zoom for the next
+   * size in the same step, so a size change is one zoom change (Chrome shows its zoom bubble for every change).
+   */
+  release(): void;
 }
 
 export interface TailorHost {
@@ -78,6 +83,11 @@ export interface ColumnSpec {
   zoom: number;
   /** 'auto' follows the fit; 'person' is a width the person chose. */
   mode: 'auto' | 'person';
+  /**
+   * The scale the body is drawn at (column ÷ screen width), when the caller planned it with the zoom and already set
+   * the tab's zoom for it (round 6: one zoom change for text size and column together). Kept current by the op.
+   */
+  scale?: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -881,8 +891,10 @@ ${sel('data-wa-pg')} { margin-block-end: 1em !important; }`;
       detail: 'The site lays itself out for that width, as in a narrower window, and the page keeps its own background at the sides. Narrower, Wider and Full width are in the WebAble panel.',
       spec: current,
       async apply() {
-        const want = kFor(current.widthPx);
+        const want = current.scale && current.scale > 0 && current.scale <= 1 ? current.scale : kFor(current.widthPx);
         k = host.columnScale ? await host.columnScale(want) : 1;
+        current = { ...current, scale: k };
+        op.spec = current;
         sheet.replaceSync(cssFor(k));
         document.documentElement.setAttribute('data-wa-col', '');
         layer.attach(sheet);
@@ -894,6 +906,11 @@ ${sel('data-wa-pg')} { margin-block-end: 1em !important; }`;
         op.active = false;
         k = 1;
         if (host.columnScale) await host.columnScale(1);
+      },
+      release() {
+        layer.detach(sheet);
+        document.documentElement.removeAttribute('data-wa-col');
+        op.active = false;
       },
       setWidth(widthPx: number, zoom: number) {
         current = { ...current, widthPx, zoom };
@@ -909,6 +926,8 @@ ${sel('data-wa-pg')} { margin-block-end: 1em !important; }`;
         if (op.active && host.columnScale && Math.abs(want - k) > 0.004) {
           void host.columnScale(want).then((got) => {
             k = got;
+            current = { ...current, scale: k };
+            op.spec = current;
             if (op.active) write();
           });
         } else write();

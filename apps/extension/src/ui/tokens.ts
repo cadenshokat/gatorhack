@@ -75,6 +75,9 @@ export interface CalmMetrics {
   rPic: number;
   /** A form's column: min(36em, 100%). */
   formCol: number;
+  /** Top bar: control height (the fit's target size, 36–48 px) and label size (15–19 px). */
+  stripCtl: number;
+  stripF: number;
   zoom: number;
 }
 
@@ -297,10 +300,12 @@ function measureCtx(): CanvasRenderingContext2D | OffscreenCanvasRenderingContex
 }
 
 /**
- * Calm v3 sizes (design.md §2), all from the person's body size F: titles 3.0 / 2.2 / 1.7 / 1.4 × F at F = 17 / 24 /
- * 32 / 40 (h2 1.75 / 1.45 / 1.3 / 1.2, headlines 1.25 / 1.17 / 1.12 / 1.08); body line height at least 1.6; meta at
- * least 16 px; a text column of min(measure, 68) characters and a picture column 1.45 × as wide; paragraphs 1.25 F
- * apart, h2 with 3 F above and 1 F below, bands 4 F apart (at least 64 px), rows padded 1.25 F, gutter max(24, 1.5 F).
+ * Calm v3 sizes (design.md §2), all from the person's body size F: titles at most 2 × F (2.0 / 1.8 / 1.55 / 1.35 × F
+ * at F = 17 / 24 / 32 / 40; the stylesheet also keeps them under 5.5 % of the window width), h2 1.45 / 1.35 / 1.25 /
+ * 1.18, headlines 1.2 / 1.15 / 1.1 / 1.07; body line height 1.6–2.0; meta at least 16 px; a text column of
+ * min(measure, 68) characters and a picture column 1.45 × as wide; paragraphs 1.1 F apart, h2 with 2.25 F above and
+ * .75 F below, bands 3 F apart (at least 56 px), rows padded 1 F, gutter max(24, 1.5 F). Round 6 brought back the
+ * round-3 proportions where the round-4 restyle overshot at large F.
  */
 export function calmMetrics(fit: FitProfile | null, opts: TokenOptions = {}): CalmMetrics {
   const zoom = clamp(finite(opts.zoom, 1), 0.25, 5);
@@ -313,12 +318,14 @@ export function calmMetrics(fit: FitProfile | null, opts: TokenOptions = {}): Ca
   const ctl = Math.max(T, 44, Math.round(F * 2.2));
   const primaryH = Math.max(T, 52, Math.round(F * 2.55));
   const ratios = calmTypeRatios(F);
-  const lhBody = clamp(Math.max(1.6, finite(fit?.spacing.lineHeight, 1.6)), 1.6, 2.2);
+  const lhBody = clamp(Math.max(1.6, finite(fit?.spacing.lineHeight, 1.6)), 1.6, 2.0);
   const floor = clamp(finite(fit?.weight.floor, 400), 300, 700);
   const measureCh = calmMeasureCh(fit?.measure.targetCpl);
   const textCol = Math.round(measureCh * F * chRatio());
   const wideCol = Math.round(textCol * 1.45);
   const measurePx = Math.min(textCol, Math.round(measureCh * F * avgCharRatio()));
+  // The top bar's controls follow the fit's target size but stay at most 48 px tall (their hit area is T).
+  const stripCtl = clamp(T, 36, 48);
   return {
     F, T, ctl, primaryH,
     page: F * ratios.page, section: F * ratios.section, title: F * ratios.title,
@@ -329,17 +336,18 @@ export function calmMetrics(fit: FitProfile | null, opts: TokenOptions = {}): Ca
     wordEm: clamp(finite(fit?.spacing.wordEm, 0), 0, 0.3),
     letterEm: clamp(finite(fit?.spacing.letterEm, 0), 0, 0.15),
     measureCh,
-    bandGap: Math.max(64, (airy ? 4 : 3.25) * F),
+    // Round 6: the round-3 proportions (calmer at large F): bands 3 F apart (2.5 F comfortable), a short first band.
+    bandGap: airy ? Math.max(56, 3 * F) : Math.max(48, 2.5 * F),
     headGap: F,
     cardGap: Math.max(20, F),
     cardPad: Math.max(18, F),
     panelPad: Math.max(24, 1.25 * F),
     pillPad: Math.max(20, 1.1 * F),
     fieldPad: Math.max(14, 0.75 * F),
-    stripH: Math.max(56, T + 12),
-    topPad: Math.max(28, 1.75 * F),
-    leadGap: 0.6 * F,
-    taskGap: Math.max(32, 2 * F),
+    stripH: stripCtl + 16,
+    topPad: Math.max(24, 1.25 * F),
+    leadGap: 0.45 * F,
+    taskGap: Math.max(24, 1.4 * F),
     fieldGap: Math.max(24, 1.25 * F),
     dockH: Math.max(T, 52, Math.round(F * 2.55)) + 26,
     check: clamp(Math.round(Math.max(26, F * 1.25, T * 0.5)), 26, 44),
@@ -350,13 +358,15 @@ export function calmMetrics(fit: FitProfile | null, opts: TokenOptions = {}): Ca
     textCol,
     wideCol,
     measurePx,
-    paraGap: 1.25 * F,
-    h2Above: 3 * F,
-    h2Below: F,
-    rowPad: 1.25 * F,
+    paraGap: 1.1 * F,
+    h2Above: 2.25 * F,
+    h2Below: 0.75 * F,
+    rowPad: F,
     gutter: Math.max(24, 1.5 * F),
     rPic: clamp(0.75 * F, 8, 16),
     formCol: Math.round(36 * F),
+    stripCtl,
+    stripF: clamp(Math.round(0.82 * F * 10) / 10, 15, 19),
     zoom,
   };
 }
@@ -392,7 +402,7 @@ export function tokensFor(fit: FitProfile | null, mode: ThemeMode, opts: TokenOp
     gutter: px(m.gutter), 'r-pic': px(m.rPic),
     // size and space
     t: px(m.T), ctl: px(m.ctl), 'primary-h': px(m.primaryH), 'pill-pad': px(m.pillPad), 'field-pad': px(m.fieldPad),
-    'strip-h': px(m.stripH), 'top-pad': px(m.topPad), 'lead-gap': px(m.leadGap), 'task-gap': px(m.taskGap),
+    'strip-h': px(m.stripH), 'strip-ctl': px(m.stripCtl), 'strip-f': px(m.stripF), 'top-pad': px(m.topPad), 'lead-gap': px(m.leadGap), 'task-gap': px(m.taskGap),
     'field-gap': px(m.fieldGap), 'dock-h': px(m.dockH), 'band-gap': px(m.bandGap), 'head-gap': px(m.headGap), 'card-gap': px(m.cardGap),
     'card-pad': px(m.cardPad), 'panel-pad': px(m.panelPad), check: px(m.check), row: px(m.row),
     'col-max': px(m.colMax), 'page-max': px(calm ? Math.max(1280, m.wideCol + 2 * m.gutter) : 1280), 'tile-min': px(m.tileMin),

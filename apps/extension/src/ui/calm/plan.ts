@@ -11,6 +11,7 @@
 // date, title, dek, byline once, lead picture with its caption), a news index (the page's most prominent story with its
 // picture, six more as rows with thumbnails, then the page's own sections), a form, a product, a portal or a page.
 import { type ElementDecision, type FitSection, type FitSpec, type PageOutline, type SectionLabel, hrefKey, isKickerText, isTimeText, storyScore } from '@webable/core';
+import { isResultsUrl } from './context';
 import {
   type Block, type CardLinkBlock, type ControlBlock, type FlowBlock, type ImageBlock, type Inline, type LinkPart, TOOL_RE,
   chatContainer, clean, controlFor, flatten, imageFor, isGone, isProgressRail, keepImage, keyOf, nameOf, newCtx,
@@ -493,6 +494,31 @@ export function buildPlan(o: PlanInput): CalmPlan {
     const hEl = el(sec.heading_ref);
     return { sec, i, hEl, roots: dedupe(sec.nodes.map(el)).filter((r) => r !== hEl && !special(r)) };
   });
+  // On a results page the results are the page (Jev may call them recommendations): a "related" part inside another
+  // part stays there in page order (title, address, snippet together), and any other one opens in place.
+  const resultsPage = o.spec.page_type === 'search_results' || isResultsUrl();
+  if (resultsPage) {
+    // A result's title link and its snippet split across parts come back together: the link's part takes the
+    // result's own box (the largest ancestor holding no other result), with the snippet the other part had in it.
+    const rel = secs.filter((s) => s.sec.role === 'related');
+    const relRoots = rel.flatMap((s) => s.roots);
+    const others = secs.filter((s) => s.sec.role !== 'related');
+    for (const s of rel) {
+      s.roots = s.roots.map((r) => {
+        let box: Element = r;
+        for (let x = r.parentElement, n = 0; x && n < 5 && x !== document.body; x = x.parentElement, n++) {
+          if (relRoots.some((q) => q !== r && x.contains(q))) break;
+          if (x.querySelector(FIELDISH) || others.some((o) => o.hEl && x.contains(o.hEl))) break;
+          box = x;
+        }
+        if (box === r) return r;
+        for (const o of others) o.roots = o.roots.filter((q) => !box.contains(q));
+        return box;
+      });
+    }
+    const hosts = secs.filter((s) => !['related', 'navigation', 'ads', 'promo', 'legal'].includes(s.sec.role)).flatMap((s) => s.roots);
+    for (const s of secs) if (s.sec.role === 'related') s.roots = s.roots.filter((r) => !hosts.some((h) => h !== r && h.contains(r)));
+  }
   for (const s of secs) for (const r of s.roots) if (!placed.has(r)) placed.set(r, `s${s.i}`);
   for (const s of secs) s.roots = s.roots.filter((r) => placed.get(r) === `s${s.i}`);
 
@@ -522,6 +548,7 @@ export function buildPlan(o: PlanInput): CalmPlan {
     let state = s.sec.state;
     if (hoist || role === 'help' || role === 'primary' || s === formSec) state = 'open';
     if (primary && s.roots.some((r) => within(r, primary))) state = 'open';
+    if (resultsPage && role === 'related') state = 'open';
     return { hoist, notice, state };
   });
 
@@ -575,8 +602,10 @@ export function buildPlan(o: PlanInput): CalmPlan {
     const e = el(d.id);
     if (e) consider(e, d.judgment.role === 'advertising' ? 'Sponsored' : 'Offers');
   }
+  // On a results page links Jev calls recommendations stay in place too (ads still fold).
   for (const n of o.outline.nodes) {
     if (n.protected || (n.jevRole !== 'advertising' && n.jevRole !== 'recommendations')) continue;
+    if (resultsPage && n.jevRole === 'recommendations') continue;
     const e = el(n.id);
     if (e) consider(e, n.jevRole === 'advertising' ? 'Sponsored' : 'Related items');
   }

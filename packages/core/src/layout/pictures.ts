@@ -57,6 +57,20 @@ export function pictureFrame(w: number, h: number): PictureFrame {
   return { ratio: 4 / 3, fit: 'contain', well: true };
 }
 
+/**
+ * The box once the picture has loaded (round 6): its own shape, so a lead picture never sits in a taller box with an
+ * empty band above it. Shapes from 3:4 to 2.4:1 fill their box at that shape; a taller or wider picture keeps a box
+ * clamped to that range and sits inside it whole (`contain`). Unknown sizes give null (keep the reserved box).
+ */
+export function loadedFrame(nw: number, nh: number): PictureFrame | null {
+  if (!(nw > 0 && nh > 0)) return null;
+  const r = nw / nh;
+  const lo = 0.75;
+  const hi = 2.4;
+  if (r >= lo && r <= hi) return { ratio: r, fit: 'cover', well: false };
+  return { ratio: Math.min(hi, Math.max(lo, r)), fit: 'contain', well: true };
+}
+
 /** Story thumbnails and the lead story picture are always 16:9 (cropped to fill); figures keep pictureFrame. */
 export const STORY_RATIO = 16 / 9;
 
@@ -196,13 +210,15 @@ export function storyScore(e: StoryEvidence): number {
 
 /**
  * Heading ratios to the body size F (design.md §2): the large-heading ratio shrinks as F grows, so a person who needs
- * 32 px text still gets a title that fits the screen. Anchors at F = 17 / 24 / 32 / 40; flat outside them.
+ * 32 px text still gets a title that fits the screen. Anchors at F = 17 / 24 / 32 / 40; flat outside them. The page
+ * title is never more than 2 × F (round 6: 3 × F looked oversized at a laptop window), and the title's px still grow
+ * with F so the hierarchy never inverts.
  */
 const CALM_RAMP: ReadonlyArray<readonly [number, number, number, number]> = [
-  [17, 3.0, 1.75, 1.25],
-  [24, 2.2, 1.45, 1.17],
-  [32, 1.7, 1.3, 1.12],
-  [40, 1.4, 1.2, 1.08],
+  [17, 2.0, 1.45, 1.2],
+  [24, 1.8, 1.35, 1.15],
+  [32, 1.55, 1.25, 1.1],
+  [40, 1.35, 1.18, 1.07],
 ];
 
 export function calmTypeRatios(F: number): { page: number; section: number; title: number } {

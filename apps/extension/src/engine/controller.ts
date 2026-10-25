@@ -1,15 +1,19 @@
 // Owner: C1, round 3: T, round 4: P (the passive fit). The in-page engine: implements EngineApi and owns EngineState.
 //
-// Boot order (SPEC "Architecture", round 3): wait for load (1.5 s cap) and 400 ms DOM quiet -> settings + fit from the
-// background -> if disabled, paused for this origin or no fit: idle (the pill still mounts) -> reader -> page zoom
-// (verified on its own; zoom carries size) -> page column (verified, widened in steps if needed) -> fit ops
-// (verified) -> heading ramp (verified, single headings dropped) -> Jev understand -> decisions -> ops from decisions (verified) ->
-// Calm view automatically at structure level 2 on a busy page, else offered. Late overlays (cookie banners, chat
-// panels) get an incremental Jev read. SPA navigations re-run the element ops; zoom and behaviour ops stay.
+// Boot order (SPEC "Architecture", round 3; round 6 for size): wait for load (1.5 s cap) and 400 ms DOM quiet ->
+// settings + fit from the background -> if disabled, paused for this origin or no fit: idle (the pill still mounts) ->
+// reader -> text zoom and page column planned once and applied in one step (one tab zoom change), checked once; a
+// failed check falls back once (column off, then the next lower zoom preset) and stops; the site's settled size is
+// kept for the session -> fit ops (verified) -> heading ramp (verified, single headings dropped) -> Jev understand ->
+// decisions -> ops from decisions (verified) -> Calm view automatically only on task pages (a form with a clear main
+// action) at structure level 2, else offered. Late overlays (cookie banners, chat panels) get an incremental Jev read.
+// SPA navigations re-run the element ops; zoom, column and behaviour ops stay. Nothing re-sizes a page on its own: late
+// Jev reads, learning, overlays and DOM changes never touch zoom or column; the person's A−/A+, width controls and
+// accepted offers do, in one step.
 
 import {
   DEFAULT_SETTINGS, candidateSource, chooseOfferForFit, columnLimits, decideElements, heuristicSpec, nearestPreset, personZoomLadder,
-  bisectColumn, planColumn, repairSpec, stepColumn, stepZoom, summarizeDecisions, summarizeFitForModel,
+  planColumn, repairSpec, stepColumn, stepZoom, summarizeDecisions, summarizeFitForModel,
   effectiveFit, effectiveFitSources, fitSignature, passiveOffer, PASSIVE_OFFER_KIND,
 } from '@webable/core';
 import type {
@@ -26,7 +30,7 @@ import { createStore, throttle } from './store';
 import { routeKey, settle, sleep, waitForLoad, waitForQuiet, waitForVisible, watchNavigation } from './nav';
 import { PageReader, collapse, type NodeInfo, type ReadResult } from './reader';
 import { Tailor, resetBackgroundCache, type ColumnOp, type Op } from './tailor';
-import { Verifier, calmCoverage, completeSpec, plainCheck } from './verify-dom';
+import { Verifier, calmCoverage, completeSpec, plainCheck, type Snapshot } from './verify-dom';
 import { noteOfferOutcome, startSignals, type SignalsHost } from './signals';
 import { requestExplain } from './explain';
 import { PassiveObserver, readMediaFacts, watchMedia } from './passive';
@@ -78,13 +82,16 @@ interface SitePrefs {
   textStep?: number;
   /** The person's page width: 'off' (full width) or a column width in screen px. */
   column?: 'off' | number;
-  /** When the automatic column last did not fit this site (ms); it is tried again after COLUMN_RETRY_MS. */
+  /** When the automatic column last did not fit this site (ms); it stays off until COLUMN_RETRY_MS has passed. */
   columnFailed?: number;
 }
 
 const SITE_PREFS_KEY = 'sitePrefs';
-/** A site whose page did not fit the automatic column is tried again after three days (an ad can fail one visit). */
-const COLUMN_RETRY_MS = 3 * 24 * 3600 * 1000;
+/**
+ * A site whose page did not fit the automatic column stays at full width for two weeks (round 6: no retry on every
+ * visit; Narrower or Automatic in the WebAble panel tries it again at once).
+ */
+const COLUMN_RETRY_MS = 14 * 24 * 3600 * 1000;
 
 /**
  * Page zoom is the browser's own zoom: what the site does at the narrower viewport (line-clamped headlines, links
@@ -130,6 +137,86 @@ async function saveSitePrefs(patch: Partial<Record<keyof SitePrefs, SitePrefs[ke
   } catch {
     /* storage unavailable: the choice holds for this page only */
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* The size a site settled at, for this browser session (round 6)      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The text zoom and page column a site settled at after its one check (and fallback), kept for the browser session: a
+ * reload, a revisit or another page of the site applies it in one step with no trials (every zoom change shows
+ * Chrome's zoom bubble).
+ */
+interface SettledSize {
+  /** What it was planned for: the fit's text size, the person's A−/A+ steps and width choice on this site. */
+  sig: string;
+  /** The text zoom (the tab's zoom without the column's share). */
+  zoom: number;
+  /** Column width in screen px, or null for full width. */
+  column: number | null;
+  mode: 'auto' | 'person';
+}
+
+function settledKey(): string {
+  return `settled:${siteKey()}`;
+}
+
+async function loadSettled(): Promise<SettledSize | null> {
+  try {
+    const k = settledKey();
+    const got = await chrome.storage.session.get(k);
+    const v = got[k] as SettledSize | undefined;
+    return v && typeof v.sig === 'string' && Number.isFinite(v.zoom) && v.zoom > 0 ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSettled(v: SettledSize): void {
+  try {
+    void chrome.storage.session.set({ [settledKey()]: v }).catch(() => undefined);
+  } catch {
+    /* session storage unavailable: this page view keeps its size, the next one plans again */
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Pages Calm view never opens on by itself (round 6)                  */
+/* ------------------------------------------------------------------ */
+
+const SEARCH_HOSTS = /(^|\.)(google\.[a-z.]+|bing\.com|duckduckgo\.com|search\.yahoo\.com|yahoo\.com|ecosia\.org|startpage\.com|search\.brave\.com|baidu\.com|yandex\.[a-z.]+|ask\.com|aol\.com)$/i;
+const APP_HOSTS = /(^|\.)(docs\.google\.com|drive\.google\.com|calendar\.google\.com|meet\.google\.com|chat\.google\.com|notion\.so|figma\.com|canva\.com|trello\.com|airtable\.com|miro\.com|linear\.app|asana\.com|teams\.microsoft\.com|office\.com|onedrive\.live\.com|chatgpt\.com|claude\.ai|youtube\.com|maps\.google\.com)$/i;
+
+/** A search results page: a search engine, a search URL, or a search box at the top over a list of results. */
+function isSearchResults(pageKind: string): boolean {
+  const host = location.hostname;
+  const searchUrl = /\/search\b|\/results\b|\/s$/.test(location.pathname) || /[?&](q|query|search|search_query|k|p|text|wd)=/.test(location.search);
+  if (SEARCH_HOSTS.test(host) && (searchUrl || location.pathname === '/' || location.pathname === '')) return true;
+  if (pageKind === 'search results page') return true;
+  if (!searchUrl) return false;
+  // A box to search in near the top, and results under it (headed links).
+  const vh = document.documentElement.clientHeight || innerHeight;
+  const box = Array.from(document.querySelectorAll('input[type="search"], [role="search"] input, input[name="q"], input[name="query"], input[name="search"]'))
+    .find((el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && r.top < vh * 0.4;
+    });
+  if (!box) return false;
+  return document.querySelectorAll('a[href] h3, h3 a[href], h2 a[href], a[href] h2').length >= 5;
+}
+
+/** A web app or mail: the page is a tool to work in, not a page to read (Calm view would replace the tool). */
+function isWebApp(privatePage: boolean): boolean {
+  if (privatePage || APP_HOSTS.test(location.hostname)) return true;
+  if (document.querySelector('[role="application"]')) return true;
+  const vw = document.documentElement.clientWidth || innerWidth;
+  const vh = document.documentElement.clientHeight || innerHeight;
+  for (const el of Array.from(document.querySelectorAll('[contenteditable="true"], [contenteditable=""], canvas')).slice(0, 20)) {
+    const r = el.getBoundingClientRect();
+    if (r.width * r.height >= 0.25 * vw * vh) return true;
+  }
+  return false;
 }
 
 const OP_NOUN: Record<OpKind, string> = {
@@ -338,20 +425,26 @@ export function createController(): Controller {
     const cur = store.get();
     if (Math.abs(cur.pageZoom - tab) > 0.001 || Math.abs((cur.textZoom ?? cur.pageZoom) - text) > 0.001) store.set({ pageZoom: tab, textZoom: text });
   };
-  /** Set the tab's zoom for a text zoom (× the column's multiplier). */
+  /** The factor Chrome reports after a setZoom (the background rounds to whole percents), else what was asked. */
+  const realTab = (got: unknown, asked: number): number => (typeof got === 'number' && Number.isFinite(got) && got > 0 ? got : asked);
+  /** Set the tab's zoom for a text zoom (× the column's multiplier). state.pageZoom is Chrome's own factor after it. */
   const setTextZoom = async (text: number): Promise<void> => {
     const tab = Math.round(text * colMul * 10000) / 10000;
     lastTabZoom = tab;
-    await ask<number>({ type: 'setZoom', factor: tab });
-    setZoomState(tab);
-    passiveObs.syncZoom(tab);
+    const got = await ask<number>({ type: 'setZoom', factor: tab });
+    lastTabZoom = realTab(got, tab);
+    setZoomState(lastTabZoom);
+    passiveObs.syncZoom(lastTabZoom);
   };
   const tailor = new Tailor({
     ask: <T,>(req: BgRequest) => {
       if (req.type === 'setZoom') {
         const tab = Math.round(req.factor * colMul * 10000) / 10000;
         lastTabZoom = tab;
-        return ask<T>({ ...req, factor: tab });
+        return ask<T>({ ...req, factor: tab }).then((got) => {
+          lastTabZoom = realTab(got, tab);
+          return got;
+        });
       }
       return ask<T>(req);
     },
@@ -363,9 +456,11 @@ export function createController(): Controller {
     onBehaviour: (kind) => {
       behaviourCounts[kind]++;
     },
+    // Right after the zoom op's setZoom: lastTabZoom holds the factor Chrome reported for it.
     onZoom: (factor) => {
-      setZoomState(factor * colMul);
-      passiveObs.syncZoom(factor * colMul);
+      const tab = lastTabZoom ?? factor * colMul;
+      setZoomState(tab);
+      passiveObs.syncZoom(tab);
     },
   });
   const verifier = new Verifier({ idOf, isOurUi: safeOurs });
@@ -377,8 +472,13 @@ export function createController(): Controller {
   let opsList: Op[] = [];
   /** This site's remembered text steps and page width. */
   let sitePrefs: SitePrefs = {};
-  /** How much wider than planned the automatic column had to be to fit this page (1 = as planned). */
-  let columnWiden = 1;
+  /** The window's width (screen px) the page column was planned for: a window resize re-plans it, a zoom change does not. */
+  let columnWin = 0;
+  /** A size step is running, or ran a moment ago (its own resize events are not the person's zoom). */
+  let sizing = 0;
+  let sizedAt = 0;
+  /** A real SPA navigation waiting out its debounce. */
+  let navTimer: ReturnType<typeof setTimeout> | null = null;
   const undoneKinds = new Set<OpKind>();
   const opOffer = new Map<string, OfferKind>();
   let judged = new Set<string>();
@@ -407,14 +507,12 @@ export function createController(): Controller {
   let calmGen = 0;
   let heuristicSpecCache: FitSpec | null = null;
   let pendingAi: { spec: FitSpec; result: RedesignResult } | null = null;
-  let zoomSuspended = false;
   let calmWasOpen = false;
   const redesignCache = new Map<string, RedesignResult>();
   const dismissedOffers = new Map<OfferKind, number>();
   // The passive fit (round 4): the stored warm-up fit (state.fit is effectiveFit(baseFit, state.passive)), offers on
   // screen that came from what WebAble learned, and ops whose Undo also tells WebAble the learned need was wrong.
   let baseFit: FitProfile | null = null;
-  let suppressRefitUntil = 0;
   const passiveOffers = new Map<OfferKind, PassiveOfferMeta>();
   const passiveUndo = new Map<string, FitDimension>();
   let passiveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -437,6 +535,8 @@ export function createController(): Controller {
     const zoom = store.get().pageZoom;
     return (document.documentElement.clientWidth || innerWidth) * (zoom > 0 ? zoom : 1);
   };
+  /** The window's own width in screen px (scrollbars included, so a scrollbar coming and going does not move it). */
+  const windowW = (): number => innerWidth * (store.get().pageZoom > 0 ? store.get().pageZoom : 1);
   /** The zoom text is shown at (the tab's zoom without the column's share). */
   const textZoomNow = (): number => store.get().pageZoom / colMul;
 
@@ -605,7 +705,9 @@ export function createController(): Controller {
     const text = zi.factor > 0 ? zi.factor : 1;
     let mul = k > 0 && k < 1 ? 1 / k : 1;
     mul = Math.max(1, Math.min(mul, 5 / text));
-    if (Math.abs(mul - colMul) < 0.0005 && Math.abs(zi.tab - text * mul) < 0.002) return 1 / colMul;
+    // Already drawn at this scale with the tab's zoom set for it (round 6: the size step set both at once). Chrome
+    // keeps whole percents, so a tab zoom within 0.6% is the same zoom.
+    if (Math.abs(mul - colMul) < 0.0005 && Math.abs(zi.tab - text * mul) < 0.006) return 1 / colMul;
     colMul = mul;
     const resized = waitResize(900);
     await setTextZoom(text);
@@ -702,7 +804,7 @@ export function createController(): Controller {
       });
     }
     for (const rv of outcome.reversed) {
-      if (opts.quiet && rv.op.rec.kind === 'column') continue; // the column's tries are summed up by tryColumn
+      if (opts.quiet && rv.op.rec.kind === 'column') continue; // a quiet column batch is summed up by its caller
       const where = /\bin the ([a-z ]+?)(?= is| are| now| can| faded| hid| disappeared| got| sticks| \(|$)/.exec(rv.result.detail)?.[1];
       log({
         source: 'check',
@@ -726,6 +828,27 @@ export function createController(): Controller {
       await op.revert();
     } catch (err) {
       addError(plainError(err));
+    }
+  }
+
+  /**
+   * Take ops off, newest first. The page column's CSS comes off without a zoom change of its own, so the page goes
+   * back to the person's own size with one tab zoom change (Chrome shows its bubble for each).
+   */
+  async function revertAll(list: Op[]): Promise<void> {
+    const col = list.find((o) => o.rec.kind === 'column' && o.active) as ColumnOp | undefined;
+    const zoomed = list.some((o) => o.rec.kind === 'page_zoom' && o.active);
+    sizing++;
+    try {
+      if (col) {
+        col.release();
+        colMul = 1;
+      }
+      for (const op of [...list].reverse()) if (op.active) await revertOp(op);
+      if (col && !zoomed) await setTextZoom(plan?.ownZoom ?? 1).catch((err: unknown) => addError(plainError(err)));
+    } finally {
+      sizing--;
+      sizedAt = Date.now();
     }
   }
 
@@ -831,7 +954,7 @@ export function createController(): Controller {
   }
 
   /** Whether this page gets a column, and how wide: the site's remembered choice, then the fit, then automatic. */
-  function columnWish(): { mode: 'auto' | 'person'; fixedPx: number | null } | null {
+  function columnWish(zooming: boolean): { mode: 'auto' | 'person'; fixedPx: number | null } | null {
     const pref = sitePrefs.column;
     if (pref === 'off') return null;
     if (typeof pref === 'number' && pref > 0) return { mode: 'person', fixedPx: pref };
@@ -840,67 +963,14 @@ export function createController(): Controller {
     if (typeof fitPref === 'number' && fitPref > 0) return { mode: 'person', fixedPx: fitPref };
     if (sitePrefs.columnFailed && Date.now() - sitePrefs.columnFailed < COLUMN_RETRY_MS) return null;
     // Automatic: on pages WebAble zooms.
-    return opsList.some((o) => o.rec.kind === 'page_zoom' && o.active) ? { mode: 'auto', fixedPx: null } : null;
+    return zooming ? { mode: 'auto', fixedPx: null } : null;
   }
 
-  function columnWidthFor(mode: 'auto' | 'person', fixedPx: number | null): number | null {
-    const sw = screenWidth();
-    const planned = planColumn({ screenW: sw, zoom: textZoomNow(), charPx: read?.body.charPx ?? 8, fixedPx });
-    if (!planned) return null;
-    if (mode !== 'auto' || Math.abs(columnWiden - 1) < 0.001) return planned.widthPx;
-    return Math.min(planned.maxPx, Math.max(planned.minPx, Math.round((planned.widthPx * columnWiden) / 8) * 8));
-  }
-
-  /** One verified column try; a failed try leaves no op behind. */
-  async function attemptColumn(r: ReadResult | null, w: number, mode: 'auto' | 'person', fails: string[]): Promise<ColumnOp | null> {
-    if (stopped) return null;
-    const op = tailor.columnOp({ widthPx: w, zoom: textZoomNow(), mode });
-    const kept = await applyBatch([op], r, { quiet: true, wide: true, ignore: COLUMN_IGNORES });
-    if (kept.includes(op)) return op;
-    const why = [...store.get().checks].reverse().find((c) => !c.pass && c.opId === op.rec.id);
-    if (why) fails.push(why.detail);
-    opsList = opsList.filter((o) => o !== op);
-    syncOps();
-    return null;
-  }
-
-  /**
-   * The column as narrow as the page allows: the readable width first; if the page does not fit it, the widest
-   * column, then two bisection steps between them. A narrower body squeezes the site's current layout (its media
-   * queries still see the whole window), so the site's fixed-width parts decide how far it can go.
-   */
-  async function tryColumn(r: ReadResult | null, first: number, maxPx: number, mode: 'auto' | 'person'): Promise<{ op: ColumnOp | null; width: number; fails: string[] }> {
-    const fails: string[] = [];
-    const firstOp = await attemptColumn(r, first, mode, fails);
-    // A width the person just picked is tried as it is (adjustColumn passes maxPx = first); a remembered one that no
-    // longer fits after a text size change widens like the automatic column.
-    if (firstOp || maxPx <= first + 8) return { op: firstOp, width: first, fails };
-    let best = await attemptColumn(r, maxPx, mode, fails);
-    if (!best) return { op: null, width: first, fails };
-    let bestW = maxPx;
-    let lo = first;
-    for (let i = 0; i < 2; i++) {
-      const mid = bisectColumn(lo, bestW);
-      if (mid === null) break;
-      // Take the column off before the narrower try, so the checks compare with the page as the site made it.
-      await revertOp(best);
-      const op = await attemptColumn(r, mid, mode, fails);
-      if (op) {
-        best.rec.status = 'reversed';
-        opsList = opsList.filter((o) => o !== best);
-        best = op;
-        bestW = mid;
-      } else {
-        lo = mid;
-        try {
-          await best.apply();
-        } catch (err) {
-          addError(plainError(err));
-        }
-      }
-    }
-    syncOps();
-    return { op: best, width: bestW, fails };
+  /** The column width (screen px) for text zoom `zoom`, or null for full width. */
+  function columnWidthFor(zoom: number, wish: { mode: 'auto' | 'person'; fixedPx: number | null } | null): number | null {
+    if (!wish || undoneKinds.has('column')) return null;
+    const planned = planColumn({ screenW: screenWidth(), zoom, charPx: read?.body.charPx ?? 8, fixedPx: wish.fixedPx });
+    return planned ? planned.widthPx : null;
   }
 
   /**
@@ -937,116 +1007,315 @@ export function createController(): Controller {
     return Math.round(r.pageBodyPx * med * 10) / 10;
   }
 
-  /** Letters a line before tightenColumn narrowed the column (for the ledger), or null. */
-  let tightenedFrom: number | null = null;
+  /* ---------------- one size step: text zoom and column together (round 6) ---------------- */
+
+  /** A page size: the text zoom and the page column (null: full width). */
+  interface SizeTarget {
+    zoom: number;
+    column: number | null;
+    mode: 'auto' | 'person';
+  }
+
+  interface SizeStep {
+    ok: boolean;
+    /** Whether the tab's zoom or the column changed at all. */
+    changed: boolean;
+    fails: CheckResult[];
+    /** The page's width after the step and its viewport (CSS px), for the fallback's zoom. */
+    scrollW: number;
+    viewW: number;
+    /** The scale the column was drawn at (1 = no column). */
+    k: number;
+    zoomOp: Op | null;
+    colOp: ColumnOp | null;
+    /** The page before the first step, so a fallback is checked against the page as the site made it. */
+    base: { snap: Snapshot; probe: Element[] } | null;
+  }
+
+  /** The size the page shows now. */
+  function sizeNow(): SizeTarget {
+    const col = activeColumn();
+    return { zoom: Math.round(textZoomNow() * 10000) / 10000, column: col ? col.spec.widthPx : null, mode: col?.spec.mode ?? 'auto' };
+  }
+
+  /** The person's own zoom (what the page had before WebAble). */
+  const ownZoom = (): number => plan?.ownZoom ?? 1;
 
   /**
-   * Reading pages: inside the column the site may still run its paragraphs wider than is comfortable to read. When
-   * they run past 80 letters a line (WCAG 1.4.8), narrow the column once towards 72 letters (never under 720 px or
-   * half the screen); a narrower try that does not fit leaves the first column as it was.
+   * Move the page from its size now to `t` in one step: the column's CSS and the tab's zoom change together, so
+   * Chrome's zoom changes once (and shows its zoom bubble once). Checked once, with no reversals; the caller picks the
+   * one fallback. Runs under the write lock.
    */
-  async function tightenColumn(r: ReadResult, res: { op: ColumnOp | null; width: number; fails: string[] }): Promise<{ op: ColumnOp | null; width: number; fails: string[] }> {
-    const cur = res.op;
-    if (!cur || stopped) return res;
-    const cpl = tailor.measureCpl(r);
-    if (cpl === null || cpl <= 80) return res;
+  async function stepSize(r: ReadResult, t: SizeTarget, o: { source: LedgerEntry['source']; step: number; base?: SizeStep['base']; check?: boolean }): Promise<SizeStep> {
+    const fit = getFit();
+    const own = ownZoom();
     const sw = screenWidth();
-    const lim = columnLimits(sw);
-    if (!lim) return res;
-    const target = Math.max(lim.minPx, Math.round((sw * 0.5) / 8) * 8, Math.round((res.width * 72) / cpl / 8) * 8);
-    if (target >= res.width - 40) return res;
-    await revertOp(cur);
-    const op = await attemptColumn(r, target, 'auto', res.fails);
-    if (op) {
-      cur.rec.status = 'reversed';
-      opsList = opsList.filter((o) => o !== cur);
-      columnWiden *= target / res.width;
-      tightenedFrom = cpl;
-      syncOps();
-      return { op, width: target, fails: res.fails };
+    const win = windowW();
+    let k = 1;
+    if (t.column && sw > 0) {
+      const mul = Math.min(sw / t.column, 5 / Math.max(0.25, t.zoom));
+      k = mul > 1.0005 ? 1 / mul : 1;
     }
+    const mul = 1 / k;
+    const wantTab = Math.round(t.zoom * mul * 100) / 100;
+    const curCol = activeColumn();
+    const curZoom = opsList.filter((x) => x.rec.kind === 'page_zoom' && x.active);
+    const zi = await zoomInfo();
+    const sameZoom = Math.abs(zi.tab - wantTab) < 0.006 && (Math.abs(t.zoom - own) < 0.005 ? !curZoom.length : curZoom.length > 0);
+    const sameCol = k === 1 ? !curCol : !!curCol && curCol.spec.widthPx === t.column && Math.abs(colMul - mul) < 0.002;
+    if ((sameZoom && sameCol) || stopped) {
+      return { ok: true, changed: false, fails: [], scrollW: 0, viewW: 0, k: 1 / colMul, zoomOp: curZoom[0] ?? null, colOp: curCol, base: o.base ?? null };
+    }
+    // The same text zoom with only the column changing keeps its zoom op (its Undo in the ledger still works).
+    const keptZoom = curZoom.length === 1 && t.zoom > own + 0.005 && Math.abs(textZoomNow() - t.zoom) < 0.005 ? curZoom[0] ?? null : null;
+    const basePlan = plan ?? tailor.planZoom(fit ?? fallbackFitLike(), r.pageBodyPx, own, false, 0);
+    const zPlan: ZoomPlan = { ...basePlan, zoom: t.zoom, step: o.step, effectiveBodyPx: Math.round(r.pageBodyPx * t.zoom * 10) / 10 };
+    const zop = keptZoom ? null : tailor.zoomOp(zPlan, own);
+    if (zop) zop.source = o.source;
+    const cop = k < 1 && t.column ? tailor.columnOp({ widthPx: t.column, zoom: t.zoom, mode: t.mode, scale: k }) : null;
+    const batch = [zop, cop].filter((x): x is Op => !!x);
+    const checked = [keptZoom ?? zop, cop].filter((x): x is Op => !!x);
+    const check = o.check !== false && checked.length > 0;
+    const coverOps = [...opsList.filter((x) => x.active), ...batch];
+    const mainRoot = r.mainRoot ?? null;
+    let snapBase = o.base ?? null;
+    if (check && !snapBase) {
+      const probe = verifier.probe(r, [], { wide: true });
+      snapBase = { snap: verifier.snapshot(probe, { ops: opsList.filter((x) => x.active), coverOps, contrastFloor: fit?.contrast.floor, mainRoot }), probe };
+    }
+    if (check) verifier.watchVolatile();
+    sizing++;
+    const resized = waitResize(900);
     try {
-      await cur.apply();
-      cur.rec.status = 'applied';
+      // Off with the old size and on with the new one: the column's CSS comes off without a zoom change, the tab's
+      // zoom is set once for text and column together, then the column's CSS goes on at the scale it was set for.
+      if (curCol) {
+        curCol.release();
+        curCol.rec.status = 'reversed';
+        opsList = opsList.filter((x) => x !== curCol);
+      }
+      for (const z of curZoom) {
+        if (z === keptZoom) continue;
+        z.active = false; // superseded: the new op's Undo goes back to the person's own zoom
+        z.rec.status = 'reversed';
+      }
+      colMul = mul;
+      if (zop) await zop.apply();
+      else await setTextZoom(keptZoom ? t.zoom : own);
+      if (cop) {
+        await cop.apply();
+        columnWin = win;
+      }
+      for (const op of batch) opsList.push(op);
+      if (Math.abs(zi.tab - wantTab) >= 0.006) {
+        await resized;
+        // A moment for the site's own responsive scripts (menus that fold).
+        await sleep(350);
+      }
+      await settle();
     } catch (err) {
+      for (const op of batch) {
+        if (op.active) continue;
+        op.rec.status = 'skipped';
+        op.rec.reason = `${op.rec.reason}; not applied: ${errText(err)}`;
+      }
       addError(plainError(err));
+    } finally {
+      sizing--;
+      sizedAt = Date.now();
     }
     syncOps();
-    return res;
+    if (!check || !snapBase || stopped) {
+      if (check) verifier.stopVolatile();
+      return { ok: true, changed: true, fails: [], scrollW: 0, viewW: 0, k, zoomOp: zop ?? keptZoom, colOp: cop, base: snapBase };
+    }
+    const res = verifier.check(checked.filter((x) => x.active), snapBase.snap, snapBase.probe, {
+      ops: opsList.filter((x) => x.active), coverOps, contrastFloor: fit?.contrast.floor, mainRoot, ignore: cop ? COLUMN_IGNORES : ZOOM_IGNORES,
+    });
+    verifier.stopVolatile();
+    store.set((s) => ({ checks: [...s.checks, ...res.checks].slice(-80) }));
+    return { ok: !res.fails.length, changed: true, fails: res.fails, scrollW: res.scrollW, viewW: res.viewW, k, zoomOp: zop ?? keptZoom, colOp: cop, base: snapBase };
   }
 
-  /** Hold the page to a column when it should have one (verified; as narrow as the page allows). */
-  async function applyColumnFor(r: ReadResult, quiet: boolean): Promise<void> {
-    const wish = columnWish();
-    if (!wish || undoneKinds.has('column') || store.get().showingOriginal || activeColumn()) {
-      syncOps();
-      return;
+  /**
+   * The one fallback after a failed size step. With the column on, the column comes off at the same text zoom: the
+   * site's own layout at the full window is wider than the column's, so the column is the likely cause, unless the
+   * page needs more width than the window has even without it. Without the column (or when it would still not fit),
+   * the next lower zoom preset, or lower when the page scrolled sideways: the largest zoom that leaves the page the
+   * width it needs.
+   */
+  function fallbackFor(t: SizeTarget, res: SizeStep, largePrint: boolean): SizeTarget {
+    const own = ownZoom();
+    const sw = screenWidth() || innerWidth;
+    const sideways = res.fails.some((f) => f.name === 'overflow') && res.scrollW > res.viewW + 8;
+    const tab = t.zoom / (res.k > 0 ? res.k : 1);
+    let maxZ = Infinity;
+    if (sideways) {
+      // Screen px the page's content needs; the column's side bands come off with it.
+      const need = res.scrollW * tab - (res.colOp && t.column ? Math.max(0, sw - t.column) / 2 : 0);
+      if (need > sw + 8) maxZ = (t.zoom * sw) / need;
     }
-    const first = columnWidthFor(wish.mode, wish.fixedPx);
-    if (first === null) {
-      if (!quiet) log({ source: 'fit', title: 'This window is too narrow for a page column', action: 'skipped' });
-      syncOps();
-      return;
+    if (res.colOp && maxZ >= t.zoom) return { zoom: t.zoom, column: null, mode: t.mode };
+    let z = stepZoom(t.zoom, -1, largePrint);
+    for (let i = 0; i < 8 && z > own + 0.005 && z > maxZ + 0.001; i++) {
+      const lower = stepZoom(z, -1, largePrint);
+      if (lower >= z) break;
+      z = lower;
     }
-    tightenedFrom = null;
-    let res = await tryColumn(r, first, columnLimits(screenWidth())?.maxPx ?? first, wish.mode);
-    if (res.op && wish.mode === 'auto') res = await tightenColumn(r, res);
-    if (res.op) {
-      if (wish.mode === 'auto' && res.width > first) columnWiden *= res.width / first;
-      if (!quiet) {
-        log({
-          source: res.op.source,
-          title: res.op.title,
-          detail: res.width > first
-            ? `${res.op.detail} This page's own layout did not fit ${first} px (about 70 letters a line), so the column is as narrow as the page allows.`
-            : res.width < first && tightenedFrom
-              ? `${res.op.detail} Its paragraphs ran to about ${tightenedFrom} letters a line at ${first} px, so the column is narrower, nearer 70.`
-              : res.op.detail,
-          action: 'applied',
-          opId: res.op.rec.id,
-        });
+    if (!(z > own + 0.005) || z >= t.zoom) z = own;
+    return { zoom: z, column: null, mode: t.mode };
+  }
+
+  /** The words for what a failed check saw ("made the page scroll sideways"). */
+  function failWords(fails: CheckResult[]): string {
+    const f = fails[0];
+    return f ? plainCheck(f.name).replace(/^it /, '') : 'failed a check';
+  }
+
+  /** What the size is planned for: the fit's text size and the person's A−/A+ steps and width choice on this site. */
+  function sizeSig(fit: FitProfile): string {
+    return JSON.stringify([
+      fit.text.override ?? fit.text.bodyPx, !!fit.text.largePrint, fit.text.source === 'default' && fit.text.override == null,
+      fit.layout?.column ?? 'auto', sitePrefs.textStep ?? 0, sitePrefs.column ?? null,
+    ]);
+  }
+
+  function rememberSize(t: SizeTarget): void {
+    const fit = getFit();
+    if (!fit) return;
+    saveSettled({ sig: sizeSig(fit), zoom: t.zoom, column: t.column, mode: t.mode });
+  }
+
+  /** The automatic column did not fit this site: it stays off here (remembered), instead of a try on every visit. */
+  function noteColumnFailed(t: SizeTarget): void {
+    if (t.mode !== 'auto' || !t.column) return;
+    sitePrefs.columnFailed = Date.now();
+    void saveSitePrefs({ columnFailed: sitePrefs.columnFailed });
+  }
+
+  /**
+   * Text size and the page column for this page view: planned once, applied in one step and checked once. A failed
+   * check falls back once and stops (the rare fallback that still fails goes back to the site's own size). The result
+   * is kept for the session, so a reload or another page of the site applies it straight away. A same-document
+   * navigation keeps the size as it is. Returns the plan and the zoom a check turned down, if any.
+   */
+  async function fitSize(gen: number, r: ReadResult, fit: FitProfile, zi: { factor: number; tab: number; personChanged: boolean }, kind: 'first' | 'navigation' | 'refit'): Promise<{ p: ZoomPlan; reversedAt: number | null }> {
+    const kept = opsList.some((o) => (o.rec.kind === 'page_zoom' || o.rec.kind === 'column') && o.active);
+    const own = kept && plan ? plan.ownZoom : zi.factor;
+    if (kind === 'navigation' && plan) {
+      // A new route of the same page view: zoom and column stay exactly as they are.
+      const p = { ...plan, bodyPx: r.pageBodyPx, effectiveBodyPx: Math.round(r.pageBodyPx * plan.zoom * 10) / 10 };
+      plan = p;
+      return { p, reversedAt: null };
+    }
+    let p = tailor.planZoom(fit, r.pageBodyPx, own, zi.personChanged, sitePrefs.textStep ?? 0);
+    plan = p;
+    if (undoneKinds.has('page_zoom') || store.get().showingOriginal) return { p, reversedAt: null };
+    const largePrint = !!fit.text.largePrint;
+    const settled = await loadSettled();
+    if (gen !== generation) return { p, reversedAt: null };
+    let t: SizeTarget;
+    let remembered = false;
+    if (settled && settled.sig === sizeSig(fit) && !zi.personChanged) {
+      // This site settled earlier in this session: its final size, with no trials.
+      remembered = true;
+      const z = settled.zoom > own + 0.005 ? settled.zoom : own;
+      const lim = columnLimits(screenWidth());
+      const col = settled.column && lim ? Math.min(lim.maxPx, Math.max(lim.minPx, settled.column)) : null;
+      t = { zoom: z, column: col, mode: settled.mode };
+    } else {
+      const wish = columnWish(p.zoom > own + 0.005);
+      t = { zoom: p.zoom, column: columnWidthFor(p.zoom, wish), mode: wish?.mode ?? 'auto' };
+    }
+    const first = await withLock(() => stepSize(r, t, { source: p.step ? 'person' : 'fit', step: p.step }));
+    if (gen !== generation || stopped) return { p, reversedAt: null };
+    let final = t;
+    let reversedAt: number | null = null;
+    let res = first;
+    if (!first.ok) {
+      const fb = fallbackFor(t, first, largePrint);
+      if (t.column) noteColumnFailed(t);
+      const second = await withLock(() => stepSize(r, fb, { source: 'check', step: p.step, base: first.base }));
+      if (gen !== generation || stopped) return { p, reversedAt: null };
+      res = second;
+      final = fb;
+      if (!second.ok && Math.abs(fb.zoom - own) > 0.005) {
+        // The fallback still broke the page: back to the site's own size, and it stays there this session.
+        await withLock(() => stepSize(r, { zoom: own, column: null, mode: t.mode }, { source: 'check', step: p.step, check: false }));
+        final = { zoom: own, column: null, mode: t.mode };
+        res = { ...second, zoomOp: null, colOp: null };
       }
-    } else if (wish.mode === 'auto') {
-      sitePrefs.columnFailed = Date.now();
-      void saveSitePrefs({ columnFailed: sitePrefs.columnFailed });
+      if (final.zoom < t.zoom - 0.005) reversedAt = t.zoom;
       log({
         source: 'check',
-        title: 'Kept this site at full width: a narrower page did not fit it',
-        detail: `${res.fails.at(-1) ?? res.fails[0] ?? 'A check failed.'} Narrower in the WebAble panel tries again.`,
+        title: final.zoom < t.zoom - 0.005
+          ? `Kept this page at ${pct(final.zoom)}: ${pct(t.zoom)}${t.column ? ' with the page column' : ''} ${failWords(first.fails)}`
+          : `Kept this page at full width: the narrower page ${failWords(first.fails)}`,
+        detail: `${first.fails[0]?.detail ?? ''} WebAble changed the size once and stopped; ${t.column && t.mode === 'auto' ? 'the column stays off on this site (Narrower in the WebAble panel tries it again)' : 'this size holds for this site until you change it'}.`.trim(),
         action: 'reversed',
       });
-    } else {
-      log({ source: 'check', title: `Kept this page at full width: your ${first} px column did not fit it`, detail: res.fails[0] ?? '', action: 'reversed' });
     }
-    syncOps();
+    const zOp = res.zoomOp && res.zoomOp.active ? res.zoomOp : null;
+    p = { ...p, zoom: zOp ? final.zoom : own, effectiveBodyPx: Math.round(r.pageBodyPx * (zOp ? final.zoom : own) * 10) / 10 };
+    plan = p;
+    rememberSize({ ...final, zoom: zOp ? final.zoom : own });
+    if (zOp && kind !== 'navigation') {
+      log({ source: zOp.source, title: zOp.title, detail: `${zOp.detail} Body text was measured at ${r.pageBodyPx} px (${r.body.source}).${remembered ? ' This is the size this site settled at earlier in this session.' : ''}`, action: 'applied', opId: zOp.rec.id });
+    }
+    const col = activeColumn();
+    if (col && kind !== 'navigation') log({ source: col.source, title: col.title, detail: col.detail, action: 'applied', opId: col.rec.id });
+    return { p, reversedAt };
   }
 
-  /** Take the column off and decide again (after the zoom changed, or the person reset the width). */
-  async function replaceColumn(quiet: boolean): Promise<void> {
-    const cur = activeColumn();
-    if (cur) {
-      await revertOp(cur);
-      cur.rec.status = 'reversed';
-      opsList = opsList.filter((o) => o !== cur);
+  /**
+   * Text to `next` zoom (the person's A−/A+ or an accepted offer): the column is re-planned for the new size and both
+   * change in one step. If the check fails, the column comes off when only the column broke the page; otherwise the
+   * page goes back to the size it had.
+   */
+  async function textTo(r: ReadResult, next: number, source: LedgerEntry['source'], step: number): Promise<{ ok: boolean; zoomOp: Op | null; columnOff: boolean }> {
+    const cur = sizeNow();
+    const own = ownZoom();
+    const wish = columnWish(next > own + 0.005);
+    const t: SizeTarget = { zoom: next, column: columnWidthFor(next, wish), mode: wish?.mode ?? 'auto' };
+    const res = await withLock(() => stepSize(r, t, { source, step }));
+    const finish = (to: SizeTarget, op: Op | null, columnOff: boolean) => {
+      if (plan) plan = { ...plan, zoom: to.zoom, step, effectiveBodyPx: Math.round(r.pageBodyPx * to.zoom * 10) / 10 };
+      return { ok: true, zoomOp: op && op.active ? op : null, columnOff };
+    };
+    if (res.ok) return finish(t, res.zoomOp, false);
+    // The person asked for this size: with the column on, the size stays and the column comes off (when the page can
+    // take the size at full width); otherwise the page goes back as it was.
+    const fb = res.colOp ? fallbackFor(t, res, !!getFit()?.text.largePrint) : null;
+    if (fb && Math.abs(fb.zoom - next) < 0.005) {
+      noteColumnFailed(t);
+      const res2 = await withLock(() => stepSize(r, fb, { source, step, base: res.base }));
+      if (res2.ok) return finish(fb, res2.zoomOp, true);
     }
-    if (read) await applyColumnFor(read, quiet);
-    syncOps();
+    await withLock(() => stepSize(r, cur, { source: 'check', step: plan?.step ?? 0, check: false }));
+    log({ source: 'check', title: `Kept the page as it was: ${pct(next)} ${failWords(res.fails)}`, detail: res.fails[0]?.detail ?? '', action: 'reversed' });
+    return { ok: false, zoomOp: null, columnOff: false };
   }
 
-  /** Follow a zoom or window change: keep the column's planned width at the new zoom (no new op). */
+  /** Follow a window resize: keep the column's planned width for the new window (a zoom change alone does nothing). */
   function reflowColumn(): void {
     const op = activeColumn();
     if (op) {
       const zoom = textZoomNow();
       const sw = screenWidth();
+      // The window did not change size (a zoom change's own resize, rounding): the column stays as it is.
+      if (Math.abs(windowW() - columnWin) < 24) {
+        syncOps();
+        return;
+      }
       const lim = columnLimits(sw);
       let w: number;
       if (!lim) w = Math.round(sw);
-      else if (op.spec.mode === 'auto') w = columnWidthFor('auto', null) ?? op.spec.widthPx;
+      else if (op.spec.mode === 'auto') w = columnWidthFor(zoom, { mode: 'auto', fixedPx: null }) ?? op.spec.widthPx;
       else {
         const want = typeof sitePrefs.column === 'number' ? sitePrefs.column : op.spec.widthPx;
         w = Math.min(lim.maxPx, Math.max(lim.minPx, want));
       }
+      columnWin = windowW();
       if (w !== op.spec.widthPx || Math.abs(zoom - op.spec.zoom) > 0.001) op.setWidth(w, zoom);
     }
     syncOps();
@@ -1061,8 +1330,8 @@ export function createController(): Controller {
     const want = lastTabZoom;
     void zoomInfo().then(async (zi) => {
       if (Math.abs(zi.tab - want) <= 0.005) return;
-      await ask<number>({ type: 'setZoom', factor: want }).catch(() => undefined);
-      setZoomState(want);
+      const got = await ask<number>({ type: 'setZoom', factor: want }).catch(() => undefined);
+      setZoomState(realTab(got, want));
     });
   };
 
@@ -1071,8 +1340,10 @@ export function createController(): Controller {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       resizeTimer = null;
-      if (stopped) return;
+      // A size step's own resize: the step sets the state itself.
+      if (stopped || sizing > 0 || Date.now() - sizedAt < 700) return;
       void zoomInfo().then(async (zi) => {
+        if (sizing > 0 || Date.now() - sizedAt < 700) return;
         // The person's own Ctrl +/− while the column is on: Chrome stepped the tab's (column-raised) zoom; take one
         // step along the text sizes instead, so the page column keeps its width and the steps feel like Chrome's.
         if (colMul > 1.001 && lastTabZoom !== null && Math.abs(zi.tab - lastTabZoom) > 0.005 && activeColumn()) {
@@ -1085,108 +1356,52 @@ export function createController(): Controller {
     }, 160);
   };
 
-  /**
-   * Set the tab to `next` zoom as one verified op (replacing WebAble's current zoom op). Its Undo goes back to the
-   * person's own zoom. Returns whether it stayed.
-   */
-  async function changeZoom(next: number, source: LedgerEntry['source'], step: number): Promise<Op | 'own' | null> {
-    const fit = getFit();
-    const r = read;
-    if (!fit || !r) return null;
-    const zi = await zoomInfo();
-    const base = plan ?? tailor.planZoom(fit, r.pageBodyPx, zi.factor, false, 0);
-    const own = base.ownZoom;
-    const newPlan: ZoomPlan = { ...base, zoom: next, step, effectiveBodyPx: Math.round(r.pageBodyPx * next * 10) / 10 };
-    const superseded = opsList.filter((o) => o.rec.kind === 'page_zoom' && o.active);
-    const op = tailor.zoomOp(newPlan, own);
-    if (!op) {
-      // Back to the person's own zoom.
-      for (const o of superseded) {
-        await revertOp(o);
-        o.rec.status = 'reversed';
-      }
-      if (Math.abs(zi.factor - own) > 0.005) await setTextZoom(own).catch(() => undefined);
-      plan = newPlan;
-      syncOps();
-      return 'own';
-    }
-    op.source = source;
-    for (const o of superseded) {
-      o.active = false; // superseded: the new op restores the person's own zoom on undo
-      o.rec.status = 'reversed';
-    }
-    const kept = await applyBatch([op], r, { quiet: true, wide: true, ignore: ZOOM_IGNORES });
-    if (kept.includes(op)) {
-      plan = newPlan;
-      return op;
-    }
-    for (const o of superseded) {
-      try {
-        await o.apply();
-        o.rec.status = 'applied';
-      } catch (err) {
-        addError(plainError(err));
-      }
-    }
-    syncOps();
-    return null;
-  }
-
-  /** A−/A+: one Chrome zoom preset smaller or larger, verified, remembered for this site. */
+  /** A−/A+: one Chrome zoom preset smaller or larger, with the column, in one step; remembered for this site. */
   async function adjustText(dir: -1 | 1): Promise<void> {
     const fit = getFit();
-    if (!fit || !read || store.get().showingOriginal) return;
-    const zi = await zoomInfo();
+    const r = read;
+    if (!fit || !r || store.get().showingOriginal) return;
+    const cur = sizeNow();
     const largePrint = !!fit.text.largePrint;
-    const next = stepZoom(zi.factor, dir, largePrint);
-    if (Math.abs(next - zi.factor) < 0.005) {
+    const next = stepZoom(cur.zoom, dir, largePrint);
+    if (Math.abs(next - cur.zoom) < 0.005) {
       toast(dir > 0 ? 'Text is as large as WebAble makes it' : 'Text is as small as it goes');
       return;
     }
     const ladder = personZoomLadder(largePrint);
     const idx = (z: number) => ladder.findIndex((x) => Math.abs(x - nearestPreset(z)) < 1e-6);
-    const step = idx(next) - idx(plan?.fitZoom ?? zi.factor);
-    // The text size is the person's own need; the page column follows it. Take the column off first, so the new size
-    // is checked on the page as the site lays it out, then hold the page to a column again for the new size.
-    const col = activeColumn();
-    if (col) {
-      await revertOp(col);
-      col.rec.status = 'reversed';
-      opsList = opsList.filter((o) => o !== col);
-      syncOps();
-    }
-    const res = await changeZoom(next, 'person', step);
-    if (!res) {
+    const step = idx(next) - idx(plan?.fitZoom ?? cur.zoom);
+    const res = await textTo(r, next, 'person', step);
+    if (!res.ok) {
       toast('That text size did not fit this page, so it stayed as it was');
-      if (col) await replaceColumn(true);
       return;
     }
     sitePrefs.textStep = step;
     void saveSitePrefs({ textStep: step });
     store.set({ textStep: step });
+    rememberSize(sizeNow());
     // Round 4: the person's own size choice on this site is evidence about their comfortable text size.
     passiveObs.noteSize(next, 'step', dir);
     log({
       source: 'person',
       title: `Text ${dir > 0 ? 'larger' : 'smaller'}: page zoom ${pct(next)}`,
-      detail: `Body text is ${Math.round(read.pageBodyPx * next)} px here. WebAble remembers this for ${siteKey()}.`,
+      detail: `Body text is ${Math.round(r.pageBodyPx * next)} px here.${res.columnOff ? ' The narrower page did not fit at this size, so it is at full width.' : ''} WebAble remembers this for ${siteKey()}.`,
       action: 'applied',
-      ...(res !== 'own' ? { opId: res.rec.id } : {}),
+      ...(res.zoomOp ? { opId: res.zoomOp.rec.id } : {}),
     });
-    await replaceColumn(false);
   }
 
-  /** Page width: Narrower, Wider, back to automatic, or full width. Verified, remembered for this site. */
+  /** Page width: Narrower, Wider, back to automatic, or full width. One step, checked, remembered for this site. */
   async function adjustColumn(step: -1 | 0 | 1 | 'off'): Promise<void> {
-    if (!read || store.get().showingOriginal) return;
-    const cur = activeColumn();
+    const r = read;
+    if (!r || store.get().showingOriginal) return;
+    const cur = sizeNow();
+    const curStep = plan?.step ?? 0;
     if (step === 'off') {
       sitePrefs.column = 'off';
       void saveSitePrefs({ column: 'off' });
-      if (cur) {
-        await revertOp(cur);
-        cur.rec.status = 'reversed';
-      }
+      if (cur.column) await withLock(() => stepSize(r, { ...cur, column: null }, { source: 'person', step: curStep, check: false }));
+      rememberSize(sizeNow());
       syncOps();
       log({ source: 'person', title: `Showing ${siteKey()} at full width`, detail: 'Narrower in the WebAble panel brings the column back.', action: 'reversed' });
       return;
@@ -1195,12 +1410,21 @@ export function createController(): Controller {
       delete sitePrefs.column;
       delete sitePrefs.columnFailed;
       void saveSitePrefs({ column: undefined, columnFailed: undefined });
-      columnWiden = 1;
-      await replaceColumn(false);
-      if (!activeColumn()) log({ source: 'person', title: 'Page width is automatic: this page stays full width', action: 'kept' });
+      const wish = columnWish(cur.zoom > ownZoom() + 0.005);
+      const t: SizeTarget = { zoom: cur.zoom, column: columnWidthFor(cur.zoom, wish), mode: 'auto' };
+      const res = await withLock(() => stepSize(r, t, { source: 'person', step: curStep }));
+      if (!res.ok) {
+        await withLock(() => stepSize(r, { ...cur, column: null }, { source: 'check', step: curStep, check: false }));
+        log({ source: 'check', title: `Kept this page at full width: the narrower page ${failWords(res.fails)}`, detail: res.fails[0]?.detail ?? '', action: 'reversed' });
+      } else if (!activeColumn()) log({ source: 'person', title: 'Page width is automatic: this page stays full width', action: 'kept' });
+      else {
+        const col = activeColumn();
+        if (col) log({ source: 'person', title: col.title, detail: col.detail, action: 'applied', opId: col.rec.id });
+      }
+      rememberSize(sizeNow());
       return;
     }
-    const zoom = textZoomNow();
+    const zoom = cur.zoom;
     const sw = screenWidth();
     const lim = columnLimits(sw);
     if (!lim) {
@@ -1208,43 +1432,32 @@ export function createController(): Controller {
       return;
     }
     let target: number | null;
-    if (!cur) {
+    if (!cur.column) {
       if (step === 1) {
         toast('The page is already at full width');
         return;
       }
-      target = planColumn({ screenW: sw, zoom, charPx: read.body.charPx })?.widthPx ?? lim.maxPx;
+      target = planColumn({ screenW: sw, zoom, charPx: r.body.charPx })?.widthPx ?? lim.maxPx;
       if (target >= lim.maxPx) target = stepColumn(lim.maxPx, -1, sw);
     } else {
-      target = stepColumn(cur.spec.widthPx, step, sw);
-      if (target === cur.spec.widthPx) {
+      target = stepColumn(cur.column, step, sw);
+      if (target === cur.column) {
         toast(step > 0 ? 'This is the widest column; Full width shows the whole page' : 'This is the narrowest the column goes');
         return;
       }
     }
     if (target === null) return;
-    if (cur) {
-      await revertOp(cur);
-      cur.rec.status = 'reversed';
-    }
-    const res = await tryColumn(read, target, target, 'person');
-    if (res.op) {
-      if (cur) opsList = opsList.filter((o) => o !== cur);
+    const res = await withLock(() => stepSize(r, { zoom, column: target, mode: 'person' }, { source: 'person', step: curStep }));
+    if (res.ok && res.colOp) {
       sitePrefs.column = target;
       delete sitePrefs.columnFailed;
       void saveSitePrefs({ column: target, columnFailed: undefined });
-      log({ source: 'person', title: res.op.title, detail: `WebAble remembers this width for ${siteKey()}.`, action: 'applied', opId: res.op.rec.id });
+      rememberSize(sizeNow());
+      log({ source: 'person', title: res.colOp.title, detail: `WebAble remembers this width for ${siteKey()}.`, action: 'applied', opId: res.colOp.rec.id });
     } else {
-      if (cur) {
-        try {
-          await cur.apply();
-          cur.rec.status = 'applied';
-        } catch (err) {
-          addError(plainError(err));
-        }
-      }
+      await withLock(() => stepSize(r, cur, { source: 'check', step: curStep, check: false }));
       toast('That width did not fit this page, so it stayed as it was');
-      log({ source: 'check', title: `Kept the page as it was: a ${target} px column did not fit`, detail: res.fails[0] ?? '', action: 'reversed' });
+      log({ source: 'check', title: `Kept the page as it was: a ${target} px column did not fit`, detail: res.fails[0]?.detail ?? '', action: 'reversed' });
     }
     syncOps();
   }
@@ -1437,8 +1650,7 @@ export function createController(): Controller {
   async function acceptPassive(kind: OfferKind, meta: PassiveOfferMeta, offer: Offer | undefined): Promise<void> {
     const { dim } = meta;
     log({ source: 'person', title: `You accepted: ${offer?.question ?? kind}`, action: 'applied' });
-    // This page applies the change itself; the storage echo of the same change must not fit it all over again.
-    suppressRefitUntil = Date.now() + 5000;
+    // This page applies the change itself (storage echoes never refit a page, round 6).
     let next: PassiveFitState | null = null;
     try {
       next = await ask<PassiveFitState>({ type: 'passiveFeedback', dim, action: 'confirm' }, 5000);
@@ -1464,17 +1676,12 @@ export function createController(): Controller {
       const want = tailor.planZoom(fit, r.pageBodyPx, own, false, 0);
       if (plan) plan = { ...plan, targetPx: want.targetPx, fitZoom: want.fitZoom, capped: want.capped, shortPx: want.shortPx };
       if (want.zoom > zi.factor + 0.005) {
-        // As A+ does: the column comes off, the new size is checked on the page as laid out, then the column returns.
-        const col = activeColumn();
-        if (col) {
-          await revertOp(col);
-          col.rec.status = 'reversed';
-          opsList = opsList.filter((o) => o !== col);
-          syncOps();
+        // As A+ does: text size and column in one step, checked once.
+        const res = await textTo(r, want.zoom, 'fit', 0);
+        if (res.ok && res.zoomOp) {
+          op = res.zoomOp;
+          rememberSize(sizeNow());
         }
-        const res = await changeZoom(want.zoom, 'fit', 0);
-        if (res && res !== 'own') op = res;
-        await replaceColumn(true);
       }
       if (!op) {
         const shown = Math.round(r.pageBodyPx * zi.factor);
@@ -1555,8 +1762,7 @@ export function createController(): Controller {
   /** The panel's "Not right" / "Forget this" (and "That's right"): this page and every open page follow. */
   async function passiveFeedbackNow(dim: FitDimension, action: 'not_right' | 'forget' | 'confirm'): Promise<void> {
     const before = store.get().passive?.beliefs[dim] ?? null;
-    // The storage echo of this same change: this page refits from the answer below instead.
-    suppressRefitUntil = Date.now() + 2000;
+    // This page refits from the answer below (storage echoes never refit a page, round 6).
     const next = await ask<PassiveFitState>({ type: 'passiveFeedback', dim, action }, 5000);
     const noun = PASSIVE_NOUN[dim] ?? before?.explanation ?? dim.replace(/_/g, ' ');
     const title = action === 'confirm' ? `You confirmed: ${noun}` : action === 'forget' ? `You asked WebAble to forget: ${noun}` : `You said this was not right: ${noun}`;
@@ -1576,7 +1782,6 @@ export function createController(): Controller {
     const dim = passiveUndo.get(opId);
     if (!dim) return;
     passiveUndo.delete(opId);
-    suppressRefitUntil = Date.now() + 3000; // this page already took the change off
     passiveObs.noteUndo(dim, PASSIVE_NOUN[dim] ?? 'the change');
     log({ source: 'person', title: `WebAble noted that ${PASSIVE_NOUN[dim] ?? 'this'} did not help`, detail: 'Learned needs drop sharply after an Undo; other pages follow on their next fit.', action: 'reversed' });
   }
@@ -1589,7 +1794,7 @@ export function createController(): Controller {
       refitTimer = null;
       if (stopped) return;
       void (async () => {
-        await teardownPage(true);
+        await teardownPage(true, true);
         errors = [];
         store.set({ ledger: [], startedAt: performance.now(), phase: 'idle' });
         await boot('refit');
@@ -1613,6 +1818,14 @@ export function createController(): Controller {
     store.set((s) => ({ settings, fit, passive, lens: kind === 'first' ? { on: settings.lens } : s.lens, startedAt: kind === 'navigation' ? performance.now() : s.startedAt }));
 
     if (!settings.enabled || pausedHere(settings)) {
+      // A refit keeps the size ops in place; turned off or paused, the page goes back to the site's own size.
+      if (opsList.length) {
+        await revertAll(opsList);
+        for (const op of opsList) if (op.rec.status === 'applied') op.rec.status = 'reversed';
+        opsList = [];
+        plan = null;
+        syncOps();
+      }
       store.set({ phase: 'idle' });
       stopPassive();
       if (!settings.enabled) log({ source: 'person', title: 'WebAble is turned off', action: 'skipped' });
@@ -1635,59 +1848,26 @@ export function createController(): Controller {
         action: 'kept',
       });
 
-      // 1. Page zoom, verified on its own (zoom carries size; frozen per page view, kept across same-document
-      //    navigations). The person's A−/A+ steps on this site are remembered.
+      // 1–2. Text zoom and the page column: planned once, applied in one step, checked once, one fallback at most
+      //      (round 6). Kept across same-document navigations; the site's settled size is kept for the session.
       const zi = await zoomInfo();
       if (gen !== generation) return;
       sitePrefs = await loadSitePrefs();
       if (gen !== generation) return;
-      setZoomState(zi.tab);
-      const existingZoom = opsList.find((o) => o.rec.kind === 'page_zoom' && o.rec.status === 'applied');
-      let zoomReversedAt: number | null = null;
-      let p: ZoomPlan;
-      if (existingZoom && plan) {
-        // Keep the zoom already set; recompute what it does for this route's body text.
-        p = { ...plan, bodyPx: r.pageBodyPx, effectiveBodyPx: Math.round(r.pageBodyPx * plan.zoom * 10) / 10 };
-      } else {
-        p = tailor.planZoom(fit, r.pageBodyPx, zi.factor, zi.personChanged, sitePrefs.textStep ?? 0);
-      }
-      plan = p;
-      store.set({ textStep: p.step });
-      if (!existingZoom && !undoneKinds.has('page_zoom')) {
-        // Try the planned zoom; if a check reverses it (the layout scrolls sideways, say), step down one preset once.
-        let tryZoom = p.zoom;
-        for (let attempt = 0; attempt < 2 && Math.abs(tryZoom - p.ownZoom) > 0.005; attempt++) {
-          const attemptPlan: ZoomPlan = { ...p, zoom: tryZoom, effectiveBodyPx: Math.round(r.pageBodyPx * tryZoom * 10) / 10 };
-          const z = tailor.zoomOp(attemptPlan, zi.factor);
-          if (!z) break;
-          const kept = await applyBatch([z], r, { quiet: true, wide: true, ignore: ZOOM_IGNORES });
-          if (gen !== generation) return;
-          if (kept.includes(z)) {
-            p = attemptPlan;
-            break;
-          }
-          zoomReversedAt = tryZoom;
-          const lower = stepZoom(tryZoom, -1, !!fit.text.largePrint);
-          if (!(lower > p.ownZoom + 0.005) || lower >= tryZoom) break;
-          tryZoom = lower;
-        }
-        if (!opsList.some((o) => o.rec.kind === 'page_zoom' && o.active)) {
-          p = { ...p, zoom: p.ownZoom, effectiveBodyPx: Math.round(r.pageBodyPx * p.ownZoom * 10) / 10 };
-        }
-        plan = p;
-      }
+      const hadSize = opsList.some((o) => (o.rec.kind === 'page_zoom' || o.rec.kind === 'column') && o.active);
+      if (!hadSize) setZoomState(zi.tab);
+      const sized = await fitSize(gen, r, fit, zi, kind);
       if (gen !== generation) return;
+      const p = sized.p;
+      store.set({ textStep: p.step });
       const zoomOp = opsList.find((o) => o.rec.kind === 'page_zoom' && o.active);
-      if (zoomOp && kind !== 'navigation') {
-        log({ source: zoomOp.source, title: zoomOp.title, detail: `${zoomOp.detail} Body text was measured at ${r.pageBodyPx} px (${r.body.source}).`, action: 'applied', opId: zoomOp.rec.id });
-      }
       if (zi.factor > 1.001 && !zoomOp && kind === 'first') {
         log({ source: 'fit', title: `Kept your own zoom (${pct(zi.factor)})`, action: 'kept' });
-      } else if (!zoomOp && !existingZoom && kind === 'first' && !undoneKinds.has('page_zoom')) {
+      } else if (!zoomOp && kind === 'first' && !undoneKinds.has('page_zoom')) {
         // Say why the page kept its own size, so a page that did not grow is never a silent miss.
         const measured = `Body text here measures ${r.pageBodyPx} px (${r.body.source}); your size is ${Math.round(p.targetPx)} px.`;
-        log(zoomReversedAt
-          ? { source: 'check', title: `Kept this page at its own size: a ${pct(zoomReversedAt)} zoom failed a check`, detail: measured, action: 'reversed' }
+        log(sized.reversedAt
+          ? { source: 'check', title: `Kept this page at its own size: a ${pct(sized.reversedAt)} zoom failed a check`, detail: measured, action: 'reversed' }
           : {
               source: 'fit',
               title: 'Kept this page at its own size',
@@ -1698,10 +1878,6 @@ export function createController(): Controller {
             });
       }
       if (kind !== 'navigation') noteSizeShortfall(p);
-
-      // 2. The page column (verified; widened in steps when the page does not fit it).
-      if (!activeColumn()) await applyColumnFor(r, kind === 'navigation');
-      if (gen !== generation) return;
 
       // 3. Fit ops (planned after zoom and column so boxes are current), one write phase, verified.
       const fitOps = tailor.planFitOps(fit, r, { column: !!activeColumn() }).filter((o) => {
@@ -1734,7 +1910,7 @@ export function createController(): Controller {
       console.warn('[WebAble] boot failed', err);
       addError(`Something went wrong while fitting this page: ${errText(err)}`);
       // Keep the page working: undo everything this run applied.
-      for (const op of [...opsList].reverse()) await revertOp(op);
+      await revertAll(opsList);
       for (const op of opsList) if (op.rec.status === 'applied') op.rec.status = 'reversed';
       syncOps();
       store.set({ phase: 'error' });
@@ -1991,17 +2167,54 @@ export function createController(): Controller {
     if (ops.length) await applyBatch(ops, r);
   }
 
+  /**
+   * Whether Calm view may open by itself here (round 6): only on a task page (a form with a clear main action, like a
+   * refill or an application) with at least two sections worth rearranging. Never on search results, web apps or
+   * mail. Returns the reason it may not, for the ledger.
+   */
+  function autoCalmBlock(r: ReadResult, decisions: ElementDecision[]): string | null {
+    if (isSearchResults(r.pageKind)) return 'search results keep their own list';
+    if (isWebApp(r.privatePage)) return 'web apps and mail keep their own layout';
+    const promoted = decisions.some((d) => d.verdict === 'promote');
+    let spec: FitSpec | null = null;
+    try {
+      let summary: FitSummaryForModel;
+      const fit = getFit() ?? fallbackFitLike();
+      try {
+        summary = summarizeFitForModel(fit);
+      } catch {
+        summary = fallbackSummary(fit);
+      }
+      spec = buildHeuristic(enrichOutline(r.outline), summary, rolesNow());
+    } catch {
+      spec = null;
+    }
+    const formPage = r.pageKind === 'form page' || spec?.page_type === 'form' || (spec?.form_steps.length ?? 0) > 0;
+    if (!formPage) return 'it is not a form to fill in';
+    if (!promoted && !spec?.primary_action) return 'it has no clear main action';
+    const sections = (spec?.sections ?? []).filter((sec) => sec.nodes.length > 0 && sec.role !== 'consent' && sec.role !== 'legal').length;
+    if (sections < 2) return 'there is little to rearrange';
+    return null;
+  }
+
   function maybeAutoCalm(r: ReadResult, decisions: ElementDecision[]): void {
     const fit = getFit();
     const s = store.get();
     if (!fit || s.calm.open || s.showingOriginal) return;
     const folded = decisions.filter((d) => d.verdict === 'fold').length;
     const busy = folded >= 3 || r.digest.page.element_count >= 60;
-    if (fit.attention.structureLevel === 2 && busy && !undoneKinds.has('calm_view')) {
-      void openCalm('auto', `This page is busy (${folded} distraction${folded === 1 ? '' : 's'}, ${r.digest.page.element_count} items), so it opened in Calm view`);
-    } else if (busy && fit.attention.structureLevel >= 1) {
-      log({ source: 'layout', title: 'A calmer layout of this page is ready: open Calm view', action: 'offered' });
+    if (!busy || fit.attention.structureLevel < 1) return;
+    const block = fit.attention.structureLevel === 2 && !undoneKinds.has('calm_view') ? autoCalmBlock(r, decisions) : 'offered';
+    if (block === null) {
+      void openCalm('auto', `This form is busy (${folded} distraction${folded === 1 ? '' : 's'}, ${r.digest.page.element_count} items), so it opened in Calm view`);
+      return;
     }
+    log({
+      source: 'layout',
+      title: 'A calmer layout of this page is ready: open Calm view',
+      ...(block !== 'offered' ? { detail: `Calm view opens by itself only on forms with a clear main action; here ${block}.` } : {}),
+      action: 'offered',
+    });
   }
 
   /** Say honestly whether a moving banner stopped: watch it for 7 s after motion was reduced. */
@@ -2263,17 +2476,18 @@ export function createController(): Controller {
         }
         break;
       case 'larger_text': {
-        const zi = await zoomInfo();
-        const next = stepZoom(zi.factor, 1, !!fit?.text.largePrint);
-        if (next > zi.factor + 0.005 && read) {
-          const res = await changeZoom(next, 'signals', plan?.step ?? 0);
-          if (res && res !== 'own') {
-            opOffer.set(res.rec.id, kind);
-            res.title = `Zoomed this page to ${pct(next)} (was ${pct(zi.factor)})`;
-            log({ source: 'signals', title: res.title, detail: res.detail, action: 'applied', opId: res.rec.id });
-            toast(`${OFFER_TOAST[kind]} (${pct(next)})`, res.rec.id);
+        const was = sizeNow().zoom;
+        const next = stepZoom(was, 1, !!fit?.text.largePrint);
+        if (next > was + 0.005 && read) {
+          const res = await textTo(read, next, 'signals', plan?.step ?? 0);
+          const z = res.ok ? res.zoomOp : null;
+          if (z) {
+            opOffer.set(z.rec.id, kind);
+            z.title = `Zoomed this page to ${pct(next)} (was ${pct(was)})`;
+            log({ source: 'signals', title: z.title, detail: z.detail, action: 'applied', opId: z.rec.id });
+            toast(`${OFFER_TOAST[kind]} (${pct(next)})`, z.rec.id);
             passiveObs.noteSize(next, 'accept', 1);
-            await replaceColumn(false);
+            rememberSize(sizeNow());
           } else toast('That change did not fit this page, so it was undone');
         } else {
           toast('Text is already as large as WebAble makes it');
@@ -2518,29 +2732,6 @@ export function createController(): Controller {
     return listed ? { ...spec, primary_action: promoted.id } : spec;
   }
 
-  async function suspendZoom(): Promise<void> {
-    const z = opsList.find((o) => o.rec.kind === 'page_zoom' && o.active);
-    if (!z || !plan || zoomSuspended) return;
-    zoomSuspended = true;
-    try {
-      await setTextZoom(plan.ownZoom);
-    } catch {
-      zoomSuspended = false;
-    }
-  }
-
-  async function resumeZoom(): Promise<void> {
-    if (!zoomSuspended) return;
-    zoomSuspended = false;
-    const z = opsList.find((o) => o.rec.kind === 'page_zoom' && o.active);
-    if (!z || !plan || store.get().showingOriginal) return;
-    try {
-      await setTextZoom(plan.zoom);
-    } catch {
-      /* stays at own zoom */
-    }
-  }
-
   const onEngage = (e: Event) => {
     if (!store.get().calm.open) return;
     if (e.type === 'wheel' || e.type === 'pointerdown' || e.type === 'keydown' || e.type === 'touchstart') calmEngaged = true;
@@ -2571,7 +2762,8 @@ export function createController(): Controller {
     const key = `${location.pathname}|${outlineSignature(r.outline)}`;
     const cached = redesignCache.get(key) ?? (await readCachedRedesign(key));
     const wantAi = s.settings.aiLayouts && !r.sensitive && !r.privatePage && outline.nodes.length > 0;
-    await suspendZoom();
+    // The page keeps its zoom under the Calm view (round 6): the view is drawn at 1 ÷ page zoom, so it is the fit's
+    // size either way, and opening or closing it never changes the tab's zoom.
     calmOpenedAt = performance.now();
     calmEngaged = false;
     calmWasOpen = false;
@@ -2689,24 +2881,15 @@ export function createController(): Controller {
     pendingAi = { spec, result: res };
     const easier = Math.round((chosen.pEasier ?? 0) * 100);
     const hides = Math.round((chosen.pHides ?? 0) * 100);
-    const inWindow = performance.now() - calmOpenedAt <= 8000;
-    // Switching on its own only ever makes the page calmer: the overview stance opens more of the page (navigation
-    // included), so it is offered instead, never swapped in under the person.
-    const opensMore = chosen.name === 'overview';
-    if (res.autoApply && !opensMore && !calmEngaged && inWindow) {
-      await swapToAi('auto', `${easier}% likely easier, ${hides}% chance something needed is folded`, ms);
-    } else {
-      store.set((s) => ({ calm: { ...s.calm, aiReady: true } }));
-      log({
-        source: 'layout',
-        title: `A layout picked by Jev is ready (${easier}% likely easier)`,
-        detail: res.autoApply && opensMore
-          ? 'It opens more of the page than this view, so it waits until you choose it.'
-          : res.autoApply ? 'You were already using the page, so it waits until you choose it.' : `Jev was not sure enough to switch on its own (${hides}% chance something needed is folded).`,
-        p: chosen.pEasier,
-        action: 'offered',
-      });
-    }
+    // Round 6: once Calm view is open its layout never changes by itself; the new layout waits until it is chosen.
+    store.set((s) => ({ calm: { ...s.calm, aiReady: true } }));
+    log({
+      source: 'layout',
+      title: `A layout picked by Jev is ready (${easier}% likely easier)`,
+      detail: `${hides}% chance something needed is folded. It waits until you choose it, so the view never changes under you${ms ? ` · ${(ms / 1000).toFixed(1)} s` : ''}.`,
+      p: chosen.pEasier,
+      action: 'offered',
+    });
   }
 
   function visualFacts(): { controls: string[]; help: string[]; mainLabel: string | null } {
@@ -2814,7 +2997,7 @@ export function createController(): Controller {
     });
     log({ source: 'person', title: 'Closed Calm view', action: 'kept' });
     overlays.setHidden(store.get().showingOriginal);
-    void resumeZoom().then(() => overlays.schedule('calm-closed'));
+    overlays.schedule('calm-closed');
   }
 
   /* ---------------- original page, undo ---------------- */
@@ -2828,15 +3011,16 @@ export function createController(): Controller {
       store.set({ showingOriginal: true });
       overlays.setHidden(true);
       void (async () => {
-        for (const op of [...opsList].reverse()) {
-          if (op.active) await revertOp(op);
-        }
-        zoomSuspended = false;
+        await revertAll(opsList);
       })();
       log({ source: 'person', title: 'Showing the original page', action: 'kept' });
     } else {
       store.set({ showingOriginal: false });
       void (async () => {
+        // Zoom and column come back in one tab zoom change: the zoom op sets the tab's zoom for the column's scale.
+        const col = opsList.find((o) => o.rec.kind === 'column' && o.rec.status === 'applied' && !o.active) as ColumnOp | undefined;
+        const zoomBack = opsList.some((o) => o.rec.kind === 'page_zoom' && o.rec.status === 'applied' && !o.active);
+        if (col?.spec.scale && col.spec.scale < 1 && zoomBack) colMul = 1 / col.spec.scale;
         for (const op of opsList) {
           if (op.rec.status === 'applied' && !op.active) {
             try {
@@ -2865,11 +3049,21 @@ export function createController(): Controller {
     if (op.rec.kind === 'unobstruct' && overlays.undo(opId)) return;
     notePassiveUndo(opId);
     void (async () => {
-      await revertOp(op);
+      const r = read;
+      if ((op.rec.kind === 'page_zoom' || op.rec.kind === 'column') && r) {
+        // One step back: the person's own zoom (without WebAble's zoom the automatic column has no reason to stay), or
+        // the same text size at full width. One tab zoom change.
+        const cur = sizeNow();
+        const col = activeColumn();
+        const t: SizeTarget = op.rec.kind === 'page_zoom'
+          ? { zoom: ownZoom(), column: col && col.spec.mode === 'person' ? col.spec.widthPx : null, mode: col?.spec.mode ?? 'auto' }
+          : { ...cur, column: null };
+        undoneKinds.add(op.rec.kind);
+        await withLock(() => stepSize(r, t, { source: 'person', step: plan?.step ?? 0, check: false }));
+        if (op.rec.kind === 'page_zoom' && plan) plan = { ...plan, zoom: ownZoom(), effectiveBodyPx: Math.round(r.pageBodyPx * ownZoom() * 10) / 10 };
+      } else await revertOp(op);
       op.rec.status = 'reversed';
       undoneKinds.add(op.rec.kind);
-      // Without WebAble's zoom the automatic column has no reason to stay.
-      if (op.rec.kind === 'page_zoom' && activeColumn()?.spec.mode === 'auto') await replaceColumn(true);
       syncOps();
       const offer = opOffer.get(opId);
       if (offer) {
@@ -2885,7 +3079,11 @@ export function createController(): Controller {
 
   /* ---------------- navigation, settings changes, teardown ---------------- */
 
-  async function teardownPage(full: boolean): Promise<void> {
+  /**
+   * Take the page's ops off. `full`: everything (a refit); else persistent ops stay (a same-document navigation).
+   * `keepSize`: a refit keeps zoom and column on the page, so the new plan moves from them in one step (or not at all).
+   */
+  async function teardownPage(full: boolean, keepSize = false): Promise<void> {
     if (incrementalTimer) clearTimeout(incrementalTimer);
     incrementalTimer = null;
     if (passiveTimer) clearTimeout(passiveTimer);
@@ -2893,20 +3091,20 @@ export function createController(): Controller {
     passiveOffers.clear();
     if (store.get().calm.open) closeCalm();
     const keep: Op[] = [];
-    for (const op of [...opsList].reverse()) {
-      if (!full && op.persistent && op.rec.status === 'applied') {
-        keep.unshift(op);
-        continue;
-      }
-      await revertOp(op);
+    const drop: Op[] = [];
+    for (const op of opsList) {
+      const sizeOp = op.rec.kind === 'page_zoom' || op.rec.kind === 'column';
+      if ((!full && op.persistent && op.rec.status === 'applied') || (keepSize && sizeOp && op.active)) keep.push(op);
+      else drop.push(op);
     }
+    await revertAll(drop);
     opsList = keep;
     if (full) {
-      tailor.sheets.clear();
+      if (!keepSize) {
+        tailor.sheets.clear();
+        plan = null;
+      }
       undoneKinds.clear();
-      plan = null;
-      columnWiden = 1;
-      zoomSuspended = false;
     }
     judged = new Set();
     decided = new Set();
@@ -2935,14 +3133,40 @@ export function createController(): Controller {
   }
 
   let lastRoute = routeKey(location.href);
-  async function onNavigate(url: string): Promise<void> {
+  let lastUrl = location.href;
+  /** origin + path (+ a hash route): a change of query or plain hash alone is the same page. */
+  const pageKey = (href: string): string => {
+    try {
+      const u = new URL(href);
+      return `${u.origin}${u.pathname}${/^#!?\//.test(u.hash) ? u.hash : ''}`;
+    } catch {
+      return href;
+    }
+  };
+  function onNavigate(url: string): void {
     const key = routeKey(url);
     if (key === lastRoute || stopped) return;
+    const samePage = pageKey(url) === pageKey(lastUrl);
     lastRoute = key;
-    passiveObs.newPage();
-    await teardownPage(false);
-    errors = [];
-    void boot('navigation');
+    lastUrl = url;
+    if (samePage) {
+      // Same path, new query or hash (Google rewrites its URL as you type or scroll): the same page. Zoom, column and
+      // Calm view stay; new content gets Jev's incremental read.
+      scheduleIncremental();
+      return;
+    }
+    // A real SPA navigation: wait until the route has stopped changing (redirect chains, routers that push twice).
+    if (navTimer) clearTimeout(navTimer);
+    navTimer = setTimeout(() => {
+      navTimer = null;
+      if (stopped) return;
+      void (async () => {
+        passiveObs.newPage();
+        await teardownPage(false);
+        errors = [];
+        void boot('navigation');
+      })();
+    }, 600);
   }
 
   const onStorage = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
@@ -2964,12 +3188,11 @@ export function createController(): Controller {
     }
     // Round 4: what WebAble learned changed. The person's own changes (here, in another tab, in the popup, in Chrome's
     // settings) fit open pages again; plain evidence from browsing waits for each tab's next page.
+    // Round 6: never on its own. What WebAble learned (or a change in another tab, the popup or Chrome's settings) is
+    // taken in now and applied on this tab's next page; the page already showing keeps its size and layout.
     const passiveChange = changes.passive;
     const next = passiveChange?.newValue as PassiveFitState | undefined;
-    if (next && next.v === 'passive.1') {
-      const personChange = 'passiveRefit' in changes && Date.now() >= suppressRefitUntil;
-      adoptPassive(next, personChange ? 'refit' : 'keep');
-    }
+    if (next && next.v === 'passive.1') adoptPassive(next, 'keep');
   };
 
   function toggleLens(on?: boolean): void {
@@ -3020,9 +3243,7 @@ export function createController(): Controller {
     async start() {
       stopped = false;
       overlays.start();
-      stopNav = watchNavigation((url) => {
-        void onNavigate(url);
-      });
+      stopNav = watchNavigation((url) => onNavigate(url));
       try {
         chrome.storage.onChanged.addListener(onStorage);
       } catch {
@@ -3045,6 +3266,7 @@ export function createController(): Controller {
       if (flushTimer) clearTimeout(flushTimer);
       if (incrementalTimer) clearTimeout(incrementalTimer);
       if (resizeTimer) clearTimeout(resizeTimer);
+      if (navTimer) clearTimeout(navTimer);
       if (refitTimer) clearTimeout(refitTimer);
       if (passiveTimer) clearTimeout(passiveTimer);
       stopPassive();
@@ -3055,14 +3277,8 @@ export function createController(): Controller {
       } catch {
         /* ignore */
       }
-      for (const op of [...opsList].reverse()) {
-        if (!op.active) continue;
-        try {
-          void op.revert();
-        } catch {
-          /* best effort */
-        }
-      }
+      // The column's CSS comes off with the zoom: one tab zoom change back to the person's own.
+      void revertAll(opsList).catch(() => undefined);
       tailor.sheets.clear();
       pushReport.cancel();
     },

@@ -17,6 +17,8 @@ export interface FlowBlock extends Base { b: 'flow'; parts: Inline[]; text: stri
 export interface ControlBlock extends Base {
   b: 'control'; el: Element; role: 'button' | 'link'; text: string; href: string | null;
   primary: boolean; help: boolean; selected: boolean; popup: boolean;
+  /** A link that holds the page's heading (Google's result titles): drawn as a heading-styled link. */
+  head?: boolean;
 }
 export interface FieldBlock extends Base {
   b: 'field'; el: HTMLInputElement | HTMLTextAreaElement; label: string; hint: string; required: boolean;
@@ -946,6 +948,15 @@ function isButtonLike(el: Element): boolean {
   return !!role && BUTTON_ROLES.has(role) && tag !== 'a';
 }
 
+/** A textarea that is really a one-line search box: a combobox, a one-row box, or inside a search form. */
+export function isSearchTextarea(el: HTMLTextAreaElement): boolean {
+  const role = el.getAttribute('role');
+  if (role === 'combobox' || role === 'searchbox') return true;
+  if (el.hasAttribute('aria-autocomplete') && el.rows <= 2) return true;
+  const named = /^(q|query|search|search_query|p|k)$/i.test(el.name) || /\bsearch\b/i.test(`${el.getAttribute('aria-label') ?? ''} ${el.title}`);
+  return el.rows <= 1 && (named || !!el.closest('form[role=search],[role=search],search'));
+}
+
 function sensitiveField(el: HTMLInputElement): boolean {
   if (el.type === 'password') return true;
   const ac = (el.getAttribute('autocomplete') ?? '').toLowerCase();
@@ -1233,6 +1244,13 @@ class Run {
           if (b) this.push(b);
           return;
         }
+        // A link around one heading is a heading link (a text link drawn at the heading's size), never a pill.
+        if (el.querySelector(HEADING_SEL)) {
+          this.close();
+          const b = this.control(el, 'link');
+          if (b) this.push({ ...b, head: true });
+          return;
+        }
       }
       const text = nameOf(el);
       if (!text) return;
@@ -1451,6 +1469,13 @@ class Run {
       return { b: 'select', el, label: labelOf(el), hint: describedBy(el), required: el.required || el.getAttribute('aria-required') === 'true', key, src: el };
     }
     if (el instanceof HTMLTextAreaElement) {
+      // A one-line search box built from a textarea (Google's): a normal single-line search field, not a big box.
+      if (isSearchTextarea(el)) {
+        return {
+          b: 'field', el, label: labelOf(el) || 'Search', hint: describedBy(el), required: false,
+          multiline: false, type: 'search', search: true, key, src: el,
+        };
+      }
       return {
         b: 'field', el, label: labelOf(el), hint: describedBy(el), required: el.required || el.getAttribute('aria-required') === 'true',
         multiline: true, type: 'text', search: false, key, src: el,

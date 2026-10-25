@@ -2,7 +2,7 @@
 // visible word or control from the placed part is dropped.
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
-import { Blocks, BlockView, ControlView, FlowView, ImageView, Picture, PillButton, TOOL_RE, Thumb, ToolIcon, keepImage } from '../Blocks';
+import { Blocks, BlockView, ControlView, FlowView, ImageView, Picture, PillButton, ResultItem, TOOL_RE, Thumb, ToolIcon, isResultCard, keepImage } from '../Blocks';
 import { useCalm } from '../context';
 import * as I from '../icons';
 import {
@@ -148,9 +148,11 @@ function Tile({ blocks }: { blocks: Block[] }): JSX.Element {
 }
 
 export function CardGrid({ p }: { p: PlanSection }): JSX.Element {
+  const ctx = useCalm();
   const records = p.records ?? [];
   const { shown, more } = useShowFirst(records, p.showFirst);
   if (!p.records) return <Generic p={p} />;
+  if (shown.length && shown.every((r) => resultRecord(r, !!ctx.results))) return <ResultList p={p} shown={shown} more={more} />;
   const controls = onlyControls(allBlocks(p));
   if (controls && controls.length >= 2) return <ChipList controls={controls} />;
   return (
@@ -173,6 +175,43 @@ function rowsWithThumbs(records: Block[][]): boolean {
     const im = tileParts(r).image;
     return !!im && keepImage(im, true);
   }).length * 2 >= records.length;
+}
+
+/** A record that reads as a search result: a title link (with an address line, or any title link on a results page). */
+function resultRecord(blocks: Block[], resultsPage: boolean): boolean {
+  const t = tileParts(blocks);
+  if (!t.link || !t.title || t.actions.length) return false;
+  if (t.link.b === 'cardlink') return isResultCard(t.link, resultsPage);
+  return resultsPage && !(t.image && keepImage(t.image, true));
+}
+
+/** One search result: title link, the address in grey, the snippet (the page's own words). Not a card. */
+function ResultRecord({ blocks }: { blocks: Block[] }): JSX.Element {
+  const t = tileParts(blocks);
+  const link = t.link!;
+  return (
+    <ResultItem link={link} title={t.title!} lines={t.lines} dek={link.b === 'cardlink' ? link.dek : null}>
+      {t.meta.map((f) => (
+        <FlowView key={f.key} b={f} />
+      ))}
+      {t.other.length > 0 ? <Blocks blocks={t.other} /> : null}
+    </ResultItem>
+  );
+}
+
+function ResultList({ p, shown, more }: { p: PlanSection; shown: Block[][]; more: JSX.Element | null }): JSX.Element {
+  return (
+    <div class="wa-stack" style={{ gap: 'var(--wa-card-gap)' }}>
+      <Blocks blocks={p.before} />
+      <div class="wa-results">
+        {shown.map((r) => (
+          <ResultRecord key={r[0]?.key} blocks={r} />
+        ))}
+      </div>
+      {more}
+      <Blocks blocks={p.after} />
+    </div>
+  );
 }
 
 function RecordRow({ blocks, thumbs = true }: { blocks: Block[]; thumbs?: boolean }): JSX.Element {
@@ -244,6 +283,7 @@ export function RowList({ p }: { p: PlanSection }): JSX.Element {
   const { shown, more } = useShowFirst(records, p.showFirst);
   const thumbs = rowsWithThumbs(records);
   if (!p.records) return <Generic p={p} />;
+  if (shown.length && shown.every((r) => resultRecord(r, !!ctx.results))) return <ResultList p={p} shown={shown} more={more} />;
   return (
     <div class="wa-stack" style={{ gap: 'var(--wa-card-gap)' }}>
       <Blocks blocks={p.before} />

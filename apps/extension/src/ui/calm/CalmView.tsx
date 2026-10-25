@@ -18,7 +18,7 @@ import { calmMetrics, structureParams, themeModeFor, tokensFor, tokensToStyle } 
 import { Blocks } from './Blocks';
 import { ChatRow, ErrorCard, NoticeCard, PortalLinks, ProgressCard, SuccessPanel } from './Cards';
 import { Disclosure } from './Disclosure';
-import { Calm, type CalmCtx } from './context';
+import { Calm, type CalmCtx, isResultsUrl } from './context';
 import { Dock } from './Dock';
 import * as I from './icons';
 import { IndexView } from './Index';
@@ -201,6 +201,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
     [plan],
   );
 
+  const results = spec.page_type === 'search_results' || isResultsUrl();
   const ctx = useMemo<CalmCtx>(
     () => ({
       api,
@@ -234,8 +235,9 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       errorEl: outcome?.kind === 'error' ? outcome.el : null,
       kind: plan?.kind ?? 'page',
       textCol: m.textCol,
+      results,
     }),
-    [api, params.splitSentences, params.groupSize, state.settings?.explain, reduceMotion, watchPopups, watchResult, arm, step, goStep, drawerCall, jumpToField, outcome, plan?.kind, m.textCol],
+    [api, params.splitSentences, params.groupSize, state.settings?.explain, reduceMotion, watchPopups, watchResult, arm, step, goStep, drawerCall, jumpToField, outcome, plan?.kind, m.textCol, results],
   );
 
   // New page content outside every placed part (a toast, a confirmation appended to the body) shows in a result card;

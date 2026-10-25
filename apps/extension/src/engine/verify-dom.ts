@@ -782,6 +782,25 @@ export class Verifier {
     return { checks, reversed, dropped, droppedEls, ms: Math.round(performance.now() - t0), soft: ev.soft };
   }
 
+  /**
+   * One evaluation of a batch with no reversals (round 6: the page zoom and the page column). Every zoom change shows
+   * Chrome's zoom bubble, so the controller picks the one fallback itself instead of reverting and re-applying ops
+   * one at a time. `fails` are the checks that roll back; `scrollW` / `viewW` are the page's width now (CSS px).
+   */
+  check(batch: Op[], before: Snapshot, probe: Element[], ctx: SnapshotContext): { checks: CheckResult[]; fails: CheckResult[]; scrollW: number; viewW: number } {
+    this.restoreAnchor(before);
+    const after = this.snapshot(probe, { ...ctx, ops: ctx.ops ?? batch });
+    // Zoom with the page column is the site at a narrower window and a larger size: judged as the column is (its own
+    // narrower layout is not a cut), with sideways scrolling and text over text still failing.
+    const active = batch.filter((o) => o.active);
+    const cols = active.filter((o) => o.rec.kind === 'column');
+    const ev = this.evaluate(before, after, cols.length ? cols : active, ctx.ignore);
+    const opId = batch.find((o) => o.active && o.rec.kind === 'column')?.rec.id ?? batch.find((o) => o.active)?.rec.id;
+    const fails = ev.fails.map((f) => ({ ...f.result, ...(opId ? { opId } : {}) }));
+    const checks: CheckResult[] = [...ev.results.filter((r) => r.pass || !ev.fails.some((f) => f.result === r)), ...fails];
+    return { checks, fails, scrollW: after.measure.docScrollW, viewW: after.measure.viewportW };
+  }
+
   /** Elements of `op` behind the failing ids (the element itself, or within 4 levels above or below it). */
   private ownedBy(op: Op, ids: string[]): Element[] {
     const depth = (outer: Element, inner: Element): number => {

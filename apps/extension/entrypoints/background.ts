@@ -431,12 +431,17 @@ async function setZoom(tabId: number, factor: number): Promise<number> {
   const f = Math.min(5, Math.max(0.25, Math.round(factor * 100) / 100));
   settingZoom.set(tabId, [...(settingZoom.get(tabId) ?? []).filter((z) => Date.now() - z.at < OUR_ZOOM_WINDOW_MS), { f, at: Date.now() }]);
   try {
-    await chrome.tabs.setZoomSettings(tabId, { mode: 'automatic', scope: 'per-tab' });
+    // Switching scope fires a zoom change of its own: only when the tab is not per-tab yet (round 6: fewer changes).
+    const zs = await chrome.tabs.getZoomSettings(tabId).catch(() => null);
+    if (!zs || zs.scope !== 'per-tab' || zs.mode !== 'automatic') await chrome.tabs.setZoomSettings(tabId, { mode: 'automatic', scope: 'per-tab' });
   } catch {
     /* some pages (chrome://) refuse; setZoom below reports it */
   }
   ourZoom.set(tabId, f);
   saveZoomState(tabId);
+  // The same factor again is no change (and no zoom bubble).
+  const now = await chrome.tabs.getZoom(tabId).catch(() => null);
+  if (now !== null && Math.abs(now - f) < 0.005) return now;
   await chrome.tabs.setZoom(tabId, f);
   return f;
 }
