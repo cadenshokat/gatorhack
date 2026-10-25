@@ -5,6 +5,7 @@ Matches main at 3079808 (round 9). Numbers come only from docs/CLAIMS.md "Say no
 -->
 
 ---
+
 ## Inspiration
 
 In high school, during COVID-19, we started a club to help senior citizens learn to use Zoom and online chat, so they could talk to their families while they couldn't see them in person. Sitting beside them, we saw how much of the web assumes sharp eyes, a steady hand and time to spare. That stayed with us.
@@ -27,9 +28,9 @@ Setup takes a few minutes, and every part can be skipped. An instruction card be
 
 $$\text{body} = 10^{\,\log_{10}\mathrm{CPS} + 0.06} \approx 1.15 \times \mathrm{CPS}.$$
 
-- **Faint words.** Four-choice trials with words that get fainter, placed adaptively by a Bayesian method (QUEST+), so a few trials are enough. The result is a band, never a score: faint text is darkened to at least $4.5{:}1$ or $7{:}1$ contrast, or as dark as it goes.
+- **Faint words.** Four-choice trials with words that get fainter, placed adaptively by a Bayesian method (QUEST+), so a few trials are enough. The result is a band, never a score: faint text is darkened to at least 4.5:1 or 7:1 contrast, or as dark as it goes.
 - **Light or dark.** The same sentences on light and dark backgrounds. Dark wins only when it measurably helps, or when the measurement agrees with what the person says they prefer.
-- **Pointing.** A ring of nine dots, in the style of the ISO 9241-9 pointing test, stepping through sizes to find the smallest button the person hits reliably. Clicks that slip off what the person pressed count everywhere in the flow. "Steady clicks" turns on only when the evidence is strong: with $k$ slips in $n$ presses ($n \ge 8$),
+- **Pointing.** A ring of nine dots, in the style of the ISO 9241-9 pointing test, stepping through sizes to find the smallest button the person hits reliably. Clicks that slip off what the person pressed count everywhere in the flow. "Steady clicks" turns on only when the evidence is strong: with k slips in n presses (at least 8 presses),
 
 $$P(\theta \ge 0.05 \mid k, n) \ge 0.70, \qquad \theta \sim \mathrm{Beta}\!\left(k + \tfrac12,\; n - k + \tfrac12\right).$$
 
@@ -46,7 +47,7 @@ The extension turns every part of the page into structured evidence: tag, role, 
 ### 3. Interpret it with Jev, decide with code
 
 Jev is TypeSafe AI's decision model, public since September 15, 2026; version 1.14 added experimental image input on October 14. It doesn't write text. It answers typed questions with a probability on every answer:
-- which of 125 kinds of element each part is (a stat, a team logo, a recipe step, an ad, a teaser for another page…);
+- which of 125 kinds of element each part is (a stat, a team logo, a recipe step, an ad, a teaser for another page...);
 - whether it belongs to the page's task, whether it's the main action, and whether it's help;
 - what the whole page is for.
 
@@ -58,7 +59,7 @@ $$\text{fold}(e) \iff P_{\text{ad}} + P_{\text{teaser}} + P_{\text{pop-up}} \ge 
 
 Anything with even a 5% chance of being content, a field, a button or help is protected. Jev charges only for input, so a typical read of about 81,000 tokens costs
 
-$$81{,}000 \times \frac{\$0.042}{10^{6}} \approx \$0.0034 \text{ per page}.$$
+$$81{,}000 \times \frac{0.042\ \text{dollars}}{10^{6}} \approx 0.0034\ \text{dollars per page}.$$
 
 ### 4. Change the page
 
@@ -90,7 +91,7 @@ We're a team of two, Caden and Sid. We worked with several AI coding agents that
 
 **A fast model with mid-tier accuracy.** Jev is fast and cheap, not perfect. It's strong at narrow yes-or-no questions about one thing and weaker at whole-page judgments. So we ask it narrow questions, act only on high probabilities, and let code checks, not the model, decide whether a change stays. Its image input is ten days old and experimental, so we use it for one extra check and never as the deciding vote.
 
-**More categories didn't mean more accuracy.** Going from 60 kinds of element to 125 let Jev name more things, but on pages we hadn't tuned on, its accuracy held steady rather than improving. It also spread 1–2% across dozens of unlikely kinds; summed into families, that crossed our 5% "protect" line on things Jev was sure were ads, so WebAble stopped hiding them. We now count any single kind at or below $0.02$ as zero:
+**More categories didn't mean more accuracy.** Going from 60 kinds of element to 125 let Jev name more things, but on pages we hadn't tuned on, its accuracy held steady rather than improving. It also spread 1-2% across dozens of unlikely kinds; summed into families, that crossed our 5% "protect" line on things Jev was sure were ads, so WebAble stopped hiding them. We now count any single kind at or below 0.02 as zero:
 
 $$P_{\text{family}} = \sum_{r \in \text{family}} P_r \cdot \mathbf{1}[P_r > 0.02].$$
 
@@ -105,7 +106,7 @@ $$P_{\text{family}} = \sum_{r \in \text{family}} P_r \cdot \mathbf{1}[P_r > 0.02
 ## What we learned
 
 - **Personalization needs two kinds of understanding:** of the person and of the page. A simpler-looking layout can still be harder to use if it loses context. Clear results, stable behaviour and an easy way back matter as much as the model.
-- **A probability is a product decision.** Where to act ($0.90$ to fold, $0.05$ to protect) is where safety lives, and it's code we can read and test.
+- **A probability is a product decision.** Where to act (0.90 to fold, 0.05 to protect) is where safety lives, and it's code we can read and test.
 - **Ask a model the question it's good at.** Jev answered our narrow questions quickly and well; on the same ten pages it answered in under a third of a second for a third of a cent, where GPT-6 Sol took twelve seconds and five cents. Large models are better at writing. We use each for what it does best, and code makes the rules.
 - **Measure needs, never conditions.** A need is something WebAble can act on. A condition isn't, and naming one would claim an accuracy a few minutes of tasks doesn't have.
 - **Show people their own evidence.** "Finding something on CNN took you three times as long as on Wikipedia" lands in a way that a chart of settings never did.
