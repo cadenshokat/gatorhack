@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  Q_ADDS, Q_COVERS, Q_DROPS, buildExplainCheckCall, conditionWordsKept, numbersKept, parseExplainCheck, sentencesToShow,
-  splitIntoSentences,
-} from '../../src/jev/explain-check';
+import { conditionWordsKept, numbersKept, splitIntoSentences } from '../../src/jev/explain-check';
 import { VisualInputError, buildVisualCall, parseVisual } from '../../src/jev/visual';
 import { JEV_IMAGES_HEADER, emptyJevMetrics } from '../../src/jev/api';
 import { box, noul, response } from './fixtures';
@@ -16,24 +13,6 @@ describe('explain check', () => {
     expect(s).toHaveLength(6);
     expect(s[5]).toBe('Generic substitution may occur unless your prescriber indicates otherwise.');
     expect(splitIntoSentences('See e.g. the terms. Then pay $4.50 now.')).toHaveLength(2);
-  });
-
-  it('asks coverage per original sentence plus adds and drops, with the measured wording', () => {
-    const sents = splitIntoSentences(FINE_PRINT);
-    const call = buildExplainCheckCall(sents, 'An explanation.');
-    expect(call.state).toEqual({ original: sents.join(' ') });
-    expect(Object.keys(call.questions)).toEqual([...sents.map((_, i) => `covers_${i}`), 'adds', 'drops']);
-    expect(call.questions.covers_2!.instructions).toEqual({ summary: 'An explanation.', original_sentence: sents[2], question: Q_COVERS });
-    expect((call.questions.adds!.instructions as Record<string, unknown>).question).toBe(Q_ADDS);
-    expect((call.questions.drops!.instructions as Record<string, unknown>).question).toBe(Q_DROPS);
-  });
-
-  it('parses answers and fails closed on missing ones', () => {
-    const sents = ['A.', 'B.', 'C.'];
-    const p = parseExplainCheck(sents, response({ covers_0: noul(0.95), covers_1: noul(0.04), adds: noul(0.1), drops: noul(0.2) }));
-    expect(p).toEqual({ covered: [0.95, 0.04, 0], addedFact: 0.1, droppedFact: 0.2 });
-    expect(sentencesToShow(sents, p.covered)).toEqual(['B.', 'C.']);
-    expect(parseExplainCheck(sents, response({}))).toEqual({ covered: [0, 0, 0], addedFact: 1, droppedFact: 1 });
   });
 
   it('numbersKept: every number and placeholder survives', () => {

@@ -259,7 +259,36 @@ describe('fitting.html#ai', () => {
     await tick(5);
     expect(got).toEqual(READER);
     expect(q(root, '.rs-ai .rs-problem').textContent).toBe(READER.headline);
-    expect(q(root, '.rs-ai .rs-evidence').textContent).toBe('From ChatGPT');
+    expect(q(root, '.rs-ai .rs-evidence').textContent).toBe('From ChatGPT. Switch off anything that’s wrong.');
     expect(q(root, '[data-answer="reader"]').textContent).toBe('Change');
+  });
+
+  it('is the onboarding’s last step: ask, paste, Continue starts the read; or skip', async () => {
+    const { ContextTask } = await import('../tasks/Context');
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const imported: Array<[string, string | null]> = [];
+    let done = 0;
+    let skipped = 0;
+    await act(() =>
+      render(
+        <ContextTask onImport={(t, s) => imported.push([t, s])} onDone={() => done++} onSkip={() => skipped++} />,
+        root,
+      ),
+    );
+    expect(root.textContent).toContain('Ask the AI you use most');
+    expect(q(root, '[data-answer="continue"]').hasAttribute('disabled')).toBe(true);
+    await act(() => {
+      q<HTMLAnchorElement>(root, '[data-answer="ask-claude"]').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    await type(root, ANSWER);
+    await click(root, '[data-answer="continue"]');
+    expect(imported).toEqual([[ANSWER, 'Claude']]);
+    expect(done).toBe(1);
+    await click(root, '[data-answer="back"]');
+    expect(skipped).toBe(1);
+    // Nothing learned shows in the step itself.
+    expect(root.textContent).not.toContain(READER.headline);
+    root.remove();
   });
 });

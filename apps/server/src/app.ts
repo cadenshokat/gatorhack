@@ -8,7 +8,6 @@ import { bodyLimit } from 'hono/body-limit';
 import { BODY_LIMIT_BYTES } from './config';
 import { corsMiddleware, hostGuard, originGuard } from './guard';
 import { JevError } from './jev';
-import { registerExplain } from './routes/explain';
 import { registerHealth } from './routes/health';
 import { registerOverlay } from './routes/overlay';
 import { registerReader } from './routes/reader';
@@ -17,6 +16,7 @@ import { registerStruggle } from './routes/struggle';
 import { registerUnderstand } from './routes/understand';
 import { registerVisual } from './routes/visual';
 import { registerReword } from './routes/reword';
+import { registerCompose } from './routes/compose';
 import { recordRoute } from './stats';
 import { HttpError, errorMessage, log, round } from './util';
 
@@ -66,14 +66,17 @@ export function createApp(): Hono {
   registerUnderstand(app);
   registerStruggle(app);
   registerRedesign(app);
-  registerExplain(app);
   registerVisual(app);
   registerOverlay(app);
   registerReader(app);
   registerReword(app);
+  registerCompose(app);
 
   // Demo pages (package F writes apps/server/demo/**).
   if (!existsSync(DEMO_ROOT)) log('demo folder not found yet', { path: 'apps/server/demo' });
+  for (const asset of ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png']) {
+    app.get(`/${asset}`, serveStatic({ root: DEMO_ROOT, rewriteRequestPath: () => `/brand/${asset}` }));
+  }
   app.get('/demo', (c) => c.redirect('/demo/', 302));
   const noStore = (_p: string, c: Context) => {
     c.header('Cache-Control', 'no-store');
@@ -92,7 +95,7 @@ export function createApp(): Hono {
   app.get('/', (c) =>
     c.json({
       name: 'WebAble server',
-      routes: ['GET /health', 'GET /v1/stats', 'POST /v1/understand', 'POST /v1/struggle', 'POST /v1/redesign', 'POST /v1/explain', 'POST /v1/verify-visual', 'POST /v1/overlay-close', 'POST /v1/reader', 'POST /v1/reword/score', 'POST /v1/reword/write', 'GET /demo/'],
+      routes: ['GET /health', 'GET /v1/stats', 'POST /v1/understand', 'POST /v1/struggle', 'POST /v1/redesign', 'POST /v1/verify-visual', 'POST /v1/overlay-close', 'POST /v1/reader', 'POST /v1/reword/score', 'POST /v1/reword/write', 'POST /v1/compose', 'GET /demo/'],
     }),
   );
 

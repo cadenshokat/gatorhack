@@ -1,14 +1,13 @@
 // Round 2 package S: no-credits handling, local layouts judged like model layouts, honest cache metrics,
-// explain without a writer, and the overlay route's guards. No network: no Jev or OpenAI call is made here.
+// and the overlay route's guards. No network: no Jev or OpenAI call is made here.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { JEV_MODEL, buildJudgeCall, judgeCode, sourceTag } from '@webable/core';
 import type { JevResponse, LayoutCandidate } from '@webable/core';
 import { aiSentence, aiState, aiStatus, classifyOpenAiFailure, markAiBlocked, markAiWorking, resetAiState } from '../src/ai';
 import { createApp } from '../src/app';
 import { AI_BLOCK_MS } from '../src/config';
-import { FIXTURE_FIT, FIXTURE_OUTLINE, FIXTURE_OVERLAY, FIXTURE_OVERLAY_BUTTONS, FIXTURE_PASSAGE, FIXTURE_ROLES } from '../src/fixtures';
+import { FIXTURE_FIT, FIXTURE_OUTLINE, FIXTURE_OVERLAY, FIXTURE_OVERLAY_BUTTONS, FIXTURE_ROLES } from '../src/fixtures';
 import type { JevResult } from '../src/jev';
-import { EXPLAIN_MESSAGES, explain } from '../src/routes/explain';
 import { overlayClose } from '../src/routes/overlay';
 import { chosenFirst, redesign, scoreAndChoose } from '../src/routes/redesign';
 import { viewMetrics } from '../src/routes/understand';
@@ -73,31 +72,6 @@ describe('AI availability', () => {
     expect(nc.openai).toBe(false);
     expect(nc.aiDetail.retryAt).not.toBeNull();
     expect(nc.aiDetail.sentence).toContain('no credits');
-  });
-});
-
-describe('explain without a writer', () => {
-  it('says so plainly, with no coverage numbers', async () => {
-    process.env.OPENAI_API_KEY = 'test-key-not-real';
-    process.env.TYPESAFE_API_KEY = 'test-key-not-real';
-    markAiBlocked('no_credits');
-    const r = await explain(FIXTURE_PASSAGE);
-    expect(r.ok).toBe(false);
-    expect(r.error).toBe('llm_unavailable');
-    expect(r.reason).toBe('no_credits');
-    expect(r.message).toBe(EXPLAIN_MESSAGES.llm_unavailable);
-    expect(r.message).toBe("Couldn't write a plain version right now. The original is below.");
-    expect(r.explanation).toBeNull();
-    expect(r.sentences).toEqual([]);
-    expect(r.showOriginalInstead).toEqual([]);
-    expect(r.jev.calls).toBe(0);
-  });
-  it('answers 200 through the route when there is no key at all', async () => {
-    const app = createApp();
-    const res = await app.request('/v1/explain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ req: FIXTURE_PASSAGE }) });
-    expect(res.status).toBe(200);
-    const j = (await res.json()) as { ok: boolean; error: string; reason: string };
-    expect([j.ok, j.error, j.reason]).toEqual([false, 'llm_unavailable', 'no_key']);
   });
 });
 

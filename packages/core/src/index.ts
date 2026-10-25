@@ -22,3 +22,6 @@ export * from './reword/prompt';
 export * from './reword/brief';
 export * from './reword/check';
 export * from './reword/jev';
+export * from './compose/blocks';
+export * from './compose/check';
+export * from './compose/jev';

@@ -378,7 +378,7 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
     const host = rootRef.current;
     // The rest of our chrome lives in the zoomed chrome layer (pill, panel, offers, chips, the cookie bar): each part
     // is marked data-wa-chrome. Its rects come back in page CSS px like everything here. Siblings in our own layer
-    // (the Explain card) count too.
+    // count too.
     const scope = host?.getRootNode();
     const marked = scope && 'querySelectorAll' in scope ? Array.from((scope as ShadowRoot).querySelectorAll('[data-wa-chrome]')) : [];
     for (const ch of [...marked, ...Array.from(host?.parentElement?.children ?? [])]) {
@@ -1130,6 +1130,7 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
           sheetRef={sheetRef}
           reword={s.reword}
           onParaClick={paraClick}
+          compose={s.compose}
         />
       )}
       <span class="wa-lsr" role="status">

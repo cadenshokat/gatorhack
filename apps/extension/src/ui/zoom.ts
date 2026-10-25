@@ -1,8 +1,8 @@
 // Owner: U. One reading of the tab's page zoom for all of WebAble's in-page UI, and the viewport size.
 //
 // The engine may zoom the tab (and the person may zoom it too). Our UI must stay the same physical size, so every
-// layer divides by this number: the corner chrome and the Calm view through CSS `zoom`, the Lens and the Explain card
-// through their own scale. Sources, newest wins:
+// layer divides by this number: the corner chrome and the Calm view through CSS `zoom`, the Lens through its own
+// scale. Sources, newest wins:
 // - `state.pageZoom` from the engine (the zoom it applied, including the person's own);
 // - `getZoom` from the background, read at start, after every resize (Chrome fires one when the zoom changes) and on a
 //   slow poll;

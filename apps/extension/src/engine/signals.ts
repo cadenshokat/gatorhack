@@ -1749,8 +1749,8 @@ class SignalEngine {
       return;
     }
     let offers = r.offers;
-    if (offers.length && !idle.strict && offers.some((o) => o.kind !== 'explain_field')) {
-      // A text field is focused: only the form offer may appear now. Decide again at the next idle moment.
+    if (offers.length && !idle.strict) {
+      // A text field is focused: no offer appears now. Decide again at the next idle moment.
       offers = [];
       this.deferred = { memBefore, counts, until: nowW + 30_000 };
     } else {

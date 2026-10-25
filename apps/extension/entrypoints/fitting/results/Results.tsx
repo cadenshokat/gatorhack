@@ -6,8 +6,10 @@
 import type { FitProfile, Polarity, ReaderProfile } from '@webable/core';
 import type { JSX } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { Logo } from '../../../src/ui/Logo';
+import { PointRow } from '../ai/AiScreen';
 import { ExplainIcon } from '../ai/icons';
-import { fromWords } from '../ai/reader';
+import { fromWords, PROBLEM_WORDS, type ImportProblem } from '../ai/reader';
 import type { RunEvidence } from '../logic/evidence';
 import {
   BUTTON_LEVELS,
@@ -45,6 +47,10 @@ export interface ResultsProps {
   reader?: ReaderProfile | null;
   /** Round 9: opens fitting.html#ai. Without it the card is not shown. */
   onReader?(): void;
+  /** Round 10: the onboarding's last step is still reading the AI answer, or could not. */
+  readerJob?: { status: 'reading' | 'failed'; source: string | null; problem?: ImportProblem } | null;
+  /** Round 10: a point switched on or off on Results (App saves it). */
+  onReaderPoints?(next: ReaderProfile): void;
 }
 
 /** "See it on real websites": real pages WebAble changes by itself (round 8c point 5). */
@@ -128,7 +134,7 @@ export function Results(props: ResultsProps): JSX.Element {
     <div class="rs">
       <header class="rs-top">
         <div class="rs-wrap">
-          <span class="rs-mark">WebAble</span>
+          <span class="rs-mark"><Logo />WebAble</span>
         </div>
       </header>
 
@@ -173,7 +179,14 @@ export function Results(props: ResultsProps): JSX.Element {
               })}
             </ol>
 
-            {props.onReader ? <ReaderCard reader={props.reader ?? null} onOpen={props.onReader} /> : null}
+            {props.onReader ? (
+              <ReaderCard
+                reader={props.reader ?? null}
+                job={props.readerJob ?? null}
+                onOpen={props.onReader}
+                onPoints={props.onReaderPoints}
+              />
+            ) : null}
 
             <div class="rs-actions">
               <button type="button" class="btn btn-primary rs-btn" onClick={toSites}>
@@ -244,20 +257,65 @@ export function Results(props: ResultsProps): JSX.Element {
 
 /* ---------------- How you like things explained (round 9) ---------------- */
 
-function ReaderCard({ reader, onOpen }: { reader: ReaderProfile | null; onOpen(): void }): JSX.Element {
+/**
+ * What WebAble took from the person's AI answer (round 10: the onboarding's last step ends here). While the answer is
+ * still being read it says so; if it could not be read, it says that plainly with a way to try again. With a saved
+ * one: its headline and each point with the answer's own words, each switchable (saved at once).
+ */
+function ReaderCard(props: {
+  reader: ReaderProfile | null;
+  job: ResultsProps['readerJob'];
+  onOpen(): void;
+  onPoints?(next: ReaderProfile): void;
+}): JSX.Element {
+  const { reader, job, onOpen, onPoints } = props;
+  const from = (source: string | null): string => source?.trim() || 'your AI';
+  let title: string;
+  let line: string;
+  let action: string | null;
+  if (job?.status === 'reading') {
+    title = `Reading what ${from(job.source)} said…`;
+    line = 'This takes a few seconds. It shows here when it’s done.';
+    action = null;
+  } else if (job?.status === 'failed' && !reader) {
+    title = 'Your AI’s answer couldn’t be read';
+    line = PROBLEM_WORDS[job.problem ?? 'unavailable'];
+    action = 'Try again';
+  } else if (reader) {
+    title = reader.headline;
+    line = `${fromWords(reader.source)}. Switch off anything that’s wrong.`;
+    action = 'Change';
+  } else {
+    title = 'Pages can explain things the way you like';
+    line = 'Bring what your AI assistant already knows about how you like things explained.';
+    action = 'Bring it in';
+  }
+  const showPoints = !!reader && job?.status !== 'reading' && !!onPoints;
   return (
-    <section class="rs-ai" aria-label="How you like things explained">
+    <section class="rs-ai" aria-label="How you like things explained" aria-busy={job?.status === 'reading' ? true : undefined}>
       <span class="rs-card-icon">
         <ExplainIcon />
       </span>
       <div class="rs-card-body">
-        <p class="rs-problem">{reader ? reader.headline : 'Pages can explain things the way you like'}</p>
-        <p class="rs-evidence">
-          {reader ? fromWords(reader.source) : 'Bring what your AI assistant already knows about how you like things explained.'}
-        </p>
-        <button type="button" class="btn btn-secondary rs-btn rs-ai-btn" onClick={onOpen} data-answer="reader">
-          {reader ? 'Change' : 'Bring it in'}
-        </button>
+        <p class="rs-problem">{title}</p>
+        <p class="rs-evidence">{line}</p>
+        {showPoints ? (
+          <ul class="ai-points rs-ai-points" aria-label="What WebAble took from your AI">
+            {reader.points.map((p) => (
+              <PointRow
+                key={p.id}
+                point={p}
+                source={reader.source}
+                onToggle={(id, on) => onPoints({ ...reader, points: reader.points.map((x) => (x.id === id ? { ...x, on } : x)) })}
+              />
+            ))}
+          </ul>
+        ) : null}
+        {action ? (
+          <button type="button" class="btn btn-secondary rs-btn rs-ai-btn" onClick={onOpen} data-answer="reader">
+            {action}
+          </button>
+        ) : null}
       </div>
     </section>
   );

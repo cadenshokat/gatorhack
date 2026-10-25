@@ -183,10 +183,10 @@ describe('decideOffers', () => {
     expect(o.offers[0]!.kind).toBe('calm_view');
   });
 
-  it('routes a zoom-in to larger text and dense re-reading to an explanation', () => {
+  it('routes a zoom-in and dense re-reading to larger text', () => {
     const d = judgment({ reading: 0.97, dense_text: 0.6 }, 1.8);
     expect(decideOffers([d], counts({ zoomInEvents: 1, zoomLevel: 1.25 }), initialOfferMemory(), now, 30_000, true).offers[0]!.kind).toBe('larger_text');
-    expect(decideOffers([d], counts({ scrollBacks: 3 }), initialOfferMemory(), now, 30_000, true).offers[0]!.kind).toBe('explain');
+    expect(decideOffers([d], counts({ scrollBacks: 3 }), initialOfferMemory(), now, 30_000, true).offers[0]!.kind).toBe('larger_text');
   });
 
   it('applies the interruption budget', () => {

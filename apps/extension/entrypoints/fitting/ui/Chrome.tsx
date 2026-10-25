@@ -3,6 +3,7 @@
 
 import type { JSX } from 'preact';
 import type { PartId } from '../logic/steps';
+import { Logo } from '../../../src/ui/Logo';
 
 export function CheckIcon(props: { size?: number }): JSX.Element {
   const s = props.size ?? 16;
@@ -16,7 +17,7 @@ export function CheckIcon(props: { size?: number }): JSX.Element {
 export function Wordmark(): JSX.Element {
   return (
     <div class="fl-wordmark">
-      <span class="fl-wordmark-dot" aria-hidden="true" />
+      <Logo />
       WebAble
     </div>
   );

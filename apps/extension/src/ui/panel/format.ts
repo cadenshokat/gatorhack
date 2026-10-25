@@ -80,7 +80,7 @@ export function roleLabel(role: Role | string | null | undefined): string {
  * The headline is the page read: Jev's understanding of this page (one set of parallel calls). When that read was
  * replayed from the server's cache, the headline numbers are those of the first live read (`firstRead`) and
  * `viewUsd` is $0. `sinceLoad` adds every other Jev call this page made (struggle checks, layout judge, visual
- * check, explain), with cached answers counted as decisions but never as cost.
+ * check), with cached answers counted as decisions but never as cost.
  */
 export interface JevTotals {
   /** Typed answers in the page read (one per question). */
@@ -122,7 +122,6 @@ export function jevMetricsList(s: EngineState): JevMetrics[] {
   add(s.struggle.latest?.metrics);
   add(s.calm.redesign?.judge);
   add(s.calm.visual?.metrics);
-  add(s.explain.result?.jev);
   return [...seen];
 }
 

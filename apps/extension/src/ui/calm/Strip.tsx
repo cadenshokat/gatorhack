@@ -3,6 +3,7 @@
 // under the task (SubStrip). Round 8: no "New layout ready" line: the simplified page never shifts once it is shown.
 import type { JSX } from 'preact';
 import type { EngineApi } from '../../contracts';
+import { Logo } from '../Logo';
 import { proxyInput, proxySubmit } from '../proxy';
 import { PillButton } from './Blocks';
 import { useCalm } from './context';
@@ -137,7 +138,7 @@ export function Strip(props: { api: EngineApi; plan: CalmPlan | null }): JSX.Ele
     <header class="wa-strip" data-level="0">
       <div class="wa-strip__in">
         <div class="wa-brand">
-          <span class="wa-dot" aria-hidden="true" />
+          <Logo size={24} />
           <span class="wa-brand__name" title={name}>
             {name}
           </span>

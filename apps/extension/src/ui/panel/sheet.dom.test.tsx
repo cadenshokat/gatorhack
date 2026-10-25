@@ -21,7 +21,6 @@ function state(reword: EngineState['reword']): EngineState {
     understanding: { elements: [], mainPick: { id: 'none', p: 0, probs: {} }, metrics: {} as never, cached: false }, decisions: [], lens: { on: false },
     calm: { open: false, loading: false, spec: null, source: null, aiReady: false, redesign: null, visual: null },
     struggle: { latest: null, history: [], waiting: [], offers: [] }, toasts: [],
-    explain: { open: false, loading: false, anchor: null, original: null, result: null, error: null },
     showingOriginal: false, overlays: [], ai: 'on', column: { on: false, widthPx: null, minPx: 720, maxPx: 1600 }, textStep: 0, pageZoom: 1,
     passive: null, reword,
   } as EngineState;

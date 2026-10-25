@@ -2,7 +2,7 @@
 // original; every word is the page's own visible text. Alt text is only ever an <img> alt, never visible text.
 import { STORY_RATIO, isWideFigure, loadedFrame, pictureFrame } from '@webable/core';
 import type { ComponentChildren, JSX } from 'preact';
-import { useEffect, useId, useRef, useState } from 'preact/hooks';
+import { useEffect, useId, useState } from 'preact/hooks';
 import type { EngineApi, RewordInline, RewordView } from '../../contracts';
 import { proxyCheck, proxyClick, proxyCommit, proxyInput, proxyKey, proxySelect, proxySubmit, renderLiveValue } from '../proxy';
 import { isIrreversible, useCalm } from './context';
@@ -12,7 +12,7 @@ import { AdTag, Kicker, LIVE_MAX_CHARS, LiveDot, isAdItem, liveLabelFor } from '
 import {
   type Block, type CardLinkBlock, type ChoiceBlock, type ChoicesBlock, type ControlBlock, type FieldBlock, type FlowBlock,
   type ImageBlock, type Inline, type LinkPart, type ListBlock, type PeekBlock, type RichTableBlock, type SelectBlock, type TableBlock,
-  PRICE_RE, RW_ATTR, TOOL_RE, isDense, keepImage, splitParts, stripMarker,
+  PRICE_RE, RW_ATTR, TOOL_RE, keepImage, splitParts, stripMarker,
 } from './model';
 
 export { TOOL_RE, keepImage };
@@ -134,11 +134,18 @@ export function InlineLink({ p }: { p: LinkPart }): JSX.Element {
   );
 }
 
-function renderParts(parts: Inline[]): JSX.Element[] {
+/** Bold and italic the page shows on these words (<strong> / <em> in the view's own font). */
+function emphasis(p: { b?: true; i?: true }, el: JSX.Element, key: number): JSX.Element {
+  if (!p.b) return <em key={key}>{el}</em>;
+  return <strong key={key}>{p.i ? <em>{el}</em> : el}</strong>;
+}
+
+/** Inline parts as the page shows them: its words, its emphasis, its links and line breaks. */
+export function renderParts(parts: Inline[]): JSX.Element[] {
   return parts.map((p, i) => {
-    if (p.t === 'text') return <span key={i}>{p.text}</span>;
+    if (p.t === 'text') return p.b || p.i ? emphasis(p, <>{p.text}</>, i) : <span key={i}>{p.text}</span>;
     if (p.t === 'br') return <br key={i} />;
-    return <InlineLink key={i} p={p} />;
+    return p.b || p.i ? emphasis(p, <InlineLink p={p} />, i) : <InlineLink key={i} p={p} />;
   });
 }
 
@@ -213,18 +220,12 @@ export function FlowView({ b, quiet = false, pageline = false }: { b: FlowBlock;
 /** A paragraph in the page's own words. */
 function FlowOwn({ b, quiet, pageline }: { b: FlowBlock; quiet: boolean; pageline: boolean }): JSX.Element {
   const ctx = useCalm();
-  const ref = useRef<HTMLDivElement>(null);
   const price = b.text.length <= 40 && PRICE_RE.test(b.text);
-  const dense = ctx.explainOn && isDense(b.text);
   const paras: Inline[][] = Number.isFinite(ctx.splitN) && b.text.length > 160 ? splitParts(b.parts, ctx.splitN) : [b.parts];
   const links = b.parts.filter((p) => p.t === 'link').length;
   const plain = b.parts.map((p) => (p.t === 'text' ? p.text : '')).join('');
   const crumbs = links >= 2 && b.text.length <= 120 && /[›»>/|]/.test(plain);
   const cls = `wa-p${quiet || pageline ? ' wa-p--quiet' : ''}${price ? ' wa-p--price' : ''}${crumbs ? ' wa-crumbs' : ''}`;
-  const explain = (): void => {
-    const r = ref.current?.getBoundingClientRect();
-    void ctx.api.explainSelection(b.text, r ? { x: r.left, y: r.top, w: r.width, h: r.height } : { x: 0, y: 0, w: 0, h: 0 });
-  };
   // Round 8: a short "Live" label the page shows gets the green dot.
   const src = b.src instanceof Element ? b.src : b.src.parentElement;
   if (b.text.length <= LIVE_MAX_CHARS && liveLabelFor(src, b.text, ctx.marks)) {
@@ -237,22 +238,16 @@ function FlowOwn({ b, quiet, pageline }: { b: FlowBlock; quiet: boolean; pagelin
       </p>
     );
   }
-  if (paras.length === 1 && !dense) {
+  if (paras.length === 1) {
     return <p class={cls}>{renderParts(paras[0]!)}</p>;
   }
   return (
-    <div class="wa-para" ref={ref}>
+    <div class="wa-para">
       {paras.map((ps, i) => (
         <p key={i} class={cls}>
           {renderParts(ps)}
         </p>
       ))}
-      {dense && (
-        <button type="button" class="wa-btn wa-btn--soft wa-explain" onClick={explain}>
-          <span class="wa-dot" aria-hidden="true" />
-          Explain in plain words
-        </button>
-      )}
     </div>
   );
 }

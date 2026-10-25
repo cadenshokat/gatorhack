@@ -202,6 +202,33 @@ function Ask(props: {
   /** A quiet way out: back to what is saved, or "Not now". */
   back: { label: string; go(): void };
 }): JSX.Element {
+  return (
+    <section class="ai-card card" aria-labelledby="ai-title">
+      <h1 class="ai-h1" id="ai-title" ref={props.heading} tabIndex={-1}>
+        Let pages explain things the way you like
+      </h1>
+      <p class="ai-deck">
+        Your AI assistant already knows how you like things explained. Ask it once, paste its answer here, and WebAble
+        will word and lay out the pages you read the way you like.
+      </p>
+      <AskSteps {...props} />
+    </section>
+  );
+}
+
+/**
+ * The two steps (ask the AI, paste its answer) and Continue. Shared by #ai and the onboarding's last step, which
+ * gives them its own title.
+ */
+export function AskSteps(props: {
+  text: string;
+  problem: ImportProblem | null;
+  onText(text: string): void;
+  onSource(source: AiSource | null): void;
+  onContinue(): void;
+  /** A quiet way out next to Continue, or none. */
+  back: { label: string; go(): void } | null;
+}): JSX.Element {
   const { text, problem } = props;
   const [copied, setCopied] = useState(false);
   const question = useRef<HTMLDivElement>(null);
@@ -233,88 +260,80 @@ function Ask(props: {
 
   const ready = longEnough(text);
   return (
-    <section class="ai-card card" aria-labelledby="ai-title">
-      <h1 class="ai-h1" id="ai-title" ref={props.heading} tabIndex={-1}>
-        Let pages explain things the way you like
-      </h1>
-      <p class="ai-deck">
-        Your AI assistant already knows how you like things explained. Ask it once, paste its answer here, and WebAble
-        will rewrite hard paragraphs on the pages you read.
-      </p>
+    <ol class="ai-steps">
+      <li class="ai-step">
+        <h2 class="ai-step-title">
+          <span class="ai-num" aria-hidden="true">
+            1
+          </span>
+          Ask the AI you use most
+        </h2>
+        <div class="ai-ask">
+          {(['ChatGPT', 'Claude'] as const).map((name) => (
+            <a
+              key={name}
+              class="btn btn-primary ai-btn"
+              href={AI_ASK_URLS[name]}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => props.onSource(name)}
+              data-answer={`ask-${name.toLowerCase()}`}
+            >
+              Ask {name}
+              <span class="visually-hidden"> (opens in a new tab)</span>
+            </a>
+          ))}
+          <button type="button" class="btn btn-secondary ai-btn" onClick={() => void copy()} data-answer="copy-question">
+            {copied ? (
+              <>
+                <CheckIcon size={18} /> Copied
+              </>
+            ) : (
+              'Copy the question'
+            )}
+          </button>
+        </div>
+        <p class="ai-hint">ChatGPT and Claude open with the question filled in. For any other AI, copy it and paste it there.</p>
+        <div class="ai-question" ref={question} tabIndex={0} role="region" aria-label="The question">
+          {AI_PROMPT}
+        </div>
+      </li>
 
-      <ol class="ai-steps">
-        <li class="ai-step">
-          <h2 class="ai-step-title">
-            <span class="ai-num" aria-hidden="true">
-              1
-            </span>
-            Ask the AI you use most
-          </h2>
-          <div class="ai-ask">
-            {(['ChatGPT', 'Claude'] as const).map((name) => (
-              <a
-                key={name}
-                class="btn btn-primary ai-btn"
-                href={AI_ASK_URLS[name]}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => props.onSource(name)}
-                data-answer={`ask-${name.toLowerCase()}`}
-              >
-                Ask {name}
-                <span class="visually-hidden"> (opens in a new tab)</span>
-              </a>
-            ))}
-            <button type="button" class="btn btn-secondary ai-btn" onClick={() => void copy()} data-answer="copy-question">
-              {copied ? (
-                <>
-                  <CheckIcon size={18} /> Copied
-                </>
-              ) : (
-                'Copy the question'
-              )}
-            </button>
-          </div>
-          <p class="ai-hint">ChatGPT and Claude open with the question filled in. For any other AI, copy it and paste it there.</p>
-          <div class="ai-question" ref={question} tabIndex={0} role="region" aria-label="The question">
-            {AI_PROMPT}
-          </div>
-        </li>
-
-        <li class="ai-step">
-          <h2 class="ai-step-title" id="ai-paste">
-            <span class="ai-num" aria-hidden="true">
-              2
-            </span>
-            Paste its answer
-          </h2>
-          <textarea
-            class="ai-answer"
-            aria-labelledby="ai-paste"
-            aria-describedby={problem ? 'ai-problem' : undefined}
-            aria-invalid={problem ? true : undefined}
-            rows={8}
-            spellcheck={false}
-            value={text}
-            onInput={(e) => props.onText((e.currentTarget as HTMLTextAreaElement).value)}
-            data-answer="answer"
-          />
-          {problem ? (
-            <p class="ai-problem" id="ai-problem" role="alert">
-              {PROBLEM_WORDS[problem]}
-            </p>
-          ) : null}
-          <div class="ai-actions">
-            <button type="button" class="btn btn-primary ai-btn" disabled={!ready} onClick={props.onContinue} data-answer="continue">
-              Continue
-            </button>
+      <li class="ai-step">
+        <h2 class="ai-step-title" id="ai-paste">
+          <span class="ai-num" aria-hidden="true">
+            2
+          </span>
+          Paste its answer
+        </h2>
+        <textarea
+          class="ai-answer"
+          aria-labelledby="ai-paste"
+          aria-describedby={problem ? 'ai-problem' : undefined}
+          aria-invalid={problem ? true : undefined}
+          rows={8}
+          spellcheck={false}
+          value={text}
+          onInput={(e) => props.onText((e.currentTarget as HTMLTextAreaElement).value)}
+          data-answer="answer"
+        />
+        {problem ? (
+          <p class="ai-problem" id="ai-problem" role="alert">
+            {PROBLEM_WORDS[problem]}
+          </p>
+        ) : null}
+        <div class="ai-actions">
+          <button type="button" class="btn btn-primary ai-btn" disabled={!ready} onClick={props.onContinue} data-answer="continue">
+            Continue
+          </button>
+          {props.back ? (
             <button type="button" class="btn-text ai-quiet" onClick={props.back.go} data-answer="back">
               {props.back.label}
             </button>
-          </div>
-        </li>
-      </ol>
-    </section>
+          ) : null}
+        </div>
+      </li>
+    </ol>
   );
 }
 
@@ -346,7 +365,7 @@ function Points(props: {
   );
 }
 
-function PointRow(props: { point: ReaderPoint; source: string; onToggle(id: string, on: boolean): void }): JSX.Element {
+export function PointRow(props: { point: ReaderPoint; source: string; onToggle(id: string, on: boolean): void }): JSX.Element {
   const { point } = props;
   return (
     <li class={`ai-point${point.on ? '' : ' is-off'}`} data-point={point.id}>

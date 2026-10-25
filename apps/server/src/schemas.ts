@@ -2,7 +2,7 @@
 // Object key order follows the contract (Jev reads evidence in the order it is serialised).
 import { z } from 'zod';
 import type {
-  ElementEvidence, ExplainRequest, FitSummaryForModel, OutlineNode, OverlayButtonEvidence, OverlayEvidence, OverlayKind,
+  ComposeRequest, ElementEvidence, FitSummaryForModel, OutlineNode, OverlayButtonEvidence, OverlayEvidence, OverlayKind,
   PageDigest, PageOutline, ReaderImportRequest, ReaderPoint, ReaderProfile, Role, RewordPage, RewordScoreRequest,
   RewordWriteRequest, StruggleSignals, VisualVerifyRequest,
 } from '@webable/core';
@@ -108,13 +108,6 @@ export const RedesignBody = z.object({
   fit: FitSummarySchema,
   roles: z.record(id, RoleSchema).default({}),
 });
-
-export const ExplainRequestSchema: z.ZodType<ExplainRequest> = z.object({
-  passage: z.string().min(1, 'nothing to explain').max(8_000),
-  pageKind: text(80),
-});
-
-export const ExplainBody = z.object({ req: ExplainRequestSchema });
 
 /** Base64 image, with or without a data: URL prefix (captureVisibleTab returns a data URL). */
 const Base64Image = z
@@ -234,4 +227,30 @@ export const RewordWriteBody = z.object({
     page: RewordPageSchema,
     items: z.array(RewordParaSchema.extend({ kind: z.enum(['plain', 'list', 'shorter', 'point_first']) })).max(8),
   }) as z.ZodType<RewordWriteRequest>,
+});
+
+/* ------------------------------------------------------------------ */
+/* Round 10: the WebAble page as components                            */
+/* ------------------------------------------------------------------ */
+
+const ComposeUnitSchema = z.object({
+  id: z.string().regex(/^u\d{1,4}$/, 'unit ids look like u3'),
+  kind: z.enum(['para', 'list', 'table', 'quote']),
+  text: z.string().min(1).max(6_000),
+});
+
+/** Loose on size (up to 20 units): a group over the contract's 10 units or 3,000 characters comes back ok:false 'invalid' on its own, never failing the request. */
+const ComposeGroupSchema = z.object({
+  id: z.string().regex(/^g[A-Za-z0-9_-]{1,64}$/, 'group ids look like g3fa9c'),
+  heading: text(400).nullable(),
+  units: z.array(ComposeUnitSchema).min(1).max(20),
+  linkTexts: z.array(text(300)).max(200),
+});
+
+export const ComposeBody = z.object({
+  req: z.object({
+    reader: ReaderProfileSchema.nullable(),
+    page: RewordPageSchema,
+    groups: z.array(ComposeGroupSchema).max(4),
+  }) as z.ZodType<ComposeRequest>,
 });

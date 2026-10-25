@@ -1,15 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DEMO_FITS, cusumWeights, gate, initialCusum, redactText, toSignals, type ExplainResult } from '@webable/core';
+import { DEMO_FITS, cusumWeights, gate, initialCusum, toSignals } from '@webable/core';
 import {
   ActiveClock, Backtracker, PinchWatch, PointerTrail, SIG, ToggleHistory, ZoomWatch, gateCounts, isJudgment, isLostClick,
   longPauseThresholdMs, overlapRatio, parseZoom, progressBand, rectDistance, summarize, wordCount,
   type LiveFacts, type PressFacts, type SigEvent,
 } from '../src/engine/signals';
-import {
-  ExplainError, alignRedaction, explainBlockReason, requestExplain, isExcludedHost, normalizePassage, restoreByContext, restoreExplainResult,
-  restoreSpan,
-} from '../src/engine/explain';
-import { isExplainableText } from '../src/engine/select';
+import { isExcludedHost } from '../src/engine/hosts';
 
 const live = (over: Partial<LiveFacts> = {}): LiveFacts => ({
   windowMs: 60_000,
@@ -307,77 +303,12 @@ describe('small helpers', () => {
   });
 });
 
-describe('select', () => {
-  it('offers Explain for 12+ words up to 2,000 characters', () => {
-    expect(isExplainableText('Refills ordered after 2 p.m. are ready the next business day at the counter.')).toBe(true);
-    expect(isExplainableText('Call your pharmacist')).toBe(false);
-    expect(isExplainableText('word '.repeat(500))).toBe(false);
-  });
-});
-
-describe('explain', () => {
-  it('refuses sensitive pages, excluded sites, empty and long passages', () => {
-    expect(explainBlockReason('Some words to explain here', true, 'example.com')).toBe('sensitive_page');
-    expect(explainBlockReason('Some words to explain here', false, 'mail.google.com')).toBe('excluded_site');
-    expect(explainBlockReason('Hi', false, 'example.com')).toBe('empty');
-    expect(explainBlockReason('word '.repeat(450).trim(), false, 'example.com')).toBe('too_long');
-    expect(explainBlockReason('Generic substitution may apply unless your doctor writes otherwise.', false, 'www.drugs.com')).toBeNull();
+describe('excluded hosts', () => {
+  it('matches mail, chat and banking sites, not ordinary ones', () => {
     expect(isExcludedHost('secure.chase.com')).toBe(true);
+    expect(isExcludedHost('mail.google.com')).toBe(true);
     expect(isExcludedHost('127.0.0.1')).toBe(false);
-  });
-  it('normalizes whitespace and zero-width characters', () => {
-    expect(normalizePassage('  a​ b\n\n c ')).toBe('a b c');
-  });
-
-  const original = 'Call 352-555-0142 before 4 p.m. or email help@alderra.example to move a refill. ' +
-    'Refills over $25.00 need a signature. Pickup closes at 9 p.m.';
-  const redacted = redactText(original);
-
-  it('aligns every placeholder with the text it replaced', () => {
-    expect(redacted).not.toContain('352-555-0142');
-    const spans = alignRedaction(original, redacted);
-    expect(spans).not.toBeNull();
-    const values = (spans ?? []).map((s) => s.value);
-    expect(values).toContain('352-555-0142');
-    expect(values).toContain('help@alderra.example');
-    expect(values.some((v) => v.includes('25.00'))).toBe(true);
-  });
-  it('restores details in the explanation only when unambiguous', () => {
-    const spans = alignRedaction(original, redacted) ?? [];
-    const phone = spans.find((s) => s.value === '352-555-0142')?.token ?? '[phone number]';
-    expect(restoreByContext(`You can call ${phone} before 4 p.m.`, spans)).toContain('352-555-0142');
-    const two = alignRedaction('Pay $10.00 now and $99.00 later.', redactText('Pay $10.00 now and $99.00 later.')) ?? [];
-    expect(two).toHaveLength(2);
-    expect(restoreByContext('First [amount] now, then [amount] later.', two)).toBe('First $10.00 now, then $99.00 later.');
-    expect(restoreByContext('It costs [amount].', two)).toBe('It costs [amount].');
-  });
-  it('restores original sentences exactly by position', () => {
-    const spans = alignRedaction(original, redacted) ?? [];
-    const firstSentence = redacted.slice(0, redacted.indexOf('refill.') + 'refill.'.length);
-    expect(restoreSpan(firstSentence, redacted, spans)).toBe(original.slice(0, original.indexOf('refill.') + 'refill.'.length));
-  });
-  it('returns null instead of guessing when alignment is unsafe', () => {
-    expect(alignRedaction('Call 352-555-0142 now', 'Call [phone number][number] now')).toBeNull();
-    expect(alignRedaction('nothing here', 'something else [name]')).toBeNull();
-    expect(alignRedaction('same', 'same')).toEqual([]);
-  });
-  it('restoreExplainResult leaves flags alone', () => {
-    const spans = alignRedaction(original, redacted) ?? [];
-    const phone = spans.find((s) => s.value === '352-555-0142')?.token ?? '[phone number]';
-    const res: ExplainResult = {
-      ok: true,
-      explanation: `Call ${phone} before 4 p.m. to move a refill.`,
-      sentences: [{ original: redacted.slice(0, redacted.indexOf('refill.') + 7), covered: 0.95 }],
-      checks: { numbersKept: true, conditionWordsKept: true, addedFact: 0.1, droppedFact: 0.1 },
-      showOriginalInstead: [],
-      model: 'gpt-5.4-mini',
-      ms: 1900,
-      jev: { model: 'jev-1.14.0', calls: 1, questions: 3, inputTokens: 900, wallMs: 200, serverMs: 150, costUsd: 0.00004 },
-    };
-    const out = restoreExplainResult(res, original, redacted);
-    expect(out.explanation).toContain('352-555-0142');
-    expect(out.sentences[0]?.original).toContain('help@alderra.example');
-    expect(out.checks).toEqual(res.checks);
+    expect(isExcludedHost('www.drugs.com')).toBe(false);
   });
 });
 
@@ -422,17 +353,5 @@ describe('with the real core gate and policy', () => {
     const s = toSignals(c, fit, 'online store product page');
     expect(s.zoom_changes).toBe('1');
     expect(JSON.stringify(s)).not.toMatch(/tremor|disab|impair|condition/i);
-  });
-});
-
-describe('requestExplain refusals (nothing is sent)', () => {
-  it('refuses on pages with password or payment fields', async () => {
-    await expect(requestExplain('Generic substitution may apply unless your doctor writes otherwise.', 'pharmacy', true))
-      .rejects.toMatchObject({ name: 'ExplainError', code: 'sensitive_page' });
-  });
-  it('refuses passages over 2,000 characters', async () => {
-    const err = await requestExplain('word '.repeat(450), 'article', false).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(ExplainError);
-    expect((err as ExplainError).message).not.toMatch(/you (missed|struggle)|disab|accessib/i);
   });
 });

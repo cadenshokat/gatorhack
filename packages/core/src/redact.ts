@@ -1,7 +1,7 @@
 // Privacy layer. Owner: A1.
 //
 // Two tools for two kinds of payload:
-// - redactText / uiLabel: pattern redaction for text that must stay readable (Jev labels, "Explain" passages).
+// - redactText / uiLabel: pattern redaction for text that must stay readable (Jev labels, page text sent to a model).
 //   Personal details become placeholders: [email], [link], [handle], [phone number], [card number], [id number],
 //   [account number], [rx number], [date], [address], [amount], [dose], [medication], [number], [name], [secret].
 // - allowlistWords: a vocabulary allowlist for the outline the generative model sees. Any run of words outside a

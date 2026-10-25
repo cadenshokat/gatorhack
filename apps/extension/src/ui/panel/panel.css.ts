@@ -1,13 +1,15 @@
-// Owner: P, U. Root theme bridge, the shared controls the Jev view and the explain card use, and the WebAble button
+// Owner: P, U. Root theme bridge, the shared controls the Jev view uses, and the WebAble button
 // and sheet. Two roots share these rules: the chrome layer (data-layer="ui": button, sheet, dock, cookie bar), which
 // is CSS-zoomed so one CSS px is one design pixel at any page zoom (--u is 1px there), and the page layer
-// (data-layer="page": the Jev view, the explain card), which follows page coordinates and sizes with --u.
+// (data-layer="page": the Jev view), which follows page coordinates and sizes with --u.
 //
 // The button, sheet, note, pop-up card and cookie bar use the --k-* tokens: the onboarding's look (warm off-white,
 // near-black ink, one deep green accent) in light mode, the fit's dark and maximum-contrast palettes otherwise.
 import { DISPLAY_STACK, FONT_STACK, target, u } from './css-util';
+import { logoCss } from '../Logo';
 
 export const rootCss = /* css */ `
+${logoCss}
 :host { all: initial !important; }
 .wa-layer {
   margin: 0; padding: 0; border: 0; inset: 0; width: 100vw; height: 100dvh;
@@ -127,7 +129,7 @@ export const rootCss = /* css */ `
 }
 .wa-num { font-variant-numeric: tabular-nums; }
 
-/* ---------- shared buttons (the Jev view and the explain card) ---------- */
+/* ---------- shared buttons (the Jev view and the simplified page) ---------- */
 .wa-btn {
   appearance: none; -webkit-appearance: none;
   display: inline-flex; align-items: center; justify-content: center; gap: ${u(8)};
@@ -184,7 +186,7 @@ export const rootCss = /* css */ `
 @keyframes wa-rise { from { opacity: 0; transform: translateY(${u(10)}) scale(.98); } to { opacity: 1; transform: none; } }
 @keyframes wa-k-in { from { opacity: 0; transform: translateY(${u(8)}); } to { opacity: 1; transform: none; } }
 
-/* ---------- the WebAble button: a white circle with the mark (a green dot in a ring) ---------- */
+/* ---------- the WebAble button: a circle with the shared three-piece logo ---------- */
 .wa-fab {
   position: relative; flex: none; appearance: none; margin: 0; padding: 0;
   display: grid; place-items: center;
@@ -194,16 +196,12 @@ export const rootCss = /* css */ `
   cursor: pointer; pointer-events: auto;
   transition: transform 200ms var(--k-ease), background-color 200ms var(--k-ease);
 }
-.wa-fab:hover { transform: translateY(${u(-1)}); }
+.wa-fab:hover { background: var(--k-canvas); }
 .wa-fab:active { transform: scale(.96); }
 .wa-fab[aria-expanded="true"] { background: var(--k-canvas); }
-.wa-mark {
-  display: grid; place-items: center; width: ${u(24)}; height: ${u(24)}; border-radius: 50%;
-  box-shadow: inset 0 0 0 ${u(2.5)} var(--k-ink3); transition: box-shadow 200ms var(--k-ease);
-}
-.wa-mark i { display: block; width: ${u(8)}; height: ${u(8)}; border-radius: 50%; background: var(--k-accent); }
-.wa-fab[data-changed] .wa-mark { box-shadow: inset 0 0 0 ${u(2.5)} var(--k-accent); }
-.wa-fab[data-state="paused"] .wa-mark i, .wa-fab[data-state="off"] .wa-mark i { background: var(--k-ink3); }
+.wa-fab .wa-logo { width: ${u(32)}; height: ${u(32)}; }
+.wa-fab[data-state="paused"] .wa-logo, .wa-fab[data-state="off"] .wa-logo { color: var(--k-ink3); }
+.wa-fab[data-changed] { border-color: var(--k-accent); }
 
 /* ---------- the sheet: a white card above the button ---------- */
 .wa-sheet {
@@ -227,6 +225,7 @@ export const rootCss = /* css */ `
 .wa-sh-head { flex: none; display: flex; align-items: flex-start; gap: ${u(12)}; padding: ${u(20)} ${u(16)} 0 ${u(20)}; }
 .wa-sh-title { flex: 1; min-width: 0; }
 .wa-sh-title h2 {
+  display: flex; align-items: center; gap: ${u(8)};
   margin: 0; font-family: ${DISPLAY_STACK}; font-size: ${u(17)}; line-height: ${u(22)}; font-weight: 600;
   letter-spacing: -0.01em; color: var(--k-ink);
 }

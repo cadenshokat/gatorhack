@@ -43,13 +43,7 @@
   font: 600 20px/1 var(--font);
   letter-spacing: -0.01em;
 }
-.rs-mark::before {
-  content: '';
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--c-accent);
-}
+.rs-mark .wa-logo { display: block; flex: none; }
 
 /* Hero: the heading, the struggle cards and the chart */
 .rs-hero {

@@ -10,12 +10,16 @@
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc -p . --noEmit"
   },
-  "dependencies": { "@webable/core": "workspace:*", "preact": "10.29.8" },
+  "dependencies": {
+    "@webable/core": "workspace:*",
+    "lucide": "1.61.0",
+    "preact": "10.29.8"
+  },
   "devDependencies": {
-    "wxt": "0.21.4",
+    "@playwright/test": "1.64.1",
     "@preact/preset-vite": "2.10.6",
     "@types/chrome": "0.3.6",
-    "@playwright/test": "1.64.1",
-    "happy-dom": "21.0.4"
+    "happy-dom": "21.0.4",
+    "wxt": "0.21.4"
   }
 }

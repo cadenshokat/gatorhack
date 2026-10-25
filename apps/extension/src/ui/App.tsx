@@ -1,20 +1,18 @@
 // Owner: P, U, F. The in-page chrome: the WebAble button and its sheet, a short note, one pop-up card, the cookie
-// bar, the Jev view, the explain card, and the simplified page's host.
+// bar, the Jev view, and the simplified page's host.
 //
 // Steady size: every layer keeps its physical size whatever the page zoom; only the fit's UI scale sizes it.
 // - The chrome layer (button, sheet, note, pop-up card, cookie bar, loading screen) is one root with CSS
 //   `zoom: scale ÷ page zoom`: inside it one CSS px is one design pixel and the viewport measures as at 100%.
 // - The Calm view host gets `zoom: 1 ÷ page zoom`, so the view renders at the fit's sizes exactly.
-// - The Lens and the Explain card follow page coordinates, so they stay unzoomed and size with --u (scale ÷ zoom).
+// - The Lens follows page coordinates, so it stays unzoomed and sizes with --u (scale ÷ zoom).
 // One corner dock holds the button and whatever stacks above it (the sheet, or one small card), so nothing overlaps.
 import { createPortal } from 'preact/compat';
+import { Logo } from './Logo';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useErrorBoundary, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { EngineApi, EngineState } from '../contracts';
-import { watchSelection } from '../engine/select';
 import { CalmView } from './calm/CalmView';
-import { ExplainAffordance, type Explainable } from './explain/ExplainAffordance';
-import { ExplainCard } from './explain/ExplainCard';
 import { Lens } from './lens/Lens';
 import { Note, useNote } from './offers/Note';
 import { ConsentBar, OverlayOffer, overlayView, type OverlayView } from './offers/Overlays';
@@ -22,7 +20,7 @@ import { WaButton } from './panel/Button';
 import { pageOrigin } from './panel/format';
 import { inEditable, shortcutFor } from './panel/keys';
 import { clampBottom, dockHeights, planDock } from './panel/dock';
-import { chromeSizing, useEngineState, usePillSpot, useReducedMotion } from './panel/hooks';
+import { chromeSizing, useEngineState, useReducedMotion } from './panel/hooks';
 import { Sheet } from './panel/Sheet';
 import { themeModeFor } from './tokens';
 import { usePageZoom, useViewport } from './zoom';
@@ -57,7 +55,7 @@ function CalmFallback({ api, s, broken = false }: { api: EngineApi; s: EngineSta
   return (
     <div class="wa-calm-loading" role="dialog" aria-modal="true" aria-label="Simplified page">
       <div class="wa-calm-loading-card">
-        {!failed && <span class="wa-spinner" aria-hidden="true" />}
+        {!failed && <Logo size={48} active />}
         <h2>{failed ? 'This page could not be simplified' : 'Simplifying this page'}</h2>
         <p>
           {failed
@@ -72,7 +70,7 @@ function CalmFallback({ api, s, broken = false }: { api: EngineApi; s: EngineSta
   );
 }
 
-export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
+export function App({ api, calmHost, calmMount }: AppProps) {
   const s = useEngineState(api);
   const origin = pageOrigin();
   const pageZoom = usePageZoom(api);
@@ -87,7 +85,6 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
   const itemsRef = useRef<HTMLDivElement>(null);
   const mainColRef = useRef<HTMLDivElement>(null);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [explainable, setExplainable] = useState<Explainable | null>(null);
   const [announce, setAnnounce] = useState('');
   const [gone, setGone] = useState<ReadonlySet<string>>(new Set());
   const [barH, setBarH] = useState(0);
@@ -113,7 +110,7 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
   // With the sheet open, the note shows inside it instead.
   const noteText = note?.text ?? null;
   const hasItems = Boolean(overlayOffer || (noteText && !panelOpen));
-  // WebAble's one button stays on the simplified page too, above the simplified page's own action bar when it has one.
+  // Reserve room for cards above the simplified page's action bar; the launcher itself stays in its corner.
   const [calmDockH, setCalmDockH] = useState(0);
 
   const barMinH = Math.max(72, sz.target + 20);
@@ -132,32 +129,20 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
     barMaxW: 1080,
   });
 
-  // The dock's corner: bottom right unless a site control sits there (the spot hook works in the page's CSS px).
-  const spot = usePillSpot({
-    isOurUi,
-    widthPx: Math.round(fab * Z),
-    heightPx: Math.round(fab * Z),
-    marginPx: Math.round(M * Z),
-    minBottomPx: Math.round(plan.minBottom * Z),
-    frozen: panelOpen,
-    recheckKey: `${s.showingOriginal}|${calmOpen}|${views.map((v) => `${v.id}:${v.action}`).join(',')}|${Math.round(Z * 100)}`,
-  });
-  const side = spot.side;
-  const bottom = clampBottom(vh, Math.max(plan.minBottom, spot.bottom / Z, calmOpen && calmDockH > 0 ? calmDockH / Z + GAP : 0), M, fab);
-  const heights = dockHeights(vh, bottom, M, fab, GAP, panelOpen);
+  // One predictable home at every zoom and viewport size, even when site controls occupy this corner.
+  const side = 'right';
+  const bottom = clampBottom(vh, M, M, fab);
+  const contentLift = Math.max(0, plan.minBottom - bottom, calmOpen && calmDockH > 0 ? calmDockH / Z + GAP - bottom : 0);
+  const heights = dockHeights(vh, bottom + contentLift, M, fab, GAP, panelOpen);
   const showPill = heights.pillWithPanel;
   // One thing at a time: with the sheet open, the pop-up card waits.
   const showItems = hasItems && !panelOpen;
-  const itemsMax = panelOpen ? vh - bottom - M : heights.aboveMax;
+  const itemsMax = heights.aboveMax;
 
   // Keyboard: never inside text fields, never synthetic events, and the page still receives every key.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!e.isTrusted || e.repeat) return;
-      if (e.key === 'Escape') {
-        setExplainable(null);
-        return;
-      }
       const act = shortcutFor(e);
       if (!act || inEditable(e)) return;
       const st = api.getState();
@@ -186,41 +171,6 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, [api]);
-
-  // "Explain" beside a long selection (the engine decides what counts as explainable). If AI is out of credits the
-  // card says so plainly and shows the original.
-  const explainOn = s.settings.explain && s.settings.enabled;
-  useEffect(() => {
-    if (!explainOn) return;
-    let stop: () => void = () => {};
-    try {
-      stop = watchSelection({
-        onExplainable: (text, rect) => {
-          if (!text || !rect) return;
-          setExplainable({ text, rect: { x: rect.left, y: rect.top, w: rect.width, h: rect.height } });
-        },
-        isOurUi,
-      });
-    } catch {
-      /* selection watcher unavailable: no affordance */
-    }
-    const clear = () => setExplainable(null);
-    const onSel = () => {
-      const sel = document.getSelection();
-      if (!sel || sel.isCollapsed) clear();
-    };
-    document.addEventListener('selectionchange', onSel);
-    window.addEventListener('scroll', clear, { passive: true });
-    return () => {
-      try {
-        stop();
-      } catch {
-        /* ignore */
-      }
-      document.removeEventListener('selectionchange', onSel);
-      window.removeEventListener('scroll', clear);
-    };
-  }, [explainOn, isOurUi]);
 
   // Calm view host: the Calm view renders into its own shadow root; we only show, focus, size and close it.
   // It is zoomed by 1 ÷ page zoom, so it renders at the fit's own sizes (its tokens are computed at zoom 1), and it
@@ -306,7 +256,7 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
     }
   }, [offerId, note, dockedId]);
 
-  // Measure the dock's box in the page's CSS px (the Jev view and the explain card keep clear of it). The items
+  // Measure the dock's box in the page's CSS px (the Jev view keeps clear of it). The items
   // column scrolls only when it truly does not fit (a scroller would clip the cards' shadows).
   useLayoutEffect(() => {
     const d = dockRef.current?.getBoundingClientRect();
@@ -333,10 +283,8 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
     requestAnimationFrame(() => rootRef.current?.querySelector<HTMLButtonElement>('.wa-fab')?.focus({ preventScroll: true }));
   };
 
-  // The page layer (Lens, Explain) keeps clear of the dock and the bar, in the page's CSS px.
+  // The page layer (the Lens) keeps clear of the dock, in the page's CSS px.
   const dockReserve = dockBox ? Math.max(0, Math.round(vp.h - dockBox.top)) : Math.round((bottom + fab) * Z);
-  const dockWidth = dockBox ? dockBox.w : Math.round((fab + M) * Z);
-  const barReserve = docked ? Math.round((M + Math.max(barH, barMinH) + GAP) * Z) : 0;
 
   const r2 = (n: number) => `${Math.round(n * 100) / 100}px`;
   const uiVars = {
@@ -372,21 +320,6 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
           </Guard>
         )}
 
-        {s.explain.open && (
-          <ExplainCard
-            api={api}
-            s={s}
-            u={sz.u}
-            pillReserve={dockReserve + Math.round(GAP * Z)}
-            pillWidth={dockWidth}
-            pillSide={side}
-            bottomReserve={barReserve}
-          />
-        )}
-        {explainable && !s.explain.open && !calmOpen && (
-          <ExplainAffordance api={api} item={explainable} onDone={() => setExplainable(null)} />
-        )}
-
         {calmReady && s.calm.spec && s.outline && s.fit && (
           <Guard name="Simplified page" resetKey={`${s.calm.source}|${s.calm.spec ? 1 : 0}|${s.calm.open}`} fallback={<CalmFallback api={api} s={s} broken />}>
             {createPortal(<CalmView api={api} spec={s.calm.spec} outline={s.outline} fit={s.fit} />, calmMount)}
@@ -411,7 +344,7 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
             api={api}
             view={docked}
             left={M}
-            right={M}
+            right={M + fab + GAP}
             bottom={M}
             onGone={markGone}
             layoutKey={String(Math.round(vw))}
@@ -424,23 +357,27 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
             class="wa-dock"
             ref={dockRef}
             data-side={side}
-            style={{ bottom: r2(bottom), right: side === 'right' ? edge : 'auto', left: side === 'left' ? edge : 'auto', maxHeight: r2(Math.max(0, vh - bottom - M)) }}
+            style={{ bottom: r2(bottom), right: edge, left: 'auto', maxHeight: r2(Math.max(0, vh - bottom - M)) }}
           >
             <div class="wa-dock-col" ref={mainColRef} style={{ maxHeight: r2(Math.max(0, vh - bottom - M)) }}>
-              {!panelOpen && items}
-              {panelOpen && (
-                <Sheet
-                  api={api}
-                  s={s}
-                  origin={origin}
-                  side={side}
-                  maxHeightPx={heights.aboveMax}
-                  pageZoom={pageZoom}
-                  gone={gone}
-                  onGone={markGone}
-                  note={noteText}
-                  onClose={closePanel}
-                />
+              {(panelOpen || items) && (
+                <div class="wa-dock-content" style={{ maxHeight: r2(heights.aboveMax), marginBottom: r2(contentLift) }}>
+                  {!panelOpen && items}
+                  {panelOpen && (
+                    <Sheet
+                      api={api}
+                      s={s}
+                      origin={origin}
+                      side={side}
+                      maxHeightPx={heights.aboveMax}
+                      pageZoom={pageZoom}
+                      gone={gone}
+                      onGone={markGone}
+                      note={noteText}
+                      onClose={closePanel}
+                    />
+                  )}
+                </div>
               )}
               {showPill && <WaButton s={s} origin={origin} open={panelOpen} onToggle={() => (panelOpen ? closePanel() : setPanelOpen(true))} />}
             </div>

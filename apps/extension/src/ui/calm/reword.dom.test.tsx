@@ -46,7 +46,7 @@ function view(a: HTMLAnchorElement, showing: RewordView['showing']): RewordView 
 function mount(b: FlowBlock, api: Partial<EngineApi>): HTMLElement {
   const host = document.createElement('div');
   document.body.append(host);
-  const ctx = { api: api as EngineApi, splitN: Infinity, groupSize: 8, explainOn: false, reduceMotion: true, click: vi.fn() } as unknown as CalmCtx;
+  const ctx = { api: api as EngineApi, splitN: Infinity, groupSize: 8, reduceMotion: true, click: vi.fn() } as unknown as CalmCtx;
   render(
     <Calm.Provider value={ctx}>
       <FlowView b={b} />

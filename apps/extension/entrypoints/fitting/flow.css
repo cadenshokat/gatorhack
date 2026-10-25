@@ -45,12 +45,7 @@ button:disabled {
   letter-spacing: -0.01em;
   color: var(--c-ink);
 }
-.fl-wordmark-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--c-accent);
-}
+.fl-wordmark .wa-logo { display: block; flex: none; }
 
 .fl-ruler ol {
   display: flex;
@@ -290,6 +285,12 @@ button:disabled {
 }
 .fl-stage.is-sites {
   height: 360px;
+}
+/* Round 10: "Your context" holds the ask-and-paste form, so it grows with it. */
+.fl-stage.is-context {
+  height: auto;
+  min-height: 360px;
+  padding: 36px 40px 40px;
 }
 .fl-stage.is-which {
   padding: 48px 40px;
@@ -1007,6 +1008,28 @@ button:disabled {
 .dm-taskcard b {
   font-weight: 600;
   color: var(--c-ink);
+}
+/* Round 10: the chat in "Your context": the question on the right, the AI's answer on the left. */
+.dm-chat-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dm-bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+.dm-bubble-me {
+  align-self: flex-end;
+  width: 46%;
+  background: #f4f2ee;
+}
+.dm-bubble-ai {
+  align-self: flex-start;
+  width: 78%;
 }
 
 /* ================================================================== */

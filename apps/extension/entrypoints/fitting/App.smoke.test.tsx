@@ -102,6 +102,10 @@ describe('onboarding flow', () => {
     expect(root.textContent).toContain('Did anything get in your way?');
     await click('[data-answer="moving things"]');
     await click('[data-answer="done-find"]');
+    // Round 10: the last step, "Your context" (skipped here; ContextTask has its own test in AiScreen.smoke).
+    expect(root.querySelector('.fl-modal')?.textContent).toContain('Bring your context');
+    expect(root.querySelector('.fl-modal')?.textContent).toContain('Finding is done.');
+    await click('[data-answer="skip-step"]');
     expect(root.textContent).toContain('You’re all set.');
     await tick(1800);
     const stub = root.querySelector('#results-stub')?.textContent ?? '';

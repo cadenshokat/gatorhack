@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import type { EngineApi, EngineState } from '../../contracts';
+import { Logo } from '../Logo';
 import { openSettings, setPaused } from './actions';
 import type { PillSide } from './hooks';
 import {
@@ -197,6 +198,7 @@ export function Sheet({ api, s, origin, side, maxHeightPx, pageZoom, gone, onGon
       <header class="wa-sh-head">
         <div class="wa-sh-title">
           <h2 ref={titleRef} tabIndex={-1}>
+            <Logo size={24} />
             WebAble
           </h2>
           {site && <p>{site}</p>}

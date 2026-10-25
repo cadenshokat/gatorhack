@@ -126,7 +126,7 @@ export interface ReadResult {
   body: BodyInfo;
   busy: BusyInfo;
   sensitive: boolean;
-  /** Webmail and similar: no explain, no generative layout. */
+  /** Webmail and similar: no generative layout. */
   privatePage: boolean;
   pageKind: string;
   mainRoot: Element | null;

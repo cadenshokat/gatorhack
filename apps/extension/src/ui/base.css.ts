@@ -120,7 +120,7 @@ ${C} .wa-strip__in{max-width:var(--wa-page-max);margin:0 auto;min-height:var(--w
   display:flex;flex-wrap:nowrap;align-items:center;gap:10px}
 ${C} .wa-brand{flex:0 1 auto;display:flex;align-items:center;gap:8px;min-width:5.5em;max-width:16ch;font-weight:var(--wa-w-head)}
 ${C} .wa-brand__name{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-${C} .wa-brand .wa-dot{width:8px;height:8px}
+${C} .wa-brand .wa-logo{flex:none}
 ${C} .wa-strip__tools{flex:none;margin-left:auto;display:flex;align-items:center;flex-wrap:nowrap;justify-content:flex-end;gap:8px}
 ${C} .wa-strip .wa-btn{position:relative;flex:none;font-size:var(--wa-strip-f);min-height:var(--wa-strip-ctl);min-width:var(--wa-strip-ctl);
   padding-inline:max(12px,calc(var(--wa-strip-ctl)*.34));white-space:nowrap}
@@ -218,12 +218,6 @@ ${C} .wa-crumbs{color:var(--wa-ink-2);font-size:var(--wa-f-meta)}
 ${C} .wa-crumbs .wa-inline-link{color:inherit;text-decoration:none}
 ${C} .wa-crumbs .wa-inline-link:hover{text-decoration:underline}
 ${C} button.wa-inline-link{appearance:none;background:none;border:0;padding:0;font:inherit;display:inline;text-align:inherit;color:var(--wa-link)}
-${C} .wa-explain{align-self:flex-start;min-height:max(44px,calc(var(--wa-t)*.8));padding-inline:max(16px,var(--wa-f))}
-/* In running text the offer to explain is a quiet line under the paragraph, not a pill after every paragraph. */
-${C} .wa-para>.wa-explain{min-height:max(36px,calc(var(--wa-t)*.7));margin:calc(var(--wa-para-gap)*-.35) 0 0;padding:0;gap:.5em;background:transparent;box-shadow:none;
-  color:var(--wa-ink-2);font-size:var(--wa-f-meta);font-weight:var(--wa-w-body)}
-${C} .wa-para>.wa-explain:hover{background:transparent;color:var(--wa-ink);text-decoration:underline;text-decoration-thickness:max(1px,.06em);text-underline-offset:.2em}
-${C} .wa-para>.wa-explain .wa-dot{width:8px;height:8px}
 ${C} .wa-list{display:flex;flex-direction:column;gap:calc(var(--wa-para-gap)*.4);padding-left:1.25em;list-style:disc outside}
 ${C} .wa-list--ol{list-style:decimal outside}
 ${C} .wa-list>li{padding-left:.25em;display:list-item}

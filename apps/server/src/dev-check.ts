@@ -1,13 +1,12 @@
-// pnpm --filter @webable/server check:live [--url http://127.0.0.1:41741] [--skip redesign,explain,overlay] [--visual] [--fresh]
+// pnpm --filter @webable/server check:live [--url http://127.0.0.1:41741] [--skip redesign,overlay] [--visual] [--fresh]
 // Sends the Alderra fixtures through the real routes and prints metrics. Uses the running server when it answers
 // on /health, otherwise the same app in-process. Never prints keys or page text beyond the fixture's own labels.
-import type { ExplainResult, PageUnderstanding, RedesignResult, StruggleJudgment, VisualVerdict } from '@webable/core';
+import type { PageUnderstanding, RedesignResult, StruggleJudgment, VisualVerdict } from '@webable/core';
 import { PORT } from './config';
 import {
-  FIXTURE_DIGEST, FIXTURE_FIT, FIXTURE_OUTLINE, FIXTURE_OVERLAY, FIXTURE_OVERLAY_BUTTONS, FIXTURE_PASSAGE, FIXTURE_ROLES,
+  FIXTURE_DIGEST, FIXTURE_FIT, FIXTURE_OUTLINE, FIXTURE_OVERLAY, FIXTURE_OVERLAY_BUTTONS, FIXTURE_ROLES,
   FIXTURE_SIGNALS, fixtureVisual,
 } from './fixtures';
-import type { ExplainResponse } from './routes/explain';
 import type { OverlayCloseResponse } from './routes/overlay';
 import type { RedesignResponse } from './routes/redesign';
 
@@ -111,19 +110,6 @@ async function main(): Promise<void> {
         const source = (c as { source?: string }).source ?? '-';
         console.log(`  ${source.padEnd(9)} ${c.name.padEnd(9)} easier ${p2(c.pEasier)} hides ${p2(c.pHides)} fit ${p2(c.fitScore)} composite ${p2(c.composite)} · ${c.spec.sections.length} sections (${open} open) · ${c.spec.form_steps.length} steps · primary ${c.spec.primary_action ?? '-'} · ${c.repairs.length} repairs`);
       }
-    }
-  }
-
-  if (!skip.has('explain')) {
-    console.log('\nPOST /v1/explain');
-    const e = await post<ExplainResult & Partial<ExplainResponse>>(fetcher, '/v1/explain', { req: FIXTURE_PASSAGE });
-    if (e && !e.data.ok) console.log(`  ok false · ${e.data.error ?? '-'} (${e.data.reason ?? '-'}) · "${e.data.message ?? ''}" · ${e.data.sentences.length} coverage numbers · route ${ms(e.ms)}`);
-    if (e && e.data.ok) {
-      const d = e.data;
-      console.log(`  ok ${d.ok} · verdict ${d.verdict ?? '-'} · ${d.model} ${ms(d.ms)} · numbers kept ${d.checks.numbersKept} · conditions kept ${d.checks.conditionWordsKept} · added ${p2(d.checks.addedFact)} · dropped ${p2(d.checks.droppedFact)}`);
-      console.log(`  Jev check ${d.jev.questions} q · ${ms(d.jev.wallMs)} · ${usd(d.jev.costUsd)} · ${d.showOriginalInstead.length} sentence(s) shown as original`);
-      for (const x of d.sentences) console.log(`    covered ${p2(x.covered)}  ${x.original.slice(0, 80)}`);
-      if (d.explanation) console.log(`  explanation:\n    ${d.explanation.split('\n').join('\n    ')}`);
     }
   }
 

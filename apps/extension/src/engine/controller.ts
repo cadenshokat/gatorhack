@@ -5,16 +5,19 @@
 // reader -> text zoom and page column planned once and applied in one step (one tab zoom change), checked once; a
 // failed check falls back once (column off, then the next lower zoom preset) and stops; the site's settled size is
 // kept for the session -> fit ops (verified) -> heading ramp (verified, single headings dropped) -> Jev understand ->
-// decisions -> ops from decisions (verified) -> the simplified page (Calm view) by itself, once, on busy reading pages
-// (round 8, ./busy: before the person starts using the page, never on sign-in, checkout, account or statement pages,
-// not on a site set to "Original page") and on task pages (a form with a clear main action) at structure level 2,
-// else offered. Late overlays (cookie banners, chat panels) get an incremental Jev read.
+// decisions -> ops from decisions (verified) -> the simplified page (Calm view) by itself, once, on reading pages
+// (round 8 needed them busy, round 10 opens it on every one; ./busy: before the person starts using the page, never on
+// sign-in, checkout, account or statement pages, not on a site set to "Original page") and on task pages (a form with
+// a clear main action) at structure level 2, else offered. Late overlays (cookie banners, chat panels) get an
+// incremental Jev read.
 // SPA navigations re-run the element ops; zoom, column and behaviour ops stay. Nothing re-sizes a page on its own: late
 // Jev reads, learning, overlays and DOM changes never touch zoom or column; the person's A−/A+, width controls and
 // accepted offers do, in one step.
 // Round 9 (./reword): once the page is fitted, alongside Jev's read, paragraphs are rewritten the way the person likes
 // things explained (from their AI assistant's answer), swapped in place with a thin mark; one ledger entry and one
 // toast per page, Undo shows the page's own words, "Original page" shows the untouched page.
+// Round 10 (./compose): the WebAble page asks for its groups as components (api.compose); one ledger entry per page
+// once every group has an answer, no toast.
 
 import {
   DEFAULT_SETTINGS, candidateSource, chooseOfferForFit, columnLimits, decideElements, heuristicSpec, nearestPreset, personZoomLadder,
@@ -31,7 +34,8 @@ import type {
 } from '@webable/core';
 import type { EngineApi, EngineState, Toast } from '../contracts';
 import { isOurUi } from '../ui/mount';
-import { ask, askExt, errText, plainError, tell, type HealthInfo, type ZoomInfo } from './bus';
+import { ask as askBackground, askExt, errText, plainError, tell, type HealthInfo, type ZoomInfo } from './bus';
+import { createActivity } from './activity';
 import { OverlayManager, type OverlayView } from './overlays';
 import { createStore, throttle } from './store';
 import { routeKey, settle, sleep, waitForLoad, waitForQuiet, waitForVisible, watchNavigation } from './nav';
@@ -39,11 +43,12 @@ import { PageReader, collapse, type NodeInfo, type ReadResult } from './reader';
 import { Tailor, resetBackgroundCache, type ColumnOp, type Op } from './tailor';
 import { Verifier, calmCoverage, completeSpec, plainCheck, type Snapshot } from './verify-dom';
 import { noteOfferOutcome, startSignals, type SignalsHost } from './signals';
-import { requestExplain } from './explain';
+import { isExcludedHost } from './hosts';
 import { PassiveObserver, readMediaFacts, watchMedia } from './passive';
 import { pageMeaning } from '../ui/calm/meaning';
-import { busyVerdict, distractionShare, isDistraction, type BusyVerdict } from './busy';
+import { distractionShare, isDistraction, openVerdict, type OpenVerdict } from './busy';
 import { MAX_PICKS, createReword, type RewordSummary } from './reword';
+import { createCompose, type ComposeSummary } from './compose';
 
 export interface Controller {
   api: EngineApi;
@@ -267,10 +272,8 @@ const OFFER_TOAST: Record<OfferKind, string> = {
   steady_clicks: 'Steady clicks are on for this page',
   debounce: 'Accidental double clicks are ignored on this page',
   larger_text: 'Text is larger on this page',
-  explain: 'Showing a plain-language explanation',
   calm_view: 'Calm view is open',
   main_actions: 'The main button is easier to find',
-  explain_field: 'Showing what this field asks for',
 };
 
 const FOLD_ROLES: Role[] = ['advertising', 'recommendations', 'popup_overlay'];
@@ -361,7 +364,6 @@ function initialState(): EngineState {
     calm: { open: false, loading: false, spec: null, source: null, aiReady: false, redesign: null, visual: null },
     struggle: { latest: null, history: [], waiting: [], offers: [] },
     toasts: [],
-    explain: { open: false, loading: false, anchor: null, original: null, result: null, error: null },
     showingOriginal: false,
     overlays: [],
     ai: 'on',
@@ -371,6 +373,7 @@ function initialState(): EngineState {
     passive: null,
     textZoom: 1,
     reword: { status: 'off', source: null, items: [], showingOriginal: false, version: 0 },
+    compose: { status: 'idle', groups: {}, version: 0 },
   };
 }
 
@@ -426,6 +429,11 @@ async function saveLocal(key: string, value: unknown): Promise<void> {
 
 export function createController(): Controller {
   const store = createStore<EngineState>(initialState());
+  const activity = createActivity((pendingWork) => store.set({ pendingWork }));
+  const ask = <T,>(req: BgRequest, timeoutMs?: number): Promise<T> => {
+    const send = () => askBackground<T>(req, timeoutMs);
+    return activity.isContentRequest(req) ? activity.run(send) : send();
+  };
   const reader = new PageReader();
   const verifyIds = new WeakMap<Element, string>();
   /** The other way round, so a check's element ids can be looked up (elementFor), held weakly. */
@@ -532,7 +540,6 @@ export function createController(): Controller {
   let stopped = false;
   let errors: string[] = [];
   const behaviourCounts = { steady: 0, debounce: 0 };
-  let explainSeq = 0;
   // Calm view
   let calmOpenedAt = 0;
   let calmEngaged = false;
@@ -540,9 +547,10 @@ export function createController(): Controller {
   let heuristicSpecCache: FitSpec | null = null;
   let pendingAi: { spec: FitSpec; result: RedesignResult } | null = null;
   let calmWasOpen = false;
-  // Round 8: the busy-page default. When this page started (performance.now(); 0 = the document load), when the
-  // person last clicked, pressed a key or scrolled past one screen, whether the simplified page opened by itself on
-  // this page (closing it then sets the site to "Original page"), and that the decision was made (once per page).
+  // Round 8, round 10: the WebAble page by default on reading pages. When this page started (performance.now();
+  // 0 = the document load), when the person last clicked, pressed a key or scrolled past one screen, whether the
+  // simplified page opened by itself on this page (closing it then sets the site to "Original page"), and that the
+  // decision was made (once per page).
   let pageAt = 0;
   let interactedAt = -1;
   let autoOpenedHere = false;
@@ -662,6 +670,55 @@ export function createController(): Controller {
       logReword(s);
       if (s.changed) toast(`Rewrote ${s.changed} paragraph${s.changed === 1 ? '' : 's'} the way you like`, s.opId);
     },
+  });
+
+  /* ---------------- round 10: the WebAble page's groups laid out for the person ---------------- */
+
+  /** The one ledger line for a page's groups (replaces the last one when later groups are answered; no toast). */
+  const logCompose = (s: ComposeSummary) => {
+    const n = (k: number, one: string, many = `${one}s`) => `${k} ${k === 1 ? one : many}`;
+    const source = store.get().reword?.source ?? null;
+    const forWhom = source ? `From what ${source} knows about you.` : 'Laid out for any reader (no answer from an AI assistant added yet).';
+    const lo = s.better.length ? Math.min(...s.better) : null;
+    const hi = s.better.length ? Math.max(...s.better) : null;
+    const range = lo === null || hi === null ? null : lo === hi ? p2(lo) : `${p2(lo)}–${p2(hi)}`;
+    const others = s.failed - s.unreachable;
+    const extra = [
+      s.kept ? `${n(s.kept, 'part')} read better in the page’s own words, so ${s.kept === 1 ? 'it keeps them' : 'they keep them'}.` : '',
+      others ? `${n(others, 'part')} kept the page’s own words because a check failed.` : '',
+      s.unreachable ? `${n(s.unreachable, 'part')} couldn’t be checked right now, so ${s.unreachable === 1 ? 'it shows' : 'they show'} the page’s own words.` : '',
+    ].filter(Boolean).join(' ');
+    let entry: Omit<LedgerEntry, 'at'>;
+    if (s.laidOut) {
+      entry = {
+        source: 'jev',
+        title: `Laid out ${n(s.laidOut, 'part')} of this page in a clearer way for you`,
+        detail: `${forWhom} WebAble looked at ${n(s.asked, 'part')}; ${s.laidOut === 1 ? 'the one laid out' : `all ${s.laidOut} laid out`} kept every number and link (checked by code and by Jev)${range ? `, and Jev’s probability ${s.laidOut === 1 ? 'it is' : 'each is'} easier for you than the page’s own text is ${range}` : ''}.${extra ? ` ${extra}` : ''}`,
+        action: 'applied',
+        opId: s.opId,
+      };
+    } else if (s.unreachable === s.asked) {
+      entry = { source: 'jev', title: 'Couldn’t lay out this page’s parts right now; it shows the page’s own words', detail: 'The WebAble server could not be reached.', action: 'skipped', opId: s.opId };
+    } else {
+      entry = { source: 'jev', title: 'Kept this page’s own words in every part', detail: `${forWhom} WebAble looked at ${n(s.asked, 'part')}. ${extra}`.trim(), action: 'kept', opId: s.opId };
+    }
+    store.set((st) => ({ ledger: st.ledger.filter((e) => e.opId !== s.opId) }));
+    log(entry);
+  };
+  const hostNow = (): string => {
+    try {
+      return location.hostname;
+    } catch {
+      return '';
+    }
+  };
+  const composer = createCompose({
+    ask: (req, timeoutMs) => ask(req, timeoutMs),
+    page: () => ({ title: document.title.slice(0, 200), host: hostNow(), purpose: store.get().understanding?.purpose?.kind ?? null }),
+    // Like the paragraph rewrites: never from pages with password or payment fields, or mail, chat and banking sites.
+    blocked: () => !!read?.sensitive || !!store.get().digest?.hasSensitiveFields || isExcludedHost(hostNow()),
+    publish: (next) => store.set({ compose: next }),
+    finished: (s) => logCompose(s),
   });
 
   /* ---------------- report to the background (throttled 500 ms) ---------------- */
@@ -833,7 +890,7 @@ export function createController(): Controller {
 
   function applyBatch(batch: Op[], r: ReadResult | null, opts: BatchOptions = {}): Promise<Op[]> {
     if (!batch.length || stopped) return Promise.resolve([]);
-    return withLock(() => applyBatchNow(batch, r, opts));
+    return activity.run(() => withLock(() => applyBatchNow(batch, r, opts)));
   }
 
   async function applyBatchNow(batch: Op[], r: ReadResult | null, opts: BatchOptions = {}): Promise<Op[]> {
@@ -1945,6 +2002,7 @@ export function createController(): Controller {
       store.set({ phase: 'idle' });
       stopPassive();
       reword.reset();
+      composer.reset();
       if (!settings.enabled) log({ source: 'person', title: 'WebAble is turned off', action: 'skipped' });
       else log({ source: 'person', title: 'WebAble is paused on this site', action: 'skipped' });
       return;
@@ -2024,6 +2082,9 @@ export function createController(): Controller {
           console.warn('[WebAble] paragraphs', err);
         });
       }
+      // Round 10: a refit keeps the page's groups as they are (same page, same ids); say so again.
+      const lastCompose = kind === 'refit' ? composer.lastSummary() : null;
+      if (lastCompose) logCompose(lastCompose);
       startStruggle();
       watchLateContent();
       overlays.schedule('fitted');
@@ -2330,15 +2391,14 @@ export function createController(): Controller {
   }
 
   /**
-   * Round 8, the busy-page default: on a busy reading page the simplified page opens by itself, once, as soon as the
-   * page is understood (rules in ./busy). Measures the distractions' share of the page and logs the numbers.
+   * Round 10, the reading-page default: on every reading page (round 8: busy ones only) the WebAble page opens by
+   * itself, once, as soon as the page is understood (rules in ./busy). Measures the distractions' share of the page
+   * for the log.
    */
-  function busyPageVerdict(r: ReadResult, gate: MeaningGate | null): BusyVerdict | null {
+  function readingPageVerdict(r: ReadResult, gate: MeaningGate | null): OpenVerdict | null {
     const s = store.get();
     const u = s.understanding;
     if (!u) return null;
-    const fit = getFit();
-    const clutterP = Math.max(fit?.attention?.clutter?.p ?? 0, s.passive?.beliefs?.clutter?.p ?? 0);
     let share = 0;
     try {
       // The page's key content (Jev's main region, content of importance >= 3): a "distraction" box that wraps it is
@@ -2365,12 +2425,11 @@ export function createController(): Controller {
     } catch {
       share = 0;
     }
-    const v = busyVerdict({
+    const v = openVerdict({
       purpose: u.purpose ?? null,
       mainRegion: u.mainRegion ?? null,
       elements: u.elements,
       share,
-      clutterP,
       sensitive: r.sensitive || !!r.digest.hasSensitiveFields,
       meaningPass: gate ? gate.pass : null,
       interacted: interactedAt >= 0 && interactedAt >= pageAt,
@@ -2392,19 +2451,18 @@ export function createController(): Controller {
     interactedAt = performance.now();
   }
 
-  function logBusy(v: BusyVerdict): void {
+  function logOpenRule(v: OpenVerdict): void {
     const u = store.get().understanding;
     const pct0 = (x: number) => `${Math.round(x * 100)}%`;
-    const bars = `busy means ${v.bars.count} or more, or ${pct0(v.bars.share)} of the page with ${v.bars.minForShare} or more${v.sensitiveBars ? ' (lower, because busy pages bother you)' : ''}`;
     const facts = [
       u?.purpose ? `Page: ${purposeWords(u.purpose.kind)} (${p2(u.purpose.p)})` : 'Page purpose unknown',
       u?.mainRegion ? `main content ${p2(u.mainRegion.p)}` : null,
     ].filter(Boolean).join('; ');
-    const detail = `${v.count} ads, teasers and other distractions cover ${pct0(v.share)} of the page; ${bars}. ${facts}.`;
-    console.info('[WebAble] busy page', JSON.stringify({ open: v.open, reason: v.reason, count: v.count, share: Math.round(v.share * 1000) / 1000, purpose: u?.purpose?.kind ?? null, purposeP: u?.purpose?.p ?? null, main: u?.mainRegion?.p ?? null, url: location.href }));
+    const detail = `${facts}. ${v.count} ads, teasers and other distractions cover ${pct0(v.share)} of the page.`;
+    console.info('[WebAble] reading page', JSON.stringify({ open: v.open, reason: v.reason, count: v.count, share: Math.round(v.share * 1000) / 1000, purpose: u?.purpose?.kind ?? null, purposeP: u?.purpose?.p ?? null, main: u?.mainRegion?.p ?? null, url: location.href }));
     log({
       source: 'layout',
-      title: v.open ? 'This page is busy, so WebAble simplified it' : `Kept this page's own layout: ${v.reason}`,
+      title: v.open ? 'This is a page for reading, so WebAble opened its simpler version' : `Kept this page's own layout: ${v.reason}`,
       detail,
       action: v.open ? 'applied' : 'skipped',
     });
@@ -2425,12 +2483,12 @@ export function createController(): Controller {
     // Decided once per page: a late read never opens it, and it never toggles back and forth.
     if (autoDecided) return;
     autoDecided = true;
-    // Round 8: busy reading pages open simplified by default (one fade, before the person starts using the page).
-    const busyV = busyPageVerdict(r, gate);
-    if (busyV) logBusy(busyV);
-    if (busyV?.open) {
+    // Round 10: every reading page opens simplified by default (one fade, before the person starts using the page).
+    const openV = readingPageVerdict(r, gate);
+    if (openV) logOpenRule(openV);
+    if (openV?.open) {
       autoOpenedHere = true;
-      void openCalm('auto', 'This page is busy, so WebAble simplified it');
+      void openCalm('auto', 'This is a page for reading, so WebAble opened its simpler version');
       return;
     }
     // The site is set to "Original page": nothing opens by itself here.
@@ -2759,12 +2817,6 @@ export function createController(): Controller {
         }
         break;
       }
-      case 'explain':
-        explainDensest();
-        return;
-      case 'explain_field':
-        explainField();
-        return;
       default:
         break;
     }
@@ -2819,80 +2871,6 @@ export function createController(): Controller {
       /* signals not running */
     }
     log({ source: 'person', title: forever ? 'You turned off this suggestion' : 'Not now: WebAble will not ask again for a while', action: 'skipped' });
-  }
-
-  /* ---------------- explain ---------------- */
-
-  function normAnchor(a: { x: number; y: number; w?: number; h?: number; width?: number; height?: number }): { x: number; y: number; w: number; h: number } {
-    return { x: a.x, y: a.y, w: a.w ?? a.width ?? 0, h: a.h ?? a.height ?? 0 };
-  }
-
-  async function explainSelection(text: string, anchor: { x: number; y: number; w: number; h: number }): Promise<void> {
-    const seq = ++explainSeq;
-    const a = normAnchor(anchor);
-    const s = store.get();
-    if (!s.settings.explain) {
-      store.set({ explain: { open: true, loading: false, anchor: a, original: text, result: null, error: 'Explain is turned off in WebAble settings.' } });
-      return;
-    }
-    store.set({ explain: { open: true, loading: true, anchor: a, original: text, result: null, error: null } });
-    const sensitive = !!(read?.sensitive || read?.privatePage);
-    try {
-      const res = await requestExplain(text, read?.pageKind ?? 'web page', sensitive);
-      if (seq !== explainSeq) return;
-      store.set({ explain: { open: true, loading: false, anchor: a, original: text, result: res, error: res.ok ? null : 'The explanation did not pass its checks, so the original text is shown.' } });
-      const flagged = res.showOriginalInstead.length;
-      log({
-        source: 'explain',
-        title: res.ok ? `Explained a passage in plain words${flagged ? `; ${flagged} sentence${flagged === 1 ? '' : 's'} kept as written` : ''}` : 'The explanation did not pass its checks; the original text is shown',
-        detail: `Numbers kept: ${res.checks.numbersKept ? 'yes' : 'no'} · conditions kept: ${res.checks.conditionWordsKept ? 'yes' : 'no'} · Jev: added a fact ${p2(res.checks.addedFact)}, dropped a fact ${p2(res.checks.droppedFact)}`,
-        action: res.ok ? 'applied' : 'skipped',
-      });
-    } catch (err) {
-      if (seq !== explainSeq) return;
-      const msg = err instanceof Error && err.name === 'ExplainError' ? err.message : plainError(err);
-      store.set({ explain: { open: true, loading: false, anchor: a, original: text, result: null, error: msg } });
-    }
-  }
-
-  function explainDensest(): void {
-    const vh = document.documentElement.clientHeight || innerHeight;
-    let best: { el: Element; chars: number } | null = null;
-    for (const t of read?.texts ?? []) {
-      if (!t.running || t.chars < 120 || !t.el.isConnected) continue;
-      const r = t.el.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > vh) continue;
-      const chars = collapse(t.el.textContent ?? '').length;
-      if (!best || chars > best.chars) best = { el: t.el, chars };
-    }
-    if (!best) {
-      toast('There is no long text in view to explain');
-      return;
-    }
-    const r = best.el.getBoundingClientRect();
-    void explainSelection(collapse(best.el.textContent ?? '').slice(0, 2000), { x: r.left, y: r.top, w: r.width, h: r.height });
-  }
-
-  function explainField(): void {
-    const el = document.activeElement;
-    if (!el || el === document.body) {
-      toast('Click into a field first, then ask again');
-      return;
-    }
-    const parts: string[] = [];
-    const labels = (el as HTMLInputElement).labels;
-    if (labels) for (const l of Array.from(labels)) parts.push(collapse(l.textContent ?? ''));
-    for (const id of (el.getAttribute('aria-describedby') ?? '').split(/\s+/)) {
-      const d = id ? document.getElementById(id) : null;
-      if (d) parts.push(collapse(d.textContent ?? ''));
-    }
-    const text = parts.filter(Boolean).join('. ');
-    if (text.split(' ').length < 3) {
-      toast('This field has too little text to explain');
-      return;
-    }
-    const r = el.getBoundingClientRect();
-    void explainSelection(text, { x: r.left, y: r.top, w: r.width, h: r.height });
   }
 
   /* ---------------- Calm view ---------------- */
@@ -3534,7 +3512,6 @@ export function createController(): Controller {
       digest: null, outline: null, understanding: null, decisions: [], checks: [], ledger: keptEntries,
       calm: { open: false, loading: false, spec: null, source: null, aiReady: false, redesign: null, visual: null },
       struggle: { latest: null, history: [], waiting: [], offers: [] },
-      explain: { open: false, loading: false, anchor: null, original: null, result: null, error: null },
       toasts: [],
       showingOriginal: false,
     });
@@ -3577,6 +3554,7 @@ export function createController(): Controller {
       void (async () => {
         passiveObs.newPage();
         reword.newPage();
+        composer.reset();
         await teardownPage(false);
         errors = [];
         void boot('navigation');
@@ -3634,11 +3612,6 @@ export function createController(): Controller {
     },
     dismissOffer,
     dismissToast: (id) => store.set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
-    explainSelection,
-    closeExplain: () => {
-      explainSeq++;
-      store.set({ explain: { open: false, loading: false, anchor: null, original: null, result: null, error: null } });
-    },
     openFitting: () => {
       void askExt<unknown>({ type: 'openFitting' }).catch((err: unknown) => addError(plainError(err)));
     },
@@ -3657,6 +3630,7 @@ export function createController(): Controller {
     },
     toggleParagraph: (id) => reword.toggleParagraph(id),
     rewordFor: (node) => reword.rewordFor(node),
+    compose: (groups) => composer.compose(groups),
   };
 
   return {
@@ -3703,6 +3677,7 @@ export function createController(): Controller {
       // The column's CSS comes off with the zoom: one tab zoom change back to the person's own.
       void revertAll(opsList).catch(() => undefined);
       reword.dispose();
+      composer.reset();
       tailor.sheets.clear();
       pushReport.cancel();
     },

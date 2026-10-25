@@ -18,7 +18,7 @@ import type {
 } from '@webable/core';
 import type { EngineState, RewordInline, RewordItem, RewordView } from '../contracts';
 import { plainError } from './bus';
-import { isExcludedHost } from './explain';
+import { isExcludedHost } from './hosts';
 
 export const MAX_PARAS = 40;
 export const MAX_PICKS = 24;

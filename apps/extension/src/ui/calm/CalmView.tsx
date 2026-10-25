@@ -21,6 +21,7 @@ import { Disclosure } from './Disclosure';
 import { Calm, type CalmCtx, isResultsUrl } from './context';
 import { Dock } from './Dock';
 import { MoreFrom, SiteLinks } from './End';
+import { planGroups } from './grouping';
 import * as I from './icons';
 import { IndexView } from './Index';
 import { ArticleHeader, LeadBand } from './Lead';
@@ -34,6 +35,7 @@ import { PurposeView } from './Purpose';
 import { stepOf } from './sections/FormSteps';
 import { HelpCard } from './sections/layouts';
 import { Drawer, SectionView } from './sections/Section';
+import { type SettleCtl, createSettle } from './settle';
 import { Strip, SubStrip } from './Strip';
 
 /** Text size on the simplified page: the panel's steps (state.calm.textStep), 15% each, 0.85× to 1.6×. */
@@ -142,6 +144,33 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
     }
   }, [api, isArticle, state.understanding]);
 
+  // Round 10: the running text of the page's reading parts in groups, asked for once per plan (the engine dedupes);
+  // each group settles into its components as they arrive (Grouped.tsx). Never on a page with password or payment
+  // fields (those keep the in-place fixes), a form or a results page.
+  const noGroups = !!state.digest?.hasSensitiveFields || spec.page_type === 'search_results' || spec.page_type === 'form' || isResultsUrl();
+  const grouped = useMemo(() => {
+    try {
+      return planGroups(noGroups ? null : plan);
+    } catch (e) {
+      console.warn('[WebAble] Simplified page could not group this page', e);
+      return planGroups(null);
+    }
+  }, [plan, noGroups]);
+  useEffect(() => {
+    if (!grouped.groups.length || typeof api.compose !== 'function') return;
+    try {
+      api.compose(grouped.groups);
+    } catch (e) {
+      console.warn('[WebAble] Simplified page could not ask for the page laid out', e);
+    }
+  }, [api, grouped]);
+  const groupOrder = useMemo(() => grouped.groups.map((g) => g.id), [grouped]);
+  const settleRef = useRef<SettleCtl | null>(null);
+  if (!settleRef.current) settleRef.current = createSettle(() => rootRef.current);
+  const settle = settleRef.current;
+  useEffect(() => () => settle.dispose(), [settle]);
+  const composeVersion = state.compose?.version ?? 0;
+
   // A different layout (Jev's pick arrived) starts the form again at its first step.
   useEffect(() => setStep(0), [spec]);
   const nSteps = plan?.form?.steps?.length ?? 0;
@@ -232,7 +261,6 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       api,
       splitN: params.splitSentences,
       groupSize: params.groupSize,
-      explainOn: state.settings?.explain !== false,
       reduceMotion,
       click: (el) => {
         if (el.localName === 'a' && jumpToField(el)) return;
@@ -263,8 +291,14 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       results,
       marks,
       pulse: !reduceMotion,
+      compose: state.compose,
+      segments: grouped.segments,
+      groupOrder,
+      settle,
     }),
-    [api, params.splitSentences, params.groupSize, state.settings?.explain, reduceMotion, watchPopups, watchResult, arm, step, goStep, drawerCall, jumpToField, outcome, plan?.kind, m.textCol, results, marks],
+    // `composeVersion`: a group changed (ready, kept or failed), so the parts that draw it re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [api, params.splitSentences, params.groupSize, reduceMotion, watchPopups, watchResult, arm, step, goStep, drawerCall, jumpToField, outcome, plan?.kind, m.textCol, results, marks, state.compose, composeVersion, grouped, groupOrder, settle],
   );
 
   // New page content outside every placed part (a toast, a confirmation appended to the body) shows in a result card;
@@ -322,6 +356,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
 
   const interacted = useRef(false);
   const signalInteraction = (): void => {
+    settle.markInteracted();
     if (interacted.current) return;
     interacted.current = true;
     rootRef.current?.dispatchEvent(new CustomEvent('webable:calm-interact', { bubbles: true, composed: true }));
@@ -331,9 +366,13 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
     // Never sideways (round 8b): a focus or scrollIntoView must not shift the page or its top bar.
     if (el.scrollLeft) el.scrollLeft = 0;
     if (el.scrollTop > 100) signalInteraction();
+    settle.scrolled();
   };
+  /** The person scrolling, clicking or typing in the view: from now on only groups off screen change. */
+  const personActs = (): void => settle.markInteracted();
 
   const onKeyDown = (e: KeyboardEvent): void => {
+    personActs();
     if (e.key === 'Escape') {
       e.stopPropagation();
       if (popup) closePopup();
@@ -406,6 +445,8 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       onScroll={onScroll}
       onPointerDown={signalInteraction}
       onInput={signalInteraction}
+      onWheel={personActs}
+      onTouchMove={personActs}
     >
       {needInline && <style>{calmSheetCss()}</style>}
       <Calm.Provider value={ctx}>

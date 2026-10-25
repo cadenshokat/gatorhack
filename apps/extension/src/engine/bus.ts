@@ -72,7 +72,6 @@ const DEFAULT_TIMEOUTS: Partial<Record<ExtRequest['type'], number>> = {
   understand: 15000,
   struggle: 8000,
   redesign: 25000,
-  explain: 25000,
   visualVerify: 20000,
   setZoom: 4000,
   getZoom: 3000,

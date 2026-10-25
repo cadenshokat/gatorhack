@@ -8,8 +8,11 @@
 // (F5), and captions come from the page's caption element with the credit after it (F7).
 import { cleanAlt, hrefKey, isKickerText, isLogoPicture, isPlaceholderSrc, isTimeText, parseSrcset, pickSrcset } from '@webable/core';
 
-export interface LinkPart { t: 'link'; el: Element; text: string; href: string | null; help: boolean }
-export type Inline = { t: 'text'; text: string } | LinkPart | { t: 'br' };
+/** Emphasis the page shows on a run of words: bold (b) and italic (i). Parts with different flags never merge. */
+export interface Emphasis { b?: true; i?: true }
+export interface LinkPart extends Emphasis { t: 'link'; el: Element; text: string; href: string | null; help: boolean }
+export interface TextPart extends Emphasis { t: 'text'; text: string }
+export type Inline = TextPart | LinkPart | { t: 'br' };
 
 interface Base { key: string; src: Node }
 export interface HeadingBlock extends Base { b: 'heading'; level: number; text: string; el: Element }
@@ -441,30 +444,14 @@ export function splitParts(parts: Inline[], n: number): Inline[][] {
       count++;
       if (count % n !== 0) continue;
       const head = p.text.slice(offset, at);
-      paras[paras.length - 1]!.push({ t: 'text', text: head.trimEnd() });
+      paras[paras.length - 1]!.push({ ...p, text: head.trimEnd() });
       paras.push([]);
       offset = at;
       rest = p.text.slice(at);
     }
-    if (rest) paras[paras.length - 1]!.push({ t: 'text', text: offset ? rest.trimStart() : rest });
+    if (rest) paras[paras.length - 1]!.push({ ...p, text: offset ? rest.trimStart() : rest });
   }
   return paras.filter((ps) => ps.some((x) => x.t !== 'text' || /\S/.test(x.text)));
-}
-
-function syllables(word: string): number {
-  const w = word.toLowerCase().replace(/[^a-z]/g, '');
-  if (w.length <= 3) return 1;
-  const groups = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').replace(/^y/, '').match(/[aeiouy]{1,2}/g);
-  return Math.max(1, groups?.length ?? 1);
-}
-
-/** Dense text gets an "Explain" offer: ≥ 40 words and (mean sentence ≥ 25 words or ≥ 15% words of 3+ syllables). */
-export function isDense(text: string): boolean {
-  const words = text.split(/\s+/).filter((w) => /[a-z]/i.test(w));
-  if (words.length < 40) return false;
-  const sentences = splitSentences(text).length || 1;
-  const long = words.filter((w) => syllables(w) >= 3).length;
-  return words.length / sentences >= 25 || long / words.length >= 0.15;
 }
 
 /** Page tools (Print, Save, Listen, Share): quiet icon links, and in an article they move to "More on this page". */
@@ -472,6 +459,47 @@ export const TOOL_RE = /^(print( this)?( page)?|save( to (my )?list)?|share( thi
 
 export const PRICE_RE = /(?:[$€£¥]\s?\d|\d[\d,.]*\s?(?:USD|EUR|GBP))/;
 export const HELP_RE = /\b(help|contact( us)?|support|customer (service|care)|faqs?|call (us|your|our)|chat with( us)?)\b/i;
+
+/* ------------------------------------------------------------------ */
+/* Emphasis                                                            */
+/* ------------------------------------------------------------------ */
+
+/** While reading: the nearest block's own weight and style, and whether the words inside are bold or italic. */
+export interface EmphasisState { bw: number; bi: boolean; b: boolean; i: boolean }
+export const PLAIN: EmphasisState = { bw: 400, bi: false, b: false, i: false };
+type FontStyle = Pick<CSSStyleDeclaration, 'fontWeight' | 'fontStyle'>;
+
+/** A CSS font-weight as a number (NaN when no style is known, as in a test DOM). */
+function weightOf(w: string): number {
+  if (w === 'bold' || w === 'bolder') return 700;
+  if (w === 'normal' || w === 'lighter') return 400;
+  return w ? Number(w) : NaN;
+}
+
+/** A block's words start plain; its own weight and style are what an inline element's are measured against. */
+export function blockEmphasis(cs: FontStyle): EmphasisState {
+  const w = weightOf(cs.fontWeight);
+  return { bw: Number.isFinite(w) ? w : 400, bi: /italic|oblique/.test(cs.fontStyle), b: false, i: false };
+}
+
+/**
+ * The emphasis inside an inline element. Its computed style wins when known (a site that bolds with CSS font-weight,
+ * or un-bolds its <b>): bold at 600 or more while its block is under 600; italic while its block is not. With no
+ * computed style the tags say it. <mark> (a highlight) is always bold: the view draws no highlight.
+ */
+export function inlineEmphasis(tag: string, cs: FontStyle, outer: EmphasisState): EmphasisState {
+  const w = weightOf(cs.fontWeight);
+  const b = tag === 'mark' || (Number.isFinite(w) ? w >= 600 && outer.bw < 600 : outer.b || tag === 'b' || tag === 'strong');
+  const i = cs.fontStyle ? /italic|oblique/.test(cs.fontStyle) && !outer.bi : outer.i || tag === 'em' || tag === 'i';
+  return { ...outer, b, i };
+}
+
+/** The flags a part carries (none when plain, so plain parts look as they always did). */
+export function flagsOf(em: EmphasisState): Emphasis {
+  return em.b ? (em.i ? { b: true, i: true } : { b: true }) : em.i ? { i: true } : {};
+}
+
+const sameEmphasis = (a: Emphasis, b: Emphasis): boolean => !a.b === !b.b && !a.i === !b.i;
 
 /* ------------------------------------------------------------------ */
 /* Visibility                                                          */
@@ -1108,6 +1136,8 @@ class Run {
   out: Block[] = [];
   parts: Inline[] = [];
   flowSrc: Node | null = null;
+  /** Bold and italic the page shows on the words being read. */
+  em: EmphasisState = PLAIN;
   constructor(readonly ctx: ReadCtx, readonly prep: Prep, readonly root: Element) {}
 
   push(b: Block): void {
@@ -1128,11 +1158,11 @@ class Run {
   text(s: string, node: Node): void {
     if (!s) return;
     if (!/\S/.test(s)) {
-      if (this.parts.length) this.parts.push({ t: 'text', text: ' ' });
+      if (this.parts.length) this.parts.push({ t: 'text', text: ' ', ...flagsOf(this.em) });
       return;
     }
     if (!this.flowSrc) this.flowSrc = node;
-    this.parts.push({ t: 'text', text: s.replace(/[\s ]+/g, ' ') });
+    this.parts.push({ t: 'text', text: s.replace(/[\s ]+/g, ' '), ...flagsOf(this.em) });
   }
 
   visitChildren(el: Element | ShadowRoot, vis: boolean): void {
@@ -1268,7 +1298,7 @@ class Run {
       // Keep the spaces at the link's edges ("…Middle East </a>as" must not read "Eastas").
       const raw = el.textContent ?? '';
       if (/^\s/.test(raw) && this.parts.length) this.parts.push({ t: 'text', text: ' ' });
-      this.parts.push({ t: 'link', el, text, href: safeHref(el), help: this.isHelp(el, text) });
+      this.parts.push({ t: 'link', el, text, href: safeHref(el), help: this.isHelp(el, text), ...flagsOf(inlineEmphasis(tag, cs, this.em)) });
       if (/\s$/.test(raw)) this.parts.push({ t: 'text', text: ' ' });
       return;
     }
@@ -1389,7 +1419,10 @@ class Run {
     }
 
     if (block) this.close();
+    const outer = this.em;
+    this.em = block ? blockEmphasis(cs) : inlineEmphasis(tag, cs, outer);
     this.visitChildren(el, v);
+    this.em = outer;
     if (block) this.close();
   }
 
@@ -1519,48 +1552,60 @@ export function isRewritten(b: Block): boolean {
 /** The words of a rewritten paragraph as one run of inline parts: list items run on, the in-page mark is skipped. */
 function rewrittenParts(p: Element, isHelp: (a: Element, text: string) => boolean): Inline[] {
   const out: Inline[] = [];
-  const walk = (n: Node): void => {
+  const walk = (n: Node, em: EmphasisState): void => {
     if (n.nodeType === Node.TEXT_NODE) {
       const s = (n as Text).data;
-      if (s) out.push({ t: 'text', text: s.replace(/[\s ]+/g, ' ') });
+      if (s) out.push({ t: 'text', text: s.replace(/[\s ]+/g, ' '), ...flagsOf(em) });
       return;
     }
     if (n.nodeType !== Node.ELEMENT_NODE) return;
     const e = n as Element;
     if (IGNORE.has(e.localName) || e.hasAttribute(RW_MARK)) return;
+    let cs: FontStyle & { display: string } = { fontWeight: '', fontStyle: '', display: 'inline' };
     try {
-      if (hidden(e, getComputedStyle(e))) return;
+      const c = getComputedStyle(e);
+      if (hidden(e, c)) return;
+      cs = c;
     } catch {
       /* detached */
     }
-    if (e.localName === 'br') {
+    const tag = e.localName;
+    const inner = INLINE.has(cs.display) ? inlineEmphasis(tag, cs, em) : blockEmphasis(cs);
+    if (tag === 'br') {
       out.push({ t: 'br' });
       return;
     }
-    if (e.localName === 'a' && (e.hasAttribute('href') || e.hasAttribute('onclick'))) {
+    if (tag === 'a' && (e.hasAttribute('href') || e.hasAttribute('onclick'))) {
       const text = nameOf(e);
       if (!text) return;
       const raw = e.textContent ?? '';
       if (/^\s/.test(raw)) out.push({ t: 'text', text: ' ' });
-      out.push({ t: 'link', el: e, text, href: safeHref(e), help: isHelp(e, text) });
+      out.push({ t: 'link', el: e, text, href: safeHref(e), help: isHelp(e, text), ...flagsOf(inner) });
       if (/\s$/.test(raw)) out.push({ t: 'text', text: ' ' });
       return;
     }
-    const item = e.localName === 'li' || e.localName === 'ul' || e.localName === 'ol';
+    const item = tag === 'li' || tag === 'ul' || tag === 'ol';
     if (item) out.push({ t: 'text', text: ' ' });
-    e.childNodes.forEach(walk);
+    e.childNodes.forEach((c) => walk(c, inner));
     if (item) out.push({ t: 'text', text: ' ' });
   };
-  p.childNodes.forEach(walk);
+  let root = PLAIN;
+  try {
+    root = blockEmphasis(getComputedStyle(p));
+  } catch {
+    /* detached */
+  }
+  p.childNodes.forEach((c) => walk(c, root));
   return out;
 }
 
 function finishFlow(parts: Inline[], src: Node): Block[] {
+  // Runs of words merge only with the same emphasis (a space joins whatever run is before it).
   const merged: Inline[] = [];
   for (const p of parts) {
     const last = merged[merged.length - 1];
-    if (p.t === 'text' && last?.t === 'text') last.text += p.text;
-    else merged.push(p.t === 'text' ? { t: 'text', text: p.text } : p);
+    if (p.t === 'text' && last?.t === 'text' && (sameEmphasis(last, p) || !/\S/.test(p.text))) last.text += p.text;
+    else merged.push(p.t === 'text' ? { ...p } : p);
   }
   while (merged.length && (merged[0]!.t === 'br' || (merged[0]!.t === 'text' && !/\S/.test((merged[0] as { text: string }).text)))) merged.shift();
   while (merged.length) {

@@ -1,28 +1,5 @@
-// Jev checks the generative explanation against the original (research-redesign §10.3, research-demo §4). Owner: A1.
-//
-// One call: state {original}; per original sentence a coverage Noul with the explanation and the sentence inside
-// its own instructions (measured: the dropped "generic substitution" sentence scored 0.04, faithful ones 0.90+);
-// plus `adds` and `drops` Nouls (measured: genuine 0.10-0.17 / 0.07-0.27, corrupted 0.97 / 0.97-0.98).
-// Deterministic checks run alongside: every number kept, condition words never fewer.
-import { noulOf } from './api';
-import type { JevQuestion, JevResponse } from './api';
-
-export const EXPLAIN_CHECK = Object.freeze({
-  /** Sentences covered below this are shown as the original text. */
-  coveredMin: 0.5,
-  /** adds or drops at or above this shows "may have missed or changed something". */
-  flag: 0.5,
-  maxSentences: 24,
-});
-
-export const Q_COVERS = 'Does the summary convey the key fact of original_sentence?';
-export const Q_ADDS =
-  'Does the `explanation` state anything that the `original` does not say, or say anything differently from the original (a different number, deadline, amount, condition or promise)?';
-export const Q_DROPS = 'Does the `explanation` leave out a condition, exception, number, deadline or obligation that the `original` states?';
-
-export function coverQuestionId(i: number): string {
-  return `covers_${i}`;
-}
+// Checks a rewrite of page text against the original, in code: every number kept, condition words never fewer.
+// The paragraph rewrites (round 9) and the WebAble page's laid-out sections (round 10) both use them.
 
 /** Split a passage into sentences (keeps abbreviations like "e.g." and decimals together). */
 export function splitIntoSentences(passage: string): string[] {
@@ -45,39 +22,6 @@ export function splitIntoSentences(passage: string): string[] {
   }
   if (buf.trim()) out.push(buf.trim());
   return out;
-}
-
-export function buildExplainCheckCall(
-  originalSentences: string[], explanation: string,
-): { state: unknown; questions: Record<string, JevQuestion> } {
-  const sentences = originalSentences.slice(0, EXPLAIN_CHECK.maxSentences);
-  const original = sentences.join(' ');
-  const questions: Record<string, JevQuestion> = {};
-  sentences.forEach((s, i) => {
-    questions[coverQuestionId(i)] = {
-      type: 'noul',
-      instructions: { summary: explanation, original_sentence: s, question: Q_COVERS },
-    };
-  });
-  questions.adds = { type: 'noul', instructions: { question: Q_ADDS, explanation } };
-  questions.drops = { type: 'noul', instructions: { question: Q_DROPS, explanation } };
-  return { state: { original }, questions };
-}
-
-/** Missing answers fail closed: coverage 0 (show the original), added and dropped 1 (flag it). */
-export function parseExplainCheck(
-  originalSentences: string[], resp: JevResponse,
-): { covered: number[]; addedFact: number; droppedFact: number } {
-  return {
-    covered: originalSentences.map((_, i) => (i < EXPLAIN_CHECK.maxSentences ? noulOf(resp, coverQuestionId(i)) ?? 0 : 0)),
-    addedFact: noulOf(resp, 'adds') ?? 1,
-    droppedFact: noulOf(resp, 'drops') ?? 1,
-  };
-}
-
-/** Original sentences to show verbatim because the explanation does not cover them. */
-export function sentencesToShow(originalSentences: string[], covered: number[]): string[] {
-  return originalSentences.filter((_, i) => (covered[i] ?? 0) < EXPLAIN_CHECK.coveredMin);
 }
 
 /* ------------------------------------------------------------------ */

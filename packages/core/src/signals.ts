@@ -248,7 +248,6 @@ export function gateKinds(c: StruggleCounts, s: number): StruggleKind[] {
   if (int(c.repeatClicks) >= 2) k.push('accidental_repeat');
   if (int(c.zoomInEvents) >= 1 || int(c.scrollBacks) >= 2 || int(c.longPausesOnShortText) >= 2 || int(c.sidewaysScrolls) >= 3) k.push('reading');
   if (int(c.hoverHunts) >= 1 || int(c.popupsDismissed) >= 2) k.push('finding');
-  if (int(c.longFieldDwells) >= 1) k.push('form');
   if (dead >= 3) k.push('site_fault');
   return k;
 }
@@ -275,7 +274,6 @@ function gateReason(kinds: StruggleKind[], c: StruggleCounts, s: number): string
     } else if (k === 'accidental_repeat') parts.push(`repeat: ${int(c.repeatClicks)} quick double activations`);
     else if (k === 'reading') parts.push(`reading: ${int(c.zoomInEvents)} zoom-ins, ${int(c.scrollBacks)} scroll-backs`);
     else if (k === 'finding') parts.push(`finding: ${int(c.hoverHunts)} hover hunts, ${int(c.popupsDismissed)} popups closed`);
-    else if (k === 'form') parts.push(`form: ${int(c.longFieldDwells)} long pauses on a field`);
     else if (k === 'site_fault') parts.push(`page: ${int(c.deadClicks)} clicks got no response`);
   }
   return parts.join('; ');
@@ -554,10 +552,8 @@ export const OFFER_COPY: Readonly<Record<OfferKind, { question: string; primary:
   steady_clicks: { question: 'Count a click where the press starts?', primary: 'Turn on steady clicks', toast: 'Steady clicks is on for this site.' },
   debounce: { question: 'Ignore quick double clicks here?', primary: 'Ignore double clicks', toast: 'Quick double clicks are ignored on this site.' },
   larger_text: { question: 'Make text larger on this page?', primary: 'Make larger', toast: 'Text is larger on this page.' },
-  explain: { question: 'Explain hard passages in plain words?', primary: 'Explain', toast: 'Select a passage and WebAble explains it beside the original.' },
   calm_view: { question: 'See a calmer version of this page?', primary: 'Preview', toast: 'Calm view is on.' },
   main_actions: { question: 'Show the main things you can do here?', primary: 'Show list', toast: 'The main actions are listed in the panel.' },
-  explain_field: { question: 'Explain what this field needs?', primary: 'Explain', toast: 'The explanation is beside the field.' },
 });
 
 interface Domain {
@@ -591,13 +587,8 @@ const DOMAINS: readonly Domain[] = [
   {
     kind: 'reading', tau: STRUGGLE.tau, needsLevel: true, windows: 1, vetoDeliberate: false,
     evidence: (c) => int(c.zoomInEvents) >= 1 || int(c.scrollBacks) >= 2 || int(c.longPausesOnShortText) >= 2 || int(c.sidewaysScrolls) >= 3,
-    // A zoom-in is an expressed size need (research-struggle §0.6): larger text. Re-reading without zooming goes
-    // to an explanation when Jev prefers explain_passage over larger_text.
-    offer: (j, c) => {
-      if (int(c.zoomInEvents) >= 1) return 'larger_text';
-      const p = j.kinds.reading ?? 0;
-      return p > 0 && (j.kinds.dense_text ?? 0) / p > 0.5 ? 'explain' : 'larger_text';
-    },
+    // A zoom-in is an expressed size need (research-struggle §0.6); re-reading gets larger text too.
+    offer: () => 'larger_text',
     what: 'the text here is hard going as shown',
   },
   {
@@ -608,12 +599,6 @@ const DOMAINS: readonly Domain[] = [
       return bh && (bh.find_helper ?? 0) > (bh.calm_view ?? 0) ? 'main_actions' : 'calm_view';
     },
     what: 'things are hard to find on this page',
-  },
-  {
-    kind: 'form', tau: STRUGGLE.tau, needsLevel: true, windows: 1, vetoDeliberate: false,
-    evidence: (c) => int(c.longFieldDwells) >= 1,
-    offer: () => 'explain_field',
-    what: 'a form field is holding things up',
   },
 ];
 
@@ -691,13 +676,6 @@ function offerText(kind: OfferKind, c: StruggleCounts): { fact: string; numbers:
       if (back >= 2) return { fact: `Text here was scrolled back to ${back} times.`, numbers: `The page was scrolled back to re-read ${back} times.` };
       return { fact: 'Text on this page can be made larger.', numbers: `${int(c.longPausesOnShortText)} long pauses on short text.` };
     }
-    case 'explain': {
-      const back = int(c.scrollBacks);
-      return {
-        fact: back >= 2 ? `The same text was scrolled back to ${back} times. The original stays.` : 'Some passages here are dense. The original stays.',
-        numbers: `The page was scrolled back to re-read ${back} times.`,
-      };
-    }
     case 'calm_view':
       return {
         fact: 'Same page, fewer distractions. Every button still works.',
@@ -707,11 +685,6 @@ function offerText(kind: OfferKind, c: StruggleCounts): { fact: string; numbers:
       return {
         fact: 'This page has many links and buttons.',
         numbers: `${int(c.hoverHunts)} stretches of pointing at many items without choosing one.`,
-      };
-    case 'explain_field':
-      return {
-        fact: 'Fields like this often ask for a specific format.',
-        numbers: `${int(c.longFieldDwells)} long ${plural(int(c.longFieldDwells), 'pause', 'pauses')} on a field without typing.`,
       };
   }
 }

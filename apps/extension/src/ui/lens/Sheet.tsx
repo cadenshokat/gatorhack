@@ -4,7 +4,7 @@
 import type { Ref } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { PageDigest, PageUnderstanding } from '@webable/core';
-import type { EngineState, RewordItem } from '../../contracts';
+import type { ComposeGroupState, EngineState, RewordItem } from '../../contracts';
 import { GROUPS, type LensItem } from './display';
 import { ClassIcon, IArrowDown, IArrowUp, ICheck, IChevronDown, IChevronRight, IClose, ICopy } from './icons';
 import { paraCounts, paraFace, paraSummary } from './paragraphs';
@@ -49,6 +49,8 @@ export interface SheetProps {
   /** Round 9: the paragraphs WebAble read for this person (absent or 'off': no Paragraphs section). */
   reword?: EngineState['reword'];
   onParaClick?: (id: string) => void;
+  /** Round 10: the parts of the WebAble page laid out for this person (absent or 'idle': no section). */
+  compose?: EngineState['compose'];
 }
 
 /** Round 9: one paragraph Jev read for this person: its first words, Jev's probability on a track, what WebAble did. */
@@ -106,6 +108,35 @@ function ParaSection({ reword, onClick }: { reword: EngineState['reword']; onCli
         </section>
       )}
     </>
+  );
+}
+
+/** Round 10: what WebAble did with one part of the WebAble page, after Jev's probability. */
+export function composeLine(g: ComposeGroupState): string {
+  if (g.state === 'waiting') return 'Waiting for Jev';
+  const did = g.state === 'ready' ? 'laid out' : g.state === 'failed' && g.better !== null ? 'kept the page’s words (a check failed)' : 'kept the page’s words';
+  if (g.better === null) return `Couldn’t be checked · ${did}`;
+  return `Jev’s probability this layout is easier for you: ${f2(g.better)} · ${did}`;
+}
+
+/** Round 10: one line per part of the WebAble page, in the order they were asked for. */
+function ComposeSection({ compose }: { compose?: EngineState['compose'] }) {
+  const groups = compose && compose.status !== 'idle' ? Object.values(compose.groups ?? {}) : [];
+  if (!groups.length) return null;
+  return (
+    <section class="wa-lcmp" aria-label="Parts of the page laid out for you">
+      <h4>
+        Parts of the page
+        <span class="wa-lgrp-n">{groups.length}</span>
+      </h4>
+      <ul>
+        {groups.map((g, i) => (
+          <li key={g.id} data-wa-compose-row={g.id} data-state={g.state}>
+            Part {i + 1}: {composeLine(g)}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -333,6 +364,7 @@ export function Sheet(p: SheetProps) {
         ) : p.tab === 'elements' ? (
           <>
             <ParaSection reword={p.reword} onClick={p.onParaClick} />
+            <ComposeSection compose={p.compose} />
             {p.ruleOn && p.diff && (
               <section class="wa-lcmp" aria-label="Jev compared with a plain rule">
                 <h4>

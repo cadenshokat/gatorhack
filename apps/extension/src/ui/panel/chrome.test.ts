@@ -1,8 +1,7 @@
-// Owner: P, U. Pure parts of the in-page chrome: shortcuts, overlay views, explain states, steady sizing at any page
+// Owner: P, U. Pure parts of the in-page chrome: shortcuts, overlay views, steady sizing at any page
 // zoom and the corner dock.
 import { describe, expect, it } from 'vitest';
-import { DEMO_FITS, type ExplainResult, type JevMetrics, type OverlayAction } from '@webable/core';
-import { jevAnswered, writerUnavailable } from '../explain/ExplainCard';
+import { DEMO_FITS, type OverlayAction } from '@webable/core';
 import { overlayView } from '../offers/Overlays';
 import { parseZoom } from '../zoom';
 import { clampBottom, dockHeights, planDock, type DockInput } from './dock';
@@ -60,25 +59,6 @@ describe('overlay views', () => {
     expect(v.choices).toEqual([]);
     expect(v.edge).toBeNull();
     expect(v.revealed).toBe(false);
-  });
-});
-
-describe('explain card states', () => {
-  const none: JevMetrics = { model: 'jev-1.14.0', calls: 0, questions: 0, inputTokens: 0, wallMs: 0, serverMs: null, costUsd: 0 };
-  const failed = (over: Partial<ExplainResult> & { error?: string } = {}): ExplainResult => ({
-    ok: false, explanation: null, sentences: [], checks: { numbersKept: false, conditionWordsKept: false, addedFact: 0, droppedFact: 0 },
-    showOriginalInstead: [], model: 'm', ms: 0, jev: none, ...over,
-  } as ExplainResult);
-  it('treats llm_unavailable as "could not write", never as a failed check', () => {
-    const r = failed({ error: 'llm_unavailable' } as Partial<ExplainResult>);
-    expect(writerUnavailable(r)).toBe(true);
-    expect(jevAnswered(r)).toBe(false);
-  });
-  it('a result Jev answered is not "unavailable"', () => {
-    const r = failed({ jev: { ...none, calls: 1, questions: 12 }, explanation: 'x' });
-    expect(jevAnswered(r)).toBe(true);
-    expect(writerUnavailable(r)).toBe(false);
-    expect(writerUnavailable({ ...r, ok: true })).toBe(false);
   });
 });
 
@@ -142,13 +122,13 @@ describe('corner dock', () => {
     expect(planDock({ ...base, vw: 700, hasItems: true, panelOpen: true }).itemsBeside).toBe(false);
     expect(planDock({ ...base, hasItems: false, panelOpen: true }).itemsBeside).toBe(false);
   });
-  it('gives the parts above the pill the rest of the height, and the pill gives way on short screens', () => {
+  it('gives the panel the remaining height and keeps the launcher visible on short screens', () => {
     const h = dockHeights(794, 16, 16, 49, 8, false);
     expect(h.aboveMax).toBe(794 - 16 - 16 - 49 - 8);
     expect(h.pillWithPanel).toBe(true);
     const short = dockHeights(360, 16, 16, 49, 8, true);
-    expect(short.pillWithPanel).toBe(false);
-    expect(short.aboveMax).toBe(360 - 32);
+    expect(short.pillWithPanel).toBe(true);
+    expect(short.aboveMax).toBe(360 - 32 - 49 - 8);
   });
   it('keeps the button on screen however high the dock is pushed', () => {
     expect(clampBottom(794, 20, 20, 52)).toBe(20);

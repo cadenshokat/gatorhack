@@ -9,7 +9,6 @@ export const offersCss = /* css */ `
   position: fixed; z-index: 41;
   display: flex; flex-direction: row-reverse; align-items: flex-end; gap: ${u(12)};
   pointer-events: none;
-  transition: bottom 200ms var(--k-ease);
 }
 .wa-dock[data-side="left"] { flex-direction: row; }
 .wa-dock-col {
@@ -17,6 +16,8 @@ export const offersCss = /* css */ `
   min-height: 0; pointer-events: none;
 }
 .wa-dock[data-side="left"] .wa-dock-col { align-items: flex-start; }
+.wa-dock-content { display: flex; flex-direction: column; min-height: 0; flex: 0 1 auto; }
+.wa-dock-content > .wa-sheet { pointer-events: auto; }
 .wa-dock-items {
   display: flex; flex-direction: column; align-items: flex-end; gap: ${u(12)};
   width: min(${u(360)}, calc(var(--wa-vw, 100vw) - ${u(40)}));

@@ -15,6 +15,8 @@ export const EXPLAIN_MODEL = 'gpt-5.4-mini';
 export const READER_MODEL = 'gpt-6-sol';
 /** Round 9: rewrites the paragraphs Jev picked, in the way Jev picked (one call per paragraph, in parallel). */
 export const REWORD_MODEL = 'gpt-5.4-mini';
+/** Round 10: proposes the components for each group of the page (one call per group, in parallel). */
+export const COMPOSE_MODEL = 'gpt-5.4-mini';
 
 /* ------------------------------------------------------------------ */
 /* The person's fit (from the fitting; never contains condition words) */
@@ -320,8 +322,8 @@ export interface StruggleJudgment {
 }
 
 export type OfferKind =
-  | 'bigger_targets' | 'steady_clicks' | 'debounce' | 'larger_text' | 'explain'
-  | 'calm_view' | 'main_actions' | 'explain_field';
+  | 'bigger_targets' | 'steady_clicks' | 'debounce' | 'larger_text'
+  | 'calm_view' | 'main_actions';
 
 export interface Offer {
   kind: OfferKind;
@@ -425,31 +427,6 @@ export interface RedesignResult {
 }
 
 /* ------------------------------------------------------------------ */
-/* Explain on request                                                  */
-/* ------------------------------------------------------------------ */
-
-export interface ExplainRequest {
-  passage: string; // redacted twice (background and server)
-  pageKind: string;
-}
-
-export interface ExplainResult {
-  ok: boolean;
-  explanation: string | null;
-  sentences: Array<{ original: string; covered: number }>; // Jev coverage per original sentence
-  checks: { numbersKept: boolean; conditionWordsKept: boolean; addedFact: number; droppedFact: number };
-  showOriginalInstead: string[]; // original sentences shown because coverage was low
-  model: string;
-  ms: number;
-  jev: JevMetrics;
-  /** Set when no plain version was written: 'llm_unavailable' | 'check_unavailable'. */
-  error?: string;
-  reason?: string;
-  /** Ready to show, e.g. "Couldn't write a plain version right now. The original is below." */
-  message?: string;
-}
-
-/* ------------------------------------------------------------------ */
 /* Visual self-check (Jev image input, experimental since 1.14)        */
 /* ------------------------------------------------------------------ */
 
@@ -503,7 +480,7 @@ export interface CheckResult {
 
 export interface LedgerEntry {
   at: number; // ms since page start
-  source: 'fit' | 'jev' | 'check' | 'signals' | 'layout' | 'explain' | 'person';
+  source: 'fit' | 'jev' | 'check' | 'signals' | 'layout' | 'person';
   title: string; // plain sentence, e.g. 'Folded the promo carousel'
   detail?: string;
   p?: number;
@@ -543,7 +520,6 @@ export type BgRequest =
   | { type: 'attribute'; question: AttributionQuestion }
   | { type: 'meaning'; req: MeaningCheckRequest }
   | { type: 'redesign'; outline: PageOutline; fit: FitSummaryForModel; roles: Record<string, Role> }
-  | { type: 'explain'; req: ExplainRequest }
   | { type: 'visualVerify'; controls: string[]; help: string[]; mainLabel: string | null; phase: 'before' | 'after' }
   | { type: 'setZoom'; factor: number }
   | { type: 'getZoom' }
@@ -556,7 +532,111 @@ export type BgRequest =
   | { type: 'getReader' } // -> ReaderProfile | null
   | { type: 'setReader'; reader: ReaderProfile | null } // -> ReaderProfile | null
   | { type: 'rewordScore'; req: Omit<RewordScoreRequest, 'reader'> } // -> RewordScoreResult
-  | { type: 'rewordWrite'; req: Omit<RewordWriteRequest, 'reader'> }; // -> RewordWriteResult
+  | { type: 'rewordWrite'; req: Omit<RewordWriteRequest, 'reader'> } // -> RewordWriteResult
+  // Round 10: the background adds the saved reader (or null) and posts to /v1/compose.
+  | { type: 'compose'; req: Omit<ComposeRequest, 'reader'> }; // -> ComposeResponse
+
+/* ------------------------------------------------------------------ */
+/* Round 10: the WebAble page built from components                    */
+/* ------------------------------------------------------------------ */
+// On every reading page the WebAble page opens by itself and builds in progressively: each group of the page's own
+// content (the paragraphs, lists and tables under one heading) is sent as data; COMPOSE_MODEL proposes components from
+// the closed catalog below (data only, never markup), shaped by the person's AI answer when there is one; code checks
+// that every unit is covered and every number, link and quote is kept, and that no number was invented; Jev checks
+// nothing was dropped or added and gives the probability the layout is easier for this person than the page's own
+// text. Anything that fails shows the page's own words. Text fields may hold ⟦n⟧ link markers (n from 1 per group,
+// see ComposeGroupIn.linkTexts); the extension puts the page's own links back there.
+
+/** The bundled icons (Lucide names, inline SVG in the extension). The model may only name these. */
+export const COMPOSE_ICONS = [
+  'clock', 'calendar', 'hourglass', 'banknote', 'credit-card', 'wallet', 'piggy-bank', 'receipt', 'percent',
+  'calculator', 'landmark', 'triangle-alert', 'info', 'circle-check', 'circle-x', 'shield-check', 'lock', 'phone',
+  'mail', 'map-pin', 'globe', 'message-circle', 'file-text', 'clipboard-list', 'list-checks', 'scale',
+  'graduation-cap', 'briefcase', 'user', 'users', 'baby', 'heart-pulse', 'pill', 'stethoscope', 'brain', 'lightbulb',
+  'sparkles', 'eye', 'search', 'refresh-cw', 'trending-up', 'trending-down', 'chart-column', 'trophy', 'star', 'house',
+  'car', 'plane', 'utensils', 'leaf', 'sun', 'quote', 'circle-help', 'link', 'download', 'package', 'truck', 'gift',
+  'wand-sparkles',
+] as const;
+export type ComposeIcon = (typeof COMPOSE_ICONS)[number];
+
+export type ComposeKind =
+  | 'prose' | 'keyfacts' | 'steps' | 'stats' | 'compare' | 'callout' | 'definitions' | 'quote' | 'contact' | 'points';
+
+/** Every block names the units it covers. Across a group's blocks every unit is covered at least once; only a
+ *  callout with tone 'key' may repeat what other blocks cover (it is a takeaway, never new information). */
+interface ComposeBase { src: string[] }
+
+export type ComposeBlock =
+  /** The page's paragraphs, possibly in plainer words for this person; paragraphs separated by a blank line. */
+  | (ComposeBase & { k: 'prose'; text: string })
+  /** Label: value facts the page states ("Phone: 800-829-1954", "Refunds: within 21 days"). */
+  | (ComposeBase & { k: 'keyfacts'; title: string | null; icon: ComposeIcon | null; rows: Array<{ label: string; value: string; icon: ComposeIcon | null }> })
+  /** Actions in an order the page gives. */
+  | (ComposeBase & { k: 'steps'; title: string | null; lead: string | null; steps: Array<{ title: string; detail: string | null }> })
+  /** Number tiles: a metric, its value and its qualifier, exactly as the page states them. */
+  | (ComposeBase & { k: 'stats'; tiles: Array<{ label: string; value: string; note: string | null; icon: ComposeIcon | null }> })
+  /** Two or more things the page compares on the same attributes. cells.length === columns.length - 1. */
+  | (ComposeBase & { k: 'compare'; title: string | null; columns: string[]; rows: Array<{ label: string; cells: string[] }> })
+  /** A warning, restriction or deadline the page states ('warning', 'important'), a tip it gives ('tip'), or the
+   *  group's main point drawn from its own sentences ('key'). */
+  | (ComposeBase & { k: 'callout'; tone: 'warning' | 'important' | 'tip' | 'key'; title: string; text: string; icon: ComposeIcon | null })
+  /** Terms the page defines, or (for this person) a few words of meaning for a term the page uses. */
+  | (ComposeBase & { k: 'definitions'; title: string | null; items: Array<{ term: string; meaning: string }> })
+  /** An exact quotation from the page and who said it. */
+  | (ComposeBase & { k: 'quote'; text: string; who: string; role: string | null })
+  /** Contact details the page gives. */
+  | (ComposeBase & { k: 'contact'; title: string | null; rows: Array<{ kind: 'phone' | 'email' | 'address' | 'hours' | 'web' | 'other'; label: string; value: string }> })
+  /** Parallel points the page makes (features, reasons, options), each with a short title, as a 2-column grid. */
+  | (ComposeBase & { k: 'points'; title: string | null; items: Array<{ icon: ComposeIcon | null; title: string; text: string }> });
+
+/** One unit of the page's own content, in page order. Lists are one line per item ('• …'); tables one line per row,
+ *  cells joined with ' | ', the header row first. */
+export interface ComposeUnit {
+  id: string; // 'u<k>', unique in the group
+  kind: 'para' | 'list' | 'table' | 'quote';
+  text: string;
+}
+
+/** The content under one heading (or one run between headings), at most 10 units and 3,000 characters. */
+export interface ComposeGroupIn {
+  /** 'g' + a hash of the group's text: the same content gets the same id (cache and dedupe). */
+  id: string;
+  /** The page's own heading above the group, for context; it stays on the page as it is. */
+  heading: string | null;
+  units: ComposeUnit[];
+  /** The words of each ⟦n⟧ in the group's units, in marker order. */
+  linkTexts: string[];
+}
+
+export interface ComposeRequest {
+  /** The person's AI answer, broken down (null: lay it out for a general reader). */
+  reader: ReaderProfile | null;
+  page: RewordPage;
+  groups: ComposeGroupIn[]; // at most 4
+}
+
+export interface ComposeResult {
+  id: string;
+  /** false: show the page's own words for this group. */
+  ok: boolean;
+  blocks: ComposeBlock[] | null;
+  /** Jev's probability that this layout is easier for this person than the page's own text (null: not asked). */
+  better: number | null;
+  checks: {
+    covered: boolean; numbersKept: boolean; noNewNumbers: boolean; linksKept: boolean; quotesKept: boolean;
+    dropped: number; added: number;
+  };
+  /** When !ok: 'plain_is_better' | 'covered' | 'numbers' | 'new_numbers' | 'links' | 'quotes' | 'dropped' | 'added' |
+   *  'invalid' | 'llm_unavailable' | 'check_unavailable'. 'plain_is_better' also covers "the model chose prose only". */
+  reason?: string;
+}
+
+export interface ComposeResponse {
+  results: ComposeResult[];
+  model: string;
+  ms: number;
+  jev: JevMetrics;
+}
 
 /* ------------------------------------------------------------------ */
 /* Round 9: paragraphs fitted to the person, from what their AI knows  */
@@ -685,7 +765,6 @@ export interface Settings {
   pausedOrigins: string[];
   lens: boolean;
   aiLayouts: boolean; // consent for the generative layout model
-  explain: boolean;
   serverOrigin: string;
 }
 
@@ -694,7 +773,6 @@ export const DEFAULT_SETTINGS: Settings = {
   pausedOrigins: [],
   lens: false,
   aiLayouts: true,
-  explain: true,
   serverOrigin: SERVER_ORIGIN,
 };
 

@@ -14,7 +14,7 @@ import {
 import type { JSX } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { AiScreen } from './ai/AiScreen';
-import { loadReader, readerHook } from './ai/reader';
+import { importReader, ImportError, loadReader, readerHook, saveReader, type AiSource, type ImportProblem } from './ai/reader';
 import { SENTENCES } from './content/sentences';
 import { captureEnv, readBrowserSettings, readPageZoom, settingsUsed, type Env } from './logic/env';
 import { makeRng } from './logic/rand';
@@ -30,6 +30,7 @@ import { FaintTask } from './tasks/Faint';
 import { LightDarkTask } from './tasks/LightDark';
 import { SitesTask } from './tasks/Sites';
 import { SizeTask } from './tasks/Size';
+import { ContextTask } from './tasks/Context';
 import { TaskLayout, type StepOutcome, type TaskProps } from './tasks/Task';
 import { TrueFalseTask } from './tasks/TrueFalse';
 import { CheckIcon, TopBar } from './ui/Chrome';
@@ -46,7 +47,11 @@ type View =
   | { kind: 'ai'; back: ResultsView | null };
 type ResultsView = { kind: 'results'; fit: FitProfile; measured: boolean; evidence: RunEvidence | null };
 
-const TASKS: Record<StepId, (p: TaskProps) => JSX.Element> = {
+/** Round 10: reading the AI answer from the last step, shown on Results ('reading' while the answer is read). */
+export type ReaderJob = { status: 'reading' | 'failed'; source: string | null; problem?: ImportProblem };
+
+/** The steps drawn from TaskProps; "Your context" is drawn on its own (it starts the AI answer's read). */
+const TASKS: Record<Exclude<StepId, 'context'>, (p: TaskProps) => JSX.Element> = {
   size: SizeTask,
   truefalse: TrueFalseTask,
   faint: FaintTask,
@@ -63,9 +68,13 @@ const STAGE_CLASS: Record<StepId, string> = {
   lightdark: 'is-read',
   dots: 'is-dots',
   find: 'is-sites',
+  context: 'is-context',
 };
 
 const CLOSING_MS = 1600;
+/** "You're all set" waits this long at most for the AI answer to be read, so Results usually opens with it. */
+const READER_WAIT_MS = 12_000;
+const sleep = (ms: number): Promise<void> => new Promise((r) => window.setTimeout(r, ms));
 const newSeed = (): number => (Math.random() * 2 ** 31) | 0;
 
 function safeEvidence(raw: RawCollector): RunEvidence {
@@ -105,6 +114,10 @@ export function App(): JSX.Element {
   const input = useRef<{ moved: boolean; pointerType: string | null }>({ moved: false, pointerType: null });
   const tickTimer = useRef(0);
   const closingTimer = useRef(0);
+  /** Bumped by every finish (and retake), so a "You're all set" still waiting on the AI answer does nothing late. */
+  const closingGen = useRef(0);
+  const [readerJob, setReaderJob] = useState<ReaderJob | null>(null);
+  const readerRun = useRef<Promise<unknown> | null>(null);
 
   /* ---------------- boot: the browser's own settings before any press ---------------- */
 
@@ -169,6 +182,18 @@ export function App(): JSX.Element {
     } catch {
       /* fine */
     }
+  };
+
+  /** Round 10, the last step: read the AI answer in the background (the background saves it as it arrives). */
+  const startReaderImport = (text: string, source: AiSource | null): void => {
+    setReaderJob({ status: 'reading', source });
+    readerRun.current = importReader(text, source).then(
+      (r) => {
+        setReader(r);
+        setReaderJob(null);
+      },
+      (err: unknown) => setReaderJob({ status: 'failed', source, problem: err instanceof ImportError ? err.problem : 'unavailable' }),
+    );
   };
 
   // Test hook (round 9): `await __reader.load(text, 'ChatGPT')` reads an AI answer and saves it, `get()`, `clear()`.
@@ -281,6 +306,7 @@ export function App(): JSX.Element {
 
   const finish = async (measured: boolean, completed: boolean) => {
     window.clearTimeout(closingTimer.current);
+    closingGen.current++;
     raw.stopClock();
     const metrics = raw.metrics({
       completed,
@@ -306,7 +332,13 @@ export function App(): JSX.Element {
     }
     setView({ kind: 'closing' });
     setAnnounce('You’re all set.');
-    closingTimer.current = window.setTimeout(() => void finish(anyDone.current, true), CLOSING_MS);
+    // Round 10: while "You're all set" shows, the AI answer from the last step is read (up to READER_WAIT_MS), so
+    // Results opens with what WebAble took from it; a slower read finishes on Results.
+    const gen = ++closingGen.current;
+    const reading = readerRun.current ? Promise.race([readerRun.current, sleep(READER_WAIT_MS)]) : Promise.resolve();
+    void Promise.all([reading, sleep(CLOSING_MS)]).then(() => {
+      if (gen === closingGen.current) void finish(anyDone.current, true);
+    });
   };
 
   const stepDone = (step: StepId, o: StepOutcome) => {
@@ -351,6 +383,9 @@ export function App(): JSX.Element {
 
   const retake = () => {
     window.clearTimeout(closingTimer.current);
+    closingGen.current++;
+    readerRun.current = null;
+    setReaderJob(null);
     raw.reset();
     setSeed(newSeed());
     setSteps([]);
@@ -379,6 +414,7 @@ export function App(): JSX.Element {
       evidence: () => (view.kind === 'results' ? view.evidence : safeEvidence(raw)),
       finish: async (name: keyof typeof DEMO_FITS = 'rosa') => {
         window.clearTimeout(closingTimer.current);
+        closingGen.current++;
         const key: keyof typeof DEMO_FITS = name in DEMO_FITS ? name : 'rosa';
         const fit: FitProfile = { ...(JSON.parse(JSON.stringify(DEMO_FITS[key])) as FitProfile), createdAt: new Date().toISOString() };
         const evidence = demoEvidence(key);
@@ -409,6 +445,11 @@ export function App(): JSX.Element {
           onRetake={retake}
           onDone={() => void closeThisTab()}
           reader={reader}
+          readerJob={readerJob}
+          onReaderPoints={(next) => {
+            setReader(next);
+            void saveReader(next);
+          }}
           onReader={openAi}
         />
       </div>
@@ -421,9 +462,18 @@ export function App(): JSX.Element {
   let body: JSX.Element;
   if (view.kind === 'welcome') {
     body = <Welcome onStart={start} onSkip={() => void skipAll()} />;
+  } else if (view.kind === 'task' && view.step === 'context') {
+    body = (
+      <ContextTask
+        key="context"
+        onImport={startReaderImport}
+        onDone={() => stepDone('context', { trials: 1 })}
+        onSkip={() => skipStep('context')}
+      />
+    );
   } else if (view.kind === 'task') {
-    const Task = TASKS[view.step];
-    const step = view.step;
+    const step = view.step as Exclude<StepId, 'context'>;
+    const Task = TASKS[step];
     body = (
       <Task
         key={step}

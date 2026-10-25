@@ -852,7 +852,7 @@ function readingBelief(ctx: Ctx): DimensionBelief {
   const dim: FitDimension = 'reading_support';
   const lock = lockFor(ctx.store, dim, ctx.base);
   if (lock) return lockedBelief(dim, lock, 'You chose more space between lines on every site.', 'You turned reading help off.', ctx);
-  return belief(dim, PASSIVE.priorP, null, 'default', 'none', 'Explain is there when you select a passage.', [], ctx);
+  return belief(dim, PASSIVE.priorP, null, 'default', 'none', 'Line spacing stays as each site sets it.', [], ctx);
 }
 
 /**

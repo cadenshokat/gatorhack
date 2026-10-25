@@ -122,7 +122,6 @@ function stateFor(mode: Mode): EngineState {
     calm: { open: false, loading: false, spec: null, source: null, aiReady: false, redesign: null, visual: null },
     struggle: { latest: null, history: [], waiting: [], offers: [] },
     toasts: [],
-    explain: { open: false, loading: false, anchor: null, original: null, result: null, error: null },
     showingOriginal: false,
     overlays: [],
     ai: 'on',
@@ -165,8 +164,6 @@ const api: EngineApi = {
   acceptOffer: () => {},
   dismissOffer: () => {},
   dismissToast: () => {},
-  explainSelection: async () => {},
-  closeExplain: () => {},
   openFitting: () => {},
   restoreOverlay: () => {},
   adjustColumn: () => {},
@@ -175,6 +172,7 @@ const api: EngineApi = {
   showOriginalWords: () => {},
   toggleParagraph: () => {},
   rewordFor: () => null,
+  compose: () => {},
 };
 
 const pageCss = `

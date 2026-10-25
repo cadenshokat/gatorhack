@@ -26,7 +26,6 @@ export const LLM_TIMEOUT_MS = num('LLM_TIMEOUT_MS', 12_000);
 /** After this, the candidate wave is judged with whatever has arrived (at least one usable candidate). */
 export const LAYOUT_WAVE_MS = num('LAYOUT_WAVE_MS', 8_000);
 export const DEEP_TIMEOUT_MS = num('DEEP_TIMEOUT_MS', 40_000);
-export const EXPLAIN_TIMEOUT_MS = num('EXPLAIN_TIMEOUT_MS', 12_000);
 /** Background deep layout job (gpt-6.1-sol) cached for the next visit. Off by default (up to $0.08 a page); WEBABLE_DEEP=1 turns it on. */
 export const DEEP_ENABLED = process.env.WEBABLE_DEEP === '1';
 /** After OpenAI says "no credits" (or rejects the key), AI stays off this long, then is tried again. */
@@ -37,7 +36,7 @@ export const DEEP_CACHE_TTL_MS = num('DEEP_CACHE_TTL_MS', 6 * 60 * 60_000);
 export const REDESIGN_CACHE_TTL_MS = num('REDESIGN_CACHE_TTL_MS', 30 * 60_000);
 /**
  * Daily cap on generative spend (OpenAI), per local calendar day. Past it, AI is off until midnight: layouts are
- * judged from the local candidates and Explain says it cannot write a plain version. Jev spend is not counted here.
+ * judged from the local candidates and pages keep their own words. Jev spend is not counted here.
  */
 export const OPENAI_BUDGET_USD = num('OPENAI_BUDGET_USD', 5);
 /** 'priority' is OpenAI's Fast tier (measured 3.4 s vs 5.0 s p50 for gpt-6-sol). */
@@ -45,8 +44,6 @@ export const OPENAI_SERVICE_TIER: 'priority' | 'default' = process.env.OPENAI_SE
 
 /** Body limit for every request (screenshots for the visual check are the largest). */
 export const BODY_LIMIT_BYTES = 8 * 1024 * 1024;
-/** Passage limit for "Explain this" (characters, after redaction). */
-export const EXPLAIN_MAX_CHARS = 2_000;
 
 export function jevKey(): string | null {
   const k = process.env.TYPESAFE_API_KEY;
@@ -62,3 +59,5 @@ export function openAiKey(): string | null {
 export const READER_TIMEOUT_MS = num('READER_TIMEOUT_MS', 25_000);
 /** Round 9: one paragraph rewrite (REWORD_MODEL); the extension shows the page's own words when it is late. */
 export const REWORD_TIMEOUT_MS = num('REWORD_TIMEOUT_MS', 8_000);
+/** Round 10: one group laid out as components (COMPOSE_MODEL); the WebAble page keeps the page's own words when late. */
+export const COMPOSE_TIMEOUT_MS = num('COMPOSE_TIMEOUT_MS', 8_000);

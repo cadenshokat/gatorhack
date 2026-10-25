@@ -4,13 +4,15 @@
 
 import type { BrowserSettings, InputClass } from '@webable/core';
 
-export type StepId = 'size' | 'truefalse' | 'faint' | 'lightdark' | 'dots' | 'find';
-export type PartId = 'reading' | 'pointing' | 'finding';
+export type StepId = 'size' | 'truefalse' | 'faint' | 'lightdark' | 'dots' | 'find' | 'context';
+export type PartId = 'reading' | 'pointing' | 'finding' | 'context';
 
 export const PARTS: Array<{ id: PartId; label: string }> = [
   { id: 'reading', label: 'Reading' },
   { id: 'pointing', label: 'Pointing' },
   { id: 'finding', label: 'Finding' },
+  // Round 10: the last step, bringing in what the person's AI assistant knows about how they like things explained.
+  { id: 'context', label: 'Your context' },
 ];
 
 export const PART_OF: Record<StepId, PartId> = {
@@ -20,9 +22,10 @@ export const PART_OF: Record<StepId, PartId> = {
   lightdark: 'reading',
   dots: 'pointing',
   find: 'finding',
+  context: 'context',
 };
 
-const ORDER: StepId[] = ['size', 'truefalse', 'faint', 'lightdark', 'dots', 'find'];
+const ORDER: StepId[] = ['size', 'truefalse', 'faint', 'lightdark', 'dots', 'find', 'context'];
 
 /**
  * The steps this person does. Keyboard users skip the dots (WebAble never changes keyboard use). With the system's own
@@ -89,6 +92,13 @@ export function wordsFor(step: StepId, input: InputClass): StepWords {
         title: 'Now, some real websites',
         todo: 'We’ll open three websites, one at a time. On each one, find what we ask for and click it.',
         success: 'WebAble stays off while you do this, so we see the web as it really is.',
+      };
+    case 'context':
+      // Round 10: the person's AI answer, read while "You're all set" shows; what WebAble took from it is on Results.
+      return {
+        title: 'Bring your context',
+        todo: 'Ask the AI you use most one question, then paste its answer here.',
+        success: 'Its answer tells WebAble how you like things explained. No AI? Skip this one.',
       };
   }
 }

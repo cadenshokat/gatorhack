@@ -1,7 +1,7 @@
 // Fixtures for the live check: the fictional Alderra Pharmacy refill page as the extension would describe it
 // (structure only, personal details already replaced). Written for this build; not from any real site.
 import type {
-  ExplainRequest, FitSummaryForModel, OverlayButtonEvidence, OverlayEvidence, PageDigest, PageOutline, StruggleSignals,
+  FitSummaryForModel, OverlayButtonEvidence, OverlayEvidence, PageDigest, PageOutline, StruggleSignals,
   VisualVerifyRequest,
 } from '@webable/core';
 
@@ -123,13 +123,6 @@ export const FIXTURE_FIT: FitSummaryForModel = {
   structure_level: 2,
   motion: 'reduce',
   polarity: 'none',
-};
-
-/** The demo page's authorization fine print (fictional). */
-export const FIXTURE_PASSAGE: ExplainRequest = {
-  pageKind: 'form',
-  passage:
-    'By selecting Confirm refill, you authorize the pharmacy to bill your insurance on file. Your copay may differ from the estimate shown. Refills of controlled substances may require pharmacist review and can be delayed up to 1 business day. Orders placed after 6 PM are processed the next business day. Prices shown are estimates and do not include applicable taxes. Generic substitution may occur unless your prescriber indicates otherwise.',
 };
 
 /** The demo's chat panel that opens by itself at 4 s, with its own buttons (structure only). */

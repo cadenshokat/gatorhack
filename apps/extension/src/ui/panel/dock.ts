@@ -61,17 +61,15 @@ export function planDock(i: DockInput): DockPlan {
 export interface DockHeights {
   /** Max height of the column above the pill (items or panel). */
   aboveMax: number;
-  /** Show the pill under the open panel (false on very short screens: the panel has its own Close). */
+  /** The launcher remains visible, including under an open panel on short screens. */
   pillWithPanel: boolean;
 }
 
 /** How tall the parts above the pill may grow, given where the dock's bottom is. */
-export function dockHeights(vh: number, bottom: number, margin: number, pillH: number, gap: number, panelOpen: boolean): DockHeights {
+export function dockHeights(vh: number, bottom: number, margin: number, pillH: number, gap: number, _panelOpen: boolean): DockHeights {
   const room = vh - bottom - margin;
   const withPill = room - pillH - gap;
-  // The panel needs about 300 design px to be useful; below that it takes the pill's place.
-  const pillWithPanel = !panelOpen || withPill >= 300;
-  return { aboveMax: Math.max(0, pillWithPanel ? withPill : room), pillWithPanel };
+  return { aboveMax: Math.max(0, withPill), pillWithPanel: true };
 }
 
 /**

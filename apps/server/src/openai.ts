@@ -1,25 +1,25 @@
 // OpenAI Responses API: layout candidates (LAYOUT_MODEL, no reasoning, 3 stances in parallel, strict FitSpec
-// schema, 12 s), an optional background deep layout (DEEP_LAYOUT_MODEL) cached for the next visit, and
-// plain-language explanations (EXPLAIN_MODEL). The models only ever return data that we validate.
+// schema, 12 s), an optional background deep layout (DEEP_LAYOUT_MODEL) cached for the next visit, the reader and
+// the paragraph rewrites (round 9), and the WebAble page's components (round 10). The models only ever return data
+// that we validate.
 // When OpenAI says the account has no credits (or rejects the key), every call is skipped for AI_BLOCK_MS and a
 // one-token probe checks again when the block ends (ai.ts), so the product picks AI up again on its own.
 import OpenAI from 'openai';
-import { DEEP_LAYOUT_MODEL, EXPLAIN_MODEL, LAYOUT_MODEL, READER_MODEL, REWORD_MODEL } from '@webable/core';
-import type { ReaderProfile, RewordKind, RewordOut, RewordPage } from '@webable/core';
+import { COMPOSE_MODEL, DEEP_LAYOUT_MODEL, EXPLAIN_MODEL, LAYOUT_MODEL, READER_MODEL, REWORD_MODEL } from '@webable/core';
+import type { ComposeGroupIn, ReaderProfile, RewordKind, RewordOut, RewordPage } from '@webable/core';
 import { aiBlockedUntil, aiState, aiStatus, classifyOpenAiFailure, markAiBlocked, markAiWorking } from './ai';
 import {
-  AI_PROBE_MODEL, DEEP_CACHE_TTL_MS, DEEP_ENABLED, DEEP_TIMEOUT_MS, EXPLAIN_TIMEOUT_MS, LAYOUT_WAVE_MS, LLM_TIMEOUT_MS,
-  OPENAI_SERVICE_TIER, READER_TIMEOUT_MS, REWORD_TIMEOUT_MS, openAiKey,
+  AI_PROBE_MODEL, DEEP_CACHE_TTL_MS, DEEP_ENABLED, DEEP_TIMEOUT_MS, LAYOUT_WAVE_MS, LLM_TIMEOUT_MS,
+  COMPOSE_TIMEOUT_MS, OPENAI_SERVICE_TIER, READER_TIMEOUT_MS, REWORD_TIMEOUT_MS, openAiKey,
 } from './config';
 import { TtlLru } from './lru';
 import {
-  EXPLAIN_INSTRUCTIONS, EXPLAIN_SCHEMA, LAYOUT_INSTRUCTIONS, READER_INSTRUCTIONS, READER_POINT_KINDS, READER_SCHEMA,
-  REWORD_INSTRUCTIONS, REWORD_SCHEMA, layoutInput, rewordInput, type ExplainOutput, type ReaderOutput, type Stance,
+  LAYOUT_INSTRUCTIONS, READER_INSTRUCTIONS, READER_POINT_KINDS, READER_SCHEMA,
+  REWORD_INSTRUCTIONS, REWORD_SCHEMA, layoutInput, rewordInput, type ReaderOutput, type Stance,
+  COMPOSE_INSTRUCTIONS, COMPOSE_SCHEMA, composeInput, type ComposeOutput,
 } from './prompts';
 import { recordOpenAiCall, recordOpenAiError } from './stats';
 import { errorMessage, log, round } from './util';
-
-export const EXPLAIN_FALLBACK_MODEL = 'gpt-6-luna';
 
 /** $ per 1M tokens: input, cached input, output (standard tier). Fast (priority) costs 2x (2.5x for gpt-5.5). */
 const PRICE: Record<string, [number, number, number]> = {
@@ -372,54 +372,6 @@ export function startDeepLayout(key: string, fitText: string, outlineText: strin
 }
 
 /* ------------------------------------------------------------------ */
-/* Explain this                                                        */
-/* ------------------------------------------------------------------ */
-
-function asExplainOutput(data: unknown): ExplainOutput | null {
-  if (!data || typeof data !== 'object') return null;
-  const d = data as Record<string, unknown>;
-  const strings = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x.trim() !== '') : []);
-  const plain = strings(d.plain).map((s) => s.trim());
-  if (plain.length === 0) return null;
-  const terms = Array.isArray(d.terms)
-    ? d.terms
-        .filter((t): t is { term: string; meaning: string } => !!t && typeof t === 'object' && typeof (t as { term?: unknown }).term === 'string' && typeof (t as { meaning?: unknown }).meaning === 'string')
-        .map((t) => ({ term: t.term.trim(), meaning: t.meaning.trim() }))
-    : [];
-  return { plain, terms, kept: strings(d.kept), unclear: strings(d.unclear) };
-}
-
-/** EXPLAIN_MODEL first, then the cheap fallback. The model sees only the passage. */
-export async function explainPassage(passage: string): Promise<LlmResult<ExplainOutput>> {
-  let spent = 0;
-  let last: LlmFail | null = null;
-  for (const model of [EXPLAIN_MODEL, EXPLAIN_FALLBACK_MODEL]) {
-    const r = await respondJson({
-      model,
-      instructions: EXPLAIN_INSTRUCTIONS,
-      input: `PASSAGE\n${passage}`,
-      schemaName: 'explain',
-      schema: EXPLAIN_SCHEMA,
-      maxOutputTokens: 1_000,
-      timeoutMs: EXPLAIN_TIMEOUT_MS,
-      cacheKey: 'wa-explain-v2',
-      tag: 'explain',
-    });
-    spent += r.costUsd;
-    if (r.ok) {
-      const out = asExplainOutput(r.data);
-      if (out) return { ...r, data: out, costUsd: spent };
-      last = { ok: false, model, ms: r.ms, costUsd: spent, error: 'bad_shape' };
-    } else {
-      last = { ...r, costUsd: spent };
-      // The account cannot answer at all: the fallback model would fail the same way.
-      if (UNAVAILABLE_ERRORS.has(r.error)) break;
-    }
-  }
-  return last ?? { ok: false, model: EXPLAIN_MODEL, ms: 0, costUsd: spent, error: 'unknown' };
-}
-
-/* ------------------------------------------------------------------ */
 /* Round 9: the reader (from the person's AI answer) and the rewriter   */
 /* ------------------------------------------------------------------ */
 
@@ -503,4 +455,27 @@ export async function rewordParagraph(
   if (!r.ok) return r;
   const out = asRewordOut(r.data);
   return out ? { ...r, data: out } : { ok: false, model: r.model, ms: r.ms, costUsd: r.costUsd, error: 'bad_shape' };
+}
+
+/** COMPOSE_MODEL lays out one group as blocks (data only). `retry` names what was wrong with the last try. */
+export async function composeGroup(
+  brief: string, leaning: string, level: ReaderProfile['level'], page: RewordPage, group: ComposeGroupIn, retry?: string,
+): Promise<LlmResult<ComposeOutput>> {
+  const r = await respondJson({
+    model: COMPOSE_MODEL,
+    instructions: COMPOSE_INSTRUCTIONS,
+    input: composeInput(brief, leaning, level, page, group, retry),
+    schemaName: 'compose',
+    schema: COMPOSE_SCHEMA,
+    // Low effort, as round 9's writer: plainer wording and better choices than none for a few hundred ms.
+    effort: 'low',
+    maxOutputTokens: 4_000,
+    timeoutMs: COMPOSE_TIMEOUT_MS,
+    cacheKey: 'wa-compose-v1',
+    tag: 'compose',
+  });
+  if (!r.ok) return r;
+  const d = r.data as Record<string, unknown> | null;
+  if (!d || typeof d !== 'object' || !Array.isArray(d.blocks)) return { ok: false, model: r.model, ms: r.ms, costUsd: r.costUsd, error: 'bad_shape' };
+  return { ...r, data: { keep_page_text: d.keep_page_text === true, blocks: d.blocks } };
 }

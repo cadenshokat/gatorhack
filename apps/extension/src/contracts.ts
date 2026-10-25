@@ -2,9 +2,9 @@
 // The engine owns all state; the UI subscribes and calls the actions below.
 
 import type {
-  CheckResult, ElementDecision, ExplainResult, FitProfile, FitSpec, HealthStatus, LedgerEntry, Offer, OfferKind,
+  CheckResult, ElementDecision, FitProfile, FitSpec, HealthStatus, LedgerEntry, Offer, OfferKind,
   OpRecord, OverlayAction, PageDigest, PageOutline, PageUnderstanding, PassiveFitState, FitDimension, RedesignResult, Settings, StruggleJudgment,
-  StruggleKind, VisualVerdict, RewordKind,
+  StruggleKind, VisualVerdict, RewordKind, ComposeBlock, ComposeGroupIn,
 } from '@webable/core';
 
 /** Round 9: one piece of a rewritten paragraph. Links are the page's own anchors, live in the page. */
@@ -43,6 +43,8 @@ export interface Toast {
 
 export interface EngineState {
   phase: 'idle' | 'reading' | 'tailored' | 'understood' | 'calm' | 'error';
+  /** Content requests and page changes still in progress (may overlap). */
+  pendingWork?: number;
   fit: FitProfile | null;
   settings: Settings;
   startedAt: number; // performance.now() at boot
@@ -80,14 +82,6 @@ export interface EngineState {
     offers: Offer[]; // at most one is shown at a time
   };
   toasts: Toast[];
-  explain: {
-    open: boolean;
-    loading: boolean;
-    anchor: { x: number; y: number; w: number; h: number } | null;
-    original: string | null;
-    result: ExplainResult | null;
-    error: string | null;
-  };
   showingOriginal: boolean;
   overlays: OverlayAction[];
   ai: HealthStatus['ai'];
@@ -118,6 +112,25 @@ export interface EngineState {
     /** Bumps whenever any paragraph changes, so the simplified page re-renders. */
     version: number;
   };
+  /** Round 10: the WebAble page's groups as components (keyed by ComposeGroupIn.id). */
+  compose?: {
+    status: 'idle' | 'working' | 'done';
+    groups: Record<string, ComposeGroupState>;
+    /** Bumps whenever a group changes, so the WebAble page re-renders. */
+    version: number;
+  };
+}
+
+/** Round 10: one group of the WebAble page. 'waiting' and 'kept'/'failed' render the page's own blocks. */
+export interface ComposeGroupState {
+  id: string;
+  state: 'waiting' | 'ready' | 'kept' | 'failed';
+  blocks: ComposeBlock[] | null;
+  /** Jev's probability that the layout is easier for this person than the page's own text. */
+  better: number | null;
+  reason?: string;
+  /** performance.now() when it became ready (the view settles it in once). */
+  readyAt?: number;
 }
 
 export interface EngineApi {
@@ -137,8 +150,6 @@ export interface EngineApi {
   acceptOffer(kind: OfferKind): void;
   dismissOffer(kind: OfferKind, forever: boolean): void;
   dismissToast(id: string): void;
-  explainSelection(text: string, anchor: { x: number; y: number; w: number; h: number }): Promise<void>;
-  closeExplain(): void;
   openFitting(): void;
   /** Undo one overlay action (restores the overlay; remembers 'leave' for this site and kind). */
   restoreOverlay(id: string): void;
@@ -154,4 +165,9 @@ export interface EngineApi {
   toggleParagraph(id: string): void;
   /** Round 9: the rewrite for the paragraph that contains this node, or null (render the page's own words). */
   rewordFor(node: Node): RewordView | null;
+  /**
+   * Round 10: ask for these groups as components. Array order is priority (first screen first). Groups already
+   * asked for (same id) are not asked again; results arrive in state.compose.groups.
+   */
+  compose(groups: ComposeGroupIn[]): void;
 }

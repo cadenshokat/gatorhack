@@ -50,7 +50,7 @@ describe('words', () => {
   it('leaves out the dots for keyboard users and the colour steps under system colours', () => {
     expect(planSteps('keyboard', null)).not.toContain('dots');
     const forced = { forcedColors: true } as Parameters<typeof planSteps>[1];
-    expect(planSteps('mouse', forced)).toEqual(['size', 'truefalse', 'dots', 'find']);
+    expect(planSteps('mouse', forced)).toEqual(['size', 'truefalse', 'dots', 'find', 'context']);
   });
 });
 

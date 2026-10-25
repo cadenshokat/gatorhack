@@ -90,6 +90,16 @@ ${C} .wa-rw-mark:focus-visible{outline-offset:0}
   ${C} .wa-rw:not([data-rw=original])>:not(.wa-rw-mark){animation:wa-rw-in .2s cubic-bezier(.2,.8,.2,1) both}
 }
 @keyframes wa-rw-in{from{opacity:0}to{opacity:1}}
+/* Round 10: a group of the page's text laid out for the person. Its box spaces its words like the column around it
+   (the same gap) and carries round 9's thin mark at its left for the whole group. */
+${C} .wa-cg{position:relative;display:flex;flex-direction:column;gap:inherit;min-width:0}
+${C} .wa-cg>*{min-width:0}
+/* The page's own emphasis, in the view's font: bold one step above body text, italics as italics. Headings are never
+   lighter than a bold word (a bold "Note:" never outweighs the heading above it); h4 is body-sized, so it is bold. */
+${C}{--wa-w-strong:min(800,calc(var(--wa-w-body) + 200))}
+${C} strong{font-weight:var(--wa-w-strong)}
+${C} em{font-style:italic}
+${C} :is(.wa-h-page,.wa-h-section,.wa-h-title,h4.wa-label){font-weight:max(var(--wa-w-head),var(--wa-w-strong))}
 
 /* The closing "Original page" sits on the column's right edge, like the top bar's. */
 ${C} .wa-foot .wa-btn--quiet{margin-inline-end:calc(-1 * var(--wa-pill-pad))}

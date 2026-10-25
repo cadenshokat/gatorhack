@@ -6,7 +6,6 @@
 // - Fit and settings from chrome.storage.local; TabReport per tab in chrome.storage.session (`report:<tabId>`).
 // - Visual verify: captureVisibleTab PNG, downscaled so the long side is <= 1568 px, 'before' kept per tab,
 //   both posted on 'after'.
-// - Explain passages are redacted again here (core redactText) before they leave the browser.
 // - `globalThis.__webable = { setFit, getReport, setSettings }` for the eval harness.
 // - Round 4 (P): the passive fit. What the person already chose (Chrome's font sizes and zoom, read here; the OS
 //   preferences, reported by pages with `getPassive`) and what happened on pages (`passiveEvidence`) become one belief
@@ -15,13 +14,15 @@
 //   page can tell a held zoom from WebAble's own. `seedDemoHistory()` / `resetPassive()` for demos.
 // - Round 9: the person's AI answer goes to `/v1/reader` once; the points come back and are kept as `reader` in
 //   chrome.storage.local (the answer is not). Paragraph calls get the saved reader added here, points switched off left out.
+// - Round 10: `compose` posts a page's groups to `/v1/compose` with the saved reader (points switched off left out), or
+//   null when there is none (laid out for a general reader).
 
 import {
   AI_ANSWER_MAX_CHARS, AI_ANSWER_MIN_CHARS, DEFAULT_SETTINGS, DEMO_FITS, SERVER_ORIGIN, addEvidence, applyFeedback, buildPassiveState,
-  demoHistory, emptyPassiveStore, isPassiveStore, redactText, siteName, stillSensitive, withSettings,
+  demoHistory, emptyPassiveStore, isPassiveStore, siteName, withSettings,
 } from '@webable/core';
 import type {
-  AttributionAnswer, BrowserSettings, ExplainResult, FitDimension, FitProfile, OverlayCloseResult, PageUnderstanding,
+  AttributionAnswer, BrowserSettings, ComposeResponse, FitDimension, FitProfile, OverlayCloseResult, PageUnderstanding,
   PassiveFitState, PassiveRecord, PassiveStore, ReaderProfile, RedesignResult, RewordScoreResult, RewordWriteResult, Settings,
   StruggleJudgment, TabReport, VisualVerdict, VisualVerifyRequest,
 } from '@webable/core';
@@ -120,6 +121,14 @@ async function readerToSend(): Promise<ReaderProfile> {
   const points = reader.points.filter((p) => p.on);
   if (!points.length) throw new BgError('refused', 'Every point from the AI answer is switched off');
   return { ...reader, points };
+}
+
+/** Round 10: the same, or null when there is no answer or every point is off (the page is laid out for anyone). */
+async function readerOrNull(): Promise<ReaderProfile | null> {
+  const reader = await getReader();
+  if (!reader) return null;
+  const points = reader.points.filter((p) => p.on);
+  return points.length ? { ...reader, points } : null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -550,23 +559,6 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
       return post<StruggleJudgment>('/v1/struggle', { signals: req.signals }, 6000);
     case 'redesign':
       return post<RedesignResult>('/v1/redesign', { outline: stripOutlineData(req.outline), fit: req.fit, roles: req.roles }, 22000);
-    case 'explain': {
-      // Second redaction pass (the server runs a third); fail closed when redaction is unavailable.
-      let passage: string;
-      try {
-        passage = redactText(req.req.passage);
-      } catch {
-        throw new BgError('refused', 'Personal details could not be checked, so the passage was not sent.');
-      }
-      let sensitive = false;
-      try {
-        sensitive = stillSensitive(passage);
-      } catch {
-        sensitive = true;
-      }
-      if (sensitive) throw new BgError('refused', 'This passage has personal details that could not be removed, so it was not sent.');
-      return post<ExplainResult>('/v1/explain', { req: { passage, pageKind: req.req.pageKind } }, 22000);
-    }
     case 'visualVerify': {
       const t = needTab();
       const windowId = sender.tab?.windowId;
@@ -694,6 +686,12 @@ async function handle(req: ExtRequest, sender: chrome.runtime.MessageSender): Pr
       const reader = await readerToSend();
       const items = (Array.isArray(req.req.items) ? req.req.items : []).slice(0, 8);
       return post<RewordWriteResult>('/v1/reword/write', { req: { ...req.req, items, reader } }, 25000);
+    }
+    case 'compose': {
+      // Round 10: groups of the WebAble page laid out for the person (at most 4 a call).
+      const reader = await readerOrNull();
+      const groups = (Array.isArray(req.req.groups) ? req.req.groups : []).slice(0, 4);
+      return post<ComposeResponse>('/v1/compose', { req: { ...req.req, groups, reader } }, 20000);
     }
     default: {
       const never: never = req;

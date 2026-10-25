@@ -3,6 +3,7 @@
 import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import type { Settings } from '@webable/core';
+import { Logo } from '../../src/ui/Logo';
 import { activeTab, mergeSettings, readSettings, siteLabel, writeSettings, type ActiveTab } from './data';
 import './popup.css';
 
@@ -76,7 +77,7 @@ function Popup() {
     <main class="p">
       <header class="p-head">
         <span class="mark" data-on={on ? 'true' : 'false'} aria-hidden="true">
-          <i />
+          <Logo />
         </span>
         <h1>WebAble</h1>
         <Switch checked={on} tone="accent" label="WebAble" disabled={!settings} onChange={(v) => update({ enabled: v })} />

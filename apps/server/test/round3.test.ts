@@ -1,4 +1,4 @@
-// Round 3 package S: AI back on. The daily spend cap, Explain's redaction round trip, and model layouts repaired
+// Round 3 package S: AI back on. The daily spend cap and model layouts repaired
 // with Jev's roles. No network: no Jev or OpenAI call is made here.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { indexOutline, placementMap } from '@webable/core';
@@ -6,8 +6,7 @@ import type { FitSpec } from '@webable/core';
 import { aiSentence, aiState, resetAiState } from '../src/ai';
 import { createApp } from '../src/app';
 import { OPENAI_BUDGET_USD } from '../src/config';
-import { EXPLAIN_INSTRUCTIONS, LAYOUT_INSTRUCTIONS } from '../src/prompts';
-import { mentionsRedaction } from '../src/routes/explain';
+import { LAYOUT_INSTRUCTIONS } from '../src/prompts';
 import { structureKey, toCandidate } from '../src/routes/redesign';
 import { dayKey, openAiSpentTodayUsd, recordOpenAiCall, resetDailySpend } from '../src/stats';
 import { ALDERRA_LIVE, ALDERRA_LIVE_ROLES } from '../../../packages/core/test/c/live-fixtures';
@@ -46,17 +45,6 @@ describe('daily budget', () => {
     recordOpenAiCall({ model: 'gpt-6-sol', inputTokens: 1, cachedTokens: 0, outputTokens: 1, costUsd: OPENAI_BUDGET_USD, ms: 10 });
     expect(openAiSpentTodayUsd(tomorrow)).toBe(0);
     expect(aiState(tomorrow).status).toBe('on');
-  });
-});
-
-describe('explain', () => {
-  it('drops "unclear" notes about our own placeholders, keeps real ones', () => {
-    expect(mentionsRedaction('[name] placeholders hide the exact agency and state names.')).toBe(true);
-    expect(mentionsRedaction('The date was removed (redacted), so the deadline is unclear.')).toBe(true);
-    expect(mentionsRedaction('It does not say which store processes the order.')).toBe(false);
-  });
-  it('tells the writer never to mention placeholders', () => {
-    expect(EXPLAIN_INSTRUCTIONS).toMatch(/never list them in unclear/i);
   });
 });
 

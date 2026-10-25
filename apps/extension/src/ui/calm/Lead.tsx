@@ -2,7 +2,7 @@
 // orientation line in the page's own words, one pinned sentence when it carries a time, money or a rule, and the rest
 // of the page's intro behind "About this page". Nothing here is written by us or by a model.
 import type { JSX } from 'preact';
-import { Blocks, InlineLink, Picture } from './Blocks';
+import { Blocks, InlineLink, Picture, renderParts } from './Blocks';
 import { useCalm } from './context';
 import { InlineDisclosure } from './Disclosure';
 import { Speaker } from './icons';
@@ -11,15 +11,7 @@ import type { Inline } from './model';
 import type { ArticleHead, Lead } from './plan';
 
 function Parts({ parts }: { parts: Inline[] }): JSX.Element {
-  return (
-    <>
-      {parts.map((p, i) => {
-        if (p.t === 'text') return <span key={i}>{p.text}</span>;
-        if (p.t === 'br') return <br key={i} />;
-        return <InlineLink key={i} p={p} />;
-      })}
-    </>
-  );
+  return <>{renderParts(parts)}</>;
 }
 
 export function LeadBand({ lead, small = false }: { lead: Lead; small?: boolean }): JSX.Element {

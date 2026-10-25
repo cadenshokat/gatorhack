@@ -1,9 +1,11 @@
 // Owner: C, D. What every part of the Calm view needs: the engine, the fit's structure limits and the proxy actions.
 import { createContext } from 'preact';
 import { useContext } from 'preact/hooks';
-import type { EngineApi } from '../../contracts';
+import type { EngineApi, EngineState } from '../../contracts';
+import type { Seg } from './compose/composeGroups';
 import type { Marks } from './markers';
 import type { PageKind } from './plan';
+import type { SettleCtl } from './settle';
 
 export interface CalmCtx {
   api: EngineApi;
@@ -11,7 +13,6 @@ export interface CalmCtx {
   splitN: number;
   /** Records per group in grouped lists. */
   groupSize: number;
-  explainOn: boolean;
   reduceMotion: boolean;
   /** Press an original control (buttons, links, clickable divs). */
   click(el: Element): void;
@@ -38,6 +39,14 @@ export interface CalmCtx {
   marks?: Marks;
   /** Round 8: the live dot may pulse (moving things are fine for this person and the system allows motion). */
   pulse?: boolean;
+  /** Round 10: each group's state from the engine (state.compose), keyed by group id. */
+  compose?: EngineState['compose'];
+  /** Round 10: the laid-out parts' bodies as groups (by PlanSection.key); parts not listed draw as before. */
+  segments?: Map<string, Seg[]>;
+  /** Round 10: group ids in page order (groups settle in top to bottom). */
+  groupOrder?: string[];
+  /** Round 10: when a ready group may take the place of the page's own words. */
+  settle?: SettleCtl;
 }
 
 /** A results page by its address (the layout may not say so): a search engine's, or a site's own /search?q=… page. */

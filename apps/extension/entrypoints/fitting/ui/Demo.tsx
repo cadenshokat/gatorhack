@@ -122,6 +122,31 @@ function FindDemo(): JSX.Element {
   );
 }
 
+/** Round 10: a chat with the person's AI (the question, its answer), then the answer pasted into WebAble. */
+function ContextDemo(): JSX.Element {
+  return (
+    <div class="dm-browser dm-chat">
+      <div class="dm-browser-bar">
+        <i />
+        <i />
+        <i />
+        <span class="dm-browser-url" />
+      </div>
+      <div class="dm-browser-page dm-chat-page">
+        <span class="dm-bubble dm-bubble-me">
+          <Lines widths={[100, 64]} />
+        </span>
+        <span class="dm-bubble dm-bubble-ai">
+          <Lines widths={[100, 94, 100, 58]} />
+        </span>
+      </div>
+      <div class="dm-taskcard">
+        Paste its answer into <b>WebAble</b>
+      </div>
+    </div>
+  );
+}
+
 const DEMOS: Record<StepId, () => JSX.Element> = {
   size: SizeDemo,
   truefalse: TrueFalseDemo,
@@ -129,6 +154,7 @@ const DEMOS: Record<StepId, () => JSX.Element> = {
   lightdark: LightDarkDemo,
   dots: DotsDemo,
   find: FindDemo,
+  context: ContextDemo,
 };
 
 export function Demo(props: { step: StepId }): JSX.Element {

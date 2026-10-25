@@ -5,7 +5,6 @@ import { h, render } from 'preact';
 import type { EngineApi } from '../contracts';
 import { App } from './App';
 import { baseCss } from './base.css';
-import { explainCss } from './explain/explain.css';
 import { lensCss } from './lens/lens.css';
 import { offersCss } from './offers/offers.css';
 import { rootCss } from './panel/panel.css';
@@ -109,7 +108,7 @@ export function mountUi(api: EngineApi): () => void {
   };
   updateTokens();
 
-  const chromeCss = [rootCss, CALM_HOST_CSS, lensCss, offersCss, explainCss].join('\n');
+  const chromeCss = [rootCss, CALM_HOST_CSS, lensCss, offersCss].join('\n');
   adopt(shadow, [tokensSheet, sheet(chromeCss)], chromeCss);
 
   const layer = document.createElement('div');

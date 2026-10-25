@@ -2,8 +2,11 @@
 // visible word or control from the placed part is dropped.
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
-import { Blocks, BlockView, ControlView, FlowView, ImageView, Picture, PillButton, ResultItem, TOOL_RE, Thumb, ToolIcon, isResultCard, keepImage } from '../Blocks';
+import { Blocks, BlockView, ControlView, FlowView, ImageView, Picture, PillButton, ResultItem, Thumb, ToolIcon, isResultCard, keepImage } from '../Blocks';
+import { BYLINE_RE } from '../compose/composeGroups';
 import { useCalm } from '../context';
+import { Segments } from '../Grouped';
+import { readingParts } from '../grouping';
 import * as I from '../icons';
 import {
   type Block, type CardLinkBlock, type ControlBlock, type FlowBlock, type ImageBlock, PRICE_RE,
@@ -467,17 +470,22 @@ function PartView({ pt, rows }: { pt: PlanPart; rows: boolean }): JSX.Element {
 }
 
 export function Generic({ p, variant }: { p: PlanSection; variant?: 'default' | 'quiet' | 'prose' }): JSX.Element {
+  const ctx = useCalm();
   if (p.parts) return <Parts p={p} />;
+  // Round 10: a plain part's running text in groups, each laid out for the person once it is ready.
+  const segs = p.records ? null : ctx.segments?.get(p.key);
   return (
     <div class="wa-stack">
       <Blocks blocks={p.before} variant={variant} />
-      <Blocks blocks={p.records ? p.records.flat() : p.blocks} variant={variant} />
+      {segs ? (
+        <Segments segs={segs} render={(bs) => <Blocks blocks={bs} variant={variant} />} />
+      ) : (
+        <Blocks blocks={p.records ? p.records.flat() : p.blocks} variant={variant} />
+      )}
       <Blocks blocks={p.after} variant={variant} />
     </div>
   );
 }
-
-const BYLINE_RE = /^(by\s|written by|updated|published|last (updated|reviewed)|reviewed by|medically reviewed)|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+(19|20)\d{2}\b/i;
 
 /**
  * Running text in one reading sheet. The byline and date read in the secondary ink; Print / Save / Listen are quiet
@@ -485,24 +493,19 @@ const BYLINE_RE = /^(by\s|written by|updated|published|last (updated|reviewed)|r
  */
 export function Reading({ p }: { p: PlanSection }): JSX.Element {
   const ctx = useCalm();
-  const all = allBlocks(p);
-  const tools: ControlBlock[] = [];
-  let toc: ControlBlock[] | null = null;
-  const body: Block[] = [];
-  all.forEach((b, i) => {
-    if (b.b === 'control' && TOOL_RE.test(b.text.trim())) {
-      tools.push(b);
-      return;
-    }
-    if (!toc && b.b === 'list' && i < 8) {
-      const links = b.items.map((it) => (it.length === 1 && it[0]!.b === 'control' ? (it[0] as ControlBlock) : null));
-      if (links.length >= 3 && links.every((l) => !!l && !!l.href && l.href.split('#')[0] === location.href.split('#')[0])) {
-        toc = links as ControlBlock[];
-        return;
-      }
-    }
-    body.push(b);
-  });
+  const { tools, toc, body } = readingParts(p);
+  // Round 10: the running text in groups, each laid out for the person once it is ready (the page's own words before).
+  const segs = ctx.segments?.get(p.key);
+  const own = (bs: Block[]): JSX.Element[] =>
+    bs.map((b) =>
+      b.b === 'flow' && b.text.length <= 140 && BYLINE_RE.test(b.text) ? (
+        <p key={b.key} class="wa-p wa-byline">
+          {b.text}
+        </p>
+      ) : (
+        <BlockView key={b.key} b={b} variant="prose" />
+      ),
+    );
   return (
     <div class="wa-sheet">
       <div class="wa-prose">
@@ -520,21 +523,13 @@ export function Reading({ p }: { p: PlanSection }): JSX.Element {
           <div class="wa-stack">
             <h3 class="wa-h-title">On this page</h3>
             <div class="wa-rows">
-              {(toc as ControlBlock[]).map((l) => (
+              {toc.map((l) => (
                 <RowLinkInline key={l.key} b={l} />
               ))}
             </div>
           </div>
         )}
-        {body.map((b) =>
-          b.b === 'flow' && b.text.length <= 140 && BYLINE_RE.test(b.text) ? (
-            <p key={b.key} class="wa-p wa-byline">
-              {b.text}
-            </p>
-          ) : (
-            <BlockView key={b.key} b={b} variant="prose" />
-          ),
-        )}
+        {segs ? <Segments segs={segs} render={own} /> : own(body)}
       </div>
     </div>
   );

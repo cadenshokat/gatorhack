@@ -4,6 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@10.31.0",
   "scripts": {
+    "brand:generate": "pnpm --filter @webable/server exec tsx ../../scripts/brand/generate.ts",
     "dev:server": "pnpm --filter @webable/server dev",
     "dev:ext": "pnpm --filter @webable/extension dev",
     "build": "pnpm -r build",
