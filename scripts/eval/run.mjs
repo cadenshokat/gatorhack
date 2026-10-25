@@ -11,10 +11,12 @@
 //                                      real Chrome at Retina scale (what Caden sees)
 //   pnpm eval --sites all --fit reader demo pages + real sites
 //   pnpm eval --only alderra-refill --headed
-//   pnpm eval --fitting                the fitting flow, every screen, with layout checks
+//   pnpm eval --fitting                the warm-up, every block and the result, with layout checks
 //   pnpm eval --interact               panel, Lens, Explain, offer, Calm steps, Confirm, Original on Alderra
 //   pnpm eval --sites all --interact --fitting   everything into one contact sheet
 //   pnpm eval --check                  page checks only, no extension
+//   pnpm eval --browser chrome --dpr 2 --size 1440x900 --sites real --sites-file scripts/claims/sites-50.json \
+//     --skip lens,calm --no-ai --ext <frozen build>   the 50-site fit rate (docs/CLAIMS.md)
 //
 // It starts the WebAble server for the run if it is not already running, and stops it afterwards.
 import { execFileSync } from 'node:child_process';
@@ -24,7 +26,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { runDemoChecks } from './check-demo.mjs';
 import {
-  DESKTOP_UA, EXT_DIR, ROOT, SERVER_ORIGIN, baseDpr, browserTarget, chromePath, loadCore, loadPlaywright, parseViewport, setBaseDpr, shoot,
+  DESKTOP_UA, EXT_DIR, ROOT, SERVER_ORIGIN, baseDpr, browserTarget, chromePath, dprArgs, loadCore, loadPlaywright, parseViewport, setBaseDpr, shoot,
   sleep, slug, stamp,
 } from './lib/common.mjs';
 import { mainLabelFrom, measureView } from './lib/firstscreen.mjs';
@@ -41,9 +43,11 @@ const HELP = `WebAble eval harness
 
   --sites demo|real|all|none  which sites from scripts/eval/sites.json (default: demo, or none when
                           --fitting / --interact is given without --sites or --only)
+  --sites-file <file>     more sites in the same JSON shape ({ demo: [...], real: [...] }), merged into
+                          sites.json: an entry with the same name replaces it, new ones are added in order
   --only <names>          comma-separated site names, e.g. alderra-refill,drugs-metformin
-  --fitting               also run the fitting flow and screenshot every screen (R1 pressed Larger once)
-  --larger <n>            how many times to press Larger on the first fitting screen (default: 1)
+  --fitting               also run the 70-second warm-up like a person and screenshot every block and the result
+  --larger <n>            how many times to press Bigger on the warm-up's result screen (default: 0)
   --adjust                also press Narrower (Alt+Shift+[), open the panel and press Larger, with a shot each
   --interact              also drive one demo page: panel, Lens, Explain, offer, Calm steps, Confirm, Original
   --interact-site <name>  the page for --interact (default: alderra-refill)
@@ -57,6 +61,10 @@ const HELP = `WebAble eval harness
   --chrome-path <file>    the Google Chrome binary for --browser chrome (default: the system install, or CHROME_PATH)
   --headed                show the browser
   --quick                 do not wait for the AI layout in Calm view
+  --skip <views>          comma-separated views to leave out: task, lens, calm (a Calm view that opens by
+                          itself is still closed before the "after" shot, without waiting or a screenshot)
+  --no-ai                 switch AI layouts and Explain off for the run (no OpenAI spend; Jev still reads)
+  --site-timeout <s>      give up on a site after this many seconds and move on (default: 240)
   --ext <dir>             unpacked extension (default: apps/extension/.output/chrome-mv3)
   --out <dir>             output folder (default: eval-output/<run>)
   --no-server             never start the WebAble server (use one that is already running)
@@ -122,6 +130,10 @@ try {
       dpr: { type: 'string', default: '1' },
       browser: { type: 'string', default: 'chromium' },
       'chrome-path': { type: 'string' },
+      'sites-file': { type: 'string' },
+      skip: { type: 'string', default: '' },
+      ai: { type: 'boolean', default: true },
+      'site-timeout': { type: 'string', default: '240' },
       rerender: { type: 'string' },
       headed: { type: 'boolean', default: false },
       quick: { type: 'boolean', default: false },
@@ -130,7 +142,7 @@ try {
       server: { type: 'boolean', default: true },
       check: { type: 'boolean', default: false },
       fitting: { type: 'boolean', default: false },
-      larger: { type: 'string', default: '1' },
+      larger: { type: 'string', default: '0' },
       interact: { type: 'boolean', default: false },
       adjust: { type: 'boolean', default: false },
       'interact-site': { type: 'string', default: 'alderra-refill' },
@@ -147,10 +159,38 @@ try {
 
 const log = (...a) => console.log(...a);
 const errText = (e) => (e instanceof Error ? e.message : String(e)).split('\n')[0].slice(0, 300);
+const SKIP = new Set(String(opt.skip ?? '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
+for (const v of SKIP) {
+  if (!['task', 'lens', 'calm'].includes(v)) {
+    console.error(`--skip takes task, lens and calm (got "${v}").\n\n${HELP}`);
+    process.exit(2);
+  }
+}
 
 /* ------------------------------------------------------------------ site list */
+/** sites.json, with --sites-file merged in (same name replaces, new names are appended in the file's order). */
+function loadSiteList() {
+  const base = JSON.parse(readFileSync(path.join(ROOT, 'scripts/eval/sites.json'), 'utf8'));
+  if (!opt['sites-file']) return base;
+  const file = path.resolve(opt['sites-file']);
+  if (!existsSync(file)) throw new Error(`--sites-file ${file} does not exist.`);
+  const extra = JSON.parse(readFileSync(file, 'utf8'));
+  const merged = {};
+  for (const group of ['demo', 'real']) {
+    const list = [...(base[group] ?? [])];
+    for (const s of extra[group] ?? []) {
+      if (!s?.name || !s?.url) throw new Error(`--sites-file: every entry needs a name and a url (${JSON.stringify(s).slice(0, 80)}).`);
+      const i = list.findIndex((x) => x.name === s.name);
+      if (i >= 0) list[i] = { ...list[i], ...s };
+      else list.push(s);
+    }
+    merged[group] = list;
+  }
+  return merged;
+}
+
 function pickSites() {
-  const all = JSON.parse(readFileSync(path.join(ROOT, 'scripts/eval/sites.json'), 'utf8'));
+  const all = loadSiteList();
   const tag = (list, group) => (list ?? []).map((s) => ({ ...s, group }));
   const demo = tag(all.demo, 'demo');
   const real = tag(all.real, 'real');
@@ -171,7 +211,7 @@ function pickSites() {
 }
 
 function allSites() {
-  const all = JSON.parse(readFileSync(path.join(ROOT, 'scripts/eval/sites.json'), 'utf8'));
+  const all = loadSiteList();
   return [...(all.demo ?? []).map((s) => ({ ...s, group: 'demo' })), ...(all.real ?? []).map((s) => ({ ...s, group: 'real' }))];
 }
 
@@ -301,6 +341,7 @@ async function evalSite(ctx, site) {
   const local = site.url.startsWith(SERVER_ORIGIN);
   const page = await context.newPage();
   page.__webableEvalKeep = true;
+  ctx.current = page;
   let tabId = null;
   // Sites whose throwaway profile opens a blocking terms gate (cnn.com's "Legal Terms and Privacy"): hide that layer
   // and its scroll lock for the screenshots, so the page is judged as a returning visitor sees it. Nothing is clicked
@@ -429,11 +470,13 @@ async function evalSite(ctx, site) {
     let mainLabel = mainLabelFrom(rep);
     if (rep?.phase === 'calm') {
       res.calmAuto = true;
-      await waitForCalmLayout(calmSeenAt ?? navAt);
-      rep = await getReport();
-      mainLabel = mainLabelFrom(rep) ?? mainLabel;
-      await shot('calm', calmNote(rep, 'opened by itself'));
-      await measure('calm', mainLabel);
+      if (!SKIP.has('calm')) {
+        await waitForCalmLayout(calmSeenAt ?? navAt);
+        rep = await getReport();
+        mainLabel = mainLabelFrom(rep) ?? mainLabel;
+        await shot('calm', calmNote(rep, 'opened by itself'));
+        await measure('calm', mainLabel);
+      }
       await press('Alt+Shift+KeyC');
       // The pill and the overlay bar settle about 2 s after Calm view closes (the pill moves only when it is sure).
       await sleep(2200);
@@ -450,30 +493,34 @@ async function evalSite(ctx, site) {
     await measure('after', mainLabel);
 
     // 2b) After, scrolled to the main task (or one screen down when the page has none), then back to the top.
-    res.task = await page.evaluate(SCROLL_TO_TASK, mainLabel).catch((e) => ({ how: 'scroll failed', error: errText(e) }));
-    await sleep(1200);
-    await shot('task', res.task?.how ? `${res.task.how}${res.task.label ? ` “${res.task.label}”` : ''}` : '');
-    await measure('task', mainLabel);
-    await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })).catch(() => {});
-    await sleep(600);
+    if (!SKIP.has('task')) {
+      res.task = await page.evaluate(SCROLL_TO_TASK, mainLabel).catch((e) => ({ how: 'scroll failed', error: errText(e) }));
+      await sleep(1200);
+      await shot('task', res.task?.how ? `${res.task.how}${res.task.label ? ` “${res.task.label}”` : ''}` : '');
+      await measure('task', mainLabel);
+      await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })).catch(() => {});
+      await sleep(600);
+    }
 
     // 3) Jev Lens (Alt+Shift+L; Alt+J on round-1 builds), then off again.
-    const lensOn = async () => (await uiProbe(page)).lens;
-    let lensKey = 'Alt+Shift+KeyL';
-    await press(lensKey);
-    await sleep(1500);
-    if (!(await lensOn())) {
-      lensKey = 'Alt+KeyJ';
+    if (!SKIP.has('lens')) {
+      const lensOn = async () => (await uiProbe(page)).lens;
+      let lensKey = 'Alt+Shift+KeyL';
       await press(lensKey);
       await sleep(1500);
+      if (!(await lensOn())) {
+        lensKey = 'Alt+KeyJ';
+        await press(lensKey);
+        await sleep(1500);
+      }
+      await shot('lens');
+      await measure('lens', mainLabel);
+      await press(lensKey);
+      await sleep(500);
     }
-    await shot('lens');
-    await measure('lens', mainLabel);
-    await press(lensKey);
-    await sleep(500);
 
     // 4) Calm view (Alt+Shift+C) if it did not open by itself.
-    if (!res.calmAuto) {
+    if (!res.calmAuto && !SKIP.has('calm')) {
       await press('Alt+Shift+KeyC');
       const openedAt = Date.now();
       const c = await waitFor((r) => r.phase === 'calm' || r.phase === 'error', 8000);
@@ -553,6 +600,45 @@ async function evalSite(ctx, site) {
   return res;
 }
 
+/** summary.json: the run's meta and, per site, the metrics the claims scripts read (scripts/claims/summarize.mjs). */
+function summaryOf(meta, results, fitting, interact) {
+  return {
+    ...meta,
+    results: results.map((r) => ({
+      name: r.name, url: r.url, finalUrl: r.finalUrl, status: r.status ?? null, phases: r.phases, msToUnderstood: r.msToUnderstood,
+      calmAuto: r.calmAuto, shots: r.shots, shotErrors: r.shotErrors, pageErrors: r.pageErrors, mainLabel: r.mainLabel ?? null,
+      tabZoom: r.tabZoom, engine: r.engine, task: r.task, firstScreen: r.firstScreen, timedOut: !!r.timedOut, ...siteMetrics(r),
+      // For --rerender: what the contact sheet needs that the metrics above do not carry.
+      sheet: { slug: r.slug, group: r.group, note: r.note, shotNotes: r.shotNotes, harnessErrors: r.errors },
+    })),
+    fitting,
+    interact,
+  };
+}
+
+/**
+ * evalSite with a time limit: a page that hangs (an endless script, a stuck capture) is closed so the run moves on.
+ * Closing the page makes every pending call in evalSite fail, so it still writes what it has.
+ */
+async function evalSiteGuarded(ctx, site, timeoutMs) {
+  const work = evalSite(ctx, site);
+  let timer = null;
+  const late = new Promise((resolve) => { timer = setTimeout(() => resolve('timeout'), timeoutMs); });
+  const first = await Promise.race([work, late]);
+  clearTimeout(timer);
+  if (first !== 'timeout') return first;
+  await ctx.current?.close().catch(() => {});
+  const r = await Promise.race([work, sleep(20_000).then(() => null)]);
+  const out = r ?? {
+    name: site.name, slug: slug(site.name), group: site.group, url: site.url, finalUrl: null, note: site.note ?? '',
+    shots: {}, shotNotes: {}, shotErrors: {}, errors: [], phases: {}, msToUnderstood: null, calmAuto: false,
+    report: null, pageErrors: 0, firstScreen: {}, engine: null, tabZoom: null, task: null,
+  };
+  out.timedOut = true;
+  out.errors = [...(out.errors ?? []), `harness: gave up on the site after ${Math.round(timeoutMs / 1000)} s`];
+  return out;
+}
+
 /* ------------------------------------------------------------------ browser */
 /** "Google Chrome 149.0.7827.201" → "149.0.7827.201", or null. */
 function chromeVersion(exe) {
@@ -583,7 +669,7 @@ async function launchBrowser(chromium, userDataDir, { viewport, dpr, extDir }) {
       ...common,
       ...browserTarget(),
       userAgent: DESKTOP_UA,
-      args: [`--disable-extensions-except=${extDir}`, `--load-extension=${extDir}`],
+      args: [`--disable-extensions-except=${extDir}`, `--load-extension=${extDir}`, ...dprArgs(dpr)],
     });
     return { context, extensionId: null, version: null, via: '--load-extension' };
   }
@@ -597,7 +683,7 @@ async function launchBrowser(chromium, userDataDir, { viewport, dpr, extDir }) {
     // Headless Chrome says "HeadlessChrome", which some sites refuse (Drugs.com answers 403); say what it is.
     userAgent: `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${major}.0.0.0 Safari/537.36`,
     ignoreDefaultArgs: ['--disable-extensions'],
-    args: ['--enable-unsafe-extension-debugging'],
+    args: ['--enable-unsafe-extension-debugging', ...dprArgs(dpr)],
   });
   try {
     const browser = context.browser();
@@ -707,11 +793,16 @@ async function main() {
   let extensionId = null;
   let browserVersion = null;
   let loadedVia = null;
+  const runMeta = () => ({
+    run, fit: opt.fit, fitTextPx: fit.text?.override ?? fit.text?.bodyPx ?? null, viewport, dpr: baseDpr(), extensionId, browser: browserVersion, loadedVia, server: serverLine,
+    durationMs: Date.now() - startedAt, sites: opt.only ?? opt.sites, sitesFile: opt['sites-file'] ? path.resolve(opt['sites-file']) : null,
+    ext: extDir, ai: opt.ai, skip: [...SKIP],
+  });
   try {
     const launched = await launchBrowser(chromium, userDataDir, { viewport, dpr, extDir });
     context = launched.context;
     loadedVia = launched.via;
-    // The extension opens its fitting page on install; close extension tabs we did not open.
+    // Close extension tabs we did not open (older builds opened the warm-up on install).
     context.on('page', (p) => {
       setTimeout(() => {
         if (!p.__webableEvalKeep && p.url().startsWith('chrome-extension://')) p.close().catch(() => {});
@@ -730,8 +821,8 @@ async function main() {
     log(`Extension ${extensionId} · ${browserVersion ?? 'browser'} · ${loadedVia}`);
     const ext = makeExtension(context, extensionId);
     const how = await ext.setFit(fit);
-    await ext.setSettings({ enabled: true, lens: false, pausedOrigins: [] }, core.DEFAULT_SETTINGS);
-    log(`Fit "${opt.fit}" set (${how}).`);
+    await ext.setSettings({ enabled: true, lens: false, pausedOrigins: [], ...(opt.ai ? {} : { aiLayouts: false, explain: false }) }, core.DEFAULT_SETTINGS);
+    log(`Fit "${opt.fit}" set (${how}).${opt.ai ? '' : ' AI layouts and Explain off for this run (--no-ai).'}${SKIP.size ? ` Skipping: ${[...SKIP].join(', ')}.` : ''}`);
     await sleep(1600);
     for (const p of context.pages()) if (!p.__webableEvalKeep) await p.close().catch(() => {});
 
@@ -747,17 +838,24 @@ async function main() {
       await sleep(600);
     }
 
-    for (const site of sites) {
+    const siteTimeoutMs = Math.max(60, Number(opt['site-timeout']) || 240) * 1000;
+    for (const [i, site] of sites.entries()) {
       if (interrupted) break;
-      log(`\n→ ${site.name}  ${site.url}`);
+      log(`\n→ ${sites.length > 1 ? `[${i + 1}/${sites.length}] ` : ''}${site.name}  ${site.url}`);
       const t0 = Date.now();
-      const r = await evalSite({ context, ext, runDir, core }, site);
+      const r = await evalSiteGuarded({ context, ext, runDir, core, current: null }, site, siteTimeoutMs);
       const m = siteMetrics(r);
       log(`  phase ${m.phase ?? 'none'} · ${m.decisions ?? 0} Jev decisions · ${m.jevMs != null ? `${Math.round(m.jevMs)} ms` : '—'} · ${m.opsApplied} ops applied, ${m.opsReversed} reversed · ${m.checksFailed.length} checks failed · ${m.errors.length} errors · ${((Date.now() - t0) / 1000).toFixed(1)} s`);
       const rl = readingLine(r);
       if (rl) log(`  ${rl}`);
       for (const e of m.errors.slice(0, 4)) log(`    ! ${e}`);
       results.push(r);
+      // Written after every site, so a long run that stops part-way still leaves numbers to read.
+      try {
+        writeFileSync(path.join(runDir, 'summary.json'), `${JSON.stringify(summaryOf(runMeta(), results, fitting, interact), null, 2)}\n`);
+      } catch (e) {
+        log(`  (could not write summary.json: ${errText(e)})`);
+      }
     }
 
     if (opt.interact && interactSite && !interrupted) {
@@ -770,25 +868,10 @@ async function main() {
       for (const e of interact.errors.slice(0, 4)) log(`    ! ${e}`);
     }
   } finally {
-    const meta = {
-      run, fit: opt.fit, fitTextPx: fit.text?.override ?? fit.text?.bodyPx ?? null, viewport, dpr: baseDpr(), extensionId, browser: browserVersion, loadedVia, server: serverLine,
-      durationMs: Date.now() - startedAt, sites: opt.only ?? opt.sites,
-    };
+    const meta = runMeta();
     if (results.length || fitting || interact) {
       writeFileSync(path.join(runDir, 'index.html'), renderSheet(meta, results, { fitting, interact }));
-      const summary = {
-        ...meta,
-        results: results.map((r) => ({
-          name: r.name, url: r.url, finalUrl: r.finalUrl, status: r.status ?? null, phases: r.phases, msToUnderstood: r.msToUnderstood,
-          calmAuto: r.calmAuto, shots: r.shots, shotErrors: r.shotErrors, pageErrors: r.pageErrors, mainLabel: r.mainLabel ?? null,
-          tabZoom: r.tabZoom, engine: r.engine, task: r.task, firstScreen: r.firstScreen, ...siteMetrics(r),
-          // For --rerender: what the contact sheet needs that the metrics above do not carry.
-          sheet: { slug: r.slug, group: r.group, note: r.note, shotNotes: r.shotNotes, harnessErrors: r.errors },
-        })),
-        fitting,
-        interact,
-      };
-      writeFileSync(path.join(runDir, 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`);
+      writeFileSync(path.join(runDir, 'summary.json'), `${JSON.stringify(summaryOf(meta, results, fitting, interact), null, 2)}\n`);
     }
     await cleanup();
   }

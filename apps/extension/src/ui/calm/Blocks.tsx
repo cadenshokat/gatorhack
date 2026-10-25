@@ -1,4 +1,6 @@
-// Owner: C. Draws the block model. Every control proxies its original; every word is the page's own visible text.
+// Owner: C, D (round 4: pictures in reserved boxes, story rows). Draws the block model. Every control proxies its
+// original; every word is the page's own visible text. Alt text is only ever an <img> alt, never visible text.
+import { isWideFigure, pictureFrame } from '@webable/core';
 import type { JSX } from 'preact';
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { proxyCheck, proxyClick, proxyCommit, proxyInput, proxyKey, proxySelect, proxySubmit, renderLiveValue } from '../proxy';
@@ -8,8 +10,10 @@ import { tickNow, useLive } from './live';
 import {
   type Block, type CardLinkBlock, type ChoiceBlock, type ChoicesBlock, type ControlBlock, type FieldBlock, type FlowBlock,
   type ImageBlock, type Inline, type LinkPart, type ListBlock, type PeekBlock, type RichTableBlock, type SelectBlock, type TableBlock,
-  PRICE_RE, isDense, splitParts, stripMarker,
+  PRICE_RE, TOOL_RE, isDense, keepImage, splitParts, stripMarker,
 } from './model';
+
+export { TOOL_RE, keepImage };
 
 export type Variant = 'default' | 'quiet' | 'prose';
 
@@ -168,9 +172,6 @@ function liveLabel(v: ReturnType<typeof renderLiveValue>, fallback: string): str
   if (v.kind === 'control' && v.label) return v.label.length > 160 ? `${v.label.slice(0, 157)}…` : v.label;
   return fallback;
 }
-
-/** Page tools (Print, Save, Listen): quiet icon links, never grey pills. */
-export const TOOL_RE = /^(print( this)?( page)?|save( to (my )?list)?|share( this)?|listen|play( pronunciation| audio)?|email( this)?( page)?|bookmark|download( pdf)?)$/i;
 
 export function ToolIcon({ text }: { text: string }): JSX.Element {
   if (/print/i.test(text)) return <I.Print />;
@@ -452,64 +453,99 @@ function ChoiceRow({ c, name }: { c: ChoiceBlock; name?: string }): JSX.Element 
 /* Media, lists, tables, cards                                         */
 /* ------------------------------------------------------------------ */
 
-/* Pictures: shown only once they decode (within 1.5 s, at least 48 px wide), never as an empty box. */
-const decoded = new Map<string, boolean>();
+/*
+ * Pictures (design.md F6): the box is reserved at the picture's own ratio before it loads (no jump), the picture
+ * fades in when it arrives, and the lead loads first (fetchpriority high). No crossorigin attribute: a no-cors load
+ * displays fine on CDNs that send no CORS headers. A picture that fails is tried once more after 1.2 s, and one that
+ * has not arrived in 4 s is asked for again; only real errors (or tracking pixels under 48 px) are remembered, so
+ * a slow CDN never hides a picture for good.
+ */
+const failed = new Set<string>();
 
-function useDecoded(url: string): boolean | null {
-  const [ok, setOk] = useState<boolean | null>(() => decoded.get(url) ?? null);
+type PicState = 'loading' | 'ok' | 'error';
+
+function usePicture(url: string, keepWaiting: boolean): { state: PicState; attempt: number; onLoad: (e: Event) => void; onError: () => void } {
+  const [state, setState] = useState<PicState>(() => (failed.has(url) ? 'error' : 'loading'));
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    const known = decoded.get(url);
-    if (known !== undefined) {
-      setOk(known);
+    setState(failed.has(url) ? 'error' : 'loading');
+    setAttempt(0);
+  }, [url]);
+  useEffect(() => {
+    if (state !== 'loading') return;
+    // Not here in 4 s: ask again once; not here after that: give the space back (the lead and story pictures keep their box).
+    const t = window.setTimeout(() => {
+      if (attempt === 0) setAttempt(1);
+      else if (!keepWaiting) setState('error');
+    }, 4000);
+    return () => window.clearTimeout(t);
+  }, [state, attempt, keepWaiting]);
+  const onLoad = (e: Event): void => {
+    const img = e.currentTarget as HTMLImageElement;
+    if (img.naturalWidth > 0 && img.naturalWidth < 48 && img.naturalHeight < 48) {
+      failed.add(url);
+      setState('error');
       return;
     }
-    let alive = true;
-    const img = new Image();
-    img.decoding = 'async';
-    const done = (v: boolean): void => {
-      decoded.set(url, v);
-      if (alive) setOk(v);
-    };
-    const timer = window.setTimeout(() => done(false), 1500);
-    img.src = url;
-    img
-      .decode()
-      .then(() => done(img.naturalWidth >= 48))
-      .catch(() => done(false))
-      .finally(() => window.clearTimeout(timer));
-    return () => {
-      alive = false;
-      window.clearTimeout(timer);
-    };
-  }, [url]);
-  return ok;
+    setState('ok');
+  };
+  const onError = (): void => {
+    if (attempt === 0) {
+      window.setTimeout(() => setAttempt(1), 1200);
+      return;
+    }
+    failed.add(url);
+    setState('error');
+  };
+  return { state, attempt, onLoad, onError };
 }
 
-/**
- * Which pictures earn a place: never logos (the site's name is in the top bar) or wide stock banners; a picture with no
- * description only when it is a product, a gallery or tile picture (`framed`), a captioned figure or an image-only link.
- */
-export function keepImage(b: ImageBlock, framed: boolean): boolean {
-  if (b.logo) return false;
-  if (b.caption || /\b(chart|graph|map|diagram|figure)\b/i.test(b.alt)) return true;
-  // Wide stock pictures in heroes and carousels carry no part of the task.
-  if (b.banner && b.w >= 360) return false;
-  if (framed) return true;
-  if (b.w >= 560 && b.w / Math.max(1, b.h) >= 1.45) return false;
-  return !!b.alt || b.linked;
+export interface PictureProps {
+  b: ImageBlock;
+  /** Force a ratio (story pictures are 16:9); otherwise the source ratio when 1.25–2.0, else a 4:3 well. */
+  ratio?: number;
+  /** The page's lead picture: loads first and keeps its box while it loads. */
+  lead?: boolean;
+  /** Draw the caption and credit under it. */
+  caption?: boolean;
+  /** The picture column (wide, at most about three quarters of the screen tall) instead of the text column. */
+  wide?: boolean;
+  /** Force how the picture sits in its box (a product shot is always `contain` in a square well). */
+  fit?: 'cover' | 'contain';
+  cls?: string;
 }
 
-export function ImageView({ b, well = false }: { b: ImageBlock; well?: boolean }): JSX.Element | null {
-  const ok = useDecoded(b.url);
-  if (!ok) return null;
-  const img = <img src={b.url} alt={b.alt} decoding="async" />;
-  if (well) return <div class="wa-well" data-fit={b.fit}>{img}</div>;
+/** One picture in a reserved box, with its caption and then its credit in meta style. */
+export function Picture({ b, ratio, lead = false, caption = true, wide = false, fit: fitIn, cls = '' }: PictureProps): JSX.Element | null {
+  const { state, attempt, onLoad, onError } = usePicture(b.url, lead || b.important);
+  if (state === 'error') return null;
+  const frame = pictureFrame(b.nw || b.w, b.nh || b.h);
+  const fit: 'cover' | 'contain' = fitIn ?? (ratio ? 'cover' : b.fit === 'contain' || frame.well ? 'contain' : 'cover');
+  const r = ratio ?? (frame.well || b.fit === 'contain' ? 4 / 3 : frame.ratio);
+  const cap = caption ? b.caption : '';
+  const credit = caption ? b.credit : '';
+  const imgProps: Record<string, string> = lead ? { fetchpriority: 'high' } : {};
   return (
-    <figure class={`wa-figure${Math.max(b.w, b.h) < 120 ? ' wa-figure--icon' : ''}`}>
-      {img}
-      {b.caption && <figcaption class="wa-meta">{b.caption}</figcaption>}
+    <figure class={`wa-pic${wide ? ' wa-pic--wide' : ''}${cls ? ` ${cls}` : ''}`} style={{ '--wa-ratio': String(Math.round(r * 1000) / 1000) }}>
+      <div class="wa-pic__box" data-fit={fit} data-state={state}>
+        <img key={attempt} src={b.url} alt={b.alt} decoding="async" loading="eager" {...imgProps} onLoad={onLoad} onError={onError} />
+      </div>
+      {(cap || credit) && (
+        <figcaption class="wa-pic__cap">
+          {cap}
+          {credit && <span class="wa-pic__credit">{cap ? ` · ${credit}` : credit}</span>}
+        </figcaption>
+      )}
     </figure>
   );
+}
+
+/** A picture in running text: wide when its natural width is at least 1.4 × the text column; icons stay small. */
+export function ImageView({ b, well = false }: { b: ImageBlock; well?: boolean }): JSX.Element | null {
+  const ctx = useCalm();
+  if (well) return <Picture b={b} caption={false} />;
+  const small = Math.max(b.w, b.h) < 160;
+  return <Picture b={b} wide={!small && isWideFigure(b.nw || b.w, ctx.textCol)} cls={small ? 'wa-pic--small' : ''} />;
 }
 
 function onlyControls(items: Block[][]): ControlBlock[] | null {
@@ -681,17 +717,18 @@ function RichTableView({ b }: { b: RichTableBlock }): JSX.Element {
   );
 }
 
-/** A small picture in a soft well; shown only once it decodes. */
+/** A row's thumbnail: 16:9 for photographs, a 4:3 well for cut-outs; drawn on the right. */
 export function Thumb({ img }: { img: ImageBlock }): JSX.Element | null {
-  const ok = useDecoded(img.url);
-  if (!ok || img.logo) return null;
+  if (img.logo) return null;
+  const contain = img.fit === 'contain';
   return (
-    <span class="wa-well wa-row__thumb" data-fit={img.fit}>
-      <img src={img.url} alt={img.alt} decoding="async" />
+    <span class="wa-row__thumb" data-fit={contain ? 'contain' : 'cover'}>
+      <Picture b={img} ratio={contain ? undefined : 16 / 9} caption={false} />
     </span>
   );
 }
 
+/** A card link as a row: kicker, headline, dek and time from the page, its picture on the right. */
 function CardLinkRow({ b, thumbs = true }: { b: CardLinkBlock; thumbs?: boolean }): JSX.Element {
   const ctx = useCalm();
   const press = (e: MouseEvent): void => {
@@ -699,26 +736,31 @@ function CardLinkRow({ b, thumbs = true }: { b: CardLinkBlock; thumbs?: boolean 
     e.preventDefault();
     ctx.click(b.el);
   };
+  const pic = thumbs && b.image && keepImage(b.image, true) ? b.image : null;
   const inner = (
     <>
-      {thumbs && b.image && keepImage(b.image, true) && <Thumb img={b.image} />}
       <span class="wa-row__main">
-        <span class="wa-row__title">{b.title}</span>
+        {b.kicker && <span class="wa-kicker">{b.kicker}</span>}
+        {b.title && <span class="wa-row__title">{b.title}</span>}
+        {b.dek && <span class="wa-meta wa-story__dek">{b.dek}</span>}
         {b.lines.map((l, i) => (
           <span key={i} class={PRICE_RE.test(l) && l.length < 40 ? 'wa-p--price' : 'wa-meta'}>
             {l}
           </span>
         ))}
+        {b.time && <span class="wa-time">{b.time}</span>}
       </span>
-      <I.ChevronRight class="wa-row__chev" />
+      {pic && <Thumb img={pic} />}
+      {!pic && <I.ChevronRight class="wa-row__chev" />}
     </>
   );
+  const label = b.title || b.image?.alt || undefined;
   return b.href ? (
-    <a class="wa-row" href={b.href} onClick={press}>
+    <a class="wa-row" href={b.href} onClick={press} aria-label={b.title ? undefined : label}>
       {inner}
     </a>
   ) : (
-    <button type="button" class="wa-row" onClick={() => ctx.click(b.el)}>
+    <button type="button" class="wa-row" onClick={() => ctx.click(b.el)} aria-label={b.title ? undefined : label}>
       {inner}
     </button>
   );

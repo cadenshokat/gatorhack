@@ -1,22 +1,12 @@
-// Collects FittingRaw in memory while the flow runs. Nothing here is persisted: only the derived fit is
-// saved, and per-trial data is dropped when the page closes (fitting brief §2, privacy).
+// Collects FittingRaw and the session numbers in memory while the warm-up runs. Only the derived fit (with the
+// session's counts and timings in `calibration.warmup`) is saved; per-trial data is dropped when the page closes.
 
-import type { FittingRaw, InputClass, Polarity } from '@webable/core';
+import type {
+  FittingRaw, InputClass, Polarity, ReadTrial, WarmupBlock, WarmupBlockMetrics, WarmupMetrics,
+} from '@webable/core';
 import type { RingPress } from './pointing';
 
-export type TaskId = 'R1' | 'R2' | 'R3' | 'R4' | 'P1' | 'F1' | 'F2' | 'F3';
-export const READING_TASKS: TaskId[] = ['R1', 'R2', 'R3', 'R4'];
-export const FINDING_TASKS: TaskId[] = ['F1', 'F2', 'F3'];
-
-export type GotInWay =
-  | 'moving things'
-  | 'too much on the page'
-  | 'long blocks of text'
-  | 'hard to tell what to click'
-  | 'popups';
-
-/** Added to gotInWay when the person pressed "Stop motion" during Find it (strong evidence, brief §5).
- *  Worded so core's chip matching counts it as the stop press only, not also as the "moving things" chip. */
+/** Added to gotInWay when the person pressed "Stop the moving parts" during Find (core reads it as the stop press). */
 export const STOPPED_MOTION = 'pressed stop';
 
 interface PressDown {
@@ -31,58 +21,123 @@ function rectHas(r: DOMRect, x: number, y: number): boolean {
   return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 }
 
+interface BlockClock {
+  status: WarmupBlockMetrics['status'];
+  activeMs: number;
+  since: number | null;
+  actions: number;
+  trials: number;
+  stop?: string;
+}
+
 export class RawCollector {
   inputClass: InputClass = 'mouse';
-  /** Tab zoom when the flow started; every px value is reported as CSS px x zoom. */
+  /** This page's zoom: every px value is reported as CSS px × zoom, i.e. px at 100%. */
   zoom = 1;
-  readonly skipped = new Set<TaskId>();
-  readonly done = new Set<TaskId>();
+  readonly skipped = new Set<WarmupBlock>();
+  readonly done = new Set<WarmupBlock>();
 
-  /** R1 choice as CSS px on this page (not zoom-scaled), for sizing later screens. */
-  comfortCssPx: number | null = null;
-  largePrint = false;
-  /** Rough critical size from R2 in CSS px, display and sizing only. */
-  roughCriticalCssPx: number | null = null;
-  roughTargetPx: number | null = null;
-  ladderMedianRtMs: number | null = null;
-  express = false;
-
-  ladder: Array<{ px: number; ms: number; correct: boolean }> = [];
+  ladder: ReadTrial[] = [];
   faint: Array<{ contrast: number; correct: boolean }> = [];
-  lightMs: number[] = [];
-  darkMs: number[] = [];
   stated: Polarity | null = null;
   blocks: Array<{ sizePx: number; presses: RingPress[] }> = [];
   findTrials: Array<{ clutter: boolean; motion: boolean; ms: number; found: boolean }> = [];
   preferredCalm = 0;
-  gotInWay: string[] = [];
   stoppedMotion = false;
   readonly presses: Array<{ slipped: boolean; repeat: boolean }> = [];
 
   private activeMs = 0;
   private runningSince: number | null = null;
+  private actionCount = 0;
+  private readonly clocks = new Map<WarmupBlock, BlockClock>();
+  private current: WarmupBlock | null = null;
   private down: PressDown | null = null;
   private lastUp: { x: number; y: number; t: number; el: Element | null } | null = null;
 
   /* ---------------- active time (pauses and hidden tabs excluded) ---------------- */
 
   startClock(): void {
-    if (this.runningSince === null) this.runningSince = performance.now();
+    const now = performance.now();
+    if (this.runningSince === null) this.runningSince = now;
+    const c = this.current ? this.clocks.get(this.current) : null;
+    if (c && c.since === null) c.since = now;
   }
 
   stopClock(): void {
+    const now = performance.now();
     if (this.runningSince !== null) {
-      this.activeMs += performance.now() - this.runningSince;
+      this.activeMs += now - this.runningSince;
       this.runningSince = null;
+    }
+    const c = this.current ? this.clocks.get(this.current) : null;
+    if (c && c.since !== null) {
+      c.activeMs += now - c.since;
+      c.since = null;
     }
   }
 
-  get durationSec(): number {
-    const live = this.runningSince === null ? 0 : performance.now() - this.runningSince;
-    return Math.round((this.activeMs + live) / 1000);
+  get running(): boolean {
+    return this.runningSince !== null;
   }
 
-  /* ---------------- presses anywhere in the flow ---------------- */
+  get activeTotalMs(): number {
+    return this.activeMs + (this.runningSince === null ? 0 : performance.now() - this.runningSince);
+  }
+
+  get durationSec(): number {
+    return Math.round(this.activeTotalMs / 1000);
+  }
+
+  /* ---------------- blocks ---------------- */
+
+  beginBlock(id: WarmupBlock): void {
+    this.endCurrent();
+    this.current = id;
+    const c: BlockClock = this.clocks.get(id) ?? { status: 'done', activeMs: 0, since: null, actions: 0, trials: 0 };
+    c.since = this.runningSince !== null ? performance.now() : null;
+    this.clocks.set(id, c);
+  }
+
+  private endCurrent(): void {
+    const c = this.current ? this.clocks.get(this.current) : null;
+    if (c && c.since !== null) {
+      c.activeMs += performance.now() - c.since;
+      c.since = null;
+    }
+    this.current = null;
+  }
+
+  /** Close the running block with its outcome. */
+  endBlock(id: WarmupBlock, outcome: { trials: number; stop?: string; skipped?: boolean }): void {
+    const c = this.clocks.get(id) ?? { status: 'done' as const, activeMs: 0, since: null, actions: 0, trials: 0 };
+    if (this.current === id) this.endCurrent();
+    c.trials = outcome.trials;
+    c.stop = outcome.skipped ? 'person' : outcome.stop;
+    c.status = outcome.skipped ? 'skipped' : 'done';
+    this.clocks.set(id, c);
+    if (outcome.skipped) this.skip(id);
+    else this.complete(id);
+  }
+
+  markBlock(id: WarmupBlock, status: 'prefilled' | 'not_run'): void {
+    this.clocks.set(id, { status, activeMs: 0, since: null, actions: 0, trials: 0 });
+    if (status === 'not_run' || status === 'prefilled') this.skipped.add(id);
+  }
+
+  blockActiveMs(id: WarmupBlock): number {
+    const c = this.clocks.get(id);
+    if (!c) return 0;
+    return c.activeMs + (c.since !== null ? performance.now() - c.since : 0);
+  }
+
+  /** Any press or key press (counts toward the session's actions and the running block's). */
+  countAction(): void {
+    this.actionCount += 1;
+    const c = this.current ? this.clocks.get(this.current) : null;
+    if (c) c.actions += 1;
+  }
+
+  /* ---------------- presses anywhere in the warm-up ---------------- */
 
   private isRepeat(x: number, y: number, t: number, el: Element | null): boolean {
     const last = this.lastUp;
@@ -108,44 +163,42 @@ export class RawCollector {
   }
 
   /** Ring presses: the ring knows the dot geometry, so it decides slipped itself. */
-  ringPress(downX: number, downY: number, downT: number, upX: number, upY: number, upT: number, slipped: boolean): boolean {
+  ringPress(downX: number, downY: number, downT: number, upX: number, upY: number, upT: number, slipped: boolean): void {
     const repeat = this.isRepeat(downX, downY, downT, null);
     this.presses.push({ slipped, repeat });
     this.lastUp = { x: upX, y: upY, t: upT, el: null };
-    return repeat;
   }
 
-  /* ---------------- tasks ---------------- */
+  /* ---------------- outcomes ---------------- */
 
-  skip(id: TaskId): void {
+  skip(id: WarmupBlock): void {
     if (!this.done.has(id)) this.skipped.add(id);
   }
 
-  complete(id: TaskId): void {
+  complete(id: WarmupBlock): void {
     this.done.add(id);
     this.skipped.delete(id);
   }
 
-  /** px as reported to core: CSS px scaled by the tab zoom, so it means px at 100%. */
+  /** px as reported to core: CSS px scaled by the page zoom, so it means px at 100%. */
   eff(cssPx: number): number {
     return Math.round(cssPx * this.zoom * 10) / 10;
   }
 
   toRaw(): FittingRaw {
-    const readingTouched = READING_TASKS.some((t) => this.done.has(t));
-    const findingTouched = FINDING_TASKS.some((t) => this.done.has(t));
-    const gotInWay = [...this.gotInWay];
-    if (this.stoppedMotion && !gotInWay.includes(STOPPED_MOTION)) gotInWay.push(STOPPED_MOTION);
+    const readingTouched = this.ladder.length > 0 || this.faint.length > 0 || this.stated !== null;
+    const gotInWay = this.stoppedMotion ? [STOPPED_MOTION] : [];
+    const findingTouched = this.done.has('find') || this.done.has('pick');
     return {
       inputClass: this.inputClass,
       durationSec: this.durationSec,
       skipped: [...this.skipped],
       reading: readingTouched
         ? {
-            seedPx: this.comfortCssPx === null ? null : this.eff(this.comfortCssPx),
+            seedPx: null,
             ladder: this.ladder.map((t) => ({ ...t })),
             faint: this.faint.map((t) => ({ ...t })),
-            polarity: { lightMs: [...this.lightMs], darkMs: [...this.darkMs], stated: this.stated },
+            polarity: { lightMs: [], darkMs: [], stated: this.stated },
           }
         : null,
       pointing: this.blocks.length
@@ -155,6 +208,33 @@ export class RawCollector {
         ? { trials: this.findTrials.map((t) => ({ ...t })), preferredCalm: this.preferredCalm, gotInWay }
         : null,
       allPresses: this.presses.map((p) => ({ ...p })),
+    };
+  }
+
+  metrics(opts: { completed: boolean; corrections: WarmupMetrics['corrections']; settingsUsed: string[] }): WarmupMetrics {
+    const order: WarmupBlock[] = ['read', 'faint', 'point', 'find', 'pick', 'confirm'];
+    const blocks: WarmupBlockMetrics[] = [];
+    for (const id of order) {
+      const c = this.clocks.get(id);
+      if (!c) continue;
+      const m: WarmupBlockMetrics = {
+        block: id,
+        status: c.status,
+        activeMs: Math.round(c.activeMs + (c.since !== null ? performance.now() - c.since : 0)),
+        actions: c.actions,
+        trials: c.trials,
+      };
+      if (c.stop) m.stop = c.stop;
+      blocks.push(m);
+    }
+    return {
+      v: 'warmup.1',
+      activeMs: Math.round(this.activeTotalMs),
+      actions: this.actionCount,
+      completed: opts.completed,
+      blocks,
+      corrections: opts.corrections,
+      settingsUsed: opts.settingsUsed,
     };
   }
 }

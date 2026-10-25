@@ -1,6 +1,12 @@
-// Owner: C. Reads the live page into a small block model for the Calm view.
-// Read-only: nothing here writes to the page. Every word comes from the page's visible text at render time, on the device.
-// Controls keep a reference to their original element so the view can proxy them.
+// Owner: C, D (round 4: story pairing, picture recovery, captions). Reads the live page into a small block model for
+// the Calm view. Read-only: nothing here writes to the page. Every word comes from the page's visible text at render
+// time, on the device. Controls keep a reference to their original element so the view can proxy them.
+//
+// Pictures (design.md §3–§4): a news card often splits one story into a picture-only link and a headline link to the
+// same address; a pre-pass pairs them so the headline carries its picture (F1). Alt text is never a title, and file-name
+// alts count as empty (F2). Logos are only small or chrome pictures (F4). The real source is recovered in a fixed order
+// (F5), and captions come from the page's caption element with the credit after it (F7).
+import { cleanAlt, hrefKey, isKickerText, isLogoPicture, isPlaceholderSrc, isTimeText, parseSrcset, pickSrcset } from '@webable/core';
 
 export interface LinkPart { t: 'link'; el: Element; text: string; href: string | null; help: boolean }
 export type Inline = { t: 'text'; text: string } | LinkPart | { t: 'br' };
@@ -22,15 +28,24 @@ export interface ChoiceBlock extends Base {
 export interface ChoicesBlock extends Base { b: 'choices'; type: 'checkbox' | 'radio'; items: ChoiceBlock[] }
 export interface SelectBlock extends Base { b: 'select'; el: HTMLSelectElement; label: string; hint: string; required: boolean }
 export interface ImageBlock extends Base {
-  b: 'image'; url: string; alt: string; w: number; h: number; fit: 'cover' | 'contain';
+  b: 'image'; url: string;
+  /** The picture's description for assistive technology only (file-name alts are ''). Never shown as text. */
+  alt: string;
+  /** Rendered size on the page, and the picture's own size when known (0 when not loaded yet). */
+  w: number; h: number; nw: number; nh: number;
+  fit: 'cover' | 'contain';
   /** A logo or brand mark (never shown: the site's name is in the top bar). */
   logo: boolean;
-  /** The page's own caption (figure/figcaption), when it has one. */
+  /** The page's own caption (figcaption, a caption element in the card, or the JSON-LD caption). */
   caption: string;
+  /** The photo credit the page prints with it ("Getty Images"), shown after the caption. */
+  credit: string;
   /** Inside a link (an image-only link keeps its picture). */
   linked: boolean;
   /** Inside a hero, carousel or banner (stock photography, never needed for the task). */
   banner: boolean;
+  /** A story's own picture (paired with its headline), the lead or a product picture: never dropped as a banner. */
+  important: boolean;
 }
 export interface ListBlock extends Base { b: 'list'; ordered: boolean; items: Block[][] }
 export interface TableBlock extends Base { b: 'table'; rows: string[][]; head: boolean }
@@ -38,7 +53,19 @@ export interface TableBlock extends Base { b: 'table'; rows: string[][]; head: b
 export interface RichTableBlock extends Base { b: 'rtable'; rows: Array<{ cells: Block[][]; head: boolean }> }
 export interface GroupBlock extends Base { b: 'group'; legend: string; blocks: Block[] }
 export interface CardLinkBlock extends Base {
-  b: 'cardlink'; el: Element; href: string | null; title: string; lines: string[]; image: ImageBlock | null;
+  b: 'cardlink'; el: Element; href: string | null; title: string;
+  /** The card's other lines, without the kicker, dek and time below. */
+  lines: string[];
+  image: ImageBlock | null;
+  /** A short label above the headline ("Analysis", "Live Updates"). */
+  kicker: string | null;
+  /** The summary line under the headline. */
+  dek: string | null;
+  /** "20 min ago", "Oct 23, 2026". */
+  time: string | null;
+  /** Where the page shows it: top in page px, and the headline's font size (prominence for the news index). */
+  top: number;
+  headPx: number;
 }
 export interface PeekBlock extends Base {
   b: 'peek'; el: Element; label: string; why: 'sensitive' | 'media' | 'editor' | 'file' | 'frame' | 'rest';
@@ -60,13 +87,119 @@ export interface ReadCtx {
   primarySeen: boolean;
   help: Set<Element>;
   budget: { left: number };
+  /** Story pairing for the whole page (F1), computed once per read. */
+  pairs: StoryPairs;
+  /** Drawn elsewhere (an article's byline, date and dek in its header): never read, even as a placed root. */
+  elsewhere: Set<Element>;
 }
 
 export function newCtx(partial: Partial<ReadCtx> = {}): ReadCtx {
   return {
     placed: new Map(), current: '', skip: new Set(), folded: new Set(), foldedHits: [], primary: null,
-    primarySeen: false, help: new Set(), budget: { left: 4000 }, ...partial,
+    primarySeen: false, help: new Set(), budget: { left: 4000 }, pairs: partial.pairs ?? storyPairs(), elsewhere: new Set(),
+    ...partial,
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Story pairing (F1)                                                  */
+/* ------------------------------------------------------------------ */
+
+export interface StoryPairs {
+  /** Headline link → the picture of its picture-only twin (same address, same card). */
+  pic: Map<Element, Element>;
+  /** Picture-only links drawn with their headline (or byline headshots beside the name): never read on their own. */
+  skip: Set<Element>;
+  /** Picture-only link with no headline twin → the card's own heading, which becomes its title. */
+  head: Map<Element, Element>;
+  /** Headings adopted as a picture link's title (read once, as that title). */
+  adopted: Set<Element>;
+}
+
+/** A link's visible words without its picture's caption or credit (CNN prints the credit inside the picture link). */
+function linkWords(a: Element): string {
+  const h = a as HTMLElement;
+  let t = clean(typeof h.innerText === 'string' ? h.innerText : a.textContent);
+  if (!t) return '';
+  for (const c of Array.from(a.querySelectorAll('figcaption,[class*="caption" i],[class*="credit" i]'))) {
+    const ct = clean((c as HTMLElement).innerText ?? c.textContent);
+    if (ct) t = clean(t.replace(ct, ''));
+  }
+  return t;
+}
+
+/** The picture a link shows: an <img>/<picture>/<svg>, else a box with a CSS background picture (F5 step 6). */
+function linkPicture(a: Element): Element | null {
+  const m = a.querySelector('img,picture,svg');
+  if (m) return m.localName === 'picture' ? (m.querySelector('img') ?? m) : m;
+  for (const x of [a, ...Array.from(a.querySelectorAll('div,span,figure')).slice(0, 12)]) {
+    if (bgUrlOf(x)) return x;
+  }
+  return null;
+}
+
+let pairCache: { at: number; links: number; pairs: StoryPairs } | null = null;
+
+/**
+ * For each link that shows a picture and no words, walk up at most 4 boxes (stopping once a box holds a second
+ * address) to find its headline twin: a link to the same address (ignoring #hash) with at least 12 characters. The
+ * twin then carries the picture and the picture link is not read again. Small pictures (a byline headshot beside the
+ * author's name) are dropped, not attached. A picture link with no twin takes the nearest heading in its card.
+ */
+export function storyPairs(): StoryPairs {
+  const now = performance.now();
+  const nLinks = document.links.length;
+  if (pairCache && now - pairCache.at < 1000 && pairCache.links === nLinks) return pairCache.pairs;
+  const pairs: StoryPairs = { pic: new Map(), skip: new Set(), head: new Map(), adopted: new Set() };
+  const words = new Map<Element, string>();
+  const wordsOf = (a: Element): string => {
+    let t = words.get(a);
+    if (t === undefined) {
+      t = linkWords(a);
+      words.set(a, t);
+    }
+    return t;
+  };
+  const all = Array.from(document.querySelectorAll('a[href]')).slice(0, 2000);
+  for (const a of all) {
+    if (a.closest('webable-ui')) continue;
+    // A picture link may carry a short label over the picture ("• Travel"): it is still the story's picture.
+    const w = wordsOf(a).replace(/^[•·|\s]+/, '');
+    if (w && !isKickerText(w)) continue;
+    const pic = linkPicture(a);
+    if (!pic) continue;
+    const r = pic.getBoundingClientRect();
+    if (r.width < 32 || r.height < 32) continue;
+    if (w && Math.max(r.width, r.height) < 100) continue;
+    const key = hrefKey((a as HTMLAnchorElement).href);
+    const small = Math.max(r.width, r.height) < 100;
+    let mate: Element | null = null;
+    let box: Element | null = null;
+    for (let x = a.parentElement, i = 0; x && i < 4 && x !== document.body; x = x.parentElement, i++) {
+      const hrefs = new Set<string>();
+      for (const l of Array.from(x.querySelectorAll('a[href]')).slice(0, 40)) {
+        const k = hrefKey((l as HTMLAnchorElement).href);
+        hrefs.add(k);
+        if (!mate && l !== a && k === key && wordsOf(l).length >= (small ? 2 : 12)) mate = l;
+      }
+      if (mate || hrefs.size > 1) break;
+      box = x;
+    }
+    if (mate) {
+      pairs.skip.add(a);
+      if (!small && !pairs.pic.has(mate)) pairs.pic.set(mate, pic);
+      continue;
+    }
+    if (box) {
+      const h = box.querySelector('h1,h2,h3,h4,h5,h6,[role=heading]');
+      if (h && !h.contains(a) && !a.contains(h) && clean(h.textContent) && !h.querySelector('a[href]')) {
+        pairs.head.set(a, h);
+        pairs.adopted.add(h);
+      }
+    }
+  }
+  pairCache = { at: now, links: nLinks, pairs };
+  return pairs;
 }
 
 /* ------------------------------------------------------------------ */
@@ -92,6 +225,21 @@ export function clean(s: string | null | undefined): string {
   return (s ?? '').replace(/[\s ​]+/g, ' ').trim();
 }
 
+/** The words of the text nodes the page shows under `el`, in their own case (no CSS text-transform). */
+function shownWords(el: Element): string {
+  const out: string[] = [];
+  const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let n = 0;
+  for (let t = walk.nextNode(); t && n < 200; t = walk.nextNode(), n++) {
+    const p = t.parentElement;
+    if (!p) continue;
+    const r = p.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) continue;
+    out.push((t as Text).data);
+  }
+  return clean(out.join(' '));
+}
+
 export function textOf(el: Element): string {
   const h = el as HTMLElement;
   const t = clean(typeof h.innerText === 'string' ? h.innerText : el.textContent);
@@ -101,6 +249,9 @@ export function textOf(el: Element): string {
       if (getComputedStyle(el).textTransform === 'uppercase') {
         const raw = clean(el.textContent);
         if (raw && raw.toUpperCase() === t) return raw;
+        // Hidden alternates inside (a short and a long date): only the shown text nodes, in their own case.
+        const shown = shownWords(el);
+        if (shown && shown.toUpperCase() === t) return shown;
       }
     } catch {
       /* detached */
@@ -231,7 +382,7 @@ export function nameOf(el: Element): string {
   if (aria) return aria;
   if (t) return t;
   const img = el.querySelector('img[alt]');
-  if (img) return clean(img.getAttribute('alt'));
+  if (img) return cleanAlt(img.getAttribute('alt'));
   const st = el.querySelector('svg title');
   return st ? clean(st.textContent) : '';
 }
@@ -312,6 +463,9 @@ export function isDense(text: string): boolean {
   return words.length / sentences >= 25 || long / words.length >= 0.15;
 }
 
+/** Page tools (Print, Save, Listen, Share): quiet icon links, and in an article they move to "More on this page". */
+export const TOOL_RE = /^(print( this)?( page)?|save( to (my )?list)?|share( this)?( (article|story|page))?|share (with|on|to|via) [\w .+-]{1,24}|listen( to (this )?(article|story))?|play( pronunciation| audio)?|email( this)?( page)?|bookmark|download( pdf)?|copy( the)? link( to( the)? clipboard)?)$/i;
+
 export const PRICE_RE = /(?:[$€£¥]\s?\d|\d[\d,.]*\s?(?:USD|EUR|GBP))/;
 export const HELP_RE = /\b(help|contact( us)?|support|customer (service|care)|faqs?|call (us|your|our)|chat with( us)?)\b/i;
 
@@ -374,7 +528,7 @@ export function isShown(el: Element): boolean {
     : true;
 }
 
-function safeHref(el: Element): string | null {
+export function safeHref(el: Element): string | null {
   const raw = (el as HTMLAnchorElement).href;
   if (typeof raw !== 'string' || !raw) return null;
   try {
@@ -419,93 +573,353 @@ function svgDataUrl(svg: SVGSVGElement, r: DOMRect): string | null {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(xml)}`;
 }
 
-/** The image's real address: what it shows now, else its srcset or lazy-load source (placeholders skipped). */
-function bestSrc(img: HTMLImageElement): string | null {
-  const placeholder = (u: string): boolean => !u || (/^data:image\/(gif|png|svg)/i.test(u) && u.length < 400);
-  if (img.currentSrc && !placeholder(img.currentSrc) && img.naturalWidth > 2) return img.currentSrc;
-  const set = img.getAttribute('srcset') || img.getAttribute('data-srcset') || img.closest('picture')?.querySelector('source')?.getAttribute('srcset') || '';
-  if (set) {
-    const cands = set.split(/,\s+(?=\S)/).map((c) => c.trim().split(/\s+/)[0] ?? '').filter(Boolean);
-    const pick = cands[Math.min(cands.length - 1, 1)] ?? cands[0];
-    if (pick && !placeholder(pick)) {
+const SUPPORTED_TYPES = /^image\/(avif|webp|jpeg|jpg|png|gif|svg\+xml|apng|bmp|x-icon)$/i;
+
+function absUrl(u: string | null | undefined): string | null {
+  const v = (u ?? '').trim();
+  if (!v) return null;
+  try {
+    return new URL(v, location.href).href;
+  } catch {
+    return null;
+  }
+}
+
+/** The CSS background picture of a media box of at least 160 × 90 (F5 step 6). */
+function bgUrlOf(el: Element): string | null {
+  let bg = '';
+  try {
+    bg = getComputedStyle(el).backgroundImage;
+  } catch {
+    return null;
+  }
+  const m = /url\(["']?([^"')]+)["']?\)/.exec(bg ?? '');
+  if (!m) return null;
+  const r = el.getBoundingClientRect();
+  if (r.width < 160 || r.height < 90) return null;
+  const u = absUrl(m[1]);
+  return u && !isPlaceholderSrc(u) ? u : null;
+}
+
+/**
+ * The picture's real address, tried in order (design.md F5): what it shows now when complete and large enough; the
+ * <picture><source> whose media matches and whose type is supported, taking the srcset candidate at least the box ×
+ * DPR; the image's own srcset; data-src / data-srcset / data-lazy-src / data-original / data-hi-res-src; an ancestor's
+ * data-url / data-src / data-bg (up to 3 levels: CNN's `.image[data-url]`); a <noscript><img>; then its src.
+ * `want` is the CSS width the Calm view will draw it at.
+ */
+function bestSrc(img: HTMLImageElement, want: number): string | null {
+  const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  const ok = (u: string | null): u is string => !!u && !isPlaceholderSrc(u);
+  const current = img.complete && img.naturalWidth > 2 && ok(img.currentSrc) ? img.currentSrc : null;
+  if (current && img.naturalWidth >= 0.75 * want * Math.min(dpr, 2)) return current;
+  const pic = img.parentElement?.localName === 'picture' ? img.parentElement : null;
+  if (pic) {
+    for (const s of Array.from(pic.querySelectorAll(':scope > source'))) {
+      const media = s.getAttribute('media');
       try {
-        return new URL(pick, location.href).href;
+        if (media && !window.matchMedia(media).matches) continue;
       } catch {
-        /* ignore */
+        continue;
       }
+      const type = s.getAttribute('type');
+      if (type && !SUPPORTED_TYPES.test(type.trim())) continue;
+      const set = s.getAttribute('srcset') || s.getAttribute('data-srcset');
+      const u = set ? absUrl(pickSrcset(set, want, dpr)) : null;
+      if (ok(u)) return u;
     }
   }
-  for (const a of ['data-src', 'data-lazy-src', 'data-original']) {
+  const own = img.getAttribute('srcset');
+  if (own) {
+    const u = absUrl(pickSrcset(own, want, dpr));
+    if (ok(u)) return u;
+  }
+  for (const a of ['data-src', 'data-srcset', 'data-lazy-src', 'data-original', 'data-hi-res-src']) {
     const v = img.getAttribute(a);
-    if (v && !placeholder(v)) {
-      try {
-        return new URL(v, location.href).href;
-      } catch {
-        /* ignore */
+    if (!v) continue;
+    const u = absUrl(a === 'data-srcset' ? pickSrcset(v, want, dpr) : v);
+    if (ok(u)) return u;
+  }
+  if (current) return current;
+  for (let x = img.parentElement, i = 0; x && i < 3; x = x.parentElement, i++) {
+    for (const a of ['data-url', 'data-src', 'data-bg']) {
+      const v = x.getAttribute(a);
+      if (v && /^(https?:)?\/\//i.test(v.trim())) {
+        const u = absUrl(v);
+        if (ok(u)) return u;
       }
     }
   }
-  return placeholder(img.src) ? null : img.src;
+  const ns = img.parentElement?.querySelector('noscript');
+  const m = ns ? /<img[^>]+src=["']([^"']+)["']/i.exec(ns.textContent ?? '') : null;
+  if (m) {
+    const u = absUrl(m[1]);
+    if (ok(u)) return u;
+  }
+  return ok(img.src) ? img.src : null;
 }
 
 const LOGO_RE = /\b(logo|logotype|brand ?mark|wordmark)\b/i;
+const CHROME_SEL = 'header,nav,footer,[role=banner],[role=navigation],[role=contentinfo]';
 
-/** A logo: named so, drawn in the header's home link, or the site's own name as a picture. */
-function isLogoImage(img: Element, alt: string, url: string): boolean {
-  if (LOGO_RE.test(alt) || LOGO_RE.test(img.getAttribute('class') ?? '') || LOGO_RE.test(img.id)) return true;
-  if (/[/_-]logo[s]?[._/-]|logo\.(svg|png|jpe?g|webp)/i.test(url.split('?')[0] ?? '')) return true;
+/** A logo (F4): named so and small (or in the header, navigation or footer), or the header's home link. */
+function isLogoImage(img: Element, rawAlt: string, url: string, r: DOMRect): boolean {
   const home = img.closest('a[href]');
+  const named =
+    LOGO_RE.test(rawAlt) || LOGO_RE.test(img.getAttribute('class') ?? '') || LOGO_RE.test(img.id) ||
+    /[/_-]logo[s]?[._/-]|logo\.(svg|png|jpe?g|webp)/i.test(url.split('?')[0] ?? '') ||
+    LOGO_RE.test(img.parentElement?.getAttribute('class') ?? '') || LOGO_RE.test(home?.getAttribute('class') ?? '');
+  let homeLink = false;
   if (home && img.closest('header,[role=banner]')) {
     try {
       const u = new URL((home as HTMLAnchorElement).href, location.href);
-      if (u.origin === location.origin && (u.pathname === '/' || u.pathname === '')) return true;
+      homeLink = u.origin === location.origin && (u.pathname === '/' || u.pathname === '');
     } catch {
-      /* ignore */
+      homeLink = false;
     }
   }
-  if (LOGO_RE.test(img.parentElement?.getAttribute('class') ?? '') || LOGO_RE.test(home?.getAttribute('class') ?? '')) return true;
-  return false;
+  return isLogoPicture({ w: r.width, h: r.height, named, inChrome: !!img.closest(CHROME_SEL), homeLink });
 }
 
 const BANNER_SEL = '[class*="hero" i],[class*="carousel" i],[class*="slider" i],[class*="swiper" i],[class*="slick" i],[class*="banner" i],[aria-roledescription="carousel"],[aria-roledescription="slide"]';
 
-function imageMeta(img: Element, alt: string, url: string): Pick<ImageBlock, 'logo' | 'caption' | 'linked' | 'banner'> {
-  const fig = img.closest('figure');
-  const cap = fig?.querySelector('figcaption');
+/** Caption and credit elements drawn with their picture: never read again as text. */
+const captionEls = new WeakSet<Element>();
+const CAPTION_SEL = 'figcaption,[class*="caption" i],[class*="credit" i],[itemprop="caption"]';
+
+/**
+ * A caption or credit drawn under its picture (F7), whichever the reader meets first: an element the picture claimed,
+ * or a short caption-like element with no controls whose card (at most 4 boxes up) holds exactly one picture of at
+ * least 120 px. "credit-card" fields and captions with links or controls are never taken.
+ */
+export function isCaptionEl(el: Element): boolean {
+  if (captionEls.has(el)) return true;
+  if (!el.matches(CAPTION_SEL)) return false;
+  const cls = el.getAttribute('class') ?? '';
+  if (/card|cvv|payment|score/i.test(cls) && !/caption/i.test(cls)) return false;
+  if (el.querySelector('input,select,textarea,button,a[href],img,picture,video,iframe')) return false;
+  const t = clean(el.textContent);
+  if (!t || t.length > 400) return false;
+  // The same card captionFor walks from the picture's side (pictures of 60 px or more end it; at most 4 boxes up).
+  for (let x = el.parentElement, i = 0; x && i < 4 && x !== document.body; x = x.parentElement, i++) {
+    const pics = Array.from(x.querySelectorAll('img')).filter((p) => p.getBoundingClientRect().width >= 60);
+    if (pics.length > 1) return false;
+    const pic = pics[0];
+    if (pic) {
+      if (pic.getBoundingClientRect().width < 120 || depthBetween(x, pic) > 4) return false;
+      captionEls.add(el);
+      return true;
+    }
+  }
+  return false;
+}
+
+let ldCache: { at: number; byPath: Map<string, { url: string; caption: string }>; first: { url: string; caption: string } | null } | null = null;
+
+/** JSON-LD pictures of the page (NewsArticle / Product `image`), by URL path. */
+export function ldImages(): { byPath: Map<string, { url: string; caption: string }>; first: { url: string; caption: string } | null } {
+  const now = performance.now();
+  if (ldCache && now - ldCache.at < 5000) return ldCache;
+  const byPath = new Map<string, { url: string; caption: string }>();
+  let first: { url: string; caption: string } | null = null;
+  const add = (v: unknown): void => {
+    if (!v) return;
+    if (Array.isArray(v)) return v.forEach(add);
+    if (typeof v === 'string') {
+      const u = absUrl(v);
+      if (u && !isPlaceholderSrc(u)) {
+        const it = { url: u, caption: '' };
+        first ??= it;
+        try {
+          byPath.set(new URL(u).pathname, it);
+        } catch {
+          /* ignore */
+        }
+      }
+      return;
+    }
+    if (typeof v === 'object') {
+      const o = v as Record<string, unknown>;
+      const u = absUrl(typeof o.contentUrl === 'string' ? o.contentUrl : typeof o.url === 'string' ? o.url : null);
+      if (u && !isPlaceholderSrc(u)) {
+        const it = { url: u, caption: clean(typeof o.caption === 'string' ? o.caption : typeof o.description === 'string' ? o.description : '').slice(0, 300) };
+        first ??= it;
+        try {
+          byPath.set(new URL(u).pathname, it);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  };
+  const visit = (node: unknown, depth: number): void => {
+    if (!node || depth > 4) return;
+    if (Array.isArray(node)) return node.forEach((n) => visit(n, depth + 1));
+    if (typeof node !== 'object') return;
+    const o = node as Record<string, unknown>;
+    if (o.image) add(o.image);
+    if (o['@graph']) visit(o['@graph'], depth + 1);
+    if (o.mainEntity) visit(o.mainEntity, depth + 1);
+  };
+  for (const s of Array.from(document.querySelectorAll('script[type="application/ld+json"]')).slice(0, 12)) {
+    try {
+      visit(JSON.parse(s.textContent ?? ''), 0);
+    } catch {
+      /* not JSON */
+    }
+  }
+  ldCache = { at: now, byPath, first };
+  return ldCache;
+}
+
+/**
+ * The picture's caption and credit (F7): its figcaption, else a caption element in its own card (never a credit), else
+ * the JSON-LD caption with the same URL path. The card is at most 4 boxes up, while it holds no other picture.
+ */
+function captionFor(img: Element, url: string): { caption: string; credit: string } {
+  let capEl: Element | null = null;
+  let creditEl: Element | null = null;
+  for (let x = img.parentElement, i = 0; x && i < 4 && x !== document.body; x = x.parentElement, i++) {
+    if (Array.from(x.querySelectorAll('img')).some((o) => o !== img && o.getBoundingClientRect().width >= 60)) break;
+    for (const c of Array.from(x.querySelectorAll('figcaption,[class*="caption" i],[class*="credit" i],[itemprop="caption"]'))) {
+      if (c.contains(img) || !clean(c.textContent)) continue;
+      const isCredit = /credit|copyright|byline/i.test(c.getAttribute('class') ?? '');
+      if (isCredit) creditEl ??= c;
+      else capEl ??= c;
+    }
+    if (capEl || x.localName === 'figure') break;
+  }
+  const textAt = (e: Element | null): string => (e ? clean((e as HTMLElement).innerText ?? e.textContent) : '');
+  let caption = textAt(capEl);
+  let credit = textAt(creditEl);
+  if (capEl && creditEl && capEl.contains(creditEl)) caption = clean(caption.replace(credit, ''));
+  if (caption && credit && caption === credit) caption = '';
+  if (!caption) {
+    try {
+      caption = ldImages().byPath.get(new URL(url).pathname)?.caption ?? '';
+    } catch {
+      /* ignore */
+    }
+  }
+  if (capEl) captionEls.add(capEl);
+  if (creditEl) captionEls.add(creditEl);
+  return { caption: caption.slice(0, 280), credit: credit.slice(0, 80) };
+}
+
+function imageMeta(img: Element, rawAlt: string, url: string, r: DOMRect): Pick<ImageBlock, 'logo' | 'caption' | 'credit' | 'linked' | 'banner'> {
   let banner = false;
   try {
     banner = !!img.closest(BANNER_SEL);
   } catch {
     banner = false;
   }
-  return { logo: isLogoImage(img, alt, url), caption: cap ? clean(textOf(cap)).slice(0, 240) : '', linked: !!img.closest('a[href]'), banner };
+  const logo = isLogoImage(img, rawAlt, url, r);
+  const { caption, credit } = logo ? { caption: '', credit: '' } : captionFor(img, url);
+  return { logo, caption, credit, linked: !!img.closest('a[href]'), banner };
 }
 
-function imageFor(el: Element): ImageBlock | null {
+/**
+ * The picture's own size, also before a lazy picture has loaded: the decoded size, else the size the page records on
+ * its media box (`data-original-width`, CNN), else the widest srcset candidate at the shown ratio, else its width and
+ * height attributes. A low-resolution placeholder never counts as the picture's size.
+ */
+function sourceSize(img: HTMLImageElement, r: DOMRect): { nw: number; nh: number } {
+  const decoded = img.complete && img.naturalWidth > 2 && img.naturalWidth >= 0.5 * r.width ? { nw: img.naturalWidth, nh: img.naturalHeight } : null;
+  for (let x = img.parentElement, i = 0; x && i < 4 && x !== document.body; x = x.parentElement, i++) {
+    const w = Number(x.getAttribute('data-original-width'));
+    const h = Number(x.getAttribute('data-original-height'));
+    if (w > 0 && h > 0) return decoded && decoded.nw > w ? decoded : { nw: w, nh: h };
+  }
+  if (decoded) return decoded;
+  const aw = Number(img.getAttribute('width'));
+  const ah = Number(img.getAttribute('height'));
+  const ratio = aw > 0 && ah > 0 ? aw / ah : r.width / Math.max(1, r.height);
+  const sets = [img.getAttribute('srcset'), img.getAttribute('data-srcset')];
+  if (img.parentElement?.localName === 'picture') for (const s of Array.from(img.parentElement.querySelectorAll('source'))) sets.push(s.getAttribute('srcset'));
+  let best = 0;
+  for (const set of sets) for (const c of parseSrcset(set ?? '')) if (c.w && c.w > best) best = c.w;
+  if (best > 0) return { nw: best, nh: Math.round(best / Math.max(0.1, ratio)) };
+  return aw > 0 && ah > 0 ? { nw: aw, nh: ah } : { nw: 0, nh: 0 };
+}
+
+/**
+ * One picture as a block, or null when it is too small, hidden decoration or has no usable source. `important`
+ * (a story's own picture, the lead, a product picture) skips the decoration rule and asks for a larger source.
+ */
+export function imageFor(el: Element, opts: { important?: boolean } = {}): ImageBlock | null {
   let img: Element = el;
   if (el.localName === 'picture') img = el.querySelector('img') ?? el;
   const r = img.getBoundingClientRect();
   if (r.width < 32 || r.height < 32) return null;
+  const important = !!opts.important;
   // Decoration the page hides from assistive technology (an icon drawn on a coloured tile) is not a picture to show.
-  const hiddenDeco = img.closest('[aria-hidden="true"],[role="presentation"],[role="none"]');
-  if (hiddenDeco && depthBetween(hiddenDeco, img) <= 3 && !(img instanceof HTMLImageElement && clean(img.alt))) return null;
+  const hiddenDeco = important ? null : img.closest('[aria-hidden="true"],[role="presentation"],[role="none"]');
+  if (hiddenDeco && depthBetween(hiddenDeco, img) <= 3 && !(img instanceof HTMLImageElement && cleanAlt(img.alt))) return null;
   if (img instanceof HTMLImageElement) {
-    const url = bestSrc(img);
+    // The width the Calm view may draw it at: a story picture can become the lead (wide), so it asks for more.
+    const url = bestSrc(img, Math.max(important ? 480 : 320, Math.min(960, r.width * (important ? 1.5 : 1.25))));
     if (!url || !safeImageUrl(url)) return null;
-    // Photos fill their well; cut-outs, drawings and near-square product shots sit inside it.
-    const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : r.width / Math.max(1, r.height);
+    const { nw, nh } = sourceSize(img, r);
+    // Photos fill their box; cut-outs, drawings and near-square product shots sit in a well.
+    const ratio = nw && nh ? nw / nh : r.width / Math.max(1, r.height);
     const art = /\.(png|svg|gif)(\?|#|$)|^data:image\/(png|svg|gif)/i.test(url) || (ratio > 0.8 && ratio < 1.25);
-    const alt = clean(img.alt);
-    return { b: 'image', url, alt, w: r.width, h: r.height, fit: art ? 'contain' : 'cover', ...imageMeta(img, alt, url), key: keyOf(img), src: img };
+    const rawAlt = clean(img.alt);
+    return {
+      b: 'image', url, alt: cleanAlt(rawAlt), w: r.width, h: r.height, nw, nh, fit: art ? 'contain' : 'cover',
+      ...imageMeta(img, rawAlt, url, r), important, key: keyOf(img), src: img,
+    };
   }
   if (img instanceof SVGSVGElement) {
     if (r.width < 40 || r.height < 40) return null;
     const url = svgDataUrl(img, r);
     if (!url) return null;
-    const alt = clean(img.getAttribute('aria-label')) || clean(img.querySelector('title')?.textContent);
-    return { b: 'image', url, alt, w: r.width, h: r.height, fit: 'contain', ...imageMeta(img, alt, ''), key: keyOf(img), src: img };
+    const raw = clean(img.getAttribute('aria-label')) || clean(img.querySelector('title')?.textContent);
+    return {
+      b: 'image', url, alt: cleanAlt(raw), w: r.width, h: r.height, nw: r.width, nh: r.height, fit: 'contain',
+      ...imageMeta(img, raw, '', r), important, key: keyOf(img), src: img,
+    };
+  }
+  // A media box with a CSS background picture (F5 step 6).
+  const bg = bgUrlOf(img);
+  if (bg && safeImageUrl(bg)) {
+    const raw = clean(img.getAttribute('aria-label')) || clean(img.getAttribute('title'));
+    return {
+      b: 'image', url: bg, alt: cleanAlt(raw), w: r.width, h: r.height, nw: 0, nh: 0, fit: 'cover',
+      ...imageMeta(img, raw, bg, r), important, key: keyOf(img), src: img,
+    };
   }
   return null;
+}
+
+/**
+ * Which pictures earn a place (design.md "Important pictures"): never logos; always a story's own picture, the lead
+ * and product pictures (`important`), captioned figures and alts that name a chart, graph, map or diagram; never wide
+ * stock banners; in a tile or row (`framed`) any picture; in running text a picture of at least 300 px with a real
+ * description, or a picture link of at least 120 px. Icons, headshots and decoration are left out.
+ */
+export function keepImage(b: ImageBlock, framed: boolean): boolean {
+  if (b.logo) return false;
+  if (b.important) return true;
+  if (b.caption || /\b(chart|graph|map|diagram|figure)\b/i.test(b.alt)) return true;
+  // Wide stock pictures in heroes and carousels carry no part of the task.
+  if (b.banner && b.w >= 360) return false;
+  if (framed) return true;
+  if (b.w >= 560 && b.w / Math.max(1, b.h) >= 1.45) return false;
+  const long = Math.max(b.w, b.h);
+  return (!!b.alt && long >= 300) || (b.linked && long >= 120);
+}
+
+/** The page's lead picture from its JSON-LD, else og:image unless it is a placeholder (F5 step 7, the lead only). */
+export function pageLeadImage(): ImageBlock | null {
+  const ld = ldImages().first;
+  const og = absUrl(document.querySelector<HTMLMetaElement>('meta[property="og:image"]')?.content);
+  const pick = ld ?? (og && !isPlaceholderSrc(og) ? { url: og, caption: '' } : null);
+  if (!pick || !safeImageUrl(pick.url)) return null;
+  const head = document.head ?? document.documentElement;
+  return {
+    b: 'image', url: pick.url, alt: '', w: 0, h: 0, nw: 0, nh: 0, fit: 'cover', logo: false, caption: pick.caption, credit: '',
+    linked: false, banner: false, important: true, key: keyOf(head, 'leadimg'), src: head,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -575,6 +989,105 @@ function prepare(root: Element): Prep {
 }
 
 /* ------------------------------------------------------------------ */
+/* Story cards                                                         */
+/* ------------------------------------------------------------------ */
+
+const HEADING_SEL = 'h1,h2,h3,h4,h5,h6,[role=heading]';
+const HEADLINE_SEL = '[class*="headline" i],[class*="title" i]';
+const KICKER_SEL = '[class*="label" i],[class*="kicker" i],[class*="eyebrow" i],[class*="category" i],[class*="overline" i],[class*="flag" i]';
+const DEK_SEL = '[class*="description" i],[class*="dek" i],[class*="summary" i],[class*="standfirst" i],[class*="excerpt" i],[class*="teaser" i],p';
+
+/** Top of an element on the page (a display: contents card has no box: its first child's). */
+function pageTopOf(el: Element, depth = 0): number {
+  const r = el.getBoundingClientRect();
+  if (r.width || r.height) return r.top + window.scrollY;
+  if (depth > 3) return Infinity;
+  for (const c of Array.from(el.children).slice(0, 8)) {
+    const t = pageTopOf(c, depth + 1);
+    if (Number.isFinite(t)) return t;
+  }
+  return Infinity;
+}
+
+/** The innermost of several matches that has words (a headline span inside a headline wrapper). */
+function innermost(els: Element[]): Element | null {
+  const withText = els.filter((e) => !!clean(textOf(e)));
+  return withText.find((e) => !withText.some((o) => o !== e && e.contains(o))) ?? null;
+}
+
+export interface StoryParts {
+  title: string; kicker: string | null; dek: string | null; time: string | null; lines: string[]; top: number; headPx: number;
+}
+
+/**
+ * A card link's parts in the page's own words: the headline (a heading inside it, else its headline element, else its
+ * first line; never the picture's alt text), a short kicker label, the dek (its description element, else the first
+ * long line) and a time line. Caption and credit lines of its picture are left out.
+ */
+export function storyParts(el: Element, adopted: Element | null): StoryParts {
+  const capTexts = new Set(
+    Array.from(el.querySelectorAll('figcaption,[class*="caption" i],[class*="credit" i]')).map((c) => clean(c.textContent)).filter(Boolean),
+  );
+  const raw = linesOf(el).filter((l) => !capTexts.has(l));
+  const okHead = (h: Element): boolean => !capTexts.has(clean(h.textContent)) && !/\b(sub|dek|desc)/i.test(h.getAttribute('class') ?? '');
+  const headEl =
+    adopted ??
+    innermost(Array.from(el.querySelectorAll(HEADING_SEL)).filter(okHead)) ??
+    innermost(Array.from(el.querySelectorAll(HEADLINE_SEL)).filter(okHead));
+  let title = headEl ? textOf(headEl) : '';
+  const unbullet = (s: string): string => s.replace(/^[•·|\s]+/, '');
+  const kEl = Array.from(el.querySelectorAll(KICKER_SEL)).find((k) => {
+    const t = unbullet(clean(textOf(k)));
+    return !!t && isKickerText(t) && !(headEl && headEl === k);
+  });
+  const kicker = kEl ? unbullet(clean(textOf(kEl))) : null;
+  const isKick = (l: string): boolean => !!kicker && unbullet(l) === kicker;
+  const tEl = el.querySelector('time');
+  const time = (tEl && clean(textOf(tEl))) || raw.find((l) => isTimeText(l)) || null;
+  if (!title) title = raw.find((l) => !isKick(l) && l !== time) ?? '';
+  if (!title) title = cleanAlt(el.getAttribute('aria-label'));
+  // "Live Updates Obama ties Trump…" when the label sits inside the headline element.
+  if (kicker && title.startsWith(`${kicker} `) && title.length > kicker.length + 12) title = title.slice(kicker.length + 1);
+  const dEl = Array.from(el.querySelectorAll(DEK_SEL)).find((d) => {
+    if (headEl && (d.contains(headEl) || headEl.contains(d))) return false;
+    const t = clean(textOf(d));
+    return t.length >= 20 && t !== title && !isTimeText(t);
+  });
+  let dek = (dEl && clean(textOf(dEl))) || raw.find((l) => l !== title && !isKick(l) && l !== time && l.length >= 40) || null;
+  // A section name in the headline slot ("Travel" over "Travel"): the label stays the kicker, the dek is the headline.
+  if (kicker && title.toLowerCase() === kicker.toLowerCase()) {
+    const next = dek ?? raw.find((l) => !isKick(l) && l !== time && l.length >= 12) ?? null;
+    if (next) {
+      title = next;
+      dek = null;
+    }
+  }
+  const lines = raw.filter((l) => l !== title && !isKick(l) && l !== time && l !== dek && !title.includes(l) && !(dek ?? '').includes(l));
+  let headPx = 16;
+  try {
+    headPx = parseFloat(getComputedStyle(headEl ?? el).fontSize) || 16;
+  } catch {
+    /* detached */
+  }
+  return { title, kicker, dek, time, lines, top: pageTopOf(headEl ?? el), headPx };
+}
+
+/** A headline link the page shows without a card (a list of headlines) as a story card with no picture. */
+export function storyFromLink(c: ControlBlock): CardLinkBlock {
+  let headPx = 16;
+  try {
+    headPx = parseFloat(getComputedStyle(c.el).fontSize) || 16;
+  } catch {
+    /* detached */
+  }
+  const top = pageTopOf(c.el);
+  return {
+    b: 'cardlink', el: c.el, href: c.href, title: c.text, lines: [], image: null, kicker: null, dek: null, time: null,
+    top: Number.isFinite(top) ? top : 0, headPx, key: `${c.key}s`, src: c.src,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /* The reader                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -632,6 +1145,8 @@ class Run {
       const p = ctx.placed.get(el);
       if (p !== undefined && p !== ctx.current) return;
       if (ctx.skip.has(el)) return;
+      // Drawn elsewhere: a picture link with its headline, a heading as a picture's title, a caption with its picture.
+      if (ctx.pairs.skip.has(el) || ctx.pairs.adopted.has(el) || isCaptionEl(el)) return;
       if (ctx.folded.has(el)) {
         this.close();
         ctx.foldedHits.push(el);
@@ -701,9 +1216,16 @@ class Run {
         if (b) this.push(b);
         return;
       }
+      // A headline paired with its picture, or a picture link titled by its card's heading: one story card.
+      if (ctx.pairs.pic.has(el) || ctx.pairs.head.has(el)) {
+        this.close();
+        const b = this.cardLink(el);
+        if (b) this.push(b);
+        return;
+      }
       // A link wrapping a card (picture, headline and summary) is one tappable card, whatever its own display.
       if (block || el.querySelector('h1,h2,h3,h4,h5,h6,p,div,img,picture')) {
-        const media = el.querySelector('img,picture,svg');
+        const media = el.querySelector('img,picture,svg') ? linkPicture(el) : null;
         const lines = linesOf(el);
         if ((media && imageFor(media)) || (lines.length >= 2 && lines.join(' ').length > 24)) {
           this.close();
@@ -715,7 +1237,11 @@ class Run {
       const text = nameOf(el);
       if (!text) return;
       if (!this.flowSrc) this.flowSrc = el;
+      // Keep the spaces at the link's edges ("…Middle East </a>as" must not read "Eastas").
+      const raw = el.textContent ?? '';
+      if (/^\s/.test(raw) && this.parts.length) this.parts.push({ t: 'text', text: ' ' });
       this.parts.push({ t: 'link', el, text, href: safeHref(el), help: this.isHelp(el, text) });
+      if (/\s$/.test(raw)) this.parts.push({ t: 'text', text: ' ' });
       return;
     }
     if (tag === 'img' || tag === 'picture' || tag === 'svg') {
@@ -860,16 +1386,27 @@ class Run {
     };
   }
 
+  /**
+   * One story or tile link as a card: its headline (never the picture's alt text), the kicker above it, the dek and
+   * time under it, and its picture (its own, or its paired picture link's). An untitled picture link keeps the picture.
+   */
   cardLink(el: Element): CardLinkBlock | null {
-    const lines = linesOf(el);
-    const media = el.querySelector('img,picture,svg');
-    const image = media ? imageFor(media) : null;
-    const title = clean(el.getAttribute('aria-label')) || lines[0] || (image?.alt ?? '');
-    if (!title) return null;
+    const pairs = this.ctx.pairs;
+    const paired = pairs.pic.get(el) ?? null;
+    const media = paired ?? (el.querySelector('img,picture,svg') ? linkPicture(el) : null);
+    const image = media ? imageFor(media, { important: !!paired }) : null;
+    const story = storyParts(el, pairs.head.get(el) ?? null);
     // A logo link is the site's name: it is in the top bar, never a card.
-    if ((image?.logo || /\blogo\b/i.test(title)) && lines.length <= 1) return null;
+    if ((image?.logo || /\blogo\b/i.test(story.title)) && story.lines.length <= 1 && !story.dek) return null;
+    if (!story.title && !image) return null;
+    let top = story.top;
+    if (image?.src instanceof Element) {
+      const r = image.src.getBoundingClientRect();
+      if (r.width || r.height) top = Math.min(top, r.top + window.scrollY);
+    }
     return {
-      b: 'cardlink', el, href: safeHref(el), title, lines: lines.filter((l) => l !== title).slice(0, 6), image,
+      b: 'cardlink', el, href: safeHref(el), title: story.title, lines: story.lines.slice(0, 6), image,
+      kicker: story.kicker, dek: story.dek, time: story.time, top: Number.isFinite(top) ? top : 0, headPx: story.headPx,
       key: keyOf(el), src: el,
     };
   }
@@ -1003,6 +1540,12 @@ function readBlocksFrom(el: Element, ctx: ReadCtx, root: Element, vis: boolean, 
 /** Read one placed element (and its subtree) into blocks. */
 export function readBlocks(root: Element, ctx: ReadCtx): Block[] {
   if (!root.isConnected) return [];
+  // A placed element that is drawn elsewhere (an article's byline or date in its header, a caption under its picture,
+  // a picture link drawn with its headline) is not read again, even when the page outline places it on its own.
+  // The outline may also place pieces of one (each name of a byline, the text inside a caption): those go too.
+  for (let x: Element | null = root; x && x !== document.body; x = x.parentElement) {
+    if (ctx.elsewhere.has(x) || ctx.pairs.skip.has(x) || ctx.pairs.adopted.has(x) || isCaptionEl(x)) return [];
+  }
   const run = new Run(ctx, prepare(root), root);
   run.visit(root, true);
   run.close();

@@ -182,7 +182,7 @@ export function phaseLine(s: EngineState, origin: string): string {
   if (s.showingOriginal) return 'Showing the original page. Your changes are kept for when you switch back.';
   switch (s.phase) {
     case 'idle':
-      return s.fit ? 'Waiting for the page to settle.' : 'No fit yet. Run the fitting so pages can be fitted.';
+      return s.fit ? 'Waiting for the page to settle.' : 'Starting from your browser settings.';
     case 'reading':
       return 'Reading this page.';
     case 'tailored':

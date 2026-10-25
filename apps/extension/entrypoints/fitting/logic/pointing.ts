@@ -1,4 +1,4 @@
-// P1 dot ring: block statistics and the ladder walk that picks the next dot size (fitting brief §4).
+// Point: the dot ring's block statistics and the sequential walk that picks the next dot size (fitting brief round 4 §3).
 // Core's deriveFit recomputes the minimum target from the blocks; this decides only what to show next.
 
 import { median } from './rand';
@@ -42,63 +42,114 @@ export function blockStats(sizePx: number, presses: RingPress[]): BlockStats {
 
 export interface BlockRecord {
   sizePx: number;
+  /** Scored presses only (the very first press of the warm-up positions the pointer and is not scored). */
   presses: RingPress[];
   pass: boolean;
-  medianMoveMs: number;
 }
 
-export class PointingWalk {
+/**
+ * The warm-up's Point walk (fitting brief round 4 §3): from 44 px (56 on touch), each size passes after 4 clean scored
+ * presses with a tight spread, fails at 2 misses, and is otherwise judged after 6 presses. The walk goes down after a
+ * pass and up after a fail, and stops at the first reversal, the end of the ladder, or 18 presses in all.
+ */
+export class SequentialWalk {
+  static readonly NEED_CLEAN = 4;
+  static readonly MAX_PER_SIZE = 6;
+  static readonly MAX_PRESSES = 18;
+
   readonly blocks: BlockRecord[] = [];
   private readonly ladder: readonly number[];
-  private direction: 'down' | 'up' | null = null;
-  private nextSize: number | null;
-  maxBlocks: number;
+  private idx: number;
+  private direction: -1 | 1 | null = null;
+  private presses: RingPress[] = [];
+  private total = 0;
+  private positioned = false;
+  private finished = false;
+  stopReason: 'reversal' | 'ladder_end' | 'max_presses' | null = null;
 
-  constructor(touch: boolean, maxBlocks = 3) {
+  constructor(touch: boolean) {
     this.ladder = touch ? TOUCH_LADDER : MOUSE_LADDER;
-    this.nextSize = touch ? 56 : 44;
-    this.maxBlocks = maxBlocks;
+    this.idx = this.ladder.indexOf(touch ? 56 : 44);
   }
 
   get done(): boolean {
-    return this.nextSize === null;
+    return this.finished;
   }
 
+  /** Dot size (px at 100%) for the next press, or null when finished. */
   current(): number | null {
-    return this.nextSize;
+    return this.finished ? null : (this.ladder[this.idx] ?? null);
+  }
+
+  /** The very first press only positions the pointer. */
+  get positioning(): boolean {
+    return !this.positioned;
+  }
+
+  get pressCount(): number {
+    return this.total;
+  }
+
+  get scoredCount(): number {
+    return this.blocks.reduce((a, b) => a + b.presses.length, 0) + this.presses.length;
   }
 
   progress(): number {
-    return this.done ? 1 : Math.min(0.95, this.blocks.length / 3);
+    return this.finished ? 1 : Math.min(0.95, this.total / 14);
   }
 
-  record(sizePx: number, presses: RingPress[], medianMoveMs: number): BlockRecord {
-    const pass = blockStats(sizePx, presses).pass;
-    const rec: BlockRecord = { sizePx, presses, pass, medianMoveMs };
-    this.blocks.push(rec);
-    const i = this.ladder.indexOf(sizePx);
-    if (this.direction === null) this.direction = pass ? 'down' : 'up';
-    const stop =
-      this.blocks.length >= this.maxBlocks ||
-      (this.direction === 'down' && !pass) ||
-      (this.direction === 'up' && pass);
-    if (stop) {
-      this.nextSize = null;
-      return rec;
+  /** Record one press at the current size. */
+  press(p: RingPress): void {
+    if (this.finished) return;
+    this.total += 1;
+    if (!this.positioned) {
+      this.positioned = true;
+      this.checkBudget();
+      return;
     }
-    const j = this.direction === 'down' ? i - 1 : i + 1;
-    this.nextSize = j >= 0 && j < this.ladder.length ? (this.ladder[j] ?? null) : null;
-    return rec;
+    this.presses.push(p);
+    const size = this.ladder[this.idx] ?? 44;
+    const n = this.presses.length;
+    const misses = this.presses.filter((x) => !x.hit).length;
+    let pass: boolean | null = null;
+    if (misses >= 2) pass = false;
+    else if (n >= SequentialWalk.NEED_CLEAN && misses === 0 && blockStats(size, this.presses).pMiss <= 0.08) pass = true;
+    else if (n >= SequentialWalk.MAX_PER_SIZE) pass = misses <= 1 && blockStats(size, this.presses).pMiss <= 0.08;
+    if (pass !== null) this.closeBlock(size, pass);
+    else this.checkBudget();
   }
 
-  /** Smallest size that passed; if none, the next size above the largest tried. Display only. */
+  private closeBlock(size: number, pass: boolean): void {
+    this.blocks.push({ sizePx: size, presses: this.presses, pass });
+    this.presses = [];
+    const dir: -1 | 1 = pass ? -1 : 1;
+    if (this.direction === null) this.direction = dir;
+    else if (dir !== this.direction) return this.finish('reversal');
+    const next = this.idx + this.direction;
+    if (next < 0 || next >= this.ladder.length) return this.finish('ladder_end');
+    this.idx = next;
+    this.checkBudget();
+  }
+
+  private checkBudget(): void {
+    // A size cut short by the press budget is dropped: half a size says nothing reliable.
+    if (this.total >= SequentialWalk.MAX_PRESSES) this.finish('max_presses');
+  }
+
+  private finish(reason: 'reversal' | 'ladder_end' | 'max_presses'): void {
+    this.finished = true;
+    this.stopReason = reason;
+    this.presses = [];
+  }
+
+  /** Smallest size that passed above every fail (the same rule as core). Display only. */
   roughMinTarget(): number | null {
-    if (this.blocks.length === 0) return null;
-    const passed = this.blocks.filter((b) => b.pass).map((b) => b.sizePx);
+    if (!this.blocks.length) return null;
+    const failed = this.blocks.filter((b) => !b.pass).map((b) => b.sizePx);
+    const maxFailed = failed.length ? Math.max(...failed) : -Infinity;
+    const passed = this.blocks.filter((b) => b.pass && b.sizePx > maxFailed).map((b) => b.sizePx);
     if (passed.length) return Math.min(...passed);
-    const largest = Math.max(...this.blocks.map((b) => b.sizePx));
-    const i = this.ladder.indexOf(largest);
-    return this.ladder[Math.min(this.ladder.length - 1, i + 1)] ?? 96;
+    return this.ladder.find((l) => l > maxFailed) ?? 96;
   }
 }
 

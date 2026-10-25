@@ -1,4 +1,5 @@
-// Owner: C. The Calm view: the same page re-presented as one calm column, sized to the person's fit.
+// Owner: C, D (round 4: Calm view v3, page kinds). The Calm view: the same page re-presented as one calm column, sized
+// to the person's fit, in the research-site language of design.md (white page, no boxed cards, ink pills, hairlines).
 //
 // Input is a FitSpec (enums and ids only, from the heuristic, a layout Jev picked, or the cached one). Every word shown
 // is read from the live page at render time on this device, and every control drives its original element
@@ -20,7 +21,8 @@ import { Disclosure } from './Disclosure';
 import { Calm, type CalmCtx } from './context';
 import { Dock } from './Dock';
 import * as I from './icons';
-import { LeadBand } from './Lead';
+import { IndexView } from './Index';
+import { ArticleHeader, LeadBand } from './Lead';
 import { tickNow, useCalmStyles, useDomVersion, useEngineState, useReducedMotion } from './live';
 import { type Block, isShown, keyOf, newCtx, pagePopups, readBlocks, textOf } from './model';
 import { useOutcome } from './outcome';
@@ -98,18 +100,22 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
   const params = structureParams(level);
   const mode = themeModeFor(fit);
   const reduceMotion = sysReduce || !!fit?.attention?.motion?.on;
-  const tokens = useMemo(() => tokensFor(fit, mode, { zoom, density: spec.density, scale }), [fit, mode, zoom, spec.density, scale]);
+  const tokens = useMemo(() => tokensFor(fit, mode, { zoom, density: spec.density, scale, surface: 'calm' }), [fit, mode, zoom, spec.density, scale]);
+  const m = calmMetrics(fit, { zoom, density: spec.density, scale, surface: 'calm' });
   const style = useMemo(() => tokensToStyle(tokens), [tokens]);
 
   const plan = useMemo<CalmPlan | null>(() => {
     try {
-      return buildPlan({ spec, outline, elementFor: (id) => api.elementFor(id), decisions: state.decisions ?? [], listFirst: params.listFirst, stepMax: params.stepMax });
+      return buildPlan({
+        spec, outline, elementFor: (id) => api.elementFor(id), decisions: state.decisions ?? [], listFirst: params.listFirst,
+        stepMax: params.stepMax, groupSize: params.groupSize,
+      });
     } catch (e) {
       console.warn('[WebAble] Calm view could not read this page', e);
       return null;
     }
     // `version` re-reads the live page after it changes.
-  }, [api, spec, outline, state.decisions, version, params.listFirst, params.stepMax]);
+  }, [api, spec, outline, state.decisions, version, params.listFirst, params.stepMax, params.groupSize]);
 
   // A different layout (Jev's pick arrived) starts the form again at its first step.
   useEffect(() => setStep(0), [spec]);
@@ -226,8 +232,10 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       showDrawer: () => setDrawerCall((n) => n + 1),
       drawerCall,
       errorEl: outcome?.kind === 'error' ? outcome.el : null,
+      kind: plan?.kind ?? 'page',
+      textCol: m.textCol,
     }),
-    [api, params.splitSentences, params.groupSize, state.settings?.explain, reduceMotion, watchPopups, watchResult, arm, step, goStep, drawerCall, jumpToField, outcome],
+    [api, params.splitSentences, params.groupSize, state.settings?.explain, reduceMotion, watchPopups, watchResult, arm, step, goStep, drawerCall, jumpToField, outcome, plan?.kind, m.textCol],
   );
 
   // New page content outside every placed part (a toast, a confirmation appended to the body) shows in a result card;
@@ -318,7 +326,6 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
 
   /* ---------- render ---------- */
 
-  const m = calmMetrics(fit, { zoom, density: spec.density, scale });
   const empty = !plan || (!plan.main.length && !plan.hoisted.length && !plan.drawer.length && !plan.lead);
   const success = outcome?.kind === 'success' ? outcome : null;
   const error = outcome?.kind === 'error' ? outcome : null;
@@ -359,6 +366,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       data-mode={mode}
       data-motion={reduceMotion ? 'reduce' : undefined}
       data-f={String(m.F)}
+      data-kind={plan?.kind}
       data-docked={plan?.primary || plan?.form?.steps ? 'true' : undefined}
       style={style}
       onKeyDown={onKeyDown}
@@ -370,7 +378,7 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
       <Calm.Provider value={ctx}>
         <Strip api={api} state={state} plan={plan} scale={scale} setScale={setScale} />
         <main ref={mainRef} class="wa-page" tabIndex={-1}>
-          <div class={`wa-col${reduceMotion ? '' : ' wa-fade'}`} key={specKey(spec)}>
+          <div class={`wa-col${reduceMotion ? '' : ' wa-fade'}`} key={specKey(spec)} data-kind={plan?.kind}>
             {empty || !plan ? (
               <div class="wa-empty wa-stack" style={{ alignItems: 'center' }}>
                 <p>This page has nothing the Calm view can show here.</p>
@@ -386,8 +394,12 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
                   </div>
                 ))}
                 {success && <SuccessPanel outcome={success} help={plan.help} />}
-                {plan.lead && !success && <LeadBand lead={plan.lead} />}
-                {searchFirst && <SubStrip plan={plan} />}
+                {plan.kind === 'article' && plan.article && !success ? (
+                  <ArticleHeader lead={plan.lead} art={plan.article} />
+                ) : (
+                  plan.lead && !success && <LeadBand lead={plan.lead} small={plan.kind === 'index'} />
+                )}
+                {searchFirst && plan.kind !== 'index' && <SubStrip plan={plan} />}
                 {result && (
                   <div class="wa-band wa-band--tight" ref={resultRef}>
                     <div class="wa-result wa-fade" role="status">
@@ -401,7 +413,19 @@ export function CalmView(props: { api: EngineApi; spec: FitSpec; outline: PageOu
                     <ErrorCard outcome={error} />
                   </div>
                 )}
-                {plan.portal ? (
+                {plan.kind === 'index' && plan.index ? (
+                  <>
+                    <IndexView index={plan.index} />
+                    {/* The page's own top-bar links (Sign in, Search) after the stories, not between the title and the lead. */}
+                    {searchFirst && <SubStrip plan={plan} />}
+                    {afterTask}
+                    {plan.main
+                      .filter((p) => (p.sec.role === 'help' || p.sec.role === 'navigation') && !isMenu(p))
+                      .map((p) => (
+                        <SectionView key={p.key} p={p} form={null} />
+                      ))}
+                  </>
+                ) : plan.portal ? (
                   <>
                     <PortalLinks portal={plan.portal} />
                     {afterTask}

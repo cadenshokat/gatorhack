@@ -18,7 +18,7 @@
 // Runs on new overlays (300 ms quiet), zoom, resize, scroll end and focusin; at most once per 500 ms; never while the
 // pointer hovers an overlay or the person is typing. Undo remembers "leave" for that site and kind for 30 days.
 
-import { closeRefusal, planOverlays } from '@webable/core';
+import { closeRefusal, planOverlays, safeClassWords } from '@webable/core';
 import type {
   BgRequest, ElementDecision, LedgerEntry, OverlayAction, OverlayButtonEvidence, OverlayCloseResult, OverlayEvidence,
   OverlayFacts, OverlayKind, OverlayPlan, Role,
@@ -1210,7 +1210,7 @@ export class OverlayManager {
         visible_text: safeUiLabel(visibleTextOf(el, 80), 8),
         position_in_overlay: placeInOverlay(el, box),
         size: `${px(r.width)} x ${px(r.height)} px`,
-        class_words: classWordsOf(el),
+        class_words: safeClassWords(classWordsOf(el)),
       };
       if (tag === 'a') {
         const lt = linkTargetOf(el);
@@ -1233,7 +1233,7 @@ export class OverlayManager {
       position: positionPhrase(box, vw, vh),
       size: `${px(box.r - box.l)} x ${px(box.b - box.t)} px, covers ${pct(coverage)} of the screen`,
       opened_by_itself: selfOpened,
-      class_words: classWordsOf(rec.root),
+      class_words: safeClassWords(classWordsOf(rec.root)),
     };
     if (iframe) ev.iframe_kind = iframeKindOf(iframe.getAttribute('src') ?? '');
     return ev;

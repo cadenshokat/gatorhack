@@ -5,9 +5,12 @@ import { createApp } from './app';
 import { HOST, PORT, jevKey, openAiKey } from './config';
 import { startKeepWarm, warmJev } from './jev';
 import { startAiWatch } from './openai';
+import { registerAttribute } from './routes/attribute';
 import { log } from './util';
 
 const app = createApp();
+// Round 4 (passive fit): Jev attribution for held zooms and missed clicks.
+registerAttribute(app);
 
 const server = serve({ fetch: app.fetch, port: PORT, hostname: HOST }, (info) => {
   log('listening', { url: `http://${HOST}:${info.port}`, jevKey: jevKey() !== null, openaiKey: openAiKey() !== null, model: JEV_MODEL });

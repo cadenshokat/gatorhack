@@ -67,6 +67,19 @@ export const offersCss = /* css */ `
 .wa-offer-pbar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--c-accent); }
 .wa-offer-pbar b { position: absolute; top: ${u(-3)}; bottom: ${u(-3)}; width: ${u(1.5)}; background: var(--c-ink); opacity: .55; }
 
+/* An offer from what WebAble learned across sites: a small kicker, and "Why this?" lists what the person did. */
+.wa-offer-kicker { margin: 0 0 ${u(4)}; font-size: ${u(12.5)}; font-weight: 600; color: var(--c-accent); letter-spacing: 0; }
+.wa-offer-ev { list-style: none; margin: 0; padding: 0; display: grid; gap: ${u(6)}; }
+.wa-offer-ev li { display: flex; align-items: baseline; justify-content: space-between; gap: ${u(10)}; line-height: 1.35; }
+.wa-offer-ev li::before {
+  content: ""; flex: none; align-self: center; width: ${u(5)}; height: ${u(5)}; border-radius: 999px; background: var(--c-accent);
+}
+.wa-offer-ev-what { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.wa-offer-ev-when { flex: none; color: var(--c-ink2); font-size: ${u(12.5)}; white-space: nowrap; }
+.wa-offer-ev li.wa-offer-ev-more { color: var(--c-ink2); font-size: ${u(12.5)}; }
+.wa-offer-ev li.wa-offer-ev-more::before { background: transparent; }
+.wa-offer-sure { display: flex; align-items: center; gap: ${u(8)}; font-size: ${u(12.5)}; font-weight: 600; color: var(--c-ink); }
+
 .wa-offer-chip {
   appearance: none; display: inline-flex; align-items: center; gap: ${u(8)}; max-width: 100%;
   min-height: ${'var(--wa-target, 44px)'}; padding: 0 ${u(12)} 0 ${u(14)};

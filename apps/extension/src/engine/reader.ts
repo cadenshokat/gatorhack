@@ -8,7 +8,7 @@
 //  - an id -> Element map (WeakRef) and Element -> id (WeakMap).
 // Never reads input values (only whether a field is empty), never sends hostnames, never writes to the DOM.
 
-import { allowlistWords, bodySizeFromBlocks, uiLabel } from '@webable/core';
+import { allowlistWords, bodySizeFromBlocks, safeClassWords, uiLabel } from '@webable/core';
 import type {
   BodyBlock, ElementEvidence, LocalFacts, OutlineKind, OutlineNode, PageDigest, PageOutline, Zone,
 } from '@webable/core';
@@ -1562,7 +1562,7 @@ function toEvidence(
     size: `${n.rect.w} x ${n.rect.h} px`,
     position: positionPhrase(n, forms, vw, vh, sx, sy, docH),
     fixed: n.fixed,
-    class_words: n.classWords.slice(0, 6),
+    class_words: safeClassWords(n.classWords, 6),
     visual_weight: n.weight,
   };
   if (n.iframeKind) ev.iframe_kind = n.iframeKind;

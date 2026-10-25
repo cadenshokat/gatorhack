@@ -1,4 +1,4 @@
-// Owner: P, U. The in-page chrome: pill, panel, Jev Lens, offers, toasts, overlay bar and chips, explain card, and the
+// Owner: P, U, F. The in-page chrome: pill, panel, Jev Lens, offers, toasts, overlay bar and chips, explain card, and the
 // Calm view host.
 //
 // Steady size: every layer keeps its physical size whatever the page zoom; only the fit's UI scale sizes it.
@@ -360,7 +360,7 @@ export function App({ api, isOurUi, calmHost, calmMount }: AppProps) {
   const items = showItems ? (
     <div class="wa-dock-items" ref={itemsRef} data-wa-chrome="" style={{ maxHeight: r2(Math.max(0, itemsMax)) }}>
       <Toasts api={api} toasts={s.toasts} />
-      {offer && <OfferCard api={api} offer={offer} />}
+      {offer && <OfferCard api={api} offer={offer} passive={s.passive ?? null} />}
       {!offer && overlayOffer && <OverlayOffer api={api} view={overlayOffer} onGone={markGone} />}
       <OverlayChips api={api} views={tucked} onGone={markGone} />
     </div>

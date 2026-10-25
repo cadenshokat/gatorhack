@@ -1,4 +1,4 @@
-/* Owner: P. Popup styles: Showroom language, light. */
+/* Owner: P, F. Popup styles: Showroom language, light. */
 :root {
   --canvas: #F5F5F7; --raised: #FFFFFF; --tonal: #E8E8ED; --hover: #DCDCE1; --press: #D2D2D7;
   --ink: #1D1D1F; --ink-2: #5E5E63; --line: #D2D2D7; --line-strong: #86868B;
@@ -143,3 +143,75 @@ button { font: inherit; color: inherit; }
 .p-row-label { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; }
 .p-row-val { font-size: 13px; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .p-row-sub { margin: -2px 16px 8px 34px; font-size: 12px; line-height: 1.4; color: var(--ink-2); }
+.p-btn[disabled] { opacity: .55; cursor: default; }
+
+/* ---------- what helps you (same markup as the in-page panel's section) ---------- */
+.p-helps { padding: 14px 4px 2px; }
+.p-helps-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 12px 2px; }
+.p-helps-count { font-size: 12px; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.p-helps-pad { padding: 6px 12px 10px; margin: 0; }
+.p-helps-settings { margin-top: 8px !important; font-size: 12px; }
+.wa-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.wa-helps-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.wa-help {
+  position: relative; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 0 11px;
+  align-items: start; padding: 11px 12px;
+}
+.wa-help + .wa-help::before { content: ""; position: absolute; top: 0; left: 53px; right: 12px; height: 1px; background: var(--line); opacity: .8; }
+.wa-help-icon { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--tonal); color: var(--ink-2); }
+.wa-help[data-status="on"] .wa-help-icon { background: var(--accent-tint); color: var(--accent); }
+.wa-help-main { min-width: 0; }
+.wa-help-text { margin: 4px 0 0; font-size: 14px; line-height: 1.38; color: var(--ink); text-wrap: pretty; }
+.wa-help-val { font-size: 12px; font-weight: 500; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wa-help-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 9px; margin-top: 7px; }
+.wa-chip { display: inline-flex; align-items: center; padding: 1px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 500; line-height: 1.5; background: var(--tonal); color: var(--ink-2); }
+.wa-chip[data-source="learned"] { background: var(--accent-tint); color: var(--accent); }
+.wa-chip[data-source="warmup"] { background: rgba(0,113,227,.1); color: var(--action); }
+.wa-chip[data-source="person"] { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.wa-dots { display: inline-flex; align-items: center; gap: 3px; padding: 5px 7px; border-radius: 999px; background: var(--tonal); }
+.wa-dots i { width: 6px; height: 6px; border-radius: 999px; background: rgba(29,29,31,.2); }
+.wa-dots i[data-on] { background: var(--ink); }
+.wa-help-status { float: right; margin: 5px 0 2px 10px; font-size: 11.5px; font-weight: 600; color: var(--ink-2); line-height: 1.3; white-space: nowrap; }
+.wa-help-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.wa-mini {
+  appearance: none; display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 0 12px;
+  border: 0; border-radius: 999px; background: var(--tonal); color: var(--ink); font-size: 12.5px; font-weight: 500;
+  white-space: nowrap; cursor: pointer; transition: background-color .16s ease;
+}
+.wa-mini:hover { background: var(--hover); }
+.wa-mini[data-kind="confirm"] { background: var(--ink); color: #fff; }
+.wa-help-note { margin: 9px 0 0; font-size: 12.5px; font-weight: 500; color: var(--accent); }
+.wa-help[data-noted] .wa-help-icon { opacity: .6; }
+.wa-helps-empty { padding: 6px 12px 10px; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+.wa-helps-empty p { margin: 0; }
+.wa-helps-empty .wa-helps-empty-title { margin: 0 0 3px; color: var(--ink); font-weight: 500; font-size: 14px; }
+.wa-learns { margin: 0 12px; border-top: 1px solid var(--line); }
+.wa-disclose {
+  appearance: none; display: flex; align-items: center; gap: 6px; width: 100%; min-height: 40px; padding: 0 2px; margin: 0;
+  background: none; border: 0; text-align: left; cursor: pointer; color: var(--link); font-size: 13px; font-weight: 500;
+}
+.wa-disclose:hover { text-decoration: underline; text-underline-offset: 3px; }
+.wa-disclose-chev { display: inline-grid; place-items: center; transition: transform .16s ease; }
+.wa-disclose[aria-expanded="true"] .wa-disclose-chev { transform: rotate(90deg); }
+.wa-learns-body { display: grid; gap: 6px; padding: 0 2px 10px 22px; font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
+.wa-learns-body p { margin: 0; }
+
+/* ---------- the warm-up: offered, never required ---------- */
+.p-warm { display: grid; gap: 6px; }
+.p-warm-sub { margin: 0; padding: 0 10px; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); text-align: center; }
+
+/* ---------- demo tools ---------- */
+.p-demo-card { gap: 10px; }
+.p-demo-btns { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 8px; }
+.p-demo-btns .p-btn { width: 100%; padding: 0 10px; white-space: nowrap; }
+.p-banner { white-space: normal; border-radius: 18px; }
+@media (prefers-reduced-motion: reduce) { * { transition-duration: 1ms !important; } }
+.wa-help-note:focus, .p-title:focus { outline: none; }
+
+/* One column that never grows past the popup: a wide row (the demo fits) shrinks instead of pushing every card
+   into the right padding. */
+.p { grid-template-columns: minmax(0, 1fr); }
+.p-demo .p-seg { flex: 1 1 auto; min-width: 0; justify-content: space-between; }
+.p-demo .p-seg-btn { flex: 1 1 auto; padding: 0 8px; white-space: nowrap; }
+/* The popup is the summary: the px value stays in the panel, so each row's source and dots keep one line. */
+.wa-helps-list[data-compact] .wa-help-val { display: none; }

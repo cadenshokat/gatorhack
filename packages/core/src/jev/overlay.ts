@@ -10,7 +10,7 @@
 // Measured live (12 overlays, 65 questions, $0.0014): chats 7/7 in both orders (0.92-1.00), surveys 0.93-0.95,
 // newsletter × 0.97-0.99, a fake "Close and save 20%" link 0.00, "Continue in browser" 0.63/0.43 (gate rejects).
 import type { JevMetrics, OverlayButtonEvidence, OverlayCloseResult, OverlayEvidence } from '../types';
-import { uiLabel } from '../redact';
+import { safeClassWords, uiLabel } from '../redact';
 import { choiceOf, noulOf } from './api';
 import type { JevEntry, JevQuestion, JevResponse } from './api';
 
@@ -73,7 +73,7 @@ function overlayEvidence(o: OverlayEvidence): Record<string, unknown> {
     position: o.position,
     size: o.size,
     opened_by_itself: o.opened_by_itself,
-    class_words: (o.class_words ?? []).slice(0, 6),
+    class_words: safeClassWords(o.class_words, 6),
   };
   if (o.iframe_kind) out.iframe_kind = o.iframe_kind;
   return out;
@@ -87,7 +87,7 @@ function buttonEvidence(c: OverlayButtonEvidence): Record<string, unknown> {
     visible_text: uiLabel(c.visible_text ?? '', 8),
     position_in_overlay: c.position_in_overlay,
     size: c.size,
-    class_words: (c.class_words ?? []).slice(0, 6),
+    class_words: safeClassWords(c.class_words, 6),
   };
   if (c.link_target !== undefined) out.link_target = c.link_target;
   if (c.form_submit !== undefined) out.form_submit = c.form_submit;

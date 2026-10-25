@@ -1,26 +1,9 @@
-// Small shared pieces: the screen heading that takes focus, buttons with key hints, the trial clock.
+// Small shared pieces: pill buttons with key hints, the trial clock, window keys, the check mark.
 
 import type { ComponentChildren, JSX } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 
-export function Heading(props: { children: ComponentChildren; class?: string; autoFocus?: boolean }): JSX.Element {
-  const ref = useRef<HTMLHeadingElement>(null);
-  const autoFocus = props.autoFocus ?? true;
-  useEffect(() => {
-    if (autoFocus) ref.current?.focus({ preventScroll: true });
-  }, [autoFocus]);
-  return (
-    <h1 ref={ref} tabIndex={-1} class={`fx-h1 fade-in ${props.class ?? ''}`}>
-      {props.children}
-    </h1>
-  );
-}
-
-export function Deck(props: { children: ComponentChildren }): JSX.Element {
-  return <p class="fx-deck fade-in">{props.children}</p>;
-}
-
-type BtnKind = 'primary' | 'tonal' | 'quiet' | 'plain';
+type BtnKind = 'primary' | 'tonal' | 'quiet' | 'answer';
 
 export function Btn(props: {
   kind?: BtnKind;
@@ -31,20 +14,21 @@ export function Btn(props: {
   class?: string;
   label?: string;
   pressed?: boolean;
-  type?: 'button' | 'submit';
+  data?: string;
 }): JSX.Element {
   return (
     <button
-      type={props.type ?? 'button'}
-      class={`fx-btn fx-btn-${props.kind ?? 'tonal'} ${props.class ?? ''}`}
+      type="button"
+      class={`wu-btn wu-btn-${props.kind ?? 'tonal'} ${props.class ?? ''}`}
       onClick={props.onClick}
       disabled={props.disabled}
       aria-label={props.label}
       aria-pressed={props.pressed}
+      data-answer={props.data}
     >
-      <span class="fx-btn-text">{props.children}</span>
+      <span class="wu-btn-text">{props.children}</span>
       {props.kbd ? (
-        <kbd aria-hidden="true" class="fx-kbd">
+        <kbd aria-hidden="true" class="wu-kbd">
           {props.kbd}
         </kbd>
       ) : null}
@@ -53,26 +37,22 @@ export function Btn(props: {
 }
 
 /**
- * Trial timing. The onset is the first animation frame after the stimulus is painted. Any interruption
- * (pause, blur, hidden tab, zoom or pixel-ratio change) restarts the clock, so a trial never carries
- * time the person spent elsewhere. `armed()` ignores presses in the first 250 ms (accidental repeats).
+ * Trial timing. The onset is the second animation frame after the stimulus is set (it has been painted). Any
+ * interruption (pause, focus change, hidden tab, pixel-ratio change) restarts the clock, so a trial never carries time
+ * the person spent elsewhere. `armed()` ignores presses in the first 250 ms (accidental repeats).
  */
-export function useTrialClock(paused: boolean, trialKey: unknown): { elapsed: () => number; armed: () => boolean; interrupted: () => boolean } {
+export function useTrialClock(paused: boolean, trialKey: unknown): { elapsed: () => number; armed: () => boolean } {
   const onset = useRef(performance.now());
-  const wasInterrupted = useRef(false);
 
   useEffect(() => {
-    if (paused) {
-      wasInterrupted.current = true;
-      return;
-    }
+    if (paused) return;
     let raf2 = 0;
+    onset.current = performance.now() + 1e9; // not armed until painted
     const raf1 = requestAnimationFrame(() => {
       raf2 = requestAnimationFrame(() => {
         onset.current = performance.now();
       });
     });
-    onset.current = performance.now() + 1e9; // not armed until painted
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
@@ -80,13 +60,8 @@ export function useTrialClock(paused: boolean, trialKey: unknown): { elapsed: ()
   }, [trialKey, paused]);
 
   useEffect(() => {
-    wasInterrupted.current = false;
-  }, [trialKey]);
-
-  useEffect(() => {
     let dpr = window.devicePixelRatio;
     const restart = () => {
-      wasInterrupted.current = true;
       onset.current = performance.now();
     };
     const onVis = () => {
@@ -111,7 +86,6 @@ export function useTrialClock(paused: boolean, trialKey: unknown): { elapsed: ()
   return {
     elapsed: () => Math.max(0, performance.now() - onset.current),
     armed: () => performance.now() - onset.current > 250,
-    interrupted: () => wasInterrupted.current,
   };
 }
 
@@ -122,7 +96,7 @@ export function useKeys(enabled: boolean, handler: (key: string, e: KeyboardEven
   useEffect(() => {
     if (!enabled) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
       const t = e.target;
       if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) return;
       ref.current(e.key, e);
@@ -132,11 +106,23 @@ export function useKeys(enabled: boolean, handler: (key: string, e: KeyboardEven
   }, [enabled]);
 }
 
-export function Check(props: { size?: number }): JSX.Element {
+export function Check(props: { size?: number; class?: string }): JSX.Element {
   const s = props.size ?? 16;
   return (
-    <svg width={s} height={s} viewBox="0 0 16 16" aria-hidden="true" class="fx-check">
-      <path d="M3.2 8.4l3 3 6.6-7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+    <svg width={s} height={s} viewBox="0 0 16 16" aria-hidden="true" class={`wu-check ${props.class ?? ''}`}>
+      <path d="M3.4 8.4l3 3 6.2-6.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
+  );
+}
+
+export function Wordmark(): JSX.Element {
+  return (
+    <div class="wu-wordmark">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+        <circle cx="11" cy="11" r="9.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <circle cx="11" cy="11" r="4" fill="currentColor" />
+      </svg>
+      <span>WebAble</span>
+    </div>
   );
 }

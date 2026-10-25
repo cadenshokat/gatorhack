@@ -36,9 +36,22 @@ export function chromePath() {
 }
 
 /**
+ * Chrome flags for a run at device scale factor `dpr`. Headless Chrome draws its compositor surface at 1× even under
+ * Playwright's DPR-2 emulation, so a surface capture comes out 1440×900. --force-device-scale-factor makes the surface
+ * itself 2×, so shoot() returns device pixels (2880×1800) with no clip. Do not reach for a clip with scale instead:
+ * capturing with a clip from a second CDP session resets the page's emulated devicePixelRatio to 1 afterwards (the
+ * capture "restores" that session's empty emulation), which halves every zoom and size the harness measures after the
+ * first screenshot and makes WebAble see a zoom change.
+ */
+export function dprArgs(dpr) {
+  return Number(dpr) > 1 ? [`--force-device-scale-factor=${Number(dpr)}`] : [];
+}
+
+/**
  * Screenshot the viewport from the compositor surface (CDP Page.captureScreenshot, fromSurface). Headless Chrome's
- * plain screenshot comes out with a blank band at the top after scrolling at 150% zoom; this one does not.
- * Falls back to page.screenshot.
+ * plain screenshot comes out with a blank band at the top after scrolling at 150% zoom; this one does not. With
+ * dprArgs() on the launch, the image is in device pixels (2880×1800 for 1440×900 at --dpr 2). Falls back to
+ * page.screenshot.
  */
 export async function shoot(page, file, { timeout = 20_000 } = {}) {
   let session = null;

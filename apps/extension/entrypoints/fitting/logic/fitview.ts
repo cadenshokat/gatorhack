@@ -1,260 +1,361 @@
-// Turning raw results into a fit, and a fit into the plain rows of the "Your fit" card.
-// Core's deriveFit and describeFit are the source of truth; the local fallbacks below exist only so the
-// page keeps working if core throws, and they are deliberately conservative.
+// A fit, seen three ways: how the stage page looks with it, the five marks on the fit strip, and the plain rows on the
+// last screen ("Bigger text: 22 px. You read fastest from this size up."). Rows name page changes, never the person.
 
-import { deriveFit, describeFit, type FitProfile, type FittingRaw } from '@webable/core';
-import type { Env } from './env';
-import { clamp } from './rand';
-import { STOPPED_MOTION } from './raw';
-
-export const TEXT_STEPS = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 28, 30, 32, 36, 40, 44, 48, 56, 64];
-export const TARGET_STEPS = [24, 32, 44, 56, 72, 96];
-/** What a typical page uses, the "from" side of each fit mark when core gives none. */
-export const TYPICAL_BODY_PX = 16;
-export const TYPICAL_TARGET_PX = 24;
+import {
+  contrastRatio, deriveFit, fitSources, liftToRatio, parseColor, planPageZoom,
+  type BrowserSettings, type ContrastBand, type FitDimension, type FitProfile, type FitSource, type FittingRaw,
+  type Polarity, type StructureLevel, type WarmupCalibration, type WarmupMetrics,
+} from '@webable/core';
+import type { MarkId } from './plan';
 
 export function cloneFit(fit: FitProfile): FitProfile {
   return JSON.parse(JSON.stringify(fit)) as FitProfile;
-}
-
-/** OS settings the raw format has no field for: reduced motion always turns motion reduction on. */
-export function applyEnv(fit: FitProfile, env: Env | null): FitProfile {
-  if (!env) return fit;
-  const out = cloneFit(fit);
-  if (env.reducedMotion) {
-    out.attention.motion.on = true;
-    out.attention.motion.p = Math.max(out.attention.motion.p, 0.92);
-  }
-  return out;
-}
-
-export function deriveSafely(raw: FittingRaw, env: Env | null): { fit: FitProfile; fromCore: boolean } {
-  try {
-    const fit = deriveFit(raw);
-    if (fit && fit.v === 'fit.1') return { fit: applyEnv(fit, env), fromCore: true };
-  } catch (err) {
-    console.warn('[WebAble fitting] deriveFit failed; using a conservative local fit', err);
-  }
-  return { fit: applyEnv(fallbackFit(raw), env), fromCore: false };
 }
 
 export function effectiveTextPx(fit: FitProfile): number {
   return fit.text.override ?? fit.text.bodyPx;
 }
 
-function stepIndex(steps: number[], v: number): number {
-  let best = 0;
-  for (let i = 0; i < steps.length; i++) if (Math.abs((steps[i] ?? 0) - v) < Math.abs((steps[best] ?? 0) - v)) best = i;
-  return best;
-}
-
-export function stepValue(steps: number[], v: number, dir: -1 | 1): number {
-  const i = stepIndex(steps, v);
-  const cur = steps[i] ?? v;
-  // When the value sits between steps, the first press snaps to the nearest step in that direction.
-  if (dir > 0 && cur > v + 0.01) return cur;
-  if (dir < 0 && cur < v - 0.01) return cur;
-  return steps[clamp(i + dir, 0, steps.length - 1)] ?? cur;
-}
-
-export function canStep(steps: number[], v: number, dir: -1 | 1): boolean {
-  return stepValue(steps, v, dir) !== v;
+/** deriveFit with the browser settings; never throws (a conservative default keeps the page working). */
+export function deriveSafely(raw: FittingRaw, settings: BrowserSettings | null, metrics?: WarmupMetrics): FitProfile {
+  try {
+    return deriveFit(raw, { settings, metrics: metrics ?? null });
+  } catch (err) {
+    console.warn('[WebAble warm-up] deriveFit failed; keeping defaults', err);
+    return deriveFit({ inputClass: raw.inputClass, durationSec: raw.durationSec, skipped: raw.skipped, reading: null, pointing: null, finding: null, allPresses: [] });
+  }
 }
 
 /* ------------------------------------------------------------------ */
-/* Rows for "Your fit"                                                 */
+/* What the person changed on the last screen                          */
 /* ------------------------------------------------------------------ */
 
-export type RowKey =
-  | 'text' | 'contrast' | 'weight' | 'polarity' | 'targets' | 'steady' | 'debounce' | 'motion' | 'busy' | 'other';
+/** Text sizes one Chrome zoom step apart on a 16 px page (110% changes too little to act on). */
+export const TEXT_LADDER = [16, 20, 24, 28, 32, 40, 48];
+export const TARGET_CHOICES: Array<number | null> = [null, 32, 44, 56, 72];
 
-export interface FitRow {
-  key: RowKey;
-  label: string;
-  line: string;
-  from: string;
-  to: string;
-  changed: boolean;
+export interface Overrides {
+  textPx?: number;
+  band?: ContrastBand;
+  targets?: number | null;
+  steady?: boolean;
+  motion?: boolean;
+  level?: StructureLevel;
+  polarity?: Polarity;
 }
 
-const NO_CHANGE = 'No change';
+export type RowKey = 'text' | 'contrast' | 'targets' | 'steady' | 'motion' | 'calm' | 'colours';
 
-/** describeFit's labels, mapped to the row each stepper and plain line belongs to. */
-const KEY_BY_LABEL: Record<string, RowKey> = {
-  'Text size': 'text',
-  'Faint text': 'contrast',
-  'Text weight': 'weight',
-  'Light or dark': 'polarity',
-  'Click areas': 'targets',
-  'Steady clicks': 'steady',
-  'Repeat clicks': 'debounce',
-  'Moving things': 'motion',
-  'Busy pages': 'busy',
+const DIM_OF: Record<RowKey, FitDimension> = {
+  text: 'text_size', contrast: 'contrast', targets: 'targets', steady: 'steady_clicks', motion: 'motion', calm: 'clutter', colours: 'colors',
 };
 
-function keyFor(label: string): RowKey {
-  const exact = KEY_BY_LABEL[label];
-  if (exact) return exact;
-  const l = label.toLowerCase();
-  if (/contrast|faint/.test(l)) return 'contrast';
-  if (/weight|bold/.test(l)) return 'weight';
-  if (/text|size|font/.test(l)) return 'text';
-  if (/light|dark|polarity/.test(l)) return 'polarity';
-  if (/steady|slip/.test(l)) return 'steady';
-  if (/repeat|double/.test(l)) return 'debounce';
-  if (/click|target|tap/.test(l)) return 'targets';
-  if (/motion|moving|animat/.test(l)) return 'motion';
-  if (/busy|clutter|layout|calm/.test(l)) return 'busy';
-  return 'other';
+/** The next text size up or down the ladder from the current one (snapping first when between steps). */
+export function stepText(current: number, dir: -1 | 1): number {
+  if (dir > 0) return TEXT_LADDER.find((v) => v > current + 0.25) ?? (TEXT_LADDER[TEXT_LADDER.length - 1] as number);
+  const below = [...TEXT_LADDER].reverse().find((v) => v < current - 0.25);
+  return below ?? (TEXT_LADDER[0] as number);
 }
 
-/** One plain sentence per row: about the page and the clicks, never about the person's body. */
-function lineFor(key: RowKey, fit: FitProfile): string {
-  const text = Math.round(effectiveTextPx(fit) * 2) / 2;
-  switch (key) {
-    case 'text':
-      return text > TYPICAL_BODY_PX + 0.5
-        ? `You read most comfortably at ${text} px or larger. Smaller page text is scaled up to match.`
-        : 'Text stays the size each site chose.';
+/** The fit with the person's own changes on top, and the sources updated ("You set this"). */
+export function applyOverrides(base: FitProfile, ov: Overrides, colourChosen: boolean, settings: BrowserSettings | null = null): FitProfile {
+  const fit = cloneFit(base);
+  const cal = fit.calibration as WarmupCalibration;
+  const sources: Partial<Record<FitDimension, FitSource>> = { ...(cal.sources ?? fitSources(base)) };
+  const mark = (k: RowKey) => {
+    sources[DIM_OF[k]] = 'person';
+  };
+  if (ov.textPx !== undefined && Math.abs(ov.textPx - fit.text.bodyPx) > 0.25) {
+    fit.text.override = ov.textPx;
+    fit.text.largePrint = ov.textPx >= 32;
+    fit.measure.minCpl = ov.textPx >= 32 ? 8 : 13;
+    mark('text');
+  }
+  if (ov.band !== undefined && ov.band !== fit.contrast.band) {
+    fit.contrast = { band: ov.band, floor: ov.band === 'S' ? 15 : ov.band === 'M' ? 7 : 4.5 };
+    fit.weight.floor = ov.band === 'S' ? 600 : ov.band === 'M' ? 500 : 400;
+    fit.spacing.lineHeight = ov.band === 'S' || fit.text.largePrint ? 1.8 : ov.band === 'M' ? 1.6 : 1.5;
+    mark('contrast');
+  }
+  if (ov.targets !== undefined && ov.targets !== fit.targets.minPx) {
+    fit.targets = { minPx: ov.targets, conf: 1 };
+    fit.clicks.steady.radiusPx = ov.targets ? Math.round(Math.min(ov.targets / 2, Math.max(6, ov.targets / 5))) : 10;
+    mark('targets');
+  }
+  if (ov.steady !== undefined && ov.steady !== fit.clicks.steady.on) {
+    fit.clicks.steady.on = ov.steady;
+    mark('steady');
+  }
+  if (ov.motion !== undefined && ov.motion !== fit.attention.motion.on) {
+    fit.attention.motion = { p: ov.motion ? Math.max(0.9, fit.attention.motion.p) : Math.min(0.2, fit.attention.motion.p), on: ov.motion };
+    mark('motion');
+  }
+  if (ov.level !== undefined && ov.level !== fit.attention.structureLevel) {
+    fit.attention.structureLevel = ov.level;
+    fit.attention.clutter.p = ov.level === 2 ? Math.max(0.86, fit.attention.clutter.p) : ov.level === 1 ? 0.7 : Math.min(0.25, fit.attention.clutter.p);
+    mark('calm');
+  }
+  if (ov.polarity !== undefined) {
+    fit.polarity = { value: ov.polarity, stated: ov.polarity };
+    if (colourChosen) mark('colours');
+    else if (settings?.forcedColors) sources.colors = 'setting';
+    else if (ov.polarity === 'dark' && settings?.colorScheme === 'dark') sources.colors = 'setting';
+  }
+  fit.calibration = { ...cal, sources } as FitProfile['calibration'];
+  return fit;
+}
+
+export function sourcesOf(fit: FitProfile): Partial<Record<FitDimension, FitSource>> {
+  return (fit.calibration as WarmupCalibration).sources ?? fitSources(fit);
+}
+
+/* ------------------------------------------------------------------ */
+/* The stage page                                                      */
+/* ------------------------------------------------------------------ */
+
+/** The stage page's own colours at web defaults (#999 captions, the usual greys). */
+export const SITE = { ink: '#1A1A1A', body: '#333333', meta: '#767676', caption: '#999999', nav: '#8A8A8A' };
+
+export interface PageLook {
+  /** Text size, carried by zoom as on real pages (round 3: zoom carries size; CSS carries structure). */
+  zoom: number;
+  ink: string;
+  body: string;
+  meta: string;
+  caption: string;
+  nav: string;
+  weight: number;
+  lineHeight: number;
+  /** Hit areas grown to this size (px), or null. */
+  hitPx: number | null;
+  motionOff: boolean;
+  calm: StructureLevel;
+  dark: boolean;
+}
+
+function lift(fg: string, floor: number, band: ContrastBand): string {
+  if (band === 'S') return '#111111';
+  try {
+    const f = parseColor(fg);
+    const b = parseColor('#ffffff');
+    if (!f || !b) return fg;
+    return contrastRatio(f, b) >= floor ? fg : liftToRatio(f, b, floor);
+  } catch {
+    return floor >= 7 ? '#595959' : '#767676';
+  }
+}
+
+export const SITE_LOOK: PageLook = {
+  zoom: 1, ...SITE, weight: 400, lineHeight: 1.5, hitPx: null, motionOff: false, calm: 0, dark: false,
+};
+
+/** How the stage page looks with the parts of the fit that have landed so far. */
+export function lookOf(fit: FitProfile | null, landed: ReadonlySet<MarkId>, opts: { motionOff?: boolean } = {}): PageLook {
+  if (!fit) return { ...SITE_LOOK, motionOff: !!opts.motionOff };
+  const look: PageLook = { ...SITE_LOOK };
+  if (landed.has('text')) {
+    try {
+      look.zoom = planPageZoom(fit, 16).zoom;
+    } catch {
+      look.zoom = Math.max(1, effectiveTextPx(fit) / 16);
+    }
+  }
+  if (landed.has('contrast')) {
+    const { band, floor } = fit.contrast;
+    look.caption = lift(SITE.caption, floor, band);
+    look.meta = lift(SITE.meta, floor, band);
+    look.nav = lift(SITE.nav, floor, band);
+    look.body = band === 'S' ? '#111111' : SITE.body;
+    look.ink = band === 'S' ? '#000000' : SITE.ink;
+    look.weight = Math.max(400, Math.min(600, fit.weight.floor));
+    look.lineHeight = Math.max(1.5, fit.spacing.lineHeight);
+  }
+  if (landed.has('clicks') && fit.targets.minPx != null && fit.targets.minPx > 24) look.hitPx = fit.targets.minPx;
+  if (landed.has('calm')) {
+    look.calm = fit.attention.structureLevel;
+    look.motionOff = fit.attention.motion.on;
+  }
+  if (opts.motionOff) look.motionOff = true;
+  if (landed.has('colours')) look.dark = fit.polarity.value === 'dark';
+  return look;
+}
+
+/* ------------------------------------------------------------------ */
+/* The fit strip                                                       */
+/* ------------------------------------------------------------------ */
+
+export type MarkState = 'pending' | 'active' | 'done' | 'setting' | 'skipped';
+
+export function markValue(id: MarkId, fit: FitProfile, settings: BrowserSettings | null): string {
+  switch (id) {
+    case 'text': {
+      const v = effectiveTextPx(fit);
+      return v > 16.25 ? `${Math.round(v * 2) / 2} px` : '16 px';
+    }
     case 'contrast':
-      return fit.contrast.band === 'S'
-        ? 'Text is drawn at the strongest contrast the page allows.'
-        : fit.contrast.band === 'M'
-          ? 'Faint gray text is darkened to 7:1. Colors keep their hue.'
-          : 'Only text below 4.5:1 is darkened. Colors keep their hue.';
-    case 'weight':
-      return fit.weight.floor >= 500 ? 'Very thin text is drawn a little heavier.' : 'Text keeps the weight each site chose.';
-    case 'polarity':
-      return fit.polarity.value === 'dark'
-        ? 'Calm view uses light text on a dark page.'
-        : fit.polarity.value === 'light'
-          ? 'Calm view uses dark text on a light page.'
-          : 'Pages keep their own colors.';
-    case 'targets':
-      return fit.targets.minPx !== null && fit.targets.minPx > TYPICAL_TARGET_PX
-        ? 'Small buttons and links get a larger click area. Their look does not change.'
-        : 'Click areas stay as each site made them.';
-    case 'steady':
-      return fit.clicks.steady.on
-        ? 'A click stays on the button you pressed, even if the pointer moves a little.'
-        : 'Clicks work as usual.';
-    case 'debounce':
-      return fit.clicks.debounce ? 'A quick second click on the same button counts once.' : 'Every click counts.';
-    case 'motion':
-      return fit.attention.motion.on ? 'Carousels and animations are paused.' : 'Moving things play as usual.';
-    case 'busy':
-      return fit.attention.structureLevel === 2
-        ? 'Busy pages open in a calmer layout. The original is one click away.'
-        : fit.attention.structureLevel === 1
-          ? 'A calmer layout is offered on busy pages.'
-          : 'Pages keep their layout. A calmer layout is there when you ask.';
+      if (settings?.forcedColors) return 'System';
+      return fit.contrast.band === 'S' ? 'Strongest' : fit.contrast.band === 'M' ? 'Darker' : 'As is';
+    case 'clicks':
+      return fit.targets.minPx != null ? `${fit.targets.minPx} px` : 'As is';
+    case 'calm':
+      return fit.attention.structureLevel === 2 ? 'Calm view' : fit.attention.structureLevel === 1 ? 'Offered' : fit.attention.motion.on ? 'Paused' : 'As is';
+    case 'colours':
+      if (settings?.forcedColors) return 'System';
+      return fit.polarity.value === 'dark' ? 'Dark' : fit.polarity.value === 'light' ? 'Light' : 'Site';
     default:
       return '';
   }
 }
 
-/** Display-only wording tidy-up so the card reads in one spelling. */
-const tidy = (s: string): string => s.replace(/colour/g, 'color').replace(/Colour/g, 'Color');
+/* ------------------------------------------------------------------ */
+/* The last screen's rows                                              */
+/* ------------------------------------------------------------------ */
 
-function px(n: number | null | undefined): string {
-  return n === null || n === undefined ? NO_CHANGE : `${Math.round(n)} px`;
+export interface Choice {
+  label: string;
+  value: string;
 }
 
-/** Rows computed locally from the fit, used only when core's describeFit is unavailable. */
-function localRows(fit: FitProfile): Array<{ label: string; from: string; to: string }> {
-  const text = effectiveTextPx(fit);
-  const lvl = fit.attention.structureLevel;
-  return [
-    { label: 'Text size', from: '16 px', to: text > 16.5 ? px(text) : NO_CHANGE },
-    {
-      label: 'Faint text',
-      from: 'Site colors',
-      to: fit.contrast.band === 'S' ? 'Strongest contrast' : fit.contrast.band === 'M' ? 'Lifted to 7:1' : 'Lifted to 4.5:1',
-    },
-    { label: 'Light or dark', from: 'Site colors', to: fit.polarity.value === 'none' ? NO_CHANGE : `${fit.polarity.value} pages` },
-    { label: 'Click areas', from: '24 px', to: (fit.targets.minPx ?? 0) > 24 ? px(fit.targets.minPx) : NO_CHANGE },
-    { label: 'Steady clicks', from: 'Off', to: fit.clicks.steady.on ? 'On' : NO_CHANGE },
-    { label: 'Moving things', from: 'Moving', to: fit.attention.motion.on ? 'Paused' : NO_CHANGE },
-    { label: 'Busy pages', from: 'As the site shows them', to: lvl === 2 ? 'Calm view opens' : lvl === 1 ? 'Calm view offered' : NO_CHANGE },
-  ];
+export interface FitRow {
+  key: RowKey;
+  /** "Bigger text: 22 px." */
+  title: string;
+  /** "You read fastest from this size up." */
+  line: string;
+  source: FitSource;
+  /** Changes the page from how the site made it. */
+  changed: boolean;
+  choices: Choice[];
+  current: string;
 }
 
-export function fitRows(fit: FitProfile): FitRow[] {
-  let described: Array<{ label: string; from: string; to: string }> = [];
-  try {
-    described = describeFit(fit) ?? [];
-  } catch {
-    described = [];
+export function sourceLabel(s: FitSource): string {
+  switch (s) {
+    case 'warmup':
+      return 'From your warm-up';
+    case 'setting':
+      return 'From your browser settings';
+    case 'person':
+      return 'You set this';
+    default:
+      return 'WebAble’s starting point';
   }
-  if (!described.length) described = localRows(fit);
-  return described.map((d) => {
-    const key = keyFor(d.label);
-    const to = tidy(d.to);
-    const from = tidy(d.from);
-    return { key, label: tidy(d.label), line: lineFor(key, fit), from, to, changed: to !== NO_CHANGE && to !== from };
+}
+
+export function fitRows(fit: FitProfile, settings: BrowserSettings | null): FitRow[] {
+  const src = sourcesOf(fit);
+  const s = (k: RowKey): FitSource => src[DIM_OF[k]] ?? 'default';
+  const text = effectiveTextPx(fit);
+  const rows: FitRow[] = [];
+
+  const textSrc = s('text');
+  rows.push({
+    key: 'text',
+    title: text > 16.25 ? `Bigger text: ${Math.round(text * 2) / 2} px.` : 'Text: as each site sets it.',
+    line:
+      text <= 16.25
+        ? 'You read comfortably at the usual size.'
+        : textSrc === 'person'
+          ? 'Pages are zoomed to this size. Headings stay in proportion.'
+          : textSrc === 'setting'
+            ? 'Your Chrome font and zoom settings ask for this size.'
+            : 'You read fastest from this size up.',
+    source: textSrc,
+    changed: text > 16.25,
+    choices: TEXT_LADDER.map((v) => ({ label: `${v} px`, value: String(v) })),
+    current: String(text),
   });
-}
 
-export function isNoChange(s: string): boolean {
-  return s === NO_CHANGE;
-}
+  const band = fit.contrast.band;
+  rows.push({
+    key: 'contrast',
+    title: settings?.forcedColors
+      ? 'Your system colours.'
+      : band === 'S'
+        ? 'Strongest contrast.'
+        : band === 'M'
+          ? 'Darker grey text.'
+          : 'Grey text: as each site sets it.',
+    line: settings?.forcedColors
+      ? 'WebAble leaves colours to your system setting.'
+      : band === 'S'
+        ? 'Text is drawn near-black on light pages. Colours keep their hue.'
+        : band === 'M'
+          ? 'Faint grey text is darkened to at least 7:1. Colours keep their hue.'
+          : 'Only text too faint to read anywhere (below 4.5:1) is darkened.',
+    source: s('contrast'),
+    changed: band !== 'N' && !settings?.forcedColors,
+    choices: settings?.forcedColors
+      ? []
+      : [
+          { label: 'As the site', value: 'N' },
+          { label: 'Darker grey', value: 'M' },
+          { label: 'Strongest', value: 'S' },
+        ],
+    current: band,
+  });
 
-/* ------------------------------------------------------------------ */
-/* Conservative local fit (only when core is unavailable)              */
-/* ------------------------------------------------------------------ */
+  const T = fit.targets.minPx;
+  rows.push({
+    key: 'targets',
+    title: T != null && T > 24 ? `Bigger click areas: ${T} px.` : 'Click areas: as each site makes them.',
+    line: T != null && T > 24 ? 'Small buttons and links answer to a larger area. They look the same.' : 'Buttons and links keep their size.',
+    source: s('targets'),
+    changed: T != null && T > 24,
+    choices: TARGET_CHOICES.map((v) => ({ label: v == null ? 'As the site' : `${v} px`, value: v == null ? 'none' : String(v) })),
+    current: T == null || T <= 24 ? 'none' : String(T),
+  });
 
-export function fallbackFit(raw: FittingRaw): FitProfile {
-  const r = raw.reading;
-  const plateau = r?.ladder.filter((t) => t.correct).map((t) => t.px) ?? [];
-  const cps = plateau.length ? Math.min(...plateau) : null;
-  const seed = r?.seedPx ?? null;
-  const bodyPx = clamp(Math.round(cps ? cps * 1.26 : seed ? seed * 0.8 : 16), 12, 64);
-  const faintMiss = r?.faint.some((f) => !f.correct && f.contrast >= 2.3) ?? false;
-  const blocks = raw.pointing?.blocks ?? [];
-  const passed = blocks
-    .filter((b) => b.presses.filter((p) => !p.hit).length <= 1)
-    .map((b) => b.sizePx);
-  const minPx = blocks.length ? (passed.length ? Math.min(...passed) : 96) : null;
-  const slips = raw.allPresses.filter((p) => p.slipped).length;
-  const repeats = raw.allPresses.filter((p) => p.repeat).length;
-  const got = raw.finding?.gotInWay ?? [];
-  const calm = raw.finding?.preferredCalm ?? 0;
-  const clutterP = clamp(0.25 + 0.2 * calm + (got.includes('too much on the page') ? 0.3 : 0), 0, 0.99);
-  const motionP = clamp(0.3 + (got.includes('moving things') ? 0.3 : 0) + (got.includes(STOPPED_MOTION) ? 0.35 : 0), 0, 0.99);
-  const findMs = raw.finding?.trials.filter((t) => t.found).map((t) => t.ms) ?? [];
-  return {
-    v: 'fit.1',
-    createdAt: new Date().toISOString(),
-    inputClass: raw.inputClass,
-    text: {
-      bodyPx,
-      cpsPx: cps,
-      largePrint: bodyPx >= 32,
-      conf: cps ? 0.5 : seed ? 0.35 : 0.2,
-      source: cps ? 'measured' : seed ? 'stated' : 'default',
-      override: null,
-    },
-    contrast: faintMiss ? { band: 'M', floor: 7 } : { band: 'N', floor: 4.5 },
-    polarity: { value: r?.polarity.stated === 'dark' ? 'dark' : 'none', stated: r?.polarity.stated ?? null },
-    weight: { floor: faintMiss ? 500 : 400 },
-    spacing: { lineHeight: 1.5, wordEm: 0, letterEm: 0 },
-    measure: { targetCpl: 66, maxCpl: 75, minCpl: bodyPx >= 32 ? 8 : 13 },
-    targets: { minPx, conf: blocks.length ? 0.4 : 0 },
-    clicks: { steady: { on: slips >= 2, windowMs: 300, radiusPx: 10 }, debounce: repeats >= 3 },
-    attention: {
-      motion: { p: motionP, on: motionP >= 0.35 },
-      clutter: { p: clutterP },
-      structureLevel: clutterP >= 0.8 ? 2 : clutterP >= 0.6 ? 1 : 0,
-    },
-    baselines: {
-      searchSecMedian: findMs.length ? Math.round((findMs.sort((a, b) => a - b)[findMs.length >> 1] ?? 0) / 100) / 10 : null,
-      slipRate: raw.allPresses.length ? slips / raw.allPresses.length : 0,
-      repeatRate: raw.allPresses.length ? repeats / raw.allPresses.length : 0,
-      missRate: blocks.length
-        ? blocks.reduce((a, b) => a + b.presses.filter((p) => !p.hit).length, 0) /
-          Math.max(1, blocks.reduce((a, b) => a + b.presses.length, 0))
-        : 0,
-    },
-    calibration: { version: 'fit-1', durationSec: raw.durationSec, skipped: raw.skipped },
-  };
+  rows.push({
+    key: 'steady',
+    title: fit.clicks.steady.on ? 'Steady clicks.' : 'Steady clicks: off.',
+    line: fit.clicks.steady.on ? 'A small slip still clicks what you pressed.' : 'A click lands where the button is released.',
+    source: s('steady'),
+    changed: fit.clicks.steady.on,
+    choices: [
+      { label: 'Off', value: 'off' },
+      { label: 'On', value: 'on' },
+    ],
+    current: fit.clicks.steady.on ? 'on' : 'off',
+  });
+
+  const motionSrc = s('motion');
+  rows.push({
+    key: 'motion',
+    title: fit.attention.motion.on ? 'Moving parts paused.' : 'Moving parts: as each site plays them.',
+    line: fit.attention.motion.on
+      ? motionSrc === 'setting'
+        ? 'Your system is set to reduce motion.'
+        : 'Carousels, tickers and animations hold still.'
+      : 'Carousels and animations play as usual.',
+    source: motionSrc,
+    changed: fit.attention.motion.on,
+    choices: [
+      { label: 'Play', value: 'off' },
+      { label: 'Paused', value: 'on' },
+    ],
+    current: fit.attention.motion.on ? 'on' : 'off',
+  });
+
+  const level = fit.attention.structureLevel;
+  rows.push({
+    key: 'calm',
+    title: level === 2 ? 'Calm view on busy pages.' : level === 1 ? 'Calm view offered on busy pages.' : 'Busy pages: as each site lays them out.',
+    line:
+      level === 2
+        ? 'Busy pages open in a calmer layout. The original is one click away.'
+        : level === 1
+          ? 'WebAble offers a calmer layout when a page is busy.'
+          : 'A calmer layout is there when you ask for it.',
+    source: s('calm'),
+    changed: level > 0,
+    choices: [
+      { label: 'Off', value: '0' },
+      { label: 'Offered', value: '1' },
+      { label: 'On busy pages', value: '2' },
+    ],
+    current: String(level),
+  });
+
+  return rows;
 }

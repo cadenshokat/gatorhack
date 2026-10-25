@@ -1,7 +1,8 @@
-// Owner: C. What every part of the Calm view needs: the engine, the fit's structure limits and the proxy actions.
+// Owner: C, D. What every part of the Calm view needs: the engine, the fit's structure limits and the proxy actions.
 import { createContext } from 'preact';
 import { useContext } from 'preact/hooks';
 import type { EngineApi } from '../../contracts';
+import type { PageKind } from './plan';
 
 export interface CalmCtx {
   api: EngineApi;
@@ -26,6 +27,10 @@ export interface CalmCtx {
   drawerCall: number;
   /** The page's error summary, drawn at the top of the form (not again inside it). */
   errorEl: Element | null;
+  /** What kind of page this is (article, news index, form, product, portal, page). */
+  kind: PageKind;
+  /** The text column in the view's px (a figure at least 1.4 × as wide goes to the picture column). */
+  textCol: number;
 }
 
 export const Calm = createContext<CalmCtx | null>(null);

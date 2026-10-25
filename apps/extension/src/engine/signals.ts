@@ -1,4 +1,4 @@
-// Owner: C2. Live struggle signals (research-struggle.md §2 signal definitions, §3 CUSUM, §5 policy).
+// Owner: C2; round 4: P (click outcomes for the passive fit). Live struggle signals (research-struggle.md §2, §3, §5).
 //
 // Stage 1 of the struggle pipeline: local, cheap features from capture-phase, passive listeners.
 // Stage 2 (core `gate`) decides whether a Jev check is worth asking; stage 3 is one Jev call through the
@@ -14,6 +14,7 @@ import {
   type StruggleCounts, type StruggleJudgment, type StruggleKind, type StruggleSignals,
 } from '@webable/core';
 import { askExt, type ZoomInfo } from './bus';
+import { onMovingPart, type PointerOutcome } from './passive';
 
 export interface SignalsHost {
   elementFor(id: string): Element | null;
@@ -22,6 +23,11 @@ export interface SignalsHost {
   onJudgment(j: StruggleJudgment, waiting: StruggleKind[], offers: Offer[]): void;
   ask<T>(req: BgRequest): Promise<T>;
   isOurUi(target: EventTarget | null): boolean;
+  /**
+   * Round 4 (passive fit): each pointer click's outcome on an ordinary page (canvas, game and map pages excluded): it
+   * landed just beside a control, slipped off one while pressing, or hit. Counts only; no coordinates or timings.
+   */
+  onPointerOutcome?(o: PointerOutcome): void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1106,6 +1112,7 @@ class SignalEngine {
       this.retriesSinceGate++;
       this.trigger = true;
       this.push({ k: 'lost', at: this.nowAt(nowW), t: nowW });
+      this.outcome('slip', d.el, nowW);
     }
   }
 
@@ -1152,6 +1159,28 @@ class SignalEngine {
     const reentries = this.trail.reentries(r, this.lastClickT, nowW);
     this.lastClickT = nowW;
     this.push({ k: 'act', at, t: nowW, hit, reentries, sizePx: Math.round(Math.min(r.width, r.height)) });
+    // A retry right after a slip was counted as the slip; a pinch-then-tap is a touch gesture, not an aim.
+    if (hit === 'near') this.outcome('near', el, nowW);
+    else if (hit === null) this.outcome('clean', el, nowW);
+  }
+
+  /** Round 4: one click's outcome for the passive fit (the control's size, whether the page had just shifted). */
+  private outcome(kind: PointerOutcome['kind'], el: Element, nowW: number): void {
+    const fn = this.host.onPointerOutcome;
+    if (!fn) return;
+    let sizePx = 0;
+    try {
+      const r = el.getBoundingClientRect();
+      sizePx = Math.round(Math.min(r.width, r.height));
+    } catch {
+      sizePx = 0;
+    }
+    const shift = Number.isFinite(this.lastLayoutShiftW) ? Math.max(0, Math.round(nowW - this.lastLayoutShiftW)) : null;
+    try {
+      fn({ kind, sizePx, shiftMs: shift, moving: onMovingPart(el) });
+    } catch {
+      /* never break the page */
+    }
   }
 
   /* ---------------- P4 toggles, F4 quick backs ---------------- */

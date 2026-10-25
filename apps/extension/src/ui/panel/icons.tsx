@@ -129,3 +129,41 @@ export const IconSpark = (p: IconProps) => (
     <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" />
   </Svg>
 );
+
+/* Needs WebAble learns ("What helps you"): one plain icon each. */
+export const IconTextSize = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 18.5 8.5 5.5l5.5 13M5 14h7" />
+    <path d="m14.5 18.5 3.5-8 3.5 8M15.6 16h4.8" />
+  </Svg>
+);
+export const IconContrast = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" />
+  </Svg>
+);
+export const IconTarget = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 11.9v.2" />
+  </Svg>
+);
+export const IconPause = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M10 9v6M14 9v6" />
+  </Svg>
+);
+export const IconBook = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3.5 5.5c2.8-1 5.6-.8 8.5 1 2.9-1.8 5.7-2 8.5-1v13c-2.8-1-5.6-.8-8.5 1-2.9-1.8-5.7-2-8.5-1z" />
+    <path d="M12 6.5v13" />
+  </Svg>
+);
+export const IconDrop = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3.5s6 6.3 6 10.5a6 6 0 0 1-12 0c0-4.2 6-10.5 6-10.5z" />
+  </Svg>
+);

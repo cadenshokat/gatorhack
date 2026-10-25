@@ -129,6 +129,37 @@ export function inVocabulary(word: string): boolean {
   return false;
 }
 
+// Words that are common in class names and ids but not in the interface vocabulary. Class words reach Jev as
+// structure evidence; anything else (an id such as "rx-atorvastatin") is dropped before it leaves the page.
+const CLASS_WORDS = new Set(
+  `btn button cta nav navbar menu hdr header ftr footer masthead hero promo promos promoted upsell crosssell sponsor
+  sponsored sponsors advert adverts adslot slot dfp gpt taboola outbrain native modal modals overlay popup popover
+  dialog drawer sheet toast snackbar tooltip banner interstitial paywall regwall gate consent cookie cookies gdpr ccpa
+  cmp onetrust newsletter subscribe signup signin login chat bubble widget widgets intercom zendesk livechat carousel
+  slider slide slides swiper track rail tile tiles card cards teaser teasers kicker dek byline headline headlines
+  title subtitle caption credit media thumb thumbnail figure picture img image icon logo brand badge chip pill tag
+  tags label sticky fixed floating toolbar sidebar aside related trending popular recommended rec recs share social
+  sharing comments comment footer breadcrumb crumbs pagination pager tabs tab accordion collapse dropdown select
+  input field fieldset form search query submit checkout cart basket bag price buy add qty quantity stock rating
+  reviews review stars wrapper wrap container inner outer content main body layout section module region zone column
+  grid list item items link links nav primary secondary tertiary ghost outline solid dark light muted accent coral
+  teal blue red green orange purple gray grey dot dots step steps progress loader spinner skeleton placeholder video
+  player embed iframe frame map story stories article articles post posts feed stream live breaking alert alerts
+  notice notification promo hero pickup delivery drive store membership helpline faq rx`.split(/\s+/).filter(Boolean),
+);
+
+/** Class and id words that are safe to send as structure evidence: interface words, common CSS words, or short tokens. */
+export function safeClassWords(words: readonly string[] | undefined, max = 6): string[] {
+  const out: string[] = [];
+  for (const raw of words ?? []) {
+    const w = String(raw).toLowerCase();
+    if (!w || out.includes(w)) continue;
+    if (w.length <= 3 || CLASS_WORDS.has(w) || inVocabulary(w)) out.push(w);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
 /* ------------------------------------------------------------------ */
 /* Patterns                                                            */
 /* ------------------------------------------------------------------ */

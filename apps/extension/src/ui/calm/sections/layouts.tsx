@@ -2,7 +2,7 @@
 // visible word or control from the placed part is dropped.
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
-import { Blocks, BlockView, ControlView, FlowView, ImageView, PillButton, TOOL_RE, Thumb, ToolIcon, keepImage } from '../Blocks';
+import { Blocks, BlockView, ControlView, FlowView, ImageView, Picture, PillButton, TOOL_RE, Thumb, ToolIcon, keepImage } from '../Blocks';
 import { useCalm } from '../context';
 import * as I from '../icons';
 import {
@@ -554,14 +554,19 @@ export function Hero({ p }: { p: PlanSection }): JSX.Element {
 }
 
 /**
- * A product: at ≥ 1100 px a 5fr / 7fr split with the picture sticky on the left; narrower, the picture stacks above at
- * most a third of the screen tall. Order: name, price (large), option tiles two-up, then everything else. The main
- * button is in the dock.
+ * A product (design.md §2): the main picture in a square `contain` well with up to four more as thumbnails, then the
+ * name, the price, option chips and everything else; side by side only at 56em and wider (the picture sticky on the
+ * left). The main button is in the dock.
  */
 export function BuyBox({ p }: { p: PlanSection }): JSX.Element {
   const ls = leaves(allBlocks(p));
-  const media = ls.find((b): b is ImageBlock => b.b === 'image' && keepImage(b, true));
-  const rest = ls.filter((b) => b !== media && !(b.b === 'image' && b.logo));
+  const pics = ls.filter((b): b is ImageBlock => b.b === 'image' && keepImage(b, true));
+  // The largest picture is the product's own; other pictures of the product follow as thumbnails (at most 5 in all).
+  const main = pics.reduce<ImageBlock | null>((m, b) => (!m || b.w * b.h > m.w * m.h ? b : m), null);
+  const shots = main ? [main, ...pics.filter((b) => b !== main && b.url !== main.url)].slice(0, 5) : [];
+  const [sel, setSel] = useState(0);
+  const media = shots[Math.min(sel, shots.length - 1)] ?? null;
+  const rest = ls.filter((b) => !(b.b === 'image' && (shots.includes(b) || b.logo)));
   const name = rest.find((b) => b.b === 'heading');
   const price = rest.find((b): b is FlowBlock => b.b === 'flow' && b.text.length <= 40 && PRICE_RE.test(b.text));
   const others = rest.filter((b) => b !== name && b !== price);
@@ -569,7 +574,23 @@ export function BuyBox({ p }: { p: PlanSection }): JSX.Element {
     <div class={`wa-buy${media ? '' : ' wa-buy--nomedia'}`}>
       {media && (
         <div class="wa-buy__media">
-          <ImageView b={media} well />
+          <Picture key={media.key} b={{ ...media, important: true }} ratio={1} fit="contain" lead caption={false} />
+          {shots.length > 1 && (
+            <div class="wa-buy__thumbs">
+              {shots.map((s, i) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  class="wa-buy__thumb"
+                  aria-pressed={i === sel}
+                  aria-label={`Show picture ${i + 1} of ${shots.length}`}
+                  onClick={() => setSel(i)}
+                >
+                  <img src={s.url} alt="" decoding="async" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
       <div class="wa-buy__info">

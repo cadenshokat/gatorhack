@@ -1,113 +1,120 @@
-// The fitting flow: Welcome → how you point → Reading (R1–R4) → Pointing (P1) → Finding (F1–F3) → Your fit.
-// One instruction per screen, no timers or scores, every part skippable, Pause any time (Esc).
+// The 70-second warm-up (fitting brief round 4): one news-page stage that fits itself while the person taps along.
+// Browser settings answer what they can first; Read, Faint, Point, Find and Pick stop as soon as they are sure; the
+// person ends on their own fitted page and can change anything. No Next buttons, no timers or scores.
 
-import { DEMO_FITS, type FitProfile, type InputClass } from '@webable/core';
+import { DEMO_FITS, defaultFit, type BrowserSettings, type FitProfile, type InputClass, type WarmupMetrics } from '@webable/core';
 import type { JSX } from 'preact';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { SENTENCES, type Sentence } from './content/sentences';
-import { captureEnv, type Env } from './logic/env';
-import { planFinding } from './logic/finding';
-import { cloneFit, deriveSafely, effectiveTextPx, fallbackFit } from './logic/fitview';
-import { makeRng, shuffle } from './logic/rand';
-import { RawCollector, type TaskId } from './logic/raw';
-import { closeThisTab, loadFit, loadServerOrigin, openPage, readZoom, saveFit } from './logic/storage';
-import { Find, GotInWayScreen, Prefer } from './screens/Finding';
-import { Dots } from './screens/Pointing';
-import { Comfort, ExpressOffer, Faint, Ladder, PolarityQuestion, PolarityTrials } from './screens/Reading';
-import type { ScreenProps, SentenceSource } from './screens/types';
-import { PointerChoice, Welcome, type DemoName } from './screens/Welcome';
-import { Done, YourFit, type FitOrigin } from './screens/YourFit';
-import { ActionBar, FitSlip, PART_LABEL, PARTS, PauseOverlay, TopBar, type Part, type RulerState, type SlipLine } from './ui/chrome';
-import { Btn } from './ui/common';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { SENTENCES } from './content/sentences';
+import { captureEnv, readBrowserSettings, readPageZoom, settingsUsed, type Env } from './logic/env';
+import { cloneFit, deriveSafely, lookOf, markValue, type MarkState } from './logic/fitview';
+import { MARK_OF, MARKS, planBlocks, type BlockId, type BlockPlan, type MarkId } from './logic/plan';
+import { makeRng } from './logic/rand';
+import { RawCollector } from './logic/raw';
+import { closeThisTab, loadFit, loadServerOrigin, openPage, saveFit } from './logic/storage';
+import { Confirm, Done } from './screens/Confirm';
+import { ReaderPath, Skipped, Start } from './screens/Start';
+import { FaintBlock } from './stage/Faint';
+import { FindBlock } from './stage/Find';
+import { FrameBar, Instruction } from './stage/Frame';
+import { NewsPage } from './stage/NewsPage';
+import { PickBlock } from './stage/Pick';
+import { PointBlock } from './stage/Point';
+import { ReadBlock } from './stage/Read';
+import type { BlockOutcome, BlockProps } from './stage/types';
+import { Btn, Wordmark } from './ui/common';
+import { Strip, type StripMark } from './ui/Strip';
 
-type StepId = 'welcome' | 'pointer' | 'R1' | 'R2' | 'express' | 'R3' | 'R4' | 'R4q' | 'P1' | 'F1' | 'F2' | 'F3' | 'fit' | 'done';
-type Mode = 'full' | 'quick' | 'listen';
+type Phase = 'boot' | 'start' | 'stage' | 'confirm' | 'done' | 'skipped' | 'reader';
+type DemoName = 'rosa' | 'typical' | 'reader';
 
-const STEP_PART: Partial<Record<StepId, Part>> = {
-  R1: 'reading', R2: 'reading', express: 'reading', R3: 'reading', R4: 'reading', R4q: 'reading',
-  P1: 'pointing', F1: 'finding', F2: 'finding', F3: 'finding',
-};
-const STEP_TASK: Partial<Record<StepId, TaskId>> = {
-  R1: 'R1', R2: 'R2', R3: 'R3', R4: 'R4', R4q: 'R4', P1: 'P1', F1: 'F1', F2: 'F2', F3: 'F3',
-};
-/** Typical seconds per screen (brief §1), for "about N minutes left". */
-const TYPICAL_S: Partial<Record<StepId, number>> = {
-  R1: 8, R2: 24, express: 4, R3: 9, R4: 10, R4q: 4, P1: 20, F1: 22, F2: 6, F3: 4,
-};
-const ALL_TASKS: TaskId[] = ['R1', 'R2', 'R3', 'R4', 'P1', 'F1', 'F2', 'F3'];
-
-interface PlanCtx {
-  mode: Mode;
-  keyboard: boolean;
-  forced: boolean;
-  offerExpress: boolean;
+interface Beat {
+  mark: MarkId;
+  title: string;
+  sub: string;
 }
 
-function plannedSteps(c: PlanCtx): StepId[] {
-  if (c.mode === 'quick') return c.keyboard ? ['R1'] : ['R1', 'P1'];
-  if (c.mode === 'listen') return ['F3'];
-  const s: StepId[] = ['R1', 'R2'];
-  if (c.offerExpress) s.push('express');
-  if (!c.forced) s.push('R3', 'R4', 'R4q');
-  if (!c.keyboard) s.push('P1');
-  s.push('F1', 'F2', 'F3');
-  return s;
+const BEAT_MS = 1100;
+const IDLE_MS = 20_000;
+
+function emptyMarks(): Record<MarkId, StripMark> {
+  return { text: { state: 'pending', value: null }, contrast: { state: 'pending', value: null }, clicks: { state: 'pending', value: null }, calm: { state: 'pending', value: null }, colours: { state: 'pending', value: null } };
 }
 
-function demoFit(name: DemoName): FitProfile | null {
-  try {
-    const f = (DEMO_FITS as Partial<Record<DemoName, FitProfile>> | undefined)?.[name];
-    if (f) return { ...cloneFit(f), createdAt: new Date().toISOString() };
-  } catch {
-    /* core not ready */
+/** What the page just took on, in a few words (shown while the page changes). */
+function beatFor(id: BlockId, fit: FitProfile): Beat | null {
+  switch (id) {
+    case 'read': {
+      const px = fit.text.override ?? fit.text.bodyPx;
+      return px > 16.25
+        ? { mark: 'text', title: `Text: ${Math.round(px * 2) / 2} px.`, sub: 'The page grows to your size. Headings stay in proportion.' }
+        : { mark: 'text', title: 'Text: the usual size suits you.', sub: 'Pages keep their own text size.' };
+    }
+    case 'faint':
+      return fit.contrast.band === 'S'
+        ? { mark: 'contrast', title: 'Contrast: strongest.', sub: 'Grey text is drawn near-black.' }
+        : fit.contrast.band === 'M'
+          ? { mark: 'contrast', title: 'Grey text: darker.', sub: 'Captions and faint text are darkened. Colours keep their hue.' }
+          : { mark: 'contrast', title: 'Grey text: fine as it is.', sub: 'Only text too faint for anyone is darkened.' };
+    case 'point': {
+      const T = fit.targets.minPx;
+      const steady = fit.clicks.steady.on ? ' Steady clicks on.' : '';
+      return T != null && T > 24
+        ? { mark: 'clicks', title: `Click areas: ${T} px.${steady}`, sub: 'Small buttons and links answer to a larger area. They look the same.' }
+        : { mark: 'clicks', title: `Click areas: fine as they are.${steady}`, sub: 'Buttons and links keep their size.' };
+    }
+    case 'pick': {
+      const l = fit.attention.structureLevel;
+      return l === 2
+        ? { mark: 'calm', title: 'Calm view on busy pages.', sub: 'Side panels and promotions step back. The original is one click away.' }
+        : l === 1
+          ? { mark: 'calm', title: 'Calm view offered on busy pages.', sub: 'Side panels step back when you ask.' }
+          : { mark: 'calm', title: 'Busy pages stay as they are.', sub: 'A calmer layout is there when you ask for it.' };
+    }
+    default:
+      return null;
   }
-  return null;
 }
+
+const BLOCKS: Record<BlockId, (p: BlockProps) => JSX.Element> = {
+  read: ReadBlock,
+  faint: FaintBlock,
+  point: PointBlock,
+  find: FindBlock,
+  pick: PickBlock,
+};
 
 export function App(): JSX.Element {
   const raw = useMemo(() => new RawCollector(), []);
+  const seed = useMemo(() => (Math.random() * 2 ** 31) | 0, []);
+  const rng = useMemo(() => makeRng(seed), [seed]);
+  const [phase, setPhase] = useState<Phase>('boot');
   const [env, setEnv] = useState<Env | null>(null);
-  const [step, setStep] = useState<StepId>('welcome');
-  const [mode, setMode] = useState<Mode>('full');
-  const [paused, setPaused] = useState(false);
-  const [within, setWithin] = useState(0);
-  const [idle, setIdle] = useState(false);
+  const [settings, setSettings] = useState<BrowserSettings | null>(null);
   const [existing, setExisting] = useState<FitProfile | null>(null);
-  const [fit, setFit] = useState<FitProfile | null>(null);
-  const [origin, setOrigin] = useState<FitOrigin>('measured');
-  const [demoName, setDemoName] = useState<string | undefined>(undefined);
+  const [plan, setPlan] = useState<BlockPlan | null>(null);
+  const [qi, setQi] = useState(0);
+  const [beat, setBeat] = useState<Beat | null>(null);
+  const [landed, setLanded] = useState<Set<MarkId>>(new Set());
+  const [marks, setMarks] = useState<Record<MarkId, StripMark>>(emptyMarks);
+  const [paused, setPaused] = useState(false);
+  const [idle, setIdle] = useState(false);
+  const [draft, setDraft] = useState<FitProfile>(() => defaultFit());
+  const [stageStill, setStageStill] = useState(false);
+  const [confirmBase, setConfirmBase] = useState<FitProfile | null>(null);
+  const [demoName, setDemoName] = useState<DemoName | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [motionStopped, setMotionStopped] = useState(false);
-  const [announce, setAnnounce] = useState('');
+  const [doneSeconds, setDoneSeconds] = useState<number | null>(null);
   const [serverOrigin, setServerOrigin] = useState('');
-  const [, force] = useState(0);
-  const [chromeScale, setChromeScale] = useState(1);
-  const [vw, setVw] = useState(() => window.innerWidth);
-  const [vh, setVh] = useState(() => window.innerHeight);
-  /** The fit as edited on "Your fit" (steppers), so the Save in the top bar saves what is on screen. */
-  const draft = useRef<FitProfile | null>(null);
+  const lastSaved = useRef<FitProfile | null>(null);
+  const lastMetrics = useRef<WarmupMetrics | null>(null);
   const lastActivity = useRef(performance.now());
-  const started = useRef(false);
+  const input = useRef<{ moved: boolean; tabFirst: boolean; pointerType: string | null }>({ moved: false, tabFirst: false, pointerType: null });
 
-  const seed = useMemo(() => (Math.random() * 2 ** 31) | 0, []);
-  const plan = useMemo(() => planFinding(makeRng(seed)), [seed]);
-  const sentences = useMemo<SentenceSource>(() => {
-    const rng = makeRng(seed ^ 0x5bd1e995);
-    let pool: Sentence[] = shuffle(SENTENCES, rng);
-    let k = 0;
-    return {
-      next: () => {
-        if (k >= pool.length) {
-          pool = shuffle(SENTENCES, rng);
-          k = 0;
-        }
-        return pool[k++] as Sentence;
-      },
-    };
-  }, [seed]);
+  const block: BlockId | null = plan && phase === 'stage' ? (plan.queue[qi] ?? null) : null;
 
-  /* ---------------- boot ---------------- */
+  /* ---------------- boot: settings before any tap ---------------- */
 
   useEffect(() => {
     try {
@@ -115,51 +122,71 @@ export function App(): JSX.Element {
     } catch {
       /* not supported */
     }
-    const e = captureEnv(SENTENCES.map((s) => s.text).join(' '));
-    setEnv(e);
-    raw.inputClass = e.coarse ? 'touch' : 'mouse';
-    void readZoom().then((z) => (raw.zoom = z));
-    void loadFit().then(setExisting);
-    void loadServerOrigin().then(setServerOrigin);
-
-    const q = new URLSearchParams(location.search);
-    const demo = q.get('demo');
-    if (demo === 'rosa' || demo === 'typical' || demo === 'reader') {
-      const f = demoFit(demo);
-      if (f) {
-        setFit(f);
-        setOrigin('demo');
-        setDemoName(demo === 'rosa' ? 'Rosa' : demo === 'typical' ? 'Typical' : 'Reader');
-        setStep('fit');
+    void (async () => {
+      const zoom = await readPageZoom();
+      raw.zoom = zoom;
+      setEnv(captureEnv(SENTENCES.map((s) => s.text).join(' '), zoom));
+      const s = await readBrowserSettings().catch(() => null);
+      setSettings(s);
+      setExisting(await loadFit());
+      setServerOrigin(await loadServerOrigin());
+      if (s) setDraft(deriveSafely(raw.toRaw(), s));
+      const demo = new URLSearchParams(location.search).get('demo');
+      if (demo === 'rosa' || demo === 'typical' || demo === 'reader') {
+        setDemoName(demo);
+        setConfirmBase({ ...cloneFit(DEMO_FITS[demo]), createdAt: new Date().toISOString() });
+        setMarks(Object.fromEntries(MARKS.map((m) => [m.id, { state: 'done', value: markValue(m.id, DEMO_FITS[demo], s) }])) as Record<MarkId, StripMark>);
+        setPhase('confirm');
+        return;
       }
-    }
+      setPhase('start');
+    })();
   }, []);
 
-  /* ---------------- every step starts at the top ---------------- */
-
-  // A new screen never inherits the last one's scroll: its heading and instruction must be in view.
-  useLayoutEffect(() => {
-    window.scrollTo(0, 0);
-  }, [step]);
-
-  /* ---------------- presses, activity, visibility ---------------- */
+  /* ---------------- input type: the first pointer, or Tab before any pointer move ---------------- */
 
   useEffect(() => {
+    const move = () => {
+      input.current.moved = true;
+    };
+    const key = (e: KeyboardEvent) => {
+      if (e.key === 'Tab' && !input.current.moved) input.current.tabFirst = true;
+    };
+    const down = (e: PointerEvent) => {
+      input.current.pointerType ??= e.pointerType;
+    };
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('keydown', key, true);
+    window.addEventListener('pointerdown', down, true);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('keydown', key, true);
+      window.removeEventListener('pointerdown', down, true);
+    };
+  }, []);
+
+  /* ---------------- presses, actions, activity, visibility ---------------- */
+
+  useEffect(() => {
+    const live = phase === 'stage' || phase === 'confirm';
     const down = (e: PointerEvent) => {
       lastActivity.current = performance.now();
       setIdle(false);
-      if (started.current) raw.onPointerDown(e);
+      if (!live) return;
+      raw.countAction();
+      if (phase === 'stage') raw.onPointerDown(e);
     };
     const up = (e: PointerEvent) => {
-      if (started.current) raw.onPointerUp(e);
+      if (phase === 'stage') raw.onPointerUp(e);
     };
-    const key = () => {
+    const key = (e: KeyboardEvent) => {
       lastActivity.current = performance.now();
       setIdle(false);
+      if (live && !e.repeat && !['Shift', 'Meta', 'Control', 'Alt'].includes(e.key)) raw.countAction();
     };
     const vis = () => {
       if (document.hidden) raw.stopClock();
-      else if (started.current && !paused && STEP_PART[step]) raw.startClock();
+      else if (live && !paused) raw.startClock();
     };
     window.addEventListener('pointerdown', down, true);
     window.addEventListener('pointerup', up, true);
@@ -171,109 +198,142 @@ export function App(): JSX.Element {
       window.removeEventListener('keydown', key, true);
       document.removeEventListener('visibilitychange', vis);
     };
-  }, [paused, step]);
-
-  const inTask = STEP_PART[step] !== undefined;
+  }, [phase, paused]);
 
   useEffect(() => {
-    if (!inTask || paused) {
+    if (phase !== 'stage' || paused || beat) {
       setIdle(false);
       return;
     }
     lastActivity.current = performance.now();
     const id = window.setInterval(() => {
-      if (performance.now() - lastActivity.current > 20_000) setIdle(true);
+      if (performance.now() - lastActivity.current > IDLE_MS) setIdle(true);
     }, 1000);
     return () => window.clearInterval(id);
-  }, [step, paused, inTask]);
+  }, [phase, paused, qi, beat]);
 
-  /* ---------------- navigation ---------------- */
+  /* ---------------- marks ---------------- */
 
-  const ctx = (): PlanCtx => ({
-    mode,
-    keyboard: raw.inputClass === 'keyboard',
-    forced: env?.forcedColors ?? false,
-    offerExpress: mode === 'full' && raw.done.has('R2') && (raw.ladderMedianRtMs ?? 0) > 8000,
-  });
+  const setMark = (id: MarkId, state: MarkState, value: string | null) => setMarks((m) => ({ ...m, [id]: { state, value } }));
 
-  const finish = useCallback(
-    (m: Mode) => {
-      raw.stopClock();
-      // Whatever was not done counts as skipped, so core knows which values are measured.
-      for (const t of ALL_TASKS) if (!raw.done.has(t)) raw.skip(t);
-      const { fit: f } = deriveSafely(raw.toRaw(), env);
-      setFit(f);
-      setOrigin(raw.done.size ? 'measured' : 'default');
-      setDemoName(undefined);
-      setStep('fit');
-      void m;
+  /* ---------------- start ---------------- */
+
+  const start = () => {
+    const pt = input.current.pointerType;
+    const cls: InputClass = input.current.tabFirst && !input.current.moved ? 'keyboard' : pt === 'touch' || settings?.pointer === 'coarse' ? 'touch' : pt === 'pen' ? 'other' : 'mouse';
+    raw.inputClass = cls;
+    const p = planBlocks(settings, cls);
+    setPlan(p);
+    for (const [b] of Object.entries(p.prefilled)) raw.markBlock(b as BlockId, 'prefilled');
+    for (const b of p.notRun) raw.markBlock(b, 'not_run');
+
+    const d = deriveSafely(raw.toRaw(), settings);
+    setDraft(d);
+    const m = emptyMarks();
+    const queued = new Set(p.queue.map((b) => MARK_OF[b]));
+    const land = new Set<MarkId>();
+    for (const mk of MARKS) {
+      if (queued.has(mk.id)) continue;
+      // Keyboard first: Point is not needed (WebAble never changes keyboard handling). Otherwise settings answered it.
+      if (mk.id === 'clicks') m.clicks = cls === 'keyboard' ? { state: 'done', value: 'Keyboard' } : { state: 'skipped', value: null };
+      else m[mk.id] = { state: 'setting', value: markValue(mk.id, d, settings) };
+    }
+    if (settings?.contrastMore || settings?.forcedColors) {
+      m.contrast = { state: 'setting', value: markValue('contrast', d, settings) };
+      land.add('contrast');
+    }
+    m.colours = { state: 'setting', value: p.colours === 'dark' ? 'Dark' : p.colours === 'light' ? 'Light' : settings?.forcedColors ? 'System' : 'Site' };
+    const first = p.queue[0];
+    if (first) m[MARK_OF[first]] = { ...m[MARK_OF[first]], state: 'active' };
+    setMarks(m);
+    setLanded(land);
+    setStageStill(!!settings?.reducedMotion);
+    raw.startClock();
+    if (first) {
+      raw.beginBlock(first);
+      setQi(0);
+      setPhase('stage');
+    } else goConfirm();
+  };
+
+  const goConfirm = () => {
+    raw.beginBlock('confirm');
+    const base = deriveSafely(raw.toRaw(), settings);
+    setConfirmBase(base);
+    setMarks((m) => {
+      const out = { ...m };
+      for (const mk of MARKS) if (out[mk.id].state === 'active' || out[mk.id].state === 'pending') out[mk.id] = { state: 'done', value: markValue(mk.id, base, settings) };
+      return out;
+    });
+    setPhase('confirm');
+  };
+
+  /* ---------------- blocks ---------------- */
+
+  const advance = (from: number) => {
+    if (!plan) return;
+    const next = plan.queue[from + 1];
+    if (!next) {
+      goConfirm();
+      return;
+    }
+    raw.beginBlock(next);
+    setMarks((m) => {
+      const mk = MARK_OF[next];
+      return m[mk].state === 'active' ? m : { ...m, [mk]: { ...m[mk], state: 'active' } };
+    });
+    setQi(from + 1);
+    lastActivity.current = performance.now();
+  };
+
+  const finishBlock = useCallback(
+    (o: BlockOutcome, skipped = false) => {
+      if (!plan || !block || beat) return;
+      raw.endBlock(block, { trials: o.trials, stop: o.stop, skipped });
+      const d = deriveSafely(raw.toRaw(), settings);
+      setDraft(d);
+      const mk = MARK_OF[block];
+      const pickQueued = plan.queue.includes('pick');
+      const fillsMark = block !== 'find' || !pickQueued;
+      if (fillsMark) {
+        const fromSettings = mk === 'text' && skipped && d.text.source === 'stated';
+        const contrastSetting = mk === 'contrast' && skipped && (settings?.contrastMore || settings?.forcedColors);
+        const state: MarkState = skipped ? (fromSettings || contrastSetting ? 'setting' : 'skipped') : 'done';
+        setMark(mk, state, markValue(mk, d, settings));
+        if (state !== 'skipped') setLanded((l) => new Set(l).add(mk));
+      }
+      const b = !skipped && fillsMark ? beatFor(block, d) : null;
+      const at = qi;
+      if (b) {
+        setBeat(b);
+        window.setTimeout(() => {
+          setBeat(null);
+          advance(at);
+        }, BEAT_MS);
+      } else advance(at);
     },
-    [env],
+    [plan, block, beat, qi, settings],
   );
 
-  const goNext = (from: StepId, m: Mode = mode) => {
-    setWithin(0);
-    const c = { ...ctx(), mode: m };
-    const steps = plannedSteps(c);
-    let i = steps.indexOf(from);
-    let next: StepId | undefined;
-    for (;;) {
-      i += 1;
-      next = steps[i];
-      if (!next) break;
-      // R4's question needs its sentences; F2 needs the pages from F1.
-      if (next === 'R4q' && raw.skipped.has('R4')) continue;
-      if (next === 'F2' && !raw.done.has('F1')) {
-        raw.skip('F2');
-        continue;
-      }
-      break;
-    }
-    if (!next) {
-      finish(m);
-      return;
-    }
-    const part = STEP_PART[next];
-    if (part && part !== STEP_PART[from]) setAnnounce(`Part ${PARTS.indexOf(part) + 1} of 3: ${PART_LABEL[part]}`);
-    setStep(next);
-  };
-
-  const begin = (m: Mode) => {
-    setMode(m);
-    started.current = true;
-    setStep('pointer');
-  };
-
-  const onPointer = (id: InputClass) => {
-    raw.inputClass = id;
-    raw.startClock();
-    const first = plannedSteps({ ...ctx(), mode, keyboard: id === 'keyboard' })[0] ?? 'F3';
-    setAnnounce(`Part ${PARTS.indexOf(STEP_PART[first] ?? 'reading') + 1} of 3: ${PART_LABEL[STEP_PART[first] ?? 'reading']}`);
-    setStep(first);
-  };
-
-  const skipCurrent = () => {
+  const skipPart = () => {
+    if (!block || beat) return;
     setPaused(false);
-    const task = STEP_TASK[step];
-    if (step === 'express') raw.express = false;
-    if (task) raw.skip(task);
-    if (step === 'R4') {
-      goNext('R4q');
-      return;
-    }
-    goNext(step);
+    raw.startClock();
+    const trials = block === 'read' ? raw.ladder.length : block === 'faint' ? raw.faint.length : block === 'find' ? raw.findTrials.length : 0;
+    finishBlock({ trials }, true);
   };
 
   const togglePause = useCallback(() => {
+    if (phase !== 'stage') return;
     setPaused((p) => {
       if (p) raw.startClock();
       else raw.stopClock();
       return !p;
     });
-  }, []);
+  }, [phase]);
 
   useEffect(() => {
-    if (!inTask) return;
+    if (phase !== 'stage') return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -282,211 +342,195 @@ export function App(): JSX.Element {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [inTask]);
+  }, [phase, togglePause]);
 
-  const setChromeSize = (cssPx: number) => {
-    const scale = Math.round(Math.min(1.6, Math.max(1, cssPx / 24)) * 100) / 100;
-    document.documentElement.style.setProperty('--chrome-scale', String(scale));
-    setChromeScale(scale);
-  };
+  /* ---------------- save ---------------- */
 
-  useEffect(() => {
-    const onResize = () => {
-      setVw(window.innerWidth);
-      setVh(window.innerHeight);
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  /* ---------------- welcome actions ---------------- */
-
-  const onSkipAll = () => {
-    started.current = true;
-    for (const t of ALL_TASKS) raw.skip(t);
-    finish('full');
-  };
-
-  const onDemo = (name: DemoName) => {
-    const f = demoFit(name);
-    setFit(f ?? fallbackFit(raw.toRaw()));
-    setOrigin('demo');
-    setDemoName(name === 'rosa' ? 'Rosa' : name === 'typical' ? 'Typical' : 'Reader');
-    setStep('fit');
-  };
-
-  const onSave = async (f: FitProfile) => {
+  const onSave = async (fit: FitProfile, corrections: WarmupMetrics['corrections']) => {
     setSaving(true);
-    const ok = await saveFit({ ...f, createdAt: new Date().toISOString() });
+    let final: FitProfile;
+    if (demoName) {
+      final = { ...fit, createdAt: new Date().toISOString() };
+    } else {
+      raw.endBlock('confirm', { trials: 1, stop: 'person' });
+      raw.stopClock();
+      const metrics = raw.metrics({ completed: true, corrections, settingsUsed: settings ? settingsUsed(settings) : [] });
+      lastMetrics.current = metrics;
+      final = {
+        ...fit,
+        createdAt: new Date().toISOString(),
+        calibration: { ...fit.calibration, version: 'warmup-1', durationSec: Math.round(metrics.activeMs / 1000), skipped: [...raw.skipped], warmup: metrics } as FitProfile['calibration'],
+      };
+      setDoneSeconds(Math.round(metrics.activeMs / 1000));
+    }
+    const ok = await saveFit(final);
+    lastSaved.current = final;
     setSaving(false);
     setSaved(ok);
-    setExisting(ok ? f : existing);
-    setStep('done');
+    setPhase('done');
   };
 
-  const restart = () => {
-    location.href = location.pathname;
+  const saveReader = async () => {
+    setSaving(true);
+    raw.inputClass = 'keyboard';
+    for (const b of ['read', 'faint', 'point', 'find', 'pick'] as BlockId[]) raw.markBlock(b, 'not_run');
+    const metrics = raw.metrics({ completed: true, corrections: { textSteps: 0, colours: false, rows: [] }, settingsUsed: settings ? settingsUsed(settings) : [] });
+    const fit = deriveSafely(raw.toRaw(), settings, metrics);
+    const ok = await saveFit(fit);
+    lastSaved.current = fit;
+    setSaving(false);
+    setSaved(ok);
+    if (ok) void closeThisTab();
+    else setPhase('done');
   };
 
-  /* ---------------- ruler and slip ---------------- */
+  const exportSession = () => {
+    const data = { v: 'warmup-session.1', at: new Date().toISOString(), metrics: lastMetrics.current, raw: raw.toRaw(), fit: lastSaved.current };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `webable-warmup-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+    a.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
 
-  const ruler: RulerState | null = useMemo(() => {
-    const part = STEP_PART[step];
-    if (!part) return null;
-    const steps = plannedSteps(ctx());
-    const idx = steps.indexOf(step);
-    const inPart = steps.filter((s) => STEP_PART[s] === part);
-    const k = inPart.indexOf(step);
-    const frac = inPart.length ? (k + Math.min(1, within)) / inPart.length : 0;
-    const rest = steps.slice(idx + 1).reduce((a, s) => a + (TYPICAL_S[s] ?? 5), 0) + (TYPICAL_S[step] ?? 5) * (1 - within);
-    const done = PARTS.filter((p) => PARTS.indexOf(p) < PARTS.indexOf(part));
-    return { part, within: frac, done, secondsLeft: rest };
-  }, [step, within, mode]);
-
-  const slip: SlipLine[] = useMemo(() => {
-    const lines: SlipLine[] = [
-      { key: 'text', label: 'Text', value: null },
-      { key: 'contrast', label: 'Faint text', value: null },
-      { key: 'polarity', label: 'Light or dark', value: null },
-      { key: 'targets', label: 'Click areas', value: null },
-      { key: 'busy', label: 'Busy pages', value: null },
-    ];
-    if (!raw.done.size) return lines;
-    const { fit: f } = deriveSafely(raw.toRaw(), env);
-    const set = (key: string, v: string) => {
-      const l = lines.find((x) => x.key === key);
-      if (l) l.value = v;
+  // For the eval harness and the pilot logger: read-only views of the session.
+  useEffect(() => {
+    (globalThis as { __warmup?: unknown }).__warmup = {
+      phase: () => phase,
+      block: () => block,
+      beat: () => beat,
+      draft: () => draft,
+      raw: () => raw.toRaw(),
+      metrics: () => lastMetrics.current,
+      saved: () => lastSaved.current,
+      settings: () => settings,
     };
-    if (raw.done.has('R2') || raw.done.has('R1')) set('text', `${Math.round(effectiveTextPx(f))} px`);
-    if (raw.done.has('R3')) set('contrast', f.contrast.band === 'S' ? 'max' : `${f.contrast.floor}:1`);
-    if (raw.done.has('R4')) set('polarity', f.polarity.value === 'none' ? 'site colors' : f.polarity.value);
-    if (raw.done.has('P1') && f.targets.minPx) set('targets', `${f.targets.minPx} px`);
-    if (raw.done.has('F3') || raw.done.has('F2')) {
-      const l = f.attention.structureLevel;
-      set('busy', l === 2 ? 'calmer' : l === 1 ? 'offered' : 'as is');
-    }
-    return lines;
-  }, [step]);
+  });
 
   /* ---------------- render ---------------- */
 
-  if (!env) return <div class="fx-app" />;
+  if (phase === 'boot' || !env) return <div class="wu-app" />;
 
-  // Short once the chrome has grown: the same 820 px rule as a 1280 × 720 projector, in unscaled px.
-  const short = vh / chromeScale <= 820;
+  const look = lookOf(draft, landed, { motionOff: stageStill });
+  const inStage = phase === 'stage' && plan && block;
+  const Block = block ? BLOCKS[block] : null;
 
-  const screenProps: ScreenProps = {
-    raw,
-    env,
-    paused,
-    onProgress: (f: number) => setWithin(f),
-    onDone: () => {
-      force((n) => n + 1);
-      goNext(step);
-    },
-  };
+  const top = (
+    <header class="wu-top">
+      <Wordmark />
+      <div class="wu-top-center">{phase === 'stage' || phase === 'confirm' || phase === 'start' ? <Strip marks={marks} /> : null}</div>
+      <div class="wu-top-right">
+        {inStage ? (
+          <>
+            <Btn kind="quiet" onClick={togglePause} kbd="Esc" data="pause" disabled={!!beat}>
+              Pause
+            </Btn>
+            <Btn kind="quiet" onClick={skipPart} data="skip-part" disabled={!!beat}>
+              Skip this part
+            </Btn>
+          </>
+        ) : null}
+      </div>
+    </header>
+  );
 
   let body: JSX.Element;
-  let wide = false;
-  switch (step) {
-    case 'welcome':
-      body = <Welcome existing={existing} onStart={begin} onSkipAll={onSkipAll} onDemo={onDemo} />;
-      break;
-    case 'pointer':
-      body = <PointerChoice suggested={env.coarse ? 'touch' : 'mouse'} onPick={onPointer} />;
-      break;
-    case 'R1':
-      body = <Comfort {...screenProps} onSize={setChromeSize} />;
-      break;
-    case 'R2':
-      body = <Ladder {...screenProps} sentences={sentences} />;
-      break;
-    case 'express':
-      body = <ExpressOffer {...screenProps} />;
-      break;
-    case 'R3':
-      body = <Faint {...screenProps} />;
-      break;
-    case 'R4':
-      body = <PolarityTrials {...screenProps} sentences={sentences} />;
-      break;
-    case 'R4q':
-      body = <PolarityQuestion {...screenProps} />;
-      break;
-    case 'P1':
-      body = <Dots {...screenProps} />;
-      break;
-    case 'F1':
-      wide = true;
-      body = (
-        <Find
-          {...screenProps}
-          plan={plan}
-          motionStopped={motionStopped}
-          onStopMotion={() => {
-            raw.stoppedMotion = true;
-            setMotionStopped(true);
-          }}
-        />
-      );
-      break;
-    case 'F2':
-      wide = true;
-      body = <Prefer {...screenProps} plan={plan} />;
-      break;
-    case 'F3':
-      body = <GotInWayScreen {...screenProps} general={mode === 'listen'} />;
-      break;
-    case 'fit':
-      wide = true;
-      body = fit ? (
-        <YourFit
-          initial={fit}
-          origin={origin}
-          demoName={demoName}
-          done={raw.done}
-          reducedMotion={env.reducedMotion}
-          saving={saving}
-          onChange={(f) => (draft.current = f)}
-          onSave={(f) => void onSave(f)}
-          onRestart={restart}
-        />
-      ) : (
-        <div />
-      );
-      break;
-    default:
-      body = (
-        <Done
-          saved={saved}
-          onOpenDemo={() => void openPage(`${serverOrigin || 'http://127.0.0.1:41741'}/demo/`)}
-          onClose={() => void closeThisTab()}
-        />
-      );
+  if (phase === 'start') {
+    body = (
+      <Start
+        settings={settings}
+        existing={existing}
+        onStart={start}
+        onSkip={() => setPhase('skipped')}
+        onReader={() => setPhase('reader')}
+      />
+    );
+  } else if (phase === 'skipped') {
+    body = <Skipped onClose={() => void closeThisTab()} onBack={() => setPhase('start')} />;
+  } else if (phase === 'reader') {
+    body = <ReaderPath onSave={() => void saveReader()} onBack={() => setPhase('start')} saving={saving} />;
+  } else if (phase === 'confirm' && confirmBase) {
+    body = (
+      <Confirm
+        base={confirmBase}
+        settings={settings}
+        colourDefault={plan?.colours ?? (settings?.colorScheme === 'dark' ? 'dark' : 'light')}
+        demoName={demoName ? demoName[0]!.toUpperCase() + demoName.slice(1) : undefined}
+        saving={saving}
+        onSave={(f, c) => void onSave(f, c)}
+        onRestart={() => (location.href = location.pathname)}
+      />
+    );
+  } else if (phase === 'done') {
+    body = (
+      <Done
+        saved={saved}
+        seconds={doneSeconds}
+        onOpenDemo={() => void openPage(`${serverOrigin || 'http://127.0.0.1:41741'}/demo/`)}
+        onClose={() => void closeThisTab()}
+        onExport={lastMetrics.current ? exportSession : null}
+      />
+    );
+  } else if (inStage && Block && plan) {
+    body = (
+      <div class={`wu-stagegrid ${beat ? 'is-beat' : ''}`} data-block={block}>
+        <div class="wu-frame wu-stage-frame">
+          <FrameBar site="The Daily Ledger" note="a made-up news page" />
+          <div class="wu-viewport">
+            <NewsPage look={look} showHits={beat?.mark === 'clicks'} />
+          </div>
+        </div>
+        {beat ? (
+          <>
+            <Instruction sub={beat.sub}>{beat.title}</Instruction>
+            <div class="wu-tray is-note" key={`beat-${beat.mark}`} />
+          </>
+        ) : (
+          <Block
+            key={block}
+            raw={raw}
+            env={env}
+            plan={plan}
+            settings={settings}
+            fit={draft}
+            paused={paused}
+            rng={rng}
+            onDone={(o) => finishBlock(o)}
+            onStopMotion={() => setStageStill(true)}
+          />
+        )}
+        <p class={`wu-idle ${idle ? 'is-on' : ''}`} aria-live="polite">
+          {idle ? 'Take your time, or skip this part.' : ''}
+        </p>
+      </div>
+    );
+  } else {
+    body = <div />;
   }
 
   return (
-    <div class={`fx-app ${short ? 'is-short' : ''}`}>
-      <TopBar
-        ruler={ruler}
-        title={step === 'fit' ? 'Your fit' : undefined}
-        action={
-          step === 'fit' && fit ? (
-            <Btn kind="primary" class="fx-btn-top" onClick={() => void onSave(draft.current ?? fit)} disabled={saving}>
-              {saving ? 'Saving…' : 'Save my fit'}
-            </Btn>
-          ) : undefined
-        }
-      />
-      <main class={`fx-main ${wide ? 'is-wide' : ''} ${step === 'fit' ? 'is-fit' : ''}`} key={step}>
-        {body}
-      </main>
-      {inTask && !wide && vw >= 1184 * chromeScale + 96 ? <FitSlip lines={slip} /> : null}
-      {inTask ? <ActionBar onPause={togglePause} onSkip={skipCurrent} idle={idle} /> : null}
-      {paused ? <PauseOverlay onResume={togglePause} onSkip={skipCurrent} canSkip /> : null}
-      <div class="sr-only" aria-live="polite">
-        {announce}
-      </div>
+    <div class={`wu-app is-${phase}`}>
+      {top}
+      <main class="wu-main">{body}</main>
+      {paused ? (
+        <div class="wu-pause" role="dialog" aria-modal="true" aria-labelledby="wu-pause-h">
+          <div class="wu-pause-card">
+            <h1 id="wu-pause-h" class="wu-title">
+              Paused
+            </h1>
+            <p class="wu-lede">Take as long as you like. Nothing is lost.</p>
+            <div class="wu-start-actions is-center">
+              <Btn kind="primary" onClick={togglePause} kbd="Esc" class="wu-btn-pill" data="resume">
+                Continue
+              </Btn>
+              <Btn kind="tonal" onClick={skipPart} class="wu-btn-pill" data="pause-skip">
+                Skip this part
+              </Btn>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

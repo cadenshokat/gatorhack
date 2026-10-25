@@ -5,7 +5,7 @@
 // `state` holds only page context. Question and criteria text below is byte-identical to the measured catalog
 // (jev-bench/catalog.py + the reworded task Noul from run_variants.py); thresholds in policy.ts were measured on it.
 import type { ElementEvidence, ElementJudgment, JevMetrics, PageDigest, PageUnderstanding, Role } from '../types';
-import { uiLabel } from '../redact';
+import { safeClassWords, uiLabel } from '../redact';
 import { choiceOf, noulOf } from './api';
 import type { JevQuestion, JevResponse } from './api';
 
@@ -127,9 +127,8 @@ function classWords(words: string[] | undefined): string[] {
   for (const w of words ?? []) {
     const c = String(w).toLowerCase().replace(/\d+/g, '').replace(/[^a-z_-]/g, '').slice(0, 24);
     if (c && !out.includes(c)) out.push(c);
-    if (out.length >= 6) break;
   }
-  return out;
+  return safeClassWords(out.flatMap((c) => c.split(/[-_]+/)).filter(Boolean), 6);
 }
 
 /** The element's evidence object, keys in the fixed measured order, optional keys only when present. */

@@ -1,5 +1,5 @@
-// Owner: P, U. The WebAble panel: text size and page width first, then Original page, Calm view, Lens toggle, what
-// changed, the Jev counter and the signal gauges.
+// Owner: P, U, F. The WebAble panel: text size and page width first, then what helps you (what WebAble has learned),
+// then Original page, Calm view, Lens toggle, what changed, the Jev counter and the signal gauges.
 import { useEffect, useRef } from 'preact/hooks';
 import type { EngineApi, EngineState } from '../../contracts';
 import { phaseLine } from './format';
@@ -7,8 +7,10 @@ import { Gauges } from './Gauges';
 import { modifierLabel, shortcutLabel, type PillSide } from './hooks';
 import { IconClose, IconLayout, IconLens, IconSpark } from './icons';
 import { JevCounter } from './JevCounter';
+import { hasWarmup } from './learned';
 import { Ledger } from './Ledger';
 import type { TodayMeter } from './today';
+import { WhatHelps } from './WhatHelps';
 
 interface Props {
   api: EngineApi;
@@ -114,6 +116,16 @@ export function PageControls({ api, s, pageZoom, onAdjust }: { api: EngineApi; s
   );
 }
 
+/**
+ * The footer's warm-up link. WebAble works without a warm-up (it fits from the browser's settings and learns from
+ * use), so the warm-up is offered, never required.
+ */
+export function warmupLabel(s: Pick<EngineState, 'fit' | 'passive'>): string {
+  const fit = s.fit;
+  const took = hasWarmup(s.passive) || Boolean(fit && fit.calibration?.durationSec > 0 && !String(fit.calibration?.version ?? '').startsWith('demo-'));
+  return took ? 'Redo the warm-up' : 'Take the 70-second warm-up';
+}
+
 /** "AI layouts off: no credits" and friends, from the server's health. Null when AI layouts are working. */
 export function aiLine(s: EngineState): string | null {
   if (!s.settings.aiLayouts) return null;
@@ -180,6 +192,7 @@ export function Panel({ api, s, origin, side, maxHeightPx, pageZoom, reduce, tod
 
       <div class="wa-panel-body">
         {active && <PageControls api={api} s={s} pageZoom={pageZoom} onAdjust={onAdjust} />}
+        <WhatHelps api={api} s={s} />
         <div class="wa-card">
           <div class="wa-actions">
             <button
@@ -232,7 +245,7 @@ export function Panel({ api, s, origin, side, maxHeightPx, pageZoom, reduce, tod
       <div class="wa-panel-foot">
         <div class="wa-foot-row">
           <button class="wa-link" onClick={() => api.openFitting()}>
-            {s.fit ? 'Run the fitting again' : 'Run the fitting'}
+            {warmupLabel(s)}
           </button>
           <span>Nothing you type is sent.</span>
         </div>

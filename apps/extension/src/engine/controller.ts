@@ -1,4 +1,4 @@
-// Owner: C1, round 3: T. The in-page engine: implements EngineApi and owns EngineState.
+// Owner: C1, round 3: T, round 4: P (the passive fit). The in-page engine: implements EngineApi and owns EngineState.
 //
 // Boot order (SPEC "Architecture", round 3): wait for load (1.5 s cap) and 400 ms DOM quiet -> settings + fit from the
 // background -> if disabled, paused for this origin or no fit: idle (the pill still mounts) -> reader -> page zoom
@@ -10,11 +10,13 @@
 import {
   DEFAULT_SETTINGS, candidateSource, chooseOfferForFit, columnLimits, decideElements, heuristicSpec, nearestPreset, personZoomLadder,
   bisectColumn, planColumn, repairSpec, stepColumn, stepZoom, summarizeDecisions, summarizeFitForModel,
+  effectiveFit, effectiveFitSources, fitSignature, passiveOffer, PASSIVE_OFFER_KIND,
 } from '@webable/core';
 import type {
   BgRequest, CheckName, CheckResult, ElementDecision, ElementEvidence, ElementJudgment, FitProfile, FitSpec, FitSummaryForModel, HealthStatus,
   JevMetrics, LedgerEntry, Offer, OfferKind, OpKind, OutlineNode, OverlayAction, PageDigest, PageOutline, PageUnderstanding,
   RedesignResult, Role, Settings, StruggleJudgment, StruggleKind, TabReport, VisualVerdict, ZoomPlan,
+  DimensionBelief, FitDimension, PassiveFitState,
 } from '@webable/core';
 import type { EngineApi, EngineState, Toast } from '../contracts';
 import { isOurUi } from '../ui/mount';
@@ -27,6 +29,7 @@ import { Tailor, resetBackgroundCache, type ColumnOp, type Op } from './tailor';
 import { Verifier, calmCoverage, completeSpec, plainCheck } from './verify-dom';
 import { noteOfferOutcome, startSignals, type SignalsHost } from './signals';
 import { requestExplain } from './explain';
+import { PassiveObserver, readMediaFacts, watchMedia } from './passive';
 
 export interface Controller {
   api: EngineApi;
@@ -253,6 +256,52 @@ function initialState(): EngineState {
 }
 
 /* ------------------------------------------------------------------ */
+/* The passive fit (round 4): offers and announcements                 */
+/* ------------------------------------------------------------------ */
+
+/** Per need: when its offer or question was last shown, and until when the person said not now. */
+type PassiveOfferMemory = Partial<Record<FitDimension, { shownAt?: number; askedAt?: number; snoozedUntil?: number }>>;
+/** An offer on screen that came from what WebAble learned (its question tells it apart from a live-struggle offer). */
+interface PassiveOfferMeta { dim: FitDimension; action: 'offer' | 'ask'; question: string }
+const PASSIVE_OFFERS_KEY = 'passiveOffers';
+/** Learned needs already announced with a toast ("Text is larger because you zoomed in on 4 sites this week."). */
+const PASSIVE_SEEN_KEY = 'passiveSeen';
+/** An unanswered offer comes back on a later page, but not sooner than this. */
+const PASSIVE_OFFER_GAP_MS = 10 * 60 * 1000;
+const PASSIVE_NOT_NOW_MS = 24 * 3600 * 1000;
+const PASSIVE_ASK_EVERY_MS = 7 * 24 * 3600 * 1000;
+const PASSIVE_NEVER_MS = 30 * 24 * 3600 * 1000;
+/** Click areas for "bigger buttons on every site" (signals.md: 44 px). */
+const PASSIVE_TARGETS_PX = 44;
+
+/** The op that carries each learned need on a page. */
+const PASSIVE_OP: Partial<Record<FitDimension, OpKind>> = { text_size: 'page_zoom', targets: 'targets', steady_clicks: 'steady_clicks' };
+const PASSIVE_NOUN: Partial<Record<FitDimension, string>> = { text_size: 'larger text', targets: 'bigger click areas', steady_clicks: 'steady clicks' };
+const PASSIVE_DONE: Partial<Record<FitDimension, string>> = {
+  text_size: 'Text is larger on every site',
+  targets: 'Buttons are easier to hit on every site',
+  steady_clicks: 'Steady clicks are on for every site',
+};
+
+async function loadLocal<T>(key: string, fallback: T): Promise<T> {
+  try {
+    const got = await chrome.storage.local.get(key);
+    const v = got[key];
+    return v && typeof v === 'object' ? (v as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+async function saveLocal(key: string, value: unknown): Promise<void> {
+  try {
+    await chrome.storage.local.set({ [key]: value });
+  } catch {
+    /* storage unavailable: the memory holds for this page only */
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Controller                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -295,6 +344,7 @@ export function createController(): Controller {
     lastTabZoom = tab;
     await ask<number>({ type: 'setZoom', factor: tab });
     setZoomState(tab);
+    passiveObs.syncZoom(tab);
   };
   const tailor = new Tailor({
     ask: <T,>(req: BgRequest) => {
@@ -313,7 +363,10 @@ export function createController(): Controller {
     onBehaviour: (kind) => {
       behaviourCounts[kind]++;
     },
-    onZoom: (factor) => setZoomState(factor * colMul),
+    onZoom: (factor) => {
+      setZoomState(factor * colMul);
+      passiveObs.syncZoom(factor * colMul);
+    },
   });
   const verifier = new Verifier({ idOf, isOurUi: safeOurs });
 
@@ -358,6 +411,14 @@ export function createController(): Controller {
   let calmWasOpen = false;
   const redesignCache = new Map<string, RedesignResult>();
   const dismissedOffers = new Map<OfferKind, number>();
+  // The passive fit (round 4): the stored warm-up fit (state.fit is effectiveFit(baseFit, state.passive)), offers on
+  // screen that came from what WebAble learned, and ops whose Undo also tells WebAble the learned need was wrong.
+  let baseFit: FitProfile | null = null;
+  let suppressRefitUntil = 0;
+  const passiveOffers = new Map<OfferKind, PassiveOfferMeta>();
+  const passiveUndo = new Map<string, FitDimension>();
+  let passiveTimer: ReturnType<typeof setTimeout> | null = null;
+  let stopMedia: (() => void) | null = null;
 
   const getFit = () => store.get().fit;
 
@@ -670,9 +731,14 @@ export function createController(): Controller {
 
   /* ---------------- boot ---------------- */
 
-  async function loadSettingsAndFit(): Promise<{ settings: Settings; fit: FitProfile | null }> {
+  /**
+   * Settings, the stored warm-up fit and what WebAble has learned (round 4). The page is fitted with
+   * effectiveFit(warm-up, learned): with no warm-up at all it still fits from Chrome's settings and learning.
+   */
+  async function loadSettingsAndFit(): Promise<{ settings: Settings; fit: FitProfile; base: FitProfile | null; passive: PassiveFitState | null }> {
     let settings: Settings = { ...DEFAULT_SETTINGS };
     let fit: FitProfile | null = null;
+    let passive: PassiveFitState | null = null;
     try {
       const s = await ask<Partial<Settings> | null>({ type: 'getSettings' });
       settings = { ...DEFAULT_SETTINGS, ...(s ?? {}) };
@@ -685,7 +751,21 @@ export function createController(): Controller {
     } catch (err) {
       addError(plainError(err));
     }
-    return { settings, fit };
+    try {
+      // The OS preferences this page sees travel with the request (the worker has no matchMedia).
+      const req = { type: 'getPassive' as const, media: readMediaFacts() };
+      const p = await ask<PassiveFitState | null>(req, 4000);
+      if (p && p.v === 'passive.1') passive = p;
+    } catch {
+      passive = null; // an older worker or a reloaded extension: fit from the warm-up alone
+    }
+    let eff: FitProfile;
+    try {
+      eff = effectiveFit(fit, passive);
+    } catch {
+      eff = fit ?? effectiveFit(null, null);
+    }
+    return { settings, fit: eff, base: fit, passive };
   }
 
   /** AI availability from the server's /health ('on' | 'off' | 'no_credits'), for the panel's "AI layouts off" line. */
@@ -1084,6 +1164,8 @@ export function createController(): Controller {
     sitePrefs.textStep = step;
     void saveSitePrefs({ textStep: step });
     store.set({ textStep: step });
+    // Round 4: the person's own size choice on this site is evidence about their comfortable text size.
+    passiveObs.noteSize(next, 'step', dir);
     log({
       source: 'person',
       title: `Text ${dir > 0 ? 'larger' : 'smaller'}: page zoom ${pct(next)}`,
@@ -1167,6 +1249,354 @@ export function createController(): Controller {
     syncOps();
   }
 
+  /* ---------------- the passive fit (round 4): learns the need, never the cause ---------------- */
+
+  const passiveObs = new PassiveObserver({
+    ask: <T,>(req: BgRequest, timeoutMs?: number) => ask<T>(req, timeoutMs),
+    bodyPx: () => read?.pageBodyPx ?? null,
+    textZoom: (tab) => Math.round((tab / colMul) * 10000) / 10000,
+    zooms: () => ({ fit: plan?.zoom ?? textZoomNow(), own: plan?.ownZoom ?? textZoomNow() }),
+    pageKind: () => read?.pageKind ?? 'web page',
+    isOurUi: safeOurs,
+    confounded: (dim) => {
+      const k = PASSIVE_OP[dim];
+      return !!k && k !== 'page_zoom' && opsList.some((o) => o.rec.kind === k && o.active);
+    },
+    // The background also publishes the state; this page keeps its fit until its next page (plain evidence).
+    onState: (s) => store.set({ passive: s }),
+  });
+
+  function startPassive(): void {
+    passiveObs.start();
+    if (!stopMedia) {
+      stopMedia = watchMedia(() => {
+        // The person changed a system preference (Reduce motion, Increase contrast): tell the background.
+        const req = { type: 'getPassive' as const, media: readMediaFacts() };
+        void ask<PassiveFitState>(req, 4000).catch(() => undefined);
+      });
+    }
+  }
+
+  function stopPassive(): void {
+    passiveObs.stop();
+    stopMedia?.();
+    stopMedia = null;
+  }
+
+  /**
+   * Take a new passive state.
+   *  - 'refit': the person changed something (here, in another tab, in the popup or in Chrome): when the fit this page
+   *    should have is different, fit the page again.
+   *  - 'apply': the caller applies the change on this page itself (an accepted offer): the new fit is taken now.
+   *  - 'keep': plain evidence from browsing; this page keeps its fit until its next page.
+   */
+  function adoptPassive(next: PassiveFitState, mode: 'refit' | 'apply' | 'keep'): void {
+    let newFit: FitProfile;
+    try {
+      newFit = effectiveFit(baseFit, next);
+    } catch {
+      store.set({ passive: next });
+      return;
+    }
+    const changed = fitSignature(newFit) !== fitSignature(store.get().fit);
+    if (!changed) store.set({ passive: next, fit: newFit });
+    else if (mode === 'apply') store.set({ passive: next, fit: newFit });
+    else if (mode === 'refit') {
+      store.set({ passive: next });
+      scheduleRefit();
+    } else store.set({ passive: next });
+  }
+
+  /** The ledger says where this page's fit came from when it was not (only) the warm-up. */
+  function logPassiveSources(fit: FitProfile, base: FitProfile | null, passive: PassiveFitState | null): void {
+    if (!passive) return;
+    let sources: ReturnType<typeof effectiveFitSources>;
+    try {
+      sources = effectiveFitSources(base, passive);
+    } catch {
+      return;
+    }
+    const lines: string[] = [];
+    for (const [dim, src] of Object.entries(sources) as Array<[FitDimension, DimensionBelief['source']]>) {
+      if (src !== 'setting' && src !== 'learned' && src !== 'person') continue;
+      const b = passive.beliefs[dim];
+      if (b?.explanation && b.action === 'apply') lines.push(b.explanation);
+    }
+    if (!base && !lines.length) {
+      log({ source: 'fit', title: 'No warm-up yet: WebAble fits pages from your browser settings and learns from what you do', detail: 'Nothing about you is needed to start. The 70-second warm-up is in the WebAble menu.', action: 'kept' });
+      return;
+    }
+    if (!base) log({ source: 'fit', title: 'No warm-up yet: fitting from your browser settings and what WebAble learned', detail: `Text ${Math.round(fit.text.override ?? fit.text.bodyPx)} px${fit.targets.minPx ? `, click areas ${fit.targets.minPx} px` : ''}${fit.attention.motion.on ? ', motion paused' : ''}.`, action: 'kept' });
+    for (const line of lines) log({ source: 'fit', title: line, detail: 'Learned on this laptop from what you did and what you chose. WebAble keeps what happened, never why.', action: 'kept' });
+  }
+
+  /** Run `fn` once this tab is in view (now, if it is): announcements and offers only on the page the person sees. */
+  function whenVisible(gen: number, fn: () => void): void {
+    if (document.visibilityState === 'visible') {
+      fn();
+      return;
+    }
+    const onVis = () => {
+      if (document.visibilityState !== 'visible') return;
+      document.removeEventListener('visibilitychange', onVis);
+      if (gen === generation && !stopped) fn();
+    };
+    document.addEventListener('visibilitychange', onVis);
+  }
+
+  /**
+   * A need WebAble learned and now applies by default: its Undo here also tells WebAble it was wrong, and the first
+   * page where it does something says so once, in the person's own actions, with Undo ("Text is larger because you
+   * zoomed in on 4 sites this week (average 135%).").
+   */
+  function announceLearned(gen: number): void {
+    const s = store.get();
+    const passive = s.passive;
+    if (!passive || s.showingOriginal || gen !== generation) return;
+    let sources: ReturnType<typeof effectiveFitSources>;
+    try {
+      sources = effectiveFitSources(baseFit, passive);
+    } catch {
+      return;
+    }
+    const due: Array<{ dim: FitDimension; text: string; opId: string }> = [];
+    for (const [dim, kind] of Object.entries(PASSIVE_OP) as Array<[FitDimension, OpKind]>) {
+      if (sources[dim] !== 'learned') continue;
+      const b = passive.beliefs[dim];
+      if (!b || b.action !== 'apply') continue;
+      const op = opsList.find((o) => o.rec.kind === kind && o.active);
+      if (!op) continue; // this page did not need it: it is announced on a page where it does something
+      passiveUndo.set(op.rec.id, dim);
+      due.push({ dim, text: b.explanation, opId: op.rec.id });
+    }
+    if (!due.length) return;
+    whenVisible(gen, () => {
+      void (async () => {
+        const seen = await loadLocal<Record<string, string>>(PASSIVE_SEEN_KEY, {});
+        let changed = false;
+        for (const d of due) {
+          if (seen[d.dim] || gen !== generation || store.get().showingOriginal) continue;
+          if (!opsList.some((o) => o.rec.id === d.opId && o.active)) continue;
+          seen[d.dim] = new Date().toISOString();
+          changed = true;
+          toast(d.text, d.opId);
+        }
+        if (changed) await saveLocal(PASSIVE_SEEN_KEY, seen);
+      })();
+    });
+  }
+
+  /** Offer (or ask about) one learned need, a moment after the page is fitted and in view, at most once a page. */
+  function schedulePassiveOffer(gen: number): void {
+    if (passiveTimer) clearTimeout(passiveTimer);
+    passiveTimer = null;
+    whenVisible(gen, () => {
+      if (passiveTimer) clearTimeout(passiveTimer);
+      passiveTimer = setTimeout(() => {
+        passiveTimer = null;
+        if (gen === generation && !stopped) void maybePassiveOffer(gen);
+      }, 1500);
+    });
+  }
+
+  async function maybePassiveOffer(gen: number): Promise<void> {
+    const s = store.get();
+    const passive = s.passive;
+    if (!passive || s.struggle.offers.length || s.calm.open || s.showingOriginal || passiveOffers.size || s.phase === 'idle') return;
+    const mem = await loadLocal<PassiveOfferMemory>(PASSIVE_OFFERS_KEY, {});
+    const now = Date.now();
+    const picks: Array<{ b: DimensionBelief; offer: Offer }> = [];
+    for (const dim of Object.keys(PASSIVE_OP) as FitDimension[]) {
+      const b = passive.beliefs[dim];
+      if (!b || b.source !== 'learned' || (b.action !== 'offer' && b.action !== 'ask')) continue;
+      const m = mem[dim] ?? {};
+      if ((m.snoozedUntil ?? 0) > now) continue;
+      if (b.action === 'offer' && now - (m.shownAt ?? 0) < PASSIVE_OFFER_GAP_MS) continue;
+      if (b.action === 'ask') {
+        if (now - (m.askedAt ?? 0) < PASSIVE_ASK_EVERY_MS) continue;
+        // A question waits for the need to show on a second site (or in an earlier session): one zoom on one site is
+        // not asked about, so the weekly question is not spent before the evidence repeats.
+        if (b.sites < 2 && !b.evidence.some((e) => e.weight > 0 && e.layer === 'usual')) continue;
+      }
+      const offer = passiveOffer(b);
+      if (offer) picks.push({ b, offer });
+    }
+    if (!picks.length) return;
+    picks.sort((x, y) => (x.b.action === y.b.action ? y.b.p - x.b.p : x.b.action === 'offer' ? -1 : 1));
+    const { b, offer } = picks[0] as { b: DimensionBelief; offer: Offer };
+    const cur = store.get();
+    if (gen !== generation || stopped || cur.struggle.offers.length || cur.calm.open || cur.showingOriginal) return;
+    passiveOffers.set(offer.kind, { dim: b.dim, action: b.action === 'ask' ? 'ask' : 'offer', question: offer.question });
+    store.set({ struggle: { ...cur.struggle, offers: [offer] } });
+    log({ source: 'signals', title: `Offered: ${offer.question}`, detail: `${offer.fact} Learned on this laptop from what you did.`, p: offer.p, action: 'offered' });
+    mem[b.dim] = { ...(mem[b.dim] ?? {}), ...(b.action === 'ask' ? { askedAt: now } : { shownAt: now }) };
+    await saveLocal(PASSIVE_OFFERS_KEY, mem);
+  }
+
+  /** "Make text larger on every site?" → yes: lock the need, fit this page now (with Undo), other pages follow. */
+  async function acceptPassive(kind: OfferKind, meta: PassiveOfferMeta, offer: Offer | undefined): Promise<void> {
+    const { dim } = meta;
+    log({ source: 'person', title: `You accepted: ${offer?.question ?? kind}`, action: 'applied' });
+    // This page applies the change itself; the storage echo of the same change must not fit it all over again.
+    suppressRefitUntil = Date.now() + 5000;
+    let next: PassiveFitState | null = null;
+    try {
+      next = await ask<PassiveFitState>({ type: 'passiveFeedback', dim, action: 'confirm' }, 5000);
+    } catch (err) {
+      toast('WebAble could not save that choice. Try again from the WebAble panel.');
+      addError(plainError(err));
+      return;
+    }
+    if (next && next.v === 'passive.1') adoptPassive(next, 'apply');
+    const mem = await loadLocal<PassiveOfferMemory>(PASSIVE_OFFERS_KEY, {});
+    delete mem[dim];
+    void saveLocal(PASSIVE_OFFERS_KEY, mem);
+    const fit = getFit() ?? effectiveFit(baseFit, store.get().passive);
+    const r = read;
+    if (!r || store.get().showingOriginal) {
+      toast(PASSIVE_DONE[dim] ?? 'Done');
+      return;
+    }
+    let op: Op | null = null;
+    if (dim === 'text_size') {
+      const zi = await zoomInfo();
+      const own = plan?.ownZoom ?? zi.factor;
+      const want = tailor.planZoom(fit, r.pageBodyPx, own, false, 0);
+      if (plan) plan = { ...plan, targetPx: want.targetPx, fitZoom: want.fitZoom, capped: want.capped, shortPx: want.shortPx };
+      if (want.zoom > zi.factor + 0.005) {
+        // As A+ does: the column comes off, the new size is checked on the page as laid out, then the column returns.
+        const col = activeColumn();
+        if (col) {
+          await revertOp(col);
+          col.rec.status = 'reversed';
+          opsList = opsList.filter((o) => o !== col);
+          syncOps();
+        }
+        const res = await changeZoom(want.zoom, 'fit', 0);
+        if (res && res !== 'own') op = res;
+        await replaceColumn(true);
+      }
+      if (!op) {
+        const shown = Math.round(r.pageBodyPx * zi.factor);
+        toast(want.zoom > zi.factor + 0.005
+          ? `${PASSIVE_DONE[dim]}. On this page a larger size did not fit, so it stayed as it was`
+          : `${PASSIVE_DONE[dim]}. This page already shows text at about ${shown} px`);
+        return;
+      }
+      op.title = `Zoomed this page to ${pct(want.zoom)} for larger text on every site`;
+    } else if (dim === 'targets') {
+      const superseded = opsList.filter((o) => o.rec.kind === 'targets' && o.active);
+      for (const o of superseded) {
+        await revertOp(o);
+        o.rec.status = 'reversed';
+      }
+      const t = tailor.targetsOp(Math.max(PASSIVE_TARGETS_PX, fit.targets.minPx ?? PASSIVE_TARGETS_PX), r, 'fit');
+      const kept = t ? await applyBatch([t], r) : [];
+      if (!t || !kept.includes(t)) {
+        for (const o of superseded) {
+          try {
+            await o.apply();
+            o.rec.status = 'applied';
+          } catch (e) {
+            addError(plainError(e));
+          }
+        }
+        syncOps();
+        toast(t
+          ? `${PASSIVE_DONE[dim]}. On this page bigger areas did not fit, so it stayed as it was`
+          : `${PASSIVE_DONE[dim]}. The buttons on this page are already large enough`);
+        return;
+      }
+      op = t;
+      tailor.flashTargets(t.elements, 800);
+    } else if (dim === 'steady_clicks') {
+      if (!opsList.some((o) => o.rec.kind === 'steady_clicks' && o.active)) {
+        const s = tailor.steadyOp(fit.clicks.steady.windowMs ?? 300, fit.clicks.steady.radiusPx ?? 10);
+        s.source = 'fit';
+        const kept = await applyBatch([s], r);
+        if (kept.includes(s)) op = s;
+      }
+    }
+    if (!op) {
+      toast(PASSIVE_DONE[dim] ?? 'Done');
+      return;
+    }
+    passiveUndo.set(op.rec.id, dim);
+    const px = dim === 'text_size' ? fit.text.override ?? fit.text.bodyPx : dim === 'targets' ? fit.targets.minPx : null;
+    const done = `${PASSIVE_DONE[dim] ?? op.title}${px ? ` (${Math.round(px)} px)` : ''}`;
+    log({ source: 'person', title: done, detail: `${op.title}. You chose this for every site; Undo here, or "Not right" in the WebAble panel, turns it off.`, action: 'applied', opId: op.rec.id });
+    toast(done, op.rec.id);
+  }
+
+  /** "Not now" waits a day (a question, a week); "Don't suggest this" counts as "Not right" (an offer) or "no" (a question). */
+  function dismissPassive(kind: OfferKind, meta: PassiveOfferMeta, forever: boolean): void {
+    passiveOffers.delete(kind);
+    const { dim } = meta;
+    void (async () => {
+      const mem = await loadLocal<PassiveOfferMemory>(PASSIVE_OFFERS_KEY, {});
+      const wait = forever ? PASSIVE_NEVER_MS : meta.action === 'ask' ? PASSIVE_ASK_EVERY_MS : PASSIVE_NOT_NOW_MS;
+      mem[dim] = { ...(mem[dim] ?? {}), snoozedUntil: Date.now() + wait };
+      await saveLocal(PASSIVE_OFFERS_KEY, mem);
+      if (!forever) return;
+      if (meta.action === 'ask') {
+        passiveObs.noteNo(dim);
+        return;
+      }
+      try {
+        const next = await ask<PassiveFitState>({ type: 'passiveFeedback', dim, action: 'not_right' }, 5000);
+        if (next && next.v === 'passive.1') adoptPassive(next, 'keep');
+      } catch {
+        /* the snooze still holds */
+      }
+    })();
+    log({ source: 'person', title: forever ? `You said no: WebAble will not suggest ${PASSIVE_NOUN[dim] ?? 'this'} again` : 'Not now: WebAble will ask again another day', action: 'skipped' });
+  }
+
+  /** The panel's "Not right" / "Forget this" (and "That's right"): this page and every open page follow. */
+  async function passiveFeedbackNow(dim: FitDimension, action: 'not_right' | 'forget' | 'confirm'): Promise<void> {
+    const before = store.get().passive?.beliefs[dim] ?? null;
+    // The storage echo of this same change: this page refits from the answer below instead.
+    suppressRefitUntil = Date.now() + 2000;
+    const next = await ask<PassiveFitState>({ type: 'passiveFeedback', dim, action }, 5000);
+    const noun = PASSIVE_NOUN[dim] ?? before?.explanation ?? dim.replace(/_/g, ' ');
+    const title = action === 'confirm' ? `You confirmed: ${noun}` : action === 'forget' ? `You asked WebAble to forget: ${noun}` : `You said this was not right: ${noun}`;
+    log({ source: 'person', title, detail: before?.explanation ?? '', action: action === 'confirm' ? 'kept' : 'reversed' });
+    if (next && next.v === 'passive.1') adoptPassive(next, 'refit');
+    // An offer for this need on screen is answered.
+    const s = store.get();
+    const offerKind = PASSIVE_OFFER_KIND[dim];
+    if (offerKind && passiveOffers.has(offerKind)) {
+      passiveOffers.delete(offerKind);
+      store.set({ struggle: { ...s.struggle, offers: s.struggle.offers.filter((o) => o.kind !== offerKind) } });
+    }
+  }
+
+  /** The person undid a change that came from what WebAble learned or a choice they made in an offer: −3, lock released. */
+  function notePassiveUndo(opId: string): void {
+    const dim = passiveUndo.get(opId);
+    if (!dim) return;
+    passiveUndo.delete(opId);
+    suppressRefitUntil = Date.now() + 3000; // this page already took the change off
+    passiveObs.noteUndo(dim, PASSIVE_NOUN[dim] ?? 'the change');
+    log({ source: 'person', title: `WebAble noted that ${PASSIVE_NOUN[dim] ?? 'this'} did not help`, detail: 'Learned needs drop sharply after an Undo; other pages follow on their next fit.', action: 'reversed' });
+  }
+
+  let refitTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Fit this page again from scratch (debounced): the fit, the settings or what WebAble learned changed. */
+  function scheduleRefit(delayMs = 150): void {
+    if (refitTimer) clearTimeout(refitTimer);
+    refitTimer = setTimeout(() => {
+      refitTimer = null;
+      if (stopped) return;
+      void (async () => {
+        await teardownPage(true);
+        errors = [];
+        store.set({ ledger: [], startedAt: performance.now(), phase: 'idle' });
+        await boot('refit');
+      })();
+    }, delayMs);
+  }
+
   async function boot(kind: 'first' | 'navigation' | 'refit'): Promise<void> {
     const gen = ++generation;
     if (kind === 'first') {
@@ -1177,17 +1607,20 @@ export function createController(): Controller {
     if (gen !== generation || stopped) return;
     if (kind === 'first') await askExt<unknown>({ type: 'pageStart' }).catch(() => undefined);
     if (kind !== 'navigation') void refreshHealth();
-    const { settings, fit } = await loadSettingsAndFit();
+    const { settings, fit, base, passive } = await loadSettingsAndFit();
     if (gen !== generation || stopped) return;
-    store.set((s) => ({ settings, fit, lens: kind === 'first' ? { on: settings.lens } : s.lens, startedAt: kind === 'navigation' ? performance.now() : s.startedAt }));
+    baseFit = base;
+    store.set((s) => ({ settings, fit, passive, lens: kind === 'first' ? { on: settings.lens } : s.lens, startedAt: kind === 'navigation' ? performance.now() : s.startedAt }));
 
-    if (!settings.enabled || pausedHere(settings) || !fit) {
+    if (!settings.enabled || pausedHere(settings)) {
       store.set({ phase: 'idle' });
+      stopPassive();
       if (!settings.enabled) log({ source: 'person', title: 'WebAble is turned off', action: 'skipped' });
-      else if (pausedHere(settings)) log({ source: 'person', title: 'WebAble is paused on this site', action: 'skipped' });
-      else if (!fit) log({ source: 'fit', title: 'No fit yet: run the two-minute fitting to fit pages to you', action: 'skipped' });
+      else log({ source: 'person', title: 'WebAble is paused on this site', action: 'skipped' });
       return;
     }
+    startPassive();
+    if (kind !== 'navigation') logPassiveSources(fit, base, passive);
 
     try {
       store.set({ phase: 'reading' });
@@ -1210,6 +1643,7 @@ export function createController(): Controller {
       if (gen !== generation) return;
       setZoomState(zi.tab);
       const existingZoom = opsList.find((o) => o.rec.kind === 'page_zoom' && o.rec.status === 'applied');
+      let zoomReversedAt: number | null = null;
       let p: ZoomPlan;
       if (existingZoom && plan) {
         // Keep the zoom already set; recompute what it does for this route's body text.
@@ -1232,6 +1666,7 @@ export function createController(): Controller {
             p = attemptPlan;
             break;
           }
+          zoomReversedAt = tryZoom;
           const lower = stepZoom(tryZoom, -1, !!fit.text.largePrint);
           if (!(lower > p.ownZoom + 0.005) || lower >= tryZoom) break;
           tryZoom = lower;
@@ -1248,6 +1683,19 @@ export function createController(): Controller {
       }
       if (zi.factor > 1.001 && !zoomOp && kind === 'first') {
         log({ source: 'fit', title: `Kept your own zoom (${pct(zi.factor)})`, action: 'kept' });
+      } else if (!zoomOp && !existingZoom && kind === 'first' && !undoneKinds.has('page_zoom')) {
+        // Say why the page kept its own size, so a page that did not grow is never a silent miss.
+        const measured = `Body text here measures ${r.pageBodyPx} px (${r.body.source}); your size is ${Math.round(p.targetPx)} px.`;
+        log(zoomReversedAt
+          ? { source: 'check', title: `Kept this page at its own size: a ${pct(zoomReversedAt)} zoom failed a check`, detail: measured, action: 'reversed' }
+          : {
+              source: 'fit',
+              title: 'Kept this page at its own size',
+              detail: fit.text.source === 'default' && fit.text.override == null
+                ? 'Your fit keeps each site’s own text size.'
+                : `${measured} ${r.pageBodyPx >= p.targetPx ? 'That is already at least your size.' : 'That is close enough that zooming would change little.'}`,
+              action: 'kept',
+            });
       }
       if (kind !== 'navigation') noteSizeShortfall(p);
 
@@ -1276,6 +1724,9 @@ export function createController(): Controller {
       startStruggle();
       watchLateContent();
       overlays.schedule('fitted');
+      // Round 4: say what learning changed here (with Undo), then offer what it is fairly sure of.
+      if (kind !== 'navigation') announceLearned(gen);
+      schedulePassiveOffer(gen);
 
       // 3. Jev reads the page (async; the fit is already applied).
       await understand(gen, r);
@@ -1711,6 +2162,7 @@ export function createController(): Controller {
       onJudgment: (j, waiting, offers) => onJudgment(j, waiting, offers),
       ask: <T,>(req: BgRequest) => ask<T>(req),
       isOurUi: safeOurs,
+      onPointerOutcome: (o) => passiveObs.noteClick(o),
     };
     try {
       stopSignals = startSignals({ api: host });
@@ -1763,6 +2215,15 @@ export function createController(): Controller {
     const s = store.get();
     const offer = s.struggle.offers.find((o) => o.kind === kind);
     store.set({ struggle: { ...s.struggle, offers: s.struggle.offers.filter((o) => o.kind !== kind) } });
+    // Round 4: an offer from what WebAble learned ("Make text larger on every site?") is a choice for every site.
+    const pm = passiveOffers.get(kind);
+    if (pm) {
+      passiveOffers.delete(kind);
+      if (!offer || offer.question === pm.question) {
+        await acceptPassive(kind, pm, offer);
+        return;
+      }
+    }
     try {
       noteOfferOutcome(kind, 'accepted');
     } catch {
@@ -1811,6 +2272,7 @@ export function createController(): Controller {
             res.title = `Zoomed this page to ${pct(next)} (was ${pct(zi.factor)})`;
             log({ source: 'signals', title: res.title, detail: res.detail, action: 'applied', opId: res.rec.id });
             toast(`${OFFER_TOAST[kind]} (${pct(next)})`, res.rec.id);
+            passiveObs.noteSize(next, 'accept', 1);
             await replaceColumn(false);
           } else toast('That change did not fit this page, so it was undone');
         } else {
@@ -1876,7 +2338,16 @@ export function createController(): Controller {
 
   function dismissOffer(kind: OfferKind, forever: boolean): void {
     const s = store.get();
+    const offer = s.struggle.offers.find((o) => o.kind === kind);
     store.set({ struggle: { ...s.struggle, offers: s.struggle.offers.filter((o) => o.kind !== kind) } });
+    const pm = passiveOffers.get(kind);
+    if (pm) {
+      passiveOffers.delete(kind);
+      if (!offer || offer.question === pm.question) {
+        dismissPassive(kind, pm, forever);
+        return;
+      }
+    }
     dismissedOffers.set(kind, forever ? Number.MAX_SAFE_INTEGER : Date.now() + 30 * 60 * 1000);
     try {
       noteOfferOutcome(kind, forever ? 'never' : 'not_now');
@@ -2114,7 +2585,7 @@ export function createController(): Controller {
     let source: EngineState['calm']['source'] = 'heuristic';
     if (cached && wantAi) {
       const chosen = cached.candidates.find((c) => c.name === cached.chosen);
-      if (chosen && cached.chosen !== 'heuristic' && cached.autoApply) {
+      if (chosen && cached.chosen !== 'heuristic' && cached.chosen !== 'overview' && cached.autoApply) {
         first = finishAiSpec(chosen.spec, outline);
         source = 'cached';
       }
@@ -2219,14 +2690,19 @@ export function createController(): Controller {
     const easier = Math.round((chosen.pEasier ?? 0) * 100);
     const hides = Math.round((chosen.pHides ?? 0) * 100);
     const inWindow = performance.now() - calmOpenedAt <= 8000;
-    if (res.autoApply && !calmEngaged && inWindow) {
+    // Switching on its own only ever makes the page calmer: the overview stance opens more of the page (navigation
+    // included), so it is offered instead, never swapped in under the person.
+    const opensMore = chosen.name === 'overview';
+    if (res.autoApply && !opensMore && !calmEngaged && inWindow) {
       await swapToAi('auto', `${easier}% likely easier, ${hides}% chance something needed is folded`, ms);
     } else {
       store.set((s) => ({ calm: { ...s.calm, aiReady: true } }));
       log({
         source: 'layout',
         title: `A layout picked by Jev is ready (${easier}% likely easier)`,
-        detail: res.autoApply ? 'You were already using the page, so it waits until you choose it.' : `Jev was not sure enough to switch on its own (${hides}% chance something needed is folded).`,
+        detail: res.autoApply && opensMore
+          ? 'It opens more of the page than this view, so it waits until you choose it.'
+          : res.autoApply ? 'You were already using the page, so it waits until you choose it.' : `Jev was not sure enough to switch on its own (${hides}% chance something needed is folded).`,
         p: chosen.pEasier,
         action: 'offered',
       });
@@ -2387,6 +2863,7 @@ export function createController(): Controller {
     if (!op || op.rec.status !== 'applied') return;
     // Moved overlays: the overlay module brings them back and remembers "leave" for this site and kind.
     if (op.rec.kind === 'unobstruct' && overlays.undo(opId)) return;
+    notePassiveUndo(opId);
     void (async () => {
       await revertOp(op);
       op.rec.status = 'reversed';
@@ -2411,6 +2888,9 @@ export function createController(): Controller {
   async function teardownPage(full: boolean): Promise<void> {
     if (incrementalTimer) clearTimeout(incrementalTimer);
     incrementalTimer = null;
+    if (passiveTimer) clearTimeout(passiveTimer);
+    passiveTimer = null;
+    passiveOffers.clear();
     if (store.get().calm.open) closeCalm();
     const keep: Op[] = [];
     for (const op of [...opsList].reverse()) {
@@ -2459,12 +2939,12 @@ export function createController(): Controller {
     const key = routeKey(url);
     if (key === lastRoute || stopped) return;
     lastRoute = key;
+    passiveObs.newPage();
     await teardownPage(false);
     errors = [];
     void boot('navigation');
   }
 
-  let refitTimer: ReturnType<typeof setTimeout> | null = null;
   const onStorage = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
     if (area !== 'local' || stopped) return;
     const fitChanged = 'fit' in changes;
@@ -2477,17 +2957,19 @@ export function createController(): Controller {
       if (oldS.lens !== newS.lens) toggleLens(newS.lens);
       store.set({ settings: newS });
     }
-    if (!needsReboot) return;
-    if (refitTimer) clearTimeout(refitTimer);
-    refitTimer = setTimeout(() => {
-      refitTimer = null;
-      void (async () => {
-        await teardownPage(true);
-        errors = [];
-        store.set({ ledger: [], startedAt: performance.now(), phase: 'idle' });
-        await boot('refit');
-      })();
-    }, 150);
+    if (needsReboot) {
+      // A new warm-up also republishes what WebAble learned a moment later; one refit reads both.
+      scheduleRefit(fitChanged ? 300 : 150);
+      return;
+    }
+    // Round 4: what WebAble learned changed. The person's own changes (here, in another tab, in the popup, in Chrome's
+    // settings) fit open pages again; plain evidence from browsing waits for each tab's next page.
+    const passiveChange = changes.passive;
+    const next = passiveChange?.newValue as PassiveFitState | undefined;
+    if (next && next.v === 'passive.1') {
+      const personChange = 'passiveRefit' in changes && Date.now() >= suppressRefitUntil;
+      adoptPassive(next, personChange ? 'refit' : 'keep');
+    }
   };
 
   function toggleLens(on?: boolean): void {
@@ -2524,8 +3006,11 @@ export function createController(): Controller {
     },
     restoreOverlay: (id) => overlays.restore(id),
     adjustColumn: (step) => personAction(() => adjustColumn(step)),
-    passiveFeedback: () => {
-      // Round 4 (passive fit package) implements this.
+    passiveFeedback: (dim, action) => {
+      void passiveFeedbackNow(dim, action).catch((err: unknown) => {
+        toast('WebAble could not save that. Try again in a moment.');
+        addError(plainError(err));
+      });
     },
     adjustText: (step) => personAction(() => adjustText(step)),
   };
@@ -2560,6 +3045,9 @@ export function createController(): Controller {
       if (flushTimer) clearTimeout(flushTimer);
       if (incrementalTimer) clearTimeout(incrementalTimer);
       if (resizeTimer) clearTimeout(resizeTimer);
+      if (refitTimer) clearTimeout(refitTimer);
+      if (passiveTimer) clearTimeout(passiveTimer);
+      stopPassive();
       window.removeEventListener('resize', onResize);
       window.removeEventListener('pageshow', onPageShow);
       try {

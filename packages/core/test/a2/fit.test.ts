@@ -108,12 +108,14 @@ describe('deriveFit', () => {
     expect(f.polarity).toEqual({ value: 'dark', stated: 'dark' });
   });
 
-  test('measured and stated polarity disagree → leave it to the site', () => {
+  test('light or dark is the person\'s own choice (round 4: no measured polarity sentences)', () => {
     const raw = rawBase();
     raw.reading = {
       seedPx: null, ladder: [], faint: [],
       polarity: { lightMs: [msAt(120), msAt(125)], darkMs: [msAt(200), msAt(210)], stated: 'light' },
     };
+    expect(deriveFit(raw).polarity).toEqual({ value: 'light', stated: 'light' });
+    raw.reading.polarity.stated = 'none';
     expect(deriveFit(raw).polarity.value).toBe('none');
   });
 

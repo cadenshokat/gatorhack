@@ -1,12 +1,37 @@
-// Owner: P. Toolbar popup: on/off, pause on this site, the fitting, demo fits, the current fit, this page, server status.
+// Owner: P, F. Toolbar popup: what helps you (what WebAble has learned, with "Not right" and "Forget this"), the
+// optional 70-second warm-up, on/off and pause on this site, this page, demo tools (a week of learning, start fresh,
+// demo fits), server status and options.
 import { render } from 'preact';
-import { useCallback, useEffect, useState } from 'preact/hooks';
-import { DEMO_FITS, describeFit, type FitProfile, type JevMetrics, type Settings, type TabReport } from '@webable/core';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import {
+  DEMO_FITS,
+  describeFit,
+  type FitProfile,
+  type JevMetrics,
+  type PassiveFitState,
+  type Settings,
+  type TabReport,
+} from '@webable/core';
+import { isMac } from '../../src/ui/panel/hooks';
+import { hasWarmup, helpRows, settingsLine, type HelpRow } from '../../src/ui/panel/learned';
+import {
+  EMPTY_HELPS,
+  feedbackNote,
+  HelpList,
+  HowItLearns,
+  useNoteTimer,
+  withNoted,
+  type FeedbackAction,
+} from '../../src/ui/panel/WhatHelps';
 import {
   activeTab,
   checkHealth,
   readLocal,
+  readPassive,
   readReport,
+  resetPassive,
+  seedDemoHistory,
+  sendPassiveFeedback,
   writeFit,
   writeSettings,
   type ActiveTab,
@@ -16,8 +41,9 @@ import {
 } from './data';
 import './popup.css';
 
-type DemoName = 'rosa' | 'typical' | 'reader';
+type DemoName = 'none' | 'rosa' | 'typical' | 'reader';
 const DEMOS: Array<{ name: DemoName; label: string; hint: string }> = [
+  { name: 'none', label: 'None', hint: 'No warm-up: fit from browser settings and what WebAble learns' },
   { name: 'rosa', label: 'Rosa', hint: 'Large text, big steady clicks, calm pages' },
   { name: 'typical', label: 'Typical', hint: 'Default sizes' },
   { name: 'reader', label: 'Reader', hint: 'Very large text, stronger contrast' },
@@ -43,6 +69,7 @@ function fmtMs(ms: number): string {
 }
 
 function demoOf(fit: FitProfile | null): DemoName | null {
+  if (!fit) return 'none';
   const v = fit?.calibration?.version ?? '';
   const hit = DEMOS.find((d) => v === `demo-${d.name}`);
   return hit ? hit.name : null;
@@ -141,20 +168,131 @@ function ServerStatus({ health, checked, origin }: { health: Health | null; chec
   );
 }
 
+interface PopNote {
+  text: string;
+  row: HelpRow;
+  index: number;
+  at: number;
+}
+
+/** "What helps you": the same rows as the in-page panel, from the background's passive state. */
+function LearnedCard(props: {
+  passive: PassiveFitState | null;
+  loaded: boolean;
+  fit: FitProfile | null;
+  onFeedback: (row: HelpRow, action: FeedbackAction) => Promise<void>;
+}) {
+  const { passive, loaded, fit, onFeedback } = props;
+  const [notes, setNotes] = useState<Record<string, PopNote>>({});
+  const [open, setOpen] = useState(false);
+  const [allRows, setAllRows] = useState(false);
+  const headRef = useRef<HTMLHeadingElement>(null);
+  useNoteTimer(notes, setNotes);
+
+  const mac = isMac();
+  const rows = passive ? withNoted(helpRows(passive, new Date(), mac), notes) : [];
+  const on = rows.filter((r) => r.status === 'on').length;
+  const maybe = rows.length - on;
+  const act = (row: HelpRow, index: number, action: FeedbackAction) => {
+    setNotes((cur) => ({ ...cur, [row.dim]: { text: feedbackNote(row, action), row, index, at: Date.now() } }));
+    void onFeedback(row, action);
+  };
+
+  // An older background (no passive state): show the stored fit as before.
+  let fitRows: Array<{ label: string; from: string; to: string }> = [];
+  if (!passive && fit) {
+    try {
+      fitRows = describeFit(fit).filter((r) => r.to !== 'No change');
+    } catch {
+      fitRows = [];
+    }
+  }
+  const settings = passive ? settingsLine(passive, mac) : null;
+
+  return (
+    <section class="p-card p-helps" aria-labelledby="p-helps-title">
+      <div class="p-helps-head">
+        <h2 class="p-title" id="p-helps-title" ref={headRef} tabIndex={-1}>
+          What helps you
+        </h2>
+        {rows.length > 0 && (
+          <span class="p-helps-count">
+            {on > 0 ? `${on} on` : ''}
+            {on > 0 && maybe > 0 ? ' · ' : ''}
+            {maybe > 0 ? `${maybe} suggested` : ''}
+          </span>
+        )}
+      </div>
+      {!loaded ? (
+        <p class="p-muted p-helps-pad">Loading…</p>
+      ) : passive ? (
+        rows.length > 0 ? (
+          <HelpList rows={rows} notes={notes} onAct={act} onFocusLost={() => headRef.current?.focus({ preventScroll: true })} compact />
+        ) : (
+          <div class="wa-helps-empty">
+            <p class="wa-helps-empty-title">{EMPTY_HELPS.title}</p>
+            <p>{EMPTY_HELPS.body}</p>
+            {settings && <p class="p-helps-settings">{settings}</p>}
+          </div>
+        )
+      ) : fitRows.length > 0 ? (
+        <>
+          <dl class="p-fit p-helps-pad">
+            {(allRows ? fitRows : fitRows.slice(0, 4)).map((r) => (
+              <div key={r.label}>
+                <dt>{r.label}</dt>
+                <dd>
+                  <span class="p-from">{r.from}</span>
+                  <span class="p-arrow" aria-hidden="true">→</span>
+                  <span class="sr">to</span>
+                  <b>{r.to}</b>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {fitRows.length > 4 && (
+            <button class="p-link p-helps-pad" aria-expanded={allRows} onClick={() => setAllRows(!allRows)}>
+              {allRows ? 'Show fewer' : `Show all ${fitRows.length}`}
+            </button>
+          )}
+        </>
+      ) : (
+        <div class="wa-helps-empty">
+          <p class="wa-helps-empty-title">{EMPTY_HELPS.title}</p>
+          <p>{EMPTY_HELPS.body}</p>
+        </div>
+      )}
+      <HowItLearns open={open} onToggle={() => setOpen(!open)} />
+    </section>
+  );
+}
+
 function Popup() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [fit, setFit] = useState<FitProfile | null>(null);
   const [today, setToday] = useState<TodayMeter | null>(null);
   const [tab, setTab] = useState<ActiveTab>({ id: null, url: '', origin: null });
   const [report, setReport] = useState<TabReport | null>(null);
+  const [passive, setPassive] = useState<PassiveFitState | null>(null);
+  const [passiveLoaded, setPassiveLoaded] = useState(false);
   const [health, setHealth] = useState<Health | null>(null);
   const [healthChecked, setHealthChecked] = useState(false);
-  const [dirty, setDirty] = useState(false);
-  const [allRows, setAllRows] = useState(false);
+  // `reload`: the change needs a reload to show; fits and what WebAble learned refit open pages on their own.
+  const [banner, setBanner] = useState<{ text: string; reload: boolean } | null>(null);
+  const [busy, setBusy] = useState<'seed' | 'reset' | null>(null);
   const [options, setOptions] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const loading = useRef(false);
+
+  const loadPassive = useCallback(async () => {
+    const p = await readPassive();
+    setPassive(p);
+    setPassiveLoaded(true);
+  }, []);
 
   const load = useCallback(async () => {
+    if (loading.current) return;
+    loading.current = true;
     try {
       const [local, t] = await Promise.all([readLocal(), activeTab()]);
       setSettings(local.settings);
@@ -162,10 +300,13 @@ function Popup() {
       setToday(local.today);
       setTab(t);
       setReport(await readReport(t.id));
+      await loadPassive();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      loading.current = false;
     }
-  }, []);
+  }, [loadPassive]);
 
   useEffect(() => {
     void load();
@@ -196,7 +337,7 @@ function Popup() {
     if (!settings) return;
     const next: Settings = { ...settings, ...patch };
     setSettings(next);
-    setDirty(true);
+    setBanner({ text: 'Saved. Reload the page to apply.', reload: true });
     try {
       await writeSettings(next, patch);
     } catch (e) {
@@ -205,6 +346,16 @@ function Popup() {
   };
 
   const useDemo = async (name: DemoName) => {
+    if (name === 'none') {
+      setFit(null);
+      setBanner({ text: 'Warm-up cleared. Open pages now fit from your settings and what WebAble learned.', reload: false });
+      try {
+        await writeFit(null);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+      }
+      return;
+    }
     const demo = DEMO_FITS?.[name];
     if (!demo) {
       setError('Demo fits are not available in this build.');
@@ -212,12 +363,44 @@ function Popup() {
     }
     const next: FitProfile = { ...demo, createdAt: new Date().toISOString() };
     setFit(next);
-    setDirty(true);
+    setBanner({ text: `${DEMOS.find((d) => d.name === name)?.label ?? 'Demo'} fit saved. Open pages fit again on their own.`, reload: false });
     try {
       await writeFit(next);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
+  };
+
+  const feedback = async (row: HelpRow, action: FeedbackAction) => {
+    const ok = await sendPassiveFeedback(row.dim, action);
+    if (!ok) setError('WebAble could not save that. Try again in a moment.');
+    await loadPassive();
+  };
+
+  const seed = async () => {
+    setBusy('seed');
+    setError(null);
+    const ok = await seedDemoHistory();
+    await loadPassive();
+    setBusy(null);
+    if (ok) {
+      setBanner({ text: 'A week of learning added. Open pages fit again on their own.', reload: false });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    else setError('The demo week could not be added. Is WebAble running in this window?');
+  };
+
+  const fresh = async () => {
+    setBusy('reset');
+    setError(null);
+    const ok = await resetPassive();
+    await loadPassive();
+    setBusy(null);
+    if (ok) {
+      setBanner({ text: 'Learning cleared. Open pages go back to your settings.', reload: false });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    else setError('WebAble could not start fresh. Try again in a moment.');
   };
 
   const openFitting = async () => {
@@ -228,7 +411,7 @@ function Popup() {
   const reload = async () => {
     if (tab.id == null) return;
     await chrome.tabs.reload(tab.id);
-    setDirty(false);
+    setBanner(null);
     window.close();
   };
 
@@ -248,13 +431,7 @@ function Popup() {
   const paused = tab.origin ? settings.pausedOrigins.includes(tab.origin) : false;
   const host = tab.origin ? tab.origin.replace(/^https?:\/\//, '') : null;
   const demo = demoOf(fit);
-  let rows: Array<{ label: string; from: string; to: string }> = [];
-  try {
-    rows = fit ? describeFit(fit) : [];
-  } catch {
-    rows = [];
-  }
-  const changes = rows.filter((r) => r.to !== 'No change');
+  const tookWarmup = hasWarmup(passive) || Boolean(fit && fit.calibration?.durationSec > 0 && !String(fit.calibration?.version ?? '').startsWith('demo-'));
   // The report's understanding summary; `cached` and `firstRead` are read if the engine includes them.
   const u = (report?.understanding ?? null) as
     | (NonNullable<TabReport['understanding']> & { cached?: boolean; firstRead?: JevMetrics })
@@ -272,7 +449,29 @@ function Popup() {
         <HeadStatus health={health} checked={healthChecked} />
       </header>
 
-      <ServerStatus health={health} checked={healthChecked} origin={settings.serverOrigin} />
+      {banner && (
+        <div class="p-banner" role="status">
+          <span>{banner.text}</span>
+          {banner.reload && tab.id != null && tab.origin && (
+            <button class="p-btn p-btn-sm p-btn-primary" onClick={() => void reload()}>
+              Reload page
+            </button>
+          )}
+        </div>
+      )}
+
+      <LearnedCard passive={passive} loaded={passiveLoaded} fit={fit} onFeedback={feedback} />
+
+      <section class="p-warm">
+        <button class="p-btn p-btn-primary p-btn-block" onClick={() => void openFitting()}>
+          {tookWarmup ? 'Redo the warm-up' : 'Take the 70-second warm-up'}
+        </button>
+        <p class="p-warm-sub">
+          {tookWarmup
+            ? 'Tap along on a short news page and WebAble fits it again.'
+            : 'Optional. WebAble already fits pages from your settings and learns as you go.'}
+        </p>
+      </section>
 
       <section class="p-card">
         <Switch
@@ -296,15 +495,6 @@ function Popup() {
           }}
         />
       </section>
-
-      {dirty && tab.id != null && tab.origin && (
-        <div class="p-banner" role="status">
-          <span>Saved. Reload the page to apply.</span>
-          <button class="p-btn p-btn-sm p-btn-primary" onClick={() => void reload()}>
-            Reload page
-          </button>
-        </div>
-      )}
 
       {report && tab.origin && (
         <section class="p-card p-pad">
@@ -346,42 +536,24 @@ function Popup() {
         </section>
       )}
 
-      <section class="p-card p-pad">
-        <h2 class="p-title">
-          Your fit
-          {demo && <span class="p-badge">Demo: {DEMOS.find((d) => d.name === demo)?.label}</span>}
+      <section class="p-card p-pad p-demo-card" aria-labelledby="p-demo-title">
+        <h2 class="p-title" id="p-demo-title">
+          For demos
         </h2>
-        {fit ? (
-          changes.length > 0 ? (
-            <dl class="p-fit">
-              {(allRows ? changes : changes.slice(0, 4)).map((r) => (
-                <div key={r.label}>
-                  <dt>{r.label}</dt>
-                  <dd>
-                    <span class="p-from">{r.from}</span>
-                    <span class="p-arrow" aria-hidden="true">→</span>
-                    <span class="sr">to</span>
-                    <b>{r.to}</b>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          ) : (
-            <p class="p-muted">Your fit keeps pages as they are made.</p>
-          )
-        ) : (
-          <p class="p-muted">No fit yet. The fitting takes about two minutes and every part can be skipped.</p>
-        )}
-        {fit && changes.length > 4 && (
-          <button class="p-link" aria-expanded={allRows} onClick={() => setAllRows(!allRows)}>
-            {allRows ? 'Show fewer' : `Show all ${changes.length}`}
+        <div class="p-demo-btns">
+          <button class="p-btn p-btn-sm" disabled={busy !== null} onClick={() => void seed()}>
+            {busy === 'seed' ? 'Adding…' : 'Show a week of learning'}
           </button>
-        )}
-        <button class="p-btn p-btn-primary p-btn-block" onClick={() => void openFitting()}>
-          {fit ? 'Run the fitting again' : 'Run the fitting'}
-        </button>
+          <button class="p-btn p-btn-sm" disabled={busy !== null} onClick={() => void fresh()}>
+            {busy === 'reset' ? 'Clearing…' : 'Start fresh'}
+          </button>
+        </div>
+        <p class="p-muted p-small">
+          Adds zooms held on 4 sites over 3 days, and clicks that landed beside a button on 3 sites. Start fresh
+          forgets what WebAble learned; your settings stay.
+        </p>
         <div class="p-demo">
-          <span class="p-demo-label">Use a demo fit</span>
+          <span class="p-demo-label">Demo fit</span>
           <div class="p-seg" role="group" aria-label="Demo fits">
             {DEMOS.map((d) => (
               <button
@@ -398,6 +570,8 @@ function Popup() {
         </div>
       </section>
 
+      <ServerStatus health={health} checked={healthChecked} origin={settings.serverOrigin} />
+
       <section class="p-card">
         <button class="p-disclosure" aria-expanded={options} onClick={() => setOptions(!options)}>
           <span>Options</span>
@@ -406,26 +580,26 @@ function Popup() {
         {options && (
           <>
             <div class="p-hr" />
-        <Switch
-          checked={settings.aiLayouts}
-          label="AI layouts for Calm view"
-          sub="Sends the page's structure and common interface words, never personal text, to OpenAI. Jev checks every layout."
-          onChange={(v) => void save({ aiLayouts: v })}
-        />
-        <div class="p-hr" />
-        <Switch
-          checked={settings.explain}
-          label="Explain on request"
-          sub="Select a long passage to see it in plain words. Personal details are removed first."
-          onChange={(v) => void save({ explain: v })}
-        />
-        <div class="p-hr" />
-        <Switch
-          checked={settings.lens}
-          label="Start with Jev Lens on"
-          sub="Show Jev's decisions on every page. Alt+Shift+L turns it on or off."
-          onChange={(v) => void save({ lens: v })}
-        />
+            <Switch
+              checked={settings.aiLayouts}
+              label="AI layouts for Calm view"
+              sub="Sends the page's structure and common interface words, never personal text, to OpenAI. Jev checks every layout."
+              onChange={(v) => void save({ aiLayouts: v })}
+            />
+            <div class="p-hr" />
+            <Switch
+              checked={settings.explain}
+              label="Explain on request"
+              sub="Select a long passage to see it in plain words. Personal details are removed first."
+              onChange={(v) => void save({ explain: v })}
+            />
+            <div class="p-hr" />
+            <Switch
+              checked={settings.lens}
+              label="Start with Jev Lens on"
+              sub="Show Jev's decisions on every page. Alt+Shift+L turns it on or off."
+              onChange={(v) => void save({ lens: v })}
+            />
           </>
         )}
       </section>

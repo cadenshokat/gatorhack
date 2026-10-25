@@ -13,6 +13,8 @@ export {
   indexOutline, layoutLimits, outlineProtection, pickPrimaryAction, placementMap, sectionRenderIds, specCoverage,
   type LayoutLimits, type OutlineIndex, type Protection,
 } from './outline';
+// Calm view v3's picture, story and type rules (D, round 4), re-exported here so index.ts needs no new line.
+export * from './pictures';
 
 /* ------------------------------------------------------------------ */
 /* Enums (single source for zod and the JSON schema)                   */

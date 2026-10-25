@@ -1,10 +1,13 @@
-// Owner: C. Design tokens sized from the person's fit.
+// Owner: C, D (round 4: Calm view v3). Design tokens sized from the person's fit.
 //
-// Visual language: apple.com / Google Store ("Showroom"): light by default, white cards on #F5F5F7, three heading sizes far
-// apart at weight 600, pill buttons, one blue action colour, fern only for WebAble's own controls.
-// Every length is computed here (the model never computes sizes) and divided by the tab zoom, so the Calm view shows the
-// person's comfortable size on screen even when the page itself was zoomed.
-import type { FitProfile } from '@webable/core';
+// Two surfaces share these tokens:
+// - 'chrome' (the pill, panel, offers, toasts): the Showroom language, light by default, white cards on #F5F5F7.
+// - 'calm' (the Calm view, v3): the AI-lab research-site language measured in design.md §1–§2. A white page with no
+//   boxed cards, one family at 400/500, ink #121317 and meta #45474D, a narrow text column with wider pictures,
+//   hairline dividers and ink pill buttons. Type comes from the person's body size F with a large-heading ratio that
+//   shrinks as F grows; body line height at least 1.6; at most 68 characters a line.
+// Every length is computed here (the model never computes sizes) and divided by the tab zoom when one is given.
+import { type FitProfile, calmMeasureCh, calmMetaPx, calmTypeRatios } from '@webable/core';
 
 export type ThemeMode = 'light' | 'dark' | 'max';
 export interface Tokens { [name: string]: string }
@@ -16,6 +19,8 @@ export interface TokenOptions {
   density?: 'airy' | 'comfortable';
   /** The person's in-view text size step (Text − / Text +). Default 1. */
   scale?: number;
+  /** Which surface the tokens are for. Default 'chrome'; the Calm view asks for 'calm'. */
+  surface?: 'chrome' | 'calm';
 }
 
 /** Numbers behind the tokens, in CSS px at 100% zoom (before dividing by zoom). */
@@ -55,6 +60,21 @@ export interface CalmMetrics {
   row: number; // minimum row height in grouped lists
   colMax: number; // single task column width
   tileMin: number;
+  /** Calm v3: meta text px, the text column and the picture column (px), paragraph gap, h2 space above / below. */
+  meta: number;
+  textCol: number;
+  wideCol: number;
+  /** Prose line length in px: the measure in real characters (at most 68), never wider than the text column. */
+  measurePx: number;
+  paraGap: number;
+  h2Above: number;
+  h2Below: number;
+  rowPad: number;
+  gutter: number;
+  /** Picture corner radius: clamp(8, .75F, 16). */
+  rPic: number;
+  /** A form's column: min(36em, 100%). */
+  formCol: number;
   zoom: number;
 }
 
@@ -139,6 +159,39 @@ const MAX_DARK: Palette = {
   edge: 2, edgeColor: '#FFFFFF', scheme: 'dark',
 };
 
+/**
+ * Calm view v3, light (design.md §2): a white page; ink #121317 (18.6:1) and meta #45474D (9.3:1, where the
+ * references' 5.7:1 greys fail WCAG 1.4.6); hairlines #E0E0E3; field borders #8A8A8F (3.4:1, 1.4.11); #F6F6F7 for
+ * picture wells and secondary pills; the primary action is an ink pill; links are ink and underlined; no shadows on
+ * content (only on things that float: popovers and the page's popups).
+ */
+const CALM_LIGHT: Palette = {
+  canvas: '#FFFFFF', raised: '#FFFFFF', tonal: '#F6F6F7', hover: '#EDEDEF', press: '#E3E3E6', well: '#F6F6F7',
+  ink: '#121317', ink2: '#45474D', line: '#E0E0E3', lineStrong: '#8A8A8F',
+  action: '#121317', onAction: '#FFFFFF', actionHover: '#2D2E34', link: '#121317', badge: '#45474D',
+  accent: '#2D6A3E', onAccent: '#FFFFFF', accentHover: '#22552F', accentTint: '#EBF2EC',
+  warning: '#7A4800', warningTint: '#FBF4E6', success: '#1E6B36', successTint: '#ECF5EE', focus: '#121317', selection: '#CFE0FC',
+  glass: 'rgba(255,255,255,.9)',
+  shadowCard: NO_SHADOW, shadowLift: NO_SHADOW, shadowFloat: '0 1px 2px rgba(18,19,23,.06), 0 12px 36px rgba(18,19,23,.14)',
+  edge: 0, edgeColor: 'transparent', scheme: 'light',
+};
+
+const CALM_DARK: Palette = {
+  canvas: '#121317', raised: '#121317', tonal: '#222328', hover: '#2C2D33', press: '#36373D', well: '#222328',
+  ink: '#F3F3F5', ink2: '#B6B7BD', line: '#33343A', lineStrong: '#8A8A8F',
+  action: '#F3F3F5', onAction: '#121317', actionHover: '#FFFFFF', link: '#F3F3F5', badge: '#B6B7BD',
+  accent: '#8FCB9B', onAccent: '#0F1A12', accentHover: '#A9D9B2', accentTint: '#1B2B1F',
+  warning: '#F2B75E', warningTint: '#2B2316', success: '#6FD08C', successTint: '#13301D', focus: '#F3F3F5', selection: '#1F4E85',
+  glass: 'rgba(18,19,23,.88)',
+  shadowCard: NO_SHADOW, shadowLift: NO_SHADOW, shadowFloat: '0 12px 40px rgba(0,0,0,.6)',
+  edge: 0, edgeColor: 'transparent', scheme: 'dark',
+};
+
+/** Contrast band M in the Calm view: meta in full ink, hairlines and field borders at the strong grey, 1 px edges. */
+function calmMoreContrast(p: Palette): Palette {
+  return { ...p, ink2: p.ink, line: p.lineStrong, edge: 1, edgeColor: p.lineStrong };
+}
+
 /** Light unless the fit says dark (never from the OS setting alone); max contrast when the fit's band is S. */
 export function themeModeFor(fit: FitProfile | null): ThemeMode {
   if (fit?.contrast.band === 'S') return 'max';
@@ -146,8 +199,14 @@ export function themeModeFor(fit: FitProfile | null): ThemeMode {
   return 'light';
 }
 
-function paletteFor(fit: FitProfile | null, mode: ThemeMode): Palette {
+function paletteFor(fit: FitProfile | null, mode: ThemeMode, surface: 'chrome' | 'calm' = 'chrome'): Palette {
   const dark = mode === 'dark' || (mode === 'max' && fit?.polarity.value === 'dark');
+  if (surface === 'calm') {
+    // Maximum contrast keeps its 2 px edges; its one action stays an ink pill like every other Calm v3 action.
+    if (mode === 'max') return dark ? { ...MAX_DARK, action: '#FFFFFF', onAction: '#000000', actionHover: '#E6E6E6', link: '#FFFFFF' } : { ...MAX_LIGHT, action: '#000000', onAction: '#FFFFFF', actionHover: '#1A1A1A', link: '#000000' };
+    const base = dark ? CALM_DARK : CALM_LIGHT;
+    return fit?.contrast.band === 'M' ? calmMoreContrast(base) : base;
+  }
   if (mode === 'max') return dark ? MAX_DARK : MAX_LIGHT;
   const base = dark ? DARK : LIGHT;
   return fit?.contrast.band === 'M' ? moreContrast(base) : base;
@@ -190,48 +249,114 @@ export function structureParams(level: 0 | 1 | 2): { sectionsOpen: number; listF
   return { sectionsOpen: Infinity, listFirst: Infinity, groupSize: 6, splitSentences: Infinity, stepMax: 12 };
 }
 
+/** Width of one "0" of the body font as a share of the font size (CSS `ch`), measured once; 0.55 without a canvas. */
+let chShare: number | null = null;
+function chRatio(): number {
+  if (chShare !== null) return chShare;
+  chShare = 0.55;
+  try {
+    const ctx = measureCtx();
+    if (ctx) {
+      ctx.font = `400 100px ${FONT_TEXT}`;
+      const w = ctx.measureText('0').width;
+      if (w > 30 && w < 90) chShare = w / 100;
+    }
+  } catch {
+    /* no canvas (tests): keep the estimate */
+  }
+  return chShare;
+}
+
+/**
+ * Width of an average character of running English text, word spaces and the slack at line ends included, as a share
+ * of the font size; measured once (0.47 without a canvas). CSS `ch` (a "0") is wider than an average letter, so a
+ * 68ch measure holds about 85 characters; prose lines use this instead to stay at the 68 characters design.md asks for.
+ */
+const SAMPLE_TEXT = 'The council said the new footbridge opens on Monday, and walkers can cross the river in four minutes.';
+let avgShare: number | null = null;
+function avgCharRatio(): number {
+  if (avgShare !== null) return avgShare;
+  avgShare = 0.47;
+  try {
+    const ctx = measureCtx();
+    if (ctx) {
+      ctx.font = `400 100px ${FONT_TEXT}`;
+      const w = (ctx.measureText(SAMPLE_TEXT).width / SAMPLE_TEXT.length) * 1.1;
+      if (w > 30 && w < 80) avgShare = w / 100;
+    }
+  } catch {
+    /* no canvas (tests): keep the estimate */
+  }
+  return avgShare;
+}
+
+function measureCtx(): CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null {
+  const canvas: OffscreenCanvas | HTMLCanvasElement | null =
+    typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(8, 8) : typeof document !== 'undefined' ? document.createElement('canvas') : null;
+  return (canvas?.getContext('2d') as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null | undefined) ?? null;
+}
+
+/**
+ * Calm v3 sizes (design.md §2), all from the person's body size F: titles 3.0 / 2.2 / 1.7 / 1.4 × F at F = 17 / 24 /
+ * 32 / 40 (h2 1.75 / 1.45 / 1.3 / 1.2, headlines 1.25 / 1.17 / 1.12 / 1.08); body line height at least 1.6; meta at
+ * least 16 px; a text column of min(measure, 68) characters and a picture column 1.45 × as wide; paragraphs 1.25 F
+ * apart, h2 with 3 F above and 1 F below, bands 4 F apart (at least 64 px), rows padded 1.25 F, gutter max(24, 1.5 F).
+ */
 export function calmMetrics(fit: FitProfile | null, opts: TokenOptions = {}): CalmMetrics {
   const zoom = clamp(finite(opts.zoom, 1), 0.25, 5);
   const scale = clamp(finite(opts.scale, 1), 0.7, 2);
   const airy = (opts.density ?? 'airy') === 'airy';
-  const stated = fit ? finite(fit.text.override ?? fit.text.bodyPx, 16) : 16;
-  // Never below the reference stores' body size; only the person's own Text − step may go a little lower.
+  const stated = fit ? finite(fit.text.override ?? fit.text.bodyPx, 17) : 17;
+  // Never below the references' body size; only the person's own Text − step may go a little lower.
   const F = Math.round(clamp(Math.max(16, stated) * scale, 14, 64) * 10) / 10;
   const T = clamp(finite(fit?.targets.minPx ?? null, 44), 24, 96);
   const ctl = Math.max(T, 44, Math.round(F * 2.2));
   const primaryH = Math.max(T, 52, Math.round(F * 2.55));
-  const ramp = typeRamp(F);
-  const lhBody = clamp(finite(fit?.spacing.lineHeight, 1.5), 1.4, 2.2);
-  const loose = lhBody > 1.5;
+  const ratios = calmTypeRatios(F);
+  const lhBody = clamp(Math.max(1.6, finite(fit?.spacing.lineHeight, 1.6)), 1.6, 2.2);
   const floor = clamp(finite(fit?.weight.floor, 400), 300, 700);
+  const measureCh = calmMeasureCh(fit?.measure.targetCpl);
+  const textCol = Math.round(measureCh * F * chRatio());
+  const wideCol = Math.round(textCol * 1.45);
+  const measurePx = Math.min(textCol, Math.round(measureCh * F * avgCharRatio()));
   return {
     F, T, ctl, primaryH,
-    page: ramp.page, section: ramp.section, title: ramp.title,
-    lhBody, lhPage: loose ? 1.15 : 1.08, lhSection: loose ? 1.18 : 1.14, lhTitle: 1.25,
+    page: F * ratios.page, section: F * ratios.section, title: F * ratios.title,
+    lhBody, lhPage: 1.08, lhSection: 1.2, lhTitle: 1.3,
     wBody: clamp(Math.max(400, floor), 400, 700),
     wCtl: clamp(Math.max(500, floor), 500, 700),
-    wHead: clamp(Math.max(600, floor), 600, 700),
+    wHead: clamp(Math.max(500, floor), 500, 700),
     wordEm: clamp(finite(fit?.spacing.wordEm, 0), 0, 0.3),
     letterEm: clamp(finite(fit?.spacing.letterEm, 0), 0, 0.15),
-    measureCh: clamp(finite(fit?.measure.targetCpl, 66), 30, 80),
-    // The band gap is clamped (x0.75) so the primary section still starts in the first screen.
-    bandGap: (airy ? Math.max(64, 4 * F) : Math.max(48, 3 * F)) * 0.75,
-    headGap: Math.max(20, 1.25 * F) * (airy ? 1 : 0.85),
-    cardGap: airy ? Math.max(20, F) : Math.max(16, 0.75 * F),
-    cardPad: airy ? Math.max(20, 1.25 * F) : Math.max(16, F),
+    measureCh,
+    bandGap: Math.max(64, (airy ? 4 : 3.25) * F),
+    headGap: F,
+    cardGap: Math.max(20, F),
+    cardPad: Math.max(18, F),
     panelPad: Math.max(24, 1.25 * F),
-    pillPad: Math.max(20, 1.25 * F),
-    fieldPad: Math.max(14, 0.8 * F),
+    pillPad: Math.max(20, 1.1 * F),
+    fieldPad: Math.max(14, 0.75 * F),
     stripH: Math.max(56, T + 12),
-    topPad: Math.max(16, 0.75 * F),
-    leadGap: 0.35 * F,
-    taskGap: Math.max(20, F),
+    topPad: Math.max(28, 1.75 * F),
+    leadGap: 0.6 * F,
+    taskGap: Math.max(32, 2 * F),
     fieldGap: Math.max(24, 1.25 * F),
     dockH: Math.max(T, 52, Math.round(F * 2.55)) + 26,
     check: clamp(Math.round(Math.max(26, F * 1.25, T * 0.5)), 26, 44),
-    row: Math.max(T, 64, Math.round(F * 3)),
-    colMax: clamp(Math.round(40 * F), 720, 1040),
+    row: Math.max(T, 56, Math.round(F * 2.6)),
+    colMax: wideCol,
     tileMin: Math.max(240, 11 * F),
+    meta: calmMetaPx(F),
+    textCol,
+    wideCol,
+    measurePx,
+    paraGap: 1.25 * F,
+    h2Above: 3 * F,
+    h2Below: F,
+    rowPad: 1.25 * F,
+    gutter: Math.max(24, 1.5 * F),
+    rPic: clamp(0.75 * F, 8, 16),
+    formCol: Math.round(36 * F),
     zoom,
   };
 }
@@ -239,7 +364,8 @@ export function calmMetrics(fit: FitProfile | null, opts: TokenOptions = {}): Ca
 const r2 = (n: number): number => Math.round(n * 100) / 100;
 
 export function tokensFor(fit: FitProfile | null, mode: ThemeMode, opts: TokenOptions = {}): Tokens {
-  const p = paletteFor(fit, mode);
+  const calm = opts.surface === 'calm';
+  const p = paletteFor(fit, mode, calm ? 'calm' : 'chrome');
   const m = calmMetrics(fit, opts);
   const px = (n: number): string => `${r2(n / m.zoom)}px`;
   const tracking = (em: number): string => (m.letterEm > 0 ? `${m.letterEm}em` : `${em}em`);
@@ -259,15 +385,20 @@ export function tokensFor(fit: FitProfile | null, mode: ThemeMode, opts: TokenOp
     f: px(m.F), 'f-page': px(m.page), 'f-section': px(m.section), 'f-title': px(m.title),
     'lh-body': String(m.lhBody), 'lh-page': String(m.lhPage), 'lh-section': String(m.lhSection), 'lh-title': String(m.lhTitle),
     'w-body': String(m.wBody), 'w-ctl': String(m.wCtl), 'w-head': String(m.wHead),
-    'tr-page': tracking(-0.022), 'tr-section': tracking(-0.016), 'tr-title': tracking(-0.01),
-    'word-sp': `${m.wordEm}em`, 'letter-sp': `${m.letterEm}em`, measure: `${m.measureCh}ch`,
+    'tr-page': tracking(-0.02), 'tr-section': tracking(-0.015), 'tr-title': tracking(-0.008),
+    'word-sp': `${m.wordEm}em`, 'letter-sp': `${m.letterEm}em`, measure: px(m.measurePx),
+    'f-meta': px(m.meta), 'text-col': px(m.textCol), 'wide-col': px(m.wideCol), 'form-col': px(m.formCol),
+    'para-gap': px(m.paraGap), 'h2-above': px(m.h2Above), 'h2-below': px(m.h2Below), 'row-pad': px(m.rowPad),
+    gutter: px(m.gutter), 'r-pic': px(m.rPic),
     // size and space
     t: px(m.T), ctl: px(m.ctl), 'primary-h': px(m.primaryH), 'pill-pad': px(m.pillPad), 'field-pad': px(m.fieldPad),
     'strip-h': px(m.stripH), 'top-pad': px(m.topPad), 'lead-gap': px(m.leadGap), 'task-gap': px(m.taskGap),
     'field-gap': px(m.fieldGap), 'dock-h': px(m.dockH), 'band-gap': px(m.bandGap), 'head-gap': px(m.headGap), 'card-gap': px(m.cardGap),
     'card-pad': px(m.cardPad), 'panel-pad': px(m.panelPad), check: px(m.check), row: px(m.row),
-    'col-max': px(m.colMax), 'page-max': px(1280), 'tile-min': px(m.tileMin), 'side-pad': px(Math.max(24, m.F)),
-    'r-card': px(22), 'r-panel': px(28), 'r-media': px(16), 'r-field': px(14), 'r-small': px(10), 'r-pill': '999px',
+    'col-max': px(m.colMax), 'page-max': px(calm ? Math.max(1280, m.wideCol + 2 * m.gutter) : 1280), 'tile-min': px(m.tileMin),
+    'side-pad': px(calm ? m.gutter : Math.max(24, m.F)),
+    'r-card': px(calm ? 12 : 22), 'r-panel': px(calm ? 16 : 28), 'r-media': px(calm ? m.rPic : 16), 'r-field': px(calm ? 10 : 14),
+    'r-small': px(calm ? 8 : 10), 'r-pill': '999px',
     gap: px(Math.max(10, m.F * 0.6)), 'gap-s': px(Math.max(6, m.F * 0.35)), hair: px(1),
     ring: px(mode === 'max' ? 3 : 3), 'chip-h': px(Math.max(40, 1.8 * m.F)), 'f-big': px(1.25 * m.F),
   };

@@ -246,7 +246,8 @@ export const rootCss = /* css */ `
   padding: ${u(8)} ${u(20)} ${u(14)}; font-size: ${u(12.5)}; color: var(--c-ink2);
   border-top: ${u(1)} solid var(--c-line);
 }
-.wa-foot-row { display: flex; align-items: center; justify-content: space-between; gap: ${u(8)}; }
+.wa-foot-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: ${u(2)} ${u(12)}; }
+.wa-foot-row .wa-link { flex: none; white-space: nowrap; text-align: left; margin-left: ${u(-2)}; }
 .wa-keys { display: flex; align-items: center; gap: ${u(8)}; min-width: 0; }
 .wa-keys .wa-kbd { margin-left: 0; flex: none; }
 .wa-keys ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: ${u(2)} ${u(10)}; min-width: 0; }
@@ -287,6 +288,79 @@ export const rootCss = /* css */ `
 .wa-glyph-s { font-size: .8em; }
 .wa-glyph-l { font-size: 1.1em; }
 .wa-prow-note { margin: 0; padding: 0 ${u(4)}; font-size: ${u(12.5)}; color: var(--c-ink2); }
+
+/* ---------- what helps you: what WebAble learned, in the person's own actions ---------- */
+.wa-helps { padding: ${u(14)} ${u(6)} ${u(4)}; }
+.wa-helps-head { display: flex; align-items: baseline; justify-content: space-between; gap: ${u(8)}; padding: 0 ${u(10)} ${u(2)}; }
+.wa-helps-title { margin: 0; font-family: ${DISPLAY_STACK}; font-size: ${u(16)}; line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; color: var(--c-ink); }
+.wa-helps-count { font-size: ${u(12.5)}; color: var(--c-ink2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.wa-helps-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.wa-help {
+  position: relative; display: grid; grid-template-columns: ${u(32)} minmax(0, 1fr); gap: 0 ${u(12)};
+  align-items: start; padding: ${u(12)} ${u(10)};
+}
+.wa-help + .wa-help::before {
+  content: ""; position: absolute; top: 0; left: ${u(54)}; right: ${u(10)}; height: ${u(1)}; background: var(--c-line); opacity: .8;
+}
+.wa-help-icon {
+  width: ${u(32)}; height: ${u(32)}; border-radius: ${u(10)}; display: grid; place-items: center;
+  background: var(--c-tonal); color: var(--c-ink2); border: ${u(1)} solid var(--c-edge);
+}
+.wa-help[data-status="on"] .wa-help-icon { background: var(--c-accent-tint); color: var(--c-accent); }
+.wa-help-main { min-width: 0; }
+.wa-help-text { margin: ${u(5)} 0 0; font-size: ${u(14.5)}; line-height: 1.38; color: var(--c-ink); overflow-wrap: break-word; text-wrap: pretty; }
+.wa-help-val { font-size: ${u(12.5)}; font-weight: 500; color: var(--c-ink2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wa-help-meta { display: flex; flex-wrap: wrap; align-items: center; gap: ${u(6)} ${u(10)}; margin-top: ${u(8)}; }
+.wa-chip {
+  display: inline-flex; align-items: center; max-width: 100%;
+  padding: ${u(2)} ${u(9)}; border-radius: 999px; font-size: ${u(12)}; font-weight: 500; line-height: 1.45;
+  background: var(--c-tonal); color: var(--c-ink2); border: ${u(1)} solid var(--c-edge);
+}
+.wa-chip[data-source="learned"] { background: var(--c-accent-tint); color: var(--c-accent); }
+.wa-chip[data-source="warmup"] { background: rgba(0,113,227,.1); color: var(--c-action); }
+.wa-root[data-mode="dark"] .wa-chip[data-source="warmup"] { background: rgba(41,151,255,.16); color: var(--c-link); }
+.wa-chip[data-source="person"] { background: transparent; color: var(--c-ink); box-shadow: inset 0 0 0 ${u(1)} var(--c-line-strong); }
+.wa-dots {
+  display: inline-flex; align-items: center; gap: ${u(3)}; padding: ${u(5)} ${u(7)}; border-radius: 999px;
+  background: var(--c-tonal); border: ${u(1)} solid var(--c-edge);
+}
+.wa-dots i { width: ${u(6)}; height: ${u(6)}; border-radius: 999px; background: color-mix(in srgb, var(--c-ink) 20%, transparent); }
+.wa-dots i[data-on] { background: var(--c-ink); }
+.wa-root[data-mode="max"] .wa-dots i { background: transparent; box-shadow: inset 0 0 0 ${u(1)} #000000; }
+.wa-root[data-mode="max"] .wa-dots i[data-on] { background: #000000; }
+.wa-help-status {
+  float: right; margin: ${u(6)} 0 ${u(2)} ${u(10)}; font-size: ${u(12)}; font-weight: 600; color: var(--c-ink2);
+  line-height: 1.3; white-space: nowrap;
+}
+.wa-help-acts { display: flex; flex-wrap: wrap; gap: ${u(6)}; margin-top: ${u(10)}; }
+.wa-mini {
+  appearance: none; display: inline-flex; align-items: center; justify-content: center;
+  min-height: max(${u(32)}, calc(0.75 * var(--wa-target, 44px))); padding: 0 ${u(13)};
+  border: ${u(1)} solid var(--c-edge); border-radius: 999px; background: var(--c-tonal); color: var(--c-ink);
+  font-size: ${u(13)}; font-weight: 500; line-height: 1.15; white-space: nowrap;
+  cursor: pointer; pointer-events: auto; transition: background-color 160ms ease;
+}
+.wa-mini:hover { background: var(--c-hover); }
+.wa-mini:active { background: var(--c-press); }
+.wa-mini[data-kind="confirm"] { background: var(--c-ink); color: var(--c-raised); }
+.wa-mini[data-kind="confirm"]:hover { opacity: .88; }
+.wa-help-note { margin: ${u(10)} 0 0; font-size: ${u(13)}; font-weight: 500; color: var(--c-accent); }
+.wa-help[data-noted] .wa-help-icon { opacity: .6; }
+.wa-helps-empty { padding: ${u(6)} ${u(10)} ${u(10)}; font-size: ${u(13.5)}; line-height: 1.45; color: var(--c-ink2); }
+.wa-helps-empty p { margin: 0; }
+.wa-helps-empty .wa-helps-empty-title { margin: 0 0 ${u(4)}; color: var(--c-ink); font-weight: 500; font-size: ${u(14.5)}; }
+.wa-learns { margin: ${u(2)} ${u(10)} 0; border-top: ${u(1)} solid var(--c-line); }
+.wa-disclose {
+  appearance: none; display: flex; align-items: center; gap: ${u(6)}; width: 100%;
+  min-height: max(${u(38)}, calc(0.8 * var(--wa-target, 44px))); padding: 0 ${u(2)}; margin: 0;
+  background: none; border: 0; text-align: left; cursor: pointer; pointer-events: auto;
+  color: var(--c-link); font-size: ${u(13.5)}; font-weight: 500; border-radius: ${u(8)};
+}
+.wa-disclose:hover { text-decoration: underline; text-underline-offset: ${u(3)}; }
+.wa-disclose-chev { display: inline-grid; place-items: center; transition: transform 160ms ease; }
+.wa-disclose[aria-expanded="true"] .wa-disclose-chev { transform: rotate(90deg); }
+.wa-learns-body { display: grid; gap: ${u(6)}; padding: 0 ${u(2)} ${u(10)} ${u(22)}; font-size: ${u(13)}; line-height: 1.45; color: var(--c-ink2); }
+.wa-learns-body p { margin: 0; }
 
 /* ---------- Jev counter ---------- */
 .wa-counter { display: grid; grid-template-columns: repeat(3, 1fr); gap: ${u(4)}; }
