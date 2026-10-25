@@ -45,6 +45,14 @@ export const lensCss = /* css */ `
 .wa-lleads line[data-c="folded"] { stroke: #FFB866; }
 .wa-lleads line[data-c="guarded"] { stroke: #5FD48B; }
 .wa-lleads line[data-c="popup"] { stroke: #C9A8FF; }
+.wa-lleads line[data-c="page"] { stroke: #7DDEBA; }
+.wa-lleads line[data-c="content"] { stroke: #8EDED4; }
+.wa-lleads line[data-c="data"] { stroke: #B7C4FF; }
+.wa-lleads line[data-c="task"] { stroke: #9CC6FF; }
+.wa-lleads line[data-c="navigation"] { stroke: #D5DDE4; }
+.wa-lleads line[data-c="help"] { stroke: #5FD48B; }
+.wa-lleads line[data-c="distraction"] { stroke: #FFB866; }
+.wa-lleads line[data-c="other"] { stroke: #FFFFFF; }
 
 /* ---------- outlines: 1 px black inside, a colour band, 1 px white outside ---------- */
 .wa-lbox {
@@ -67,6 +75,26 @@ export const lensCss = /* css */ `
 .wa-lbox[data-c="unsure"] { border: ${L(2)} dashed #FFFFFF; box-shadow: ${IN}, 0 0 0 ${L(1)} rgba(0,0,0,.4); }
 .wa-lbox[data-covered="true"]:not([data-c="main"]) {
   border: ${L(1)} dashed rgba(255,255,255,.95); box-shadow: 0 0 0 ${L(1)} rgba(0,0,0,.45); background-image: none;
+}
+/* Importance, only when Jev sent a score. No data-weight: the class outline above is unchanged.
+   Essential (4) is a little heavier than supporting (3). Distractions are dashed. The rest is a hairline.
+   A covered element keeps the dashed "under something" outline. */
+.wa-lbox[data-weight="solid"]:not([data-covered="true"]) {
+  border: ${L(2.5)} solid #1A3A4A; box-shadow: ${IN}, ${OUT};
+}
+.wa-lbox[data-weight="solid"][data-rank="4"]:not([data-covered="true"]) { border-width: ${L(3.5)}; }
+.wa-lbox[data-weight="dashed"]:not([data-covered="true"]) {
+  border: ${L(2)} dashed #C2410C; box-shadow: ${IN}, ${OUT};
+}
+.wa-lbox[data-weight="hair"]:not([data-covered="true"]) {
+  border: ${L(1)} solid rgba(255,255,255,.75); box-shadow: 0 0 0 ${L(1)} rgba(0,0,0,.28); background-image: none;
+}
+/* The main region is framed on its own. Its element box does not draw a second outline. */
+.wa-lbox[data-frame="outer"] { border: 0; box-shadow: none; background: none; }
+.wa-lregion {
+  position: absolute; left: 0; top: 0; box-sizing: border-box; border-radius: ${L(14)}; pointer-events: none;
+  border: ${L(3)} solid #14634A;
+  box-shadow: inset 0 0 0 ${L(1)} rgba(0,0,0,.4), 0 0 0 ${L(1)} #FFFFFF, 0 0 ${L(22)} ${L(2)} rgba(20,99,74,.38);
 }
 .wa-lrulebox { border: ${L(2)} dashed #FFFFFF; border-radius: ${L(10)}; box-shadow: 0 0 0 ${L(1)} rgba(0,0,0,.65), inset 0 0 0 ${L(1)} rgba(0,0,0,.65); }
 .wa-lbox[data-hot="true"] { border-width: ${L(4)}; }
@@ -96,11 +124,24 @@ export const lensCss = /* css */ `
   border: ${L(1.25)} dashed #48484A;
 }
 .wa-lchip[data-c="rule"] { background: #FFFFFF; color: #1D1D1F; border: ${L(1.5)} dashed #1D1D1F; }
+/* Fine-role chips, one colour per family. White text on each is about 5:1 or better. */
+.wa-lchip[data-c="content"] { background: #0E6A62; }
+.wa-lchip[data-c="data"] { background: #2A3F8F; }
+.wa-lchip[data-c="task"] { background: #0A4F9C; }
+.wa-lchip[data-c="navigation"] { background: #2E4456; }
+.wa-lchip[data-c="help"] { background: #1A7F45; }
+.wa-lchip[data-c="distraction"] { background: #C2410C; }
+.wa-lchip[data-c="other"] { background: #48484A; }
+.wa-lchip[data-c="page"] {
+  z-index: 2; background: #14634A; color: #FFFFFF; font-size: ${L(13)}; height: ${L(28)}; max-width: ${L(340)};
+  border-radius: ${L(8)}; padding: 0 ${L(10)} 0 ${L(9)};
+}
+.wa-lchip[data-c="page"] svg { width: ${L(13)}; height: ${L(13)}; }
 .wa-lchip[data-hot="true"] { box-shadow: 0 0 0 ${L(2)} #FFFFFF, 0 ${L(4)} ${L(16)} rgba(0,0,0,.4); }
 
 /* ---------- entry ---------- */
 .wa-lens[data-phase="enter"] .wa-lscrim, .wa-lens[data-phase="enter"] .wa-lhatch { animation: wa-lfade 180ms ease-out both; }
-.wa-lens[data-phase="enter"] .wa-lbox { animation: wa-lbox 160ms ease-out both; animation-delay: var(--d, 0ms); }
+.wa-lens[data-phase="enter"] .wa-lbox, .wa-lens[data-phase="enter"] .wa-lregion { animation: wa-lbox 160ms ease-out both; animation-delay: var(--d, 0ms); }
 .wa-lens[data-phase="enter"] .wa-lbox[data-c="pending"] { animation: wa-lpend 1.4s ease-in-out infinite; }
 .wa-lens[data-phase="enter"] .wa-lchip { animation: wa-lchip 220ms cubic-bezier(.2,.8,.3,1) both; animation-delay: var(--cd, 200ms); }
 .wa-lens[data-phase="enter"] .wa-lleads { animation: wa-lfade 200ms ease-out both; animation-delay: 380ms; }
@@ -137,6 +178,10 @@ export const lensCss = /* css */ `
   animation: wa-lrise 240ms cubic-bezier(.2,.8,.3,1) both;
 }
 .wa-lbrand { flex: none; display: inline-flex; align-items: center; gap: ${L(6)}; font: 600 ${L(14)}/1 ${DISPLAY}; letter-spacing: -0.01em; }
+.wa-lpurpose { flex: none; min-width: 0; color: var(--c-ink2, #5E5E63); }
+.wa-lpurpose em { font-style: italic; font-weight: 650; color: var(--c-ink, #1D1D1F); }
+.wa-lpurpose b { font-weight: 700; color: var(--c-ink, #1D1D1F); font-variant-numeric: tabular-nums; }
+.wa-lhead[data-clip="1"] .wa-lpurpose { flex: 1 1 auto; min-width: ${L(140)}; overflow: hidden; text-overflow: ellipsis; }
 .wa-lbrand svg { color: ${LENS_COLOR.main}; width: ${L(13)}; height: ${L(13)}; }
 .wa-lbtn svg, .wa-lrow-end svg { flex: none; width: ${L(12)}; height: ${L(12)}; }
 .wa-lx svg { width: ${L(15)}; height: ${L(15)}; }
@@ -222,6 +267,13 @@ ${fitRules()}
 .wa-lrole-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: #8E8E93; }
 .wa-lrole[data-g="fold"] .wa-lrole-bar i { background: ${LENS_COLOR.folded}; }
 .wa-lrole[data-g="protect"] .wa-lrole-bar i { background: ${LENS_COLOR.guarded}; }
+.wa-lrole[data-g="content"] .wa-lrole-bar i { background: #0E6A62; }
+.wa-lrole[data-g="data"] .wa-lrole-bar i { background: #2A3F8F; }
+.wa-lrole[data-g="task"] .wa-lrole-bar i { background: #0A4F9C; }
+.wa-lrole[data-g="navigation"] .wa-lrole-bar i { background: #2E4456; }
+.wa-lrole[data-g="help"] .wa-lrole-bar i { background: #1A7F45; }
+.wa-lrole[data-g="distraction"] .wa-lrole-bar i { background: #C2410C; }
+.wa-lrole[data-fine="true"] { grid-template-columns: minmax(${L(72)}, 46%) 1fr ${L(32)}; }
 .wa-lrole-v, .wa-lt-v, .wa-ls-v { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
 .wa-ls { display: grid; grid-template-columns: ${L(132)} 1fr auto ${L(30)}; grid-template-areas: "n b a v"; align-items: center; gap: ${L(8)}; height: ${L(16)}; margin-bottom: ${L(3)}; font-size: ${L(11.5)}; }
 .wa-ls-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -259,6 +311,16 @@ ${fitRules()}
   font-size: ${L(11.5)}; line-height: 1.4; font-variant-numeric: tabular-nums; color: var(--c-ink, #1D1D1F);
 }
 .wa-lcard-because span { font-weight: 600; margin-right: ${L(4)}; }
+.wa-limp {
+  display: flex; align-items: center; gap: ${L(8)}; margin: ${L(8)} 0 0; font-size: ${L(12)};
+}
+.wa-limp-k { flex: none; font-weight: 600; }
+.wa-limp-meter { flex: none; display: inline-flex; gap: ${L(3)}; }
+.wa-limp-meter i { width: ${L(16)}; height: ${L(8)}; border-radius: ${L(2)}; background: var(--c-tonal, #E8E8ED); }
+.wa-limp[data-w="solid"] .wa-limp-meter i[data-on="true"] { background: #14634A; }
+.wa-limp[data-w="dashed"] .wa-limp-meter i[data-on="true"] { background: #C2410C; }
+.wa-limp[data-w="hair"] .wa-limp-meter i[data-on="true"] { background: #5E5E63; }
+.wa-limp b { font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* ---------- side sheet ---------- */
 .wa-lsheet {

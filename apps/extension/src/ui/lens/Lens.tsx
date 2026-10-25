@@ -1,6 +1,8 @@
-// Owner: L. Jev Lens v2: a scrim with holes over what Jev kept, two-tone outlines, chips that show the number the
-// policy acted on, a hover card with the probabilities behind each decision, a one-row header with the page read's
-// real numbers, a side sheet that lists every element, and "vs plain rule".
+// Owner: L. Jev Lens. v2: a scrim with holes over what Jev kept, two-tone outlines, chips that show the number the
+// policy acted on, a hover card, a one-row header, a side sheet, and "vs plain rule".
+// v3, when Jev sent them: the kind of page on the header, a calm frame on the region the page exists to show,
+// fine-role chips, importance as outline weight, fine-role bars and importance on the card, and a Page tab.
+// Missing or empty round-7 fields leave the v2 view as it was.
 //
 // Layout runs as read-all-rects → decide (pure place.ts) → write, on answers, on scroll (rAF only while scrolling),
 // and on a slow tick for pages that move by themselves. The overlay never takes the pointer; hover is hit-tested
@@ -9,13 +11,14 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/ho
 import type { EngineApi, EngineState } from '../../contracts';
 import { fmtCost, fmtCount, fmtMs, fmtTokens, jevTotals } from '../panel/format';
 import { Card } from './Card';
-import { CLASS_WEIGHT, lensItems, mergedChip, type LensClass, type LensItem } from './display';
+import { CLASS_WEIGHT, fineChipFace, fineChipPriority, lensItems, mergedChip, type LensClass, type LensItem } from './display';
 import { ClassIcon, IChevronRight, IClose, IDiamond, IRule } from './icons';
 import { cellRegions, chipBudget, placeChips, rectsPath, type ChipPlan, type PlaceItem, type Rect } from './place';
 import { compareRule, plainRule } from './rule';
-import { Sheet, type RowStatus } from './Sheet';
+import { Sheet, type RowStatus, type SheetTab } from './Sheet';
 import { usePageZoom } from '../zoom';
 import type { TodayMeter } from './today';
+import { hasPageRead, mainRegionPick, purposeLine, regionLabel, type FineFamily } from './words';
 
 interface Props {
   api: EngineApi;
@@ -27,7 +30,7 @@ interface Props {
   bottomReserve: number;
 }
 
-type ChipCls = LensClass | 'rule';
+type ChipCls = LensClass | 'rule' | 'page' | FineFamily;
 interface PlannedChip extends ChipPlan { words: string; num: string; icon: ChipCls }
 interface Plan {
   sig: string;
@@ -38,10 +41,12 @@ interface Plan {
   scrim: string;
   hatch: string;
   ruleRect: Rect | null;
+  /** The region that holds what the page is for, or null when Jev did not pick one. */
+  regionRect: Rect | null;
   card: { x: number; y: number } | null;
 }
 
-const EMPTY_PLAN: Plan = { sig: '', chips: [], listed: new Set(), status: new Map(), rects: new Map(), scrim: '', hatch: '', ruleRect: null, card: null };
+const EMPTY_PLAN: Plan = { sig: '', chips: [], listed: new Set(), status: new Map(), rects: new Map(), scrim: '', hatch: '', ruleRect: null, regionRect: null, card: null };
 const CHIP_CLASSES = new Set<LensClass>(['main', 'popup', 'folded', 'guarded', 'unsure']);
 const OUTSET = 3;
 const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
@@ -131,6 +136,9 @@ const OVERLAY_KIND_NOTE: Record<string, string> = {
 export function Lens({ api, s, reduce, bottomReserve }: Props) {
   const items = useMemo(() => lensItems(s.digest, s.decisions, s.understanding), [s.digest, s.decisions, s.understanding]);
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
+  const line = useMemo(() => purposeLine(s.understanding?.purpose), [s.understanding]);
+  const region = useMemo(() => mainRegionPick(s.understanding?.mainRegion), [s.understanding]);
+  const regionId = region && region.id !== 'none' ? region.id : null;
   const answered = s.decisions.length > 0;
   const asking = !answered && Boolean(s.digest) && (s.phase === 'reading' || s.phase === 'tailored');
   // The same page-zoom reading as the rest of our UI (the engine's, confirmed with the tab's).
@@ -140,7 +148,7 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
   const scale = clamp(bodyPx / 18, 1, 1.25) / (zoom > 0 ? zoom : 1);
 
   const [sheetOpen, setSheetOpen] = useState(() => window.innerWidth >= 1440);
-  const [tab, setTab] = useState<'elements' | 'raw'>('elements');
+  const [tab, setTab] = useState<SheetTab>('elements');
   const [ruleOn, setRuleOn] = useState(false);
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [pinnedId, setPinnedId] = useState<string | null>(null);
@@ -159,8 +167,8 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
   const cardItem = cardId ? itemById.get(cardId) ?? null : null;
 
   // Refs the layout pass reads (latest values without re-subscribing listeners).
-  const live = useRef({ items, itemById, ruleOn, rule, rowHot, pinnedId, cardId, scale, zoom, answered, bottomReserve, enter: true, overlays: s.overlays });
-  live.current = { items, itemById, ruleOn, rule, rowHot, pinnedId, cardId, scale, zoom, answered, bottomReserve, enter: !steady, overlays: s.overlays };
+  const live = useRef({ items, itemById, ruleOn, rule, rowHot, pinnedId, cardId, scale, zoom, answered, bottomReserve, enter: true, overlays: s.overlays, regionId, regionP: region?.p ?? 0 });
+  live.current = { items, itemById, ruleOn, rule, rowHot, pinnedId, cardId, scale, zoom, answered, bottomReserve, enter: !steady, overlays: s.overlays, regionId, regionP: region?.p ?? 0 };
 
   const planRef = useRef<Plan>(EMPTY_PLAN);
   const renderedSig = useRef('');
@@ -182,6 +190,7 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const ruleBoxRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
   const hatchRef = useRef<HTMLDivElement>(null);
   const boxEls = useRef(new Map<string, HTMLDivElement>());
   const chipEls = useRef(new Map<string, HTMLDivElement>());
@@ -210,11 +219,14 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
 
   const chipText = (cls: string, ids: string[]): { words: string; num: string } => {
     const L = live.current;
+    if (cls === 'page') return { words: 'What this page is for ·', num: f2(L.regionP) };
     if (cls === 'rule') {
       const same = L.items.find((i) => i.cls === 'main')?.id === ids[0];
       return { words: same ? 'Plain rule: same pick' : 'Plain rule: main action', num: '' };
     }
     const its = ids.map((id) => L.itemById.get(id)).filter((i): i is LensItem => Boolean(i));
+    const fine = cls.startsWith('fine:') ? fineChipFace(its) : null;
+    if (fine) return fine;
     if (its.length > 1) return mergedChip(its);
     const it = its[0];
     if (!it) return { words: '', num: '' };
@@ -224,14 +236,15 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
   const chipKey = (cls: string, words: string, num: string, sc: number) => `${cls}|${words}|${num}|${sc.toFixed(4)}`;
   const chipSize = (cls: string, ids: string[]): { w: number; h: number } => {
     const sc = live.current.scale;
-    const fs = cls === 'main' ? 13 : 12;
+    const big = cls === 'main' || cls === 'page';
+    const fs = big ? 13 : 12;
     const { words, num } = chipText(cls, ids);
-    const h = Math.round((cls === 'main' ? 26 : 22) * sc);
+    const h = Math.round((cls === 'page' ? 28 : cls === 'main' ? 26 : 22) * sc);
     const real = measured.current.get(chipKey(cls, words, num, sc));
     if (real) return { w: real, h };
-    const icon = cls === 'main' ? 13 : 12;
+    const icon = big ? 13 : 12;
     const inner = 8 + icon + 5 + textW(words, 600, fs) + (num ? 5 + textW(num, 700, fs) : 0) + 9 + 6;
-    const max = cls === 'main' ? 260 : 220;
+    const max = cls === 'page' ? 340 : cls === 'main' ? 260 : 260;
     return { w: Math.ceil(Math.min(inner, max) * sc), h };
   };
 
@@ -265,6 +278,15 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
       'rule',
       ruleBoxRef.current,
       rr ? `transform:translate3d(${Math.round(rr.x - 7)}px,${Math.round(rr.y - 7)}px,0);width:${Math.round(rr.w + 14)}px;height:${Math.round(rr.h + 14)}px` : 'display:none',
+    );
+    const rg = plan.regionRect;
+    const rout = 8;
+    write(
+      'region',
+      regionRef.current,
+      rg
+        ? `transform:translate3d(${Math.round(rg.x - rout)}px,${Math.round(rg.y - rout)}px,0);width:${Math.round(rg.w + 2 * rout)}px;height:${Math.round(rg.h + 2 * rout)}px`
+        : 'display:none',
     );
     if (pathRef.current && pathRef.current.getAttribute('d') !== plan.scrim) pathRef.current.setAttribute('d', plan.scrim);
     write('hatch', hatchRef.current, plan.hatch ? `clip-path:path("${plan.hatch}")` : 'display:none');
@@ -331,6 +353,21 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
       else if (r.y >= vh) status.set(it.id, 'down');
       else if (r.x + r.w <= 0 || r.x >= vw) status.set(it.id, 'hidden');
       else status.set(it.id, 'shown');
+    }
+    // The main-information region may be a digest region that is not itself an element row.
+    let regionRect: Rect | null = null;
+    if (L.answered && L.regionId) {
+      if (rects.has(L.regionId)) regionRect = rects.get(L.regionId) ?? null;
+      else {
+        const el = api.elementFor(L.regionId);
+        if (el && el.isConnected) {
+          const b = el.getBoundingClientRect();
+          if (b.width >= 1 && b.height >= 1) regionRect = { x: b.left, y: b.top, w: b.width, h: b.height };
+        }
+      }
+      if (regionRect && (regionRect.y + regionRect.h <= 0 || regionRect.y >= vh || regionRect.x + regionRect.w <= 0 || regionRect.x >= vw)) {
+        regionRect = null;
+      }
     }
     const ruleRect: Rect | null = L.ruleOn && L.rule.mainId && status.get(L.rule.mainId) !== 'hidden' ? rects.get(L.rule.mainId) ?? null : null;
     const chrome: Rect[] = [];
@@ -400,24 +437,42 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
         const r = rects.get(it.id);
         if (!r || status.get(it.id) !== 'shown') continue;
         const isForced = forced.has(it.id);
-        if (!CHIP_CLASSES.has(it.cls) && !isForced) continue;
-        if (covered.current.has(it.id) && it.cls !== 'main' && !isForced) continue;
         const tag = it.ev.tag;
         const hint = (it.ev.role_hint || '').toLowerCase();
+        const field = tag === 'input' || tag === 'select' || tag === 'textarea' || /textbox|combobox|searchbox/.test(hint);
+        // A fine role replaces the policy chip. The main region speaks through its own label, not a fine-role chip.
+        if (it.fine && it.fineName && it.id !== L.regionId) {
+          if (covered.current.has(it.id) && !isForced) continue;
+          placeItems.push({
+            id: it.id,
+            cls: `fine:${it.fine}`,
+            box: r,
+            priority: fineChipPriority(it),
+            field,
+            forced: isForced,
+          });
+          continue;
+        }
+        if (!CHIP_CLASSES.has(it.cls) && !isForced) continue;
+        if (covered.current.has(it.id) && it.cls !== 'main' && !isForced) continue;
         placeItems.push({
           id: it.id,
           cls: it.cls,
           box: r,
           priority: CLASS_WEIGHT[it.cls] * 10 + (it.p ?? 0),
-          field: tag === 'input' || tag === 'select' || tag === 'textarea' || /textbox|combobox|searchbox/.test(hint),
+          field,
           forced: isForced,
         });
       }
       if (ruleRect && L.rule.mainId && status.get(L.rule.mainId) === 'shown') {
         placeItems.push({ id: `rule:${L.rule.mainId}`, cls: 'rule', box: { x: ruleRect.x - 4, y: ruleRect.y - 4, w: ruleRect.w + 8, h: ruleRect.h + 8 }, priority: RULE_WEIGHT * 10 });
       }
+      if (regionRect && L.regionId) {
+        placeItems.push({ id: `page:${L.regionId}`, cls: 'page', box: regionRect, priority: 80, forced: true });
+      }
     }
-    const sizeFor = (cls: string, ids: string[]) => chipSize(cls, ids.map((x) => (x.startsWith('rule:') ? x.slice(5) : x)));
+    const stripId = (x: string) => (x.startsWith('rule:') ? x.slice(5) : x.startsWith('page:') ? x.slice(5) : x);
+    const sizeFor = (cls: string, ids: string[]) => chipSize(cls, ids.map(stripId));
     const res = placeChips(placeItems, {
       vw,
       vh,
@@ -428,10 +483,14 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
       mergePx: 48,
     });
     const chips: PlannedChip[] = res.chips.map((c) => {
-      const ids = c.ids.map((x) => (x.startsWith('rule:') ? x.slice(5) : x));
+      const ids = c.ids.map(stripId);
       const t = chipText(c.cls, ids);
       const first = L.itemById.get(ids[0] ?? '');
-      const icon: ChipCls = c.cls === 'rule' ? 'rule' : first?.cls ?? 'kept';
+      let icon: ChipCls = 'kept';
+      if (c.cls === 'rule') icon = 'rule';
+      else if (c.cls === 'page') icon = 'page';
+      else if (c.cls.startsWith('fine:')) icon = first?.family ?? 'other';
+      else icon = first?.cls ?? 'kept';
       return { ...c, ids, words: t.words, num: t.num, icon };
     });
     const nextPrev = new Map<string, { dx: number; dy: number }>();
@@ -509,8 +568,9 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
       [...res.listed].sort().join(','),
       [...status.entries()].map(([k, v]) => `${k}${v[0]}`).join(''),
       [...covered.current.entries()].map(([k, v]) => `${k}${v.length}`).join(''),
+      regionRect ? 'R' : '',
     ].join('#');
-    const plan: Plan = { sig, chips, listed: new Set(res.listed), status, rects, scrim, hatch, ruleRect, card };
+    const plan: Plan = { sig, chips, listed: new Set(res.listed), status, rects, scrim, hatch, ruleRect, regionRect, card };
     planRef.current = plan;
     if (sig !== renderedSig.current) {
       renderedSig.current = sig;
@@ -692,6 +752,11 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
     return () => window.removeEventListener('keydown', onKey, true);
   }, [pinnedId]);
 
+  // The Page tab exists only while Jev sent a purpose or a main region.
+  useEffect(() => {
+    if (tab === 'page' && !hasPageRead(s.understanding)) setTab('elements');
+  }, [tab, s.understanding]);
+
   // Entry: replay when Jev's answers land (or when the Lens opens on answers that are already here).
   useEffect(() => {
     needOrder.current = true;
@@ -751,7 +816,7 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
 
   // Header: drop the least important numbers when the row does not fit.
   const t = jevTotals(s);
-  const statsKey = `${t.decisions}|${t.cached}|${t.headlineMs}|${t.costUsd}|${asking}|${sheetOpen}|${Math.round(window.innerWidth / 40)}|${scale.toFixed(3)}`;
+  const statsKey = `${t.decisions}|${t.cached}|${t.headlineMs}|${t.costUsd}|${asking}|${sheetOpen}|${Math.round(window.innerWidth / 40)}|${scale.toFixed(3)}|${line?.sentence ?? ''}`;
 
   const decisionsShown = useCount(t.decisions, enterKey, reduce);
   const plan = planRef.current;
@@ -761,12 +826,14 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
     const h = headRef.current;
     if (!h) return;
     let lvl = 0;
+    h.removeAttribute('data-clip');
     for (; lvl < 7; lvl++) {
       h.setAttribute('data-fit', String(lvl));
       if (h.scrollWidth <= h.clientWidth + 1) break;
     }
     fitRef.current = lvl;
     h.setAttribute('data-fit', String(lvl));
+    if (h.scrollWidth > h.clientWidth + 1) h.setAttribute('data-clip', '1');
   }, [statsKey, items.length, listedCount, answered, ruleOn]);
   const focusId = rowHot;
 
@@ -787,7 +854,12 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
       metrics: u.metrics,
       firstRead: u.firstRead ?? null,
       sent: s.digest ? { page: s.digest.page, elements: s.digest.elements } : null,
-      answered: { elements: u.elements, mainPick: u.mainPick },
+      answered: {
+        elements: u.elements,
+        mainPick: u.mainPick,
+        ...(u.purpose ? { purpose: u.purpose } : {}),
+        ...(u.mainRegion ? { mainRegion: u.mainRegion } : {}),
+      },
       decisions: s.decisions.map((d) => ({ id: d.id, verdict: d.verdict, reasons: d.reasons })),
     };
   }, [s.understanding, s.digest, s.decisions]);
@@ -804,8 +876,10 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
     setPinnedId(pinnedId === id ? null : id);
   };
 
-  const chips = plan.chips;
+  const chips = [...plan.chips].sort((a, b) => Number(a.icon === 'page') - Number(b.icon === 'page'));
   const showCard = Boolean(cardItem && plan.status.get(cardItem.id) === 'shown');
+  const tabShown: SheetTab = tab === 'page' && !hasPageRead(s.understanding) ? 'elements' : tab;
+  const regionName = region ? regionLabel(region.id, new Map(items.map((i) => [i.id, i.label])), s.digest) : '';
 
   return (
     <div
@@ -827,11 +901,15 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
         )}
         {answered && <div class="wa-lhatch" ref={hatchRef} />}
         <div class="wa-lboxes">
+          {plan.regionRect && <div class="wa-lregion" ref={regionRef} />}
           {items.map((it) => (
             <div
               key={`${it.id}:${it.cls}`}
               class="wa-lbox"
               data-c={it.cls}
+              data-weight={regionId === it.id ? undefined : it.weight ?? undefined}
+              data-rank={it.importance != null ? String(it.importance) : undefined}
+              data-frame={regionId === it.id ? 'outer' : undefined}
               data-covered={covered.current.has(it.id) ? 'true' : undefined}
               data-hot={focusId === it.id || cardId === it.id ? 'true' : undefined}
               ref={(el) => {
@@ -902,6 +980,14 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
             Jev Lens
           </span>
           <span class="wa-lsep" aria-hidden="true" />
+          {line && (
+            <>
+              <span class="wa-lpurpose" title={line.spoken}>
+                Jev read this as {line.article} <em>{line.name}</em> ({f2(line.p)})
+              </span>
+              <span class="wa-lsep" aria-hidden="true" />
+            </>
+          )}
           {answered && t.decisions > 0 ? (
             <span class="wa-lstats">
               <span>
@@ -1000,7 +1086,7 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
           status={plan.status}
           covered={covered.current}
           listed={plan.listed}
-          tab={tab}
+          tab={tabShown}
           onTab={setTab}
           hotId={rowHot ?? cardId}
           pinnedId={pinnedId}
@@ -1020,8 +1106,8 @@ export function Lens({ api, s, reduce, bottomReserve }: Props) {
       )}
       <span class="wa-lsr" role="status">
         {answered && t.decisions > 0
-          ? `Jev Lens: ${fmtCount(t.decisions)} decisions${t.cached ? ', from cache' : `, ${fmtMs(t.headlineMs)}, ${fmtCost(t.costUsd)}`}.${mainItem ? ` Main action: ${mainItem.label}, Jev's probability ${f2(mainItem.p ?? 0)}.` : ''}`
-          : pendingText ?? ''}
+          ? `Jev Lens: ${line ? `${line.spoken} ` : ''}${fmtCount(t.decisions)} decisions${t.cached ? ', from cache' : `, ${fmtMs(t.headlineMs)}, ${fmtCost(t.costUsd)}`}.${region ? ` What this page is for: ${regionName}, Jev's probability ${f2(region.p)}.` : ''}${mainItem ? ` Main action: ${mainItem.label}, Jev's probability ${f2(mainItem.p ?? 0)}.` : ''}`
+          : `${line ? `${line.spoken} ` : ''}${pendingText ?? ''}`}
       </span>
     </div>
   );

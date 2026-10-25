@@ -178,10 +178,11 @@ export function placeChips(items: PlaceItem[], o: PlaceOptions): PlaceResult {
     else offscreen.push(it.id);
   }
 
-  // 1 + 3: merge same-class neighbours (overlapping pairs, then close ones). Forced, main and rule stay alone.
+  // 1 + 3: merge same-class neighbours (overlapping pairs, then close ones). Forced, main, the page-region
+  // label and the plain-rule chip stay alone.
   const dsu = new DSU(live.length);
   const mergeable = (a: PlaceItem, b: PlaceItem) =>
-    a.cls === b.cls && a.cls !== 'main' && a.cls !== 'rule' && !a.forced && !b.forced;
+    a.cls === b.cls && a.cls !== 'main' && a.cls !== 'page' && a.cls !== 'rule' && !a.forced && !b.forced;
   for (let i = 0; i < live.length; i++) {
     for (let k = i + 1; k < live.length; k++) {
       const a = live[i]!;
@@ -262,10 +263,10 @@ export function placeChips(items: PlaceItem[], o: PlaceOptions): PlaceResult {
         slot = r;
         break;
       }
-      // The main chip may evict chips (never reserved areas): remember its first evicting slot.
-      if (c.cls === 'main' && !hits.has(-1) && !fallback) fallback = { r, hits };
+      // The main chip and the "what this page is for" label may evict chips (never reserved areas).
+      if ((c.cls === 'main' || c.cls === 'page') && !hits.has(-1) && !fallback) fallback = { r, hits };
     }
-    if (!slot && c.cls === 'main') {
+    if (!slot && (c.cls === 'main' || c.cls === 'page')) {
       if (fallback) {
         slot = fallback.r;
         evict = fallback.hits;

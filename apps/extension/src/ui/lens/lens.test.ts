@@ -2,9 +2,14 @@
 import { describe, expect, it } from 'vitest';
 import { decideElements } from '@webable/core';
 import type { ElementEvidence, ElementJudgment, PageDigest, PageUnderstanding, Role } from '@webable/core';
-import { lensItems, mergedChip } from './display';
+import { fineChipFace, lensItems, mergedChip } from './display';
 import { chipBudget, overlaps, placeChips, scrimPath, type PlaceItem } from './place';
 import { compareRule, plainRule } from './rule';
+import {
+  FINE_FAMILY, FINE_WORDS, fineRoleBars, hasPageRead, importanceScore, importanceWeight, mainRegionPick,
+  purposeBars, purposeLine, settledFine,
+} from './words';
+import type { FineRole, PagePurpose } from '@webable/core';
 
 function ev(id: string, over: Partial<ElementEvidence> = {}): ElementEvidence {
   return {
@@ -77,6 +82,129 @@ describe('display classes', () => {
   it('treats unanswered elements as pending, then kept when answers lack them', () => {
     expect(lensItems(digest, [], null).every((i) => i.cls === 'pending')).toBe(true);
   });
+  it('keeps the v2 chip when round-7 fields are missing', () => {
+    for (const it of items) {
+      expect(it.fine).toBeNull();
+      expect(it.fineP).toBeNull();
+      expect(it.fineName).toBeNull();
+      expect(it.family).toBeNull();
+      expect(it.importance).toBeNull();
+      expect(it.weight).toBeNull();
+    }
+    expect(hasPageRead(u)).toBe(false);
+    expect(purposeLine(u.purpose)).toBeNull();
+    expect(mainRegionPick(u.mainRegion)).toBeNull();
+    expect(purposeBars(undefined)).toEqual([]);
+  });
+});
+
+describe('round-7 page read', () => {
+  const purposes: PagePurpose[] = [
+    'record_stats', 'scoreboard', 'schedule', 'standings', 'roster', 'article', 'news_index', 'recipe',
+    'product', 'search_results', 'form_task', 'checkout', 'sign_in', 'account_dashboard', 'bill_statement',
+    'appointment', 'status_lookup', 'info_guide', 'faq', 'directory_listing', 'location_hours', 'calendar_dates',
+    'comparison', 'video', 'gallery', 'home_portal', 'other',
+  ];
+  it('says what kind of page Jev read, in plain words', () => {
+    const line = purposeLine({ kind: 'record_stats', p: 0.97, probs: { record_stats: 0.97 } });
+    expect(line?.sentence).toBe('Jev read this as a record and stats page (0.97)');
+    expect(line?.spoken).toContain("Jev's probability 0.97");
+    expect(line?.name).toBe('record and stats page');
+    for (const kind of purposes) {
+      const row = purposeLine({ kind, p: 0.5, probs: { [kind]: 0.5 } });
+      expect(row?.sentence.startsWith('Jev read this as ')).toBe(true);
+      expect(row?.sentence.toLowerCase()).not.toContain('confidence');
+      expect(row?.sentence.toLowerCase()).not.toContain('chance');
+    }
+  });
+  it('drops the header line when the purpose is missing or empty', () => {
+    expect(purposeLine(undefined)).toBeNull();
+    expect(purposeLine({ kind: 'record_stats', p: Number.NaN, probs: {} })).toBeNull();
+    expect(hasPageRead({ ...u, purpose: undefined, mainRegion: undefined })).toBe(false);
+  });
+  it('lists the top 5 kinds and the main region with its runner-up', () => {
+    const purpose = {
+      kind: 'record_stats' as const,
+      p: 0.97,
+      probs: { record_stats: 0.97, article: 0.01, schedule: 0.008, news_index: 0.005, scoreboard: 0.004, other: 0.002, recipe: 0.001 },
+    };
+    expect(purposeBars(purpose).map((b) => b.id)).toEqual(['record_stats', 'article', 'schedule', 'news_index', 'scoreboard']);
+    expect(purposeBars(purpose)[0]?.name).toBe('Record and stats page');
+    const region = mainRegionPick({ id: 'n3', p: 0.92, probs: { n3: 0.92, n11: 0.05, none: 0.03 } });
+    expect(region).toEqual({ id: 'n3', p: 0.92, runnerUp: { id: 'n11', p: 0.05 } });
+    expect(mainRegionPick({ id: 'none', p: 0, probs: {} })).toBeNull();
+    expect(hasPageRead({ ...u, purpose, mainRegion: { id: 'n3', p: 0.92, probs: { n3: 0.92, n11: 0.05 } } })).toBe(true);
+  });
+  it('names fine roles and colours them by family', () => {
+    expect(FINE_WORDS.scoreboard).toBe('Scoreboard');
+    expect(FINE_WORDS.team_or_org_logo).toBe('Team logo');
+    expect(FINE_WORDS.teaser_other_content).toBe('Teaser for other stories');
+    expect(FINE_WORDS.advertising).toBe('Ad');
+    expect(FINE_FAMILY.scoreboard).toBe('data');
+    expect(FINE_FAMILY.team_or_org_logo).toBe('data');
+    expect(FINE_FAMILY.advertising).toBe('distraction');
+    expect(FINE_FAMILY.teaser_other_content).toBe('distraction');
+    expect(FINE_FAMILY.primary_action).toBe('task');
+    expect(FINE_FAMILY.site_nav).toBe('navigation');
+    expect(FINE_FAMILY.help_link).toBe('help');
+    expect(FINE_FAMILY.page_title).toBe('content');
+    const roles = Object.keys(FINE_WORDS) as FineRole[];
+    for (const role of roles) expect(FINE_FAMILY[role]).toBeTruthy();
+  });
+  it('maps importance onto outline weight and ignores scores outside 0 to 4', () => {
+    expect(importanceScore(4)).toBe(4);
+    expect(importanceScore(0)).toBe(0);
+    expect(importanceWeight(4)).toBe('solid');
+    expect(importanceWeight(3)).toBe('solid');
+    expect(importanceWeight(2)).toBe('hair');
+    expect(importanceWeight(1)).toBe('hair');
+    expect(importanceWeight(0)).toBe('dashed');
+    expect(importanceScore(undefined)).toBeNull();
+    expect(importanceScore(5)).toBeNull();
+    expect(importanceScore(Number.NaN)).toBeNull();
+  });
+  it('shows one fine-role bar, or the top 5 when a distribution is present', () => {
+    const one = fineRoleBars({ id: 'n8', role: 'main_content', roleP: 0.9, roleProbs: { main_content: 0.9 }, task: 0.8, main: 0.1, help: 0, fine: 'scoreboard', fineP: 0.91 });
+    expect(one.map((b) => [b.name, b.p, b.family])).toEqual([['Scoreboard', 0.91, 'data']]);
+    const many = fineRoleBars({
+      id: 'n8', role: 'main_content', roleP: 0.9, roleProbs: {}, task: 0.8, main: 0.1, help: 0, fine: 'scoreboard', fineP: 0.91,
+      fineProbs: { scoreboard: 0.91, data_table: 0.04, stat_value: 0.03, chart: 0.01, key_fact: 0.006, other: 0.004 },
+    } as ElementJudgment);
+    expect(many.map((b) => b.role)).toEqual(['scoreboard', 'data_table', 'stat_value', 'chart', 'key_fact']);
+    expect(fineRoleBars({ id: 'x', role: 'other', roleP: 0, roleProbs: {}, task: 0, main: 0, help: 0 })).toEqual([]);
+  });
+  it('keeps the policy chip and adds the fine role when both are present', () => {
+    const rich = {
+      ...u,
+      elements: u.elements.map((j) => j.id === 'n3'
+        ? { ...j, fine: 'advertising' as const, fineP: 0.91, importance: 0 }
+        : j.id === 'n1'
+          ? { ...j, fine: 'primary_action' as const, fineP: 0.88, importance: 4 }
+          : j),
+      purpose: { kind: 'form_task' as const, p: 0.8, probs: { form_task: 0.8, other: 0.2 } },
+      mainRegion: { id: 'n6', p: 0.7, probs: { n6: 0.7, n3: 0.2 } },
+    };
+    const local = { focusedIds: [], requiredIds: [], filledIds: [], consentIds: ['n5'], offsiteIds: [] };
+    const old = new Map(lensItems(digest, decideElements(u, digest, local), u).map((i) => [i.id, i]));
+    const next = lensItems(digest, decideElements(rich, digest, local), rich);
+    const byId = new Map(next.map((i) => [i.id, i]));
+    const ad = byId.get('n3')!;
+    const oldAd = old.get('n3')!;
+    expect(ad.cls).toBe(oldAd.cls);
+    expect(ad.chip).toBe(oldAd.chip);
+    expect(ad.num).toBe(oldAd.num);
+    expect(ad.fineName).toBe('Ad');
+    expect(ad.family).toBe('distraction');
+    expect(ad.weight).toBe('dashed');
+    expect(fineChipFace([ad])).toEqual({ words: 'Ad', num: '0.91' });
+    const main = byId.get('n1')!;
+    expect(main.cls).toBe('main');
+    expect(main.chip).toBe('Main action');
+    expect(main.num).toBe('0.95');
+    expect(main.weight).toBe('solid');
+    expect(settledFine(byId.get('n2')!.j).fine).toBeNull();
+    expect(byId.get('n2')!.weight).toBeNull();
+  });
 });
 
 describe('placement', () => {
@@ -107,6 +235,21 @@ describe('placement', () => {
     const res = placeChips(items, { vw: 1280, vh: 720, reserved: [], budget: 12, prev: new Map(), size });
     const folded = res.chips.find((c) => c.cls === 'folded')!;
     expect(folded.ids.sort()).toEqual(['a', 'b']);
+  });
+  it('keeps the page label when the budget is full and does not let it overlap', () => {
+    const items: PlaceItem[] = [];
+    for (let i = 0; i < 20; i++) {
+      items.push({ id: `e${i}`, cls: 'fine:stat_value', box: { x: 16 + (i % 5) * 70, y: 16 + Math.floor(i / 5) * 48, w: 60, h: 36 }, priority: 46 });
+    }
+    items.push({ id: 'page:r', cls: 'page', box: { x: 40, y: 80, w: 280, h: 140 }, priority: 80, forced: true });
+    const res = placeChips(items, { vw: 420, vh: 320, reserved: [], budget: 4, prev: new Map(), size: () => ({ w: 180, h: 28 }) });
+    const page = res.chips.find((c) => c.cls === 'page');
+    expect(page).toBeTruthy();
+    expect(res.chips.filter((c) => c.cls === 'page')).toHaveLength(1);
+    for (const c of res.chips) {
+      if (c === page) continue;
+      expect(overlaps(page!, c)).toBe(false);
+    }
   });
   it('budget is 12 at 1280 x 720 and clamps to 6..14', () => {
     expect(chipBudget(1280, 720)).toBe(12);

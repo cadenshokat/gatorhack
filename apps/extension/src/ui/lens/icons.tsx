@@ -1,6 +1,7 @@
 // Owner: L. Inline SVG icons for the Jev Lens (no url(), no external assets). All use currentColor.
 import type { JSX } from 'preact';
 import type { LensClass } from './display';
+import type { FineFamily } from './words';
 
 type P = { size?: number };
 
@@ -102,8 +103,14 @@ export const ICheck = (p: P) => (
     <path d="m5 12.5 4.5 4.5L19 7.5" />
   </Svg>
 );
+/** Corner marks: the region that holds what the page is for. */
+export const IRegion = (p: P) => (
+  <Svg {...p} sw={2.2}>
+    <path d="M9 4H5.5A1.5 1.5 0 0 0 4 5.5V9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15M15 20h3.5a1.5 1.5 0 0 0 1.5-1.5V15" />
+  </Svg>
+);
 
-export function ClassIcon({ cls, size }: { cls: LensClass | 'rule'; size?: number }) {
+export function ClassIcon({ cls, size }: { cls: LensClass | 'rule' | 'page' | FineFamily; size?: number }) {
   switch (cls) {
     case 'main':
       return <IStar size={size} />;
@@ -117,6 +124,8 @@ export function ClassIcon({ cls, size }: { cls: LensClass | 'rule'; size?: numbe
       return <IQuestion size={size} />;
     case 'rule':
       return <IRule size={size} />;
+    case 'page':
+      return <IRegion size={size} />;
     default:
       return <IDot size={size} />;
   }

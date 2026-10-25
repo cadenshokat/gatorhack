@@ -4,6 +4,7 @@ import type { Ref } from 'preact';
 import { POLICY, type Role } from '@webable/core';
 import { ROLE_GROUP, ROLE_NAME, type LensItem } from './display';
 import { ClassIcon, IClose } from './icons';
+import { fineRoleBars, importanceWord } from './words';
 
 const f2 = (p: number): string => (Number.isFinite(p) ? Math.min(1, Math.max(0, p)).toFixed(2) : '0.00');
 const pct = (p: number): string => `${Math.round(Math.min(1, Math.max(0, p)) * 1000) / 10}%`;
@@ -70,6 +71,8 @@ export function Card({ item, pinned, covered, onClose, cardRef }: CardProps) {
   const foldHit = item.cls === 'folded' || (item.foldSum >= POLICY.foldRoleSum);
   const protectHit = item.protectSum >= POLICY.protectRoleSum && item.cls !== 'folded';
   const numText = item.num ? ` ${item.num}` : '';
+  const fineBars = fineRoleBars(j);
+  const importance = item.importance;
 
   return (
     <div
@@ -146,6 +149,35 @@ export function Card({ item, pinned, covered, onClose, cardRef }: CardProps) {
         </>
       ) : (
         <p class="wa-lcard-none">{item.cls === 'pending' ? 'Jev has not answered yet.' : 'Jev did not answer for this element.'}</p>
+      )}
+
+      {fineBars.length > 0 && (
+        <>
+          <div class="wa-lcard-h">Fine role · Jev's probability</div>
+          <div class="wa-lroles">
+            {fineBars.map((bar) => (
+              <div class="wa-lrole" key={bar.role} data-g={bar.family} data-fine="true">
+                <span class="wa-lrole-n" title={bar.name}>{bar.name}</span>
+                <span class="wa-lrole-bar" aria-hidden="true">
+                  <i style={{ width: pct(Math.max(0.015, bar.p)) }} />
+                </span>
+                <b class="wa-lrole-v">{f2(bar.p)}</b>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {importance != null && (
+        <p class="wa-limp" data-w={item.weight ?? undefined}>
+          <span class="wa-limp-k">Importance</span>
+          <span class="wa-limp-meter" aria-hidden="true">
+            {[1, 2, 3, 4].map((step) => (
+              <i key={step} data-on={String(step <= importance)} />
+            ))}
+          </span>
+          <b>{importance} of 4 · {importanceWord(importance)}</b>
+        </p>
       )}
 
       {item.because.length > 0 && (
