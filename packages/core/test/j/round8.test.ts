@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementEvidence, FineRole, PageDigest } from '../../src/types';
 import {
-  FINE_CRITERIA, FINE_FAMILY, FINE_ROLES, MAX_LIVE_CANDIDATES, MAX_PAID_CANDIDATES, MAX_SUBJECTS_PER_SPLIT_CALL, PAGE_PURPOSES,
+  FINE_CRITERIA, FINE_FAMILY, FINE_ROLES, FINE_TAIL_FLOOR, MAX_LIVE_CANDIDATES, MAX_PAID_CANDIDATES, MAX_SUBJECTS_PER_SPLIT_CALL, PAGE_PURPOSES,
   PURPOSE_CRITERIA, ROLE_GUIDE_NOTE, buildPageCalls, coarseFromFine, fineGuide, liveCandidate, paidCandidate, parsePageAnswers,
 } from '../../src/jev/page';
 import type { JevAnswer, JevQuestion } from '../../src/jev/api';
@@ -52,6 +52,15 @@ describe('the finer vocabulary', () => {
     // neutral: urgency and tickers are neither protected nor folded
     for (const r of ['countdown_timer', 'stock_warning', 'ticker'] as FineRole[]) expect(FINE_FAMILY[r]).toBe('other');
     expect(coarseFromFine({ related_links: 0.5, teaser_other_content: 0.4, live_badge: 0.1 })).toEqual({ recommendations: 0.9, main_content: 0.1 });
+  });
+
+  it('counts a fine role at 0.02 or less as zero when summing families (tails of 125 options must not reach the 0.05 protect line)', () => {
+    expect(FINE_TAIL_FLOOR).toBe(0.02);
+    // an ad Jev is sure about, with 0.01-0.02 left on a dozen unrelated roles: no protected-family mass
+    const tails = Object.fromEntries(['body_text', 'secondary_action', 'site_nav', 'form_field', 'help_link', 'account_utility'].map((r) => [r, 0.02]));
+    expect(coarseFromFine({ upsell_promo: 0.88, ...tails })).toEqual({ advertising: 0.88 });
+    // 0.03 is real mass and still counts
+    expect(coarseFromFine({ upsell_promo: 0.88, body_text: 0.03, secondary_action: 0.02 })).toEqual({ advertising: 0.88, main_content: 0.03 });
   });
 });
 

@@ -84,7 +84,8 @@ export const FINE_ROLES: readonly FineRole[] = [
  * The coarse role each fine role sums into. Content, data, recipe, shopping details, learning, results and task
  * status are the page's own content; the step indicator, logo link home, skip links, contents and topic tags are
  * navigation (as in the v1 criteria); paid and self-promotion (ads, disclosures, app and paywall pitches, betting
- * odds) are advertising; teasers, related links, testimonials and promo carousels are recommendations; the form
+ * odds) are advertising; teasers, related links, testimonials, product tiles and promo carousels are recommendations
+ * (a listing's own tiles stay protected by the task and importance answers); the form
  * inputs and pickers are form fields; chat is help; urgency and tickers, share tools, comments, autoplay and
  * decoration are other.
  */
@@ -100,7 +101,7 @@ export const FINE_FAMILY: Readonly<Record<FineRole, Role>> = Object.freeze({
   standings: 'main_content', price: 'main_content', discount_badge: 'main_content', rating: 'main_content',
   comparison_row: 'main_content', player_card: 'main_content', play_by_play: 'main_content', ticker: 'other',
   ingredient_list: 'main_content', instruction_steps: 'main_content', recipe_meta: 'main_content',
-  product_title: 'main_content', product_image: 'main_content', product_card: 'main_content',
+  product_title: 'main_content', product_image: 'main_content', product_card: 'recommendations',
   product_options: 'form_field', shipping_returns: 'main_content', review_item: 'main_content', cart_item: 'main_content',
   order_summary: 'main_content', countdown_timer: 'other', stock_warning: 'other', account_balance: 'main_content',
   transaction_row: 'main_content',
@@ -824,11 +825,18 @@ const FINE_SET = new Set<string>(FINE_ROLES);
 const PURPOSE_SET = new Set<string>(PAGE_PURPOSES);
 const round4 = (x: number): number => Math.round(x * 1e4) / 1e4;
 
-/** Coarse role probabilities: each fine role's probability summed into its family. */
+/**
+ * Round 8: with about 125 options, a fine role at 0.02 or less is tail noise (the API reports hundredths; a confident
+ * answer leaves 0.01 to 0.02 on dozens of unrelated roles). Summed into families those tails reached the policy's 0.05
+ * protect line on elements Jev was sure were ads or teasers, so such an option counts as 0 when it is summed.
+ */
+export const FINE_TAIL_FLOOR = 0.02;
+
+/** Coarse role probabilities: each fine role's probability (above the tail floor) summed into its family. */
 export function coarseFromFine(fineProbs: Record<string, number>): Partial<Record<Role, number>> {
   const out: Partial<Record<Role, number>> = {};
   for (const [k, v] of Object.entries(fineProbs)) {
-    if (!FINE_SET.has(k)) continue;
+    if (!FINE_SET.has(k) || v <= FINE_TAIL_FLOOR) continue;
     const r = FINE_FAMILY[k as FineRole];
     out[r] = (out[r] ?? 0) + v;
   }
