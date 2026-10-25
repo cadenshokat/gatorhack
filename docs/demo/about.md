@@ -10,6 +10,10 @@ Setup is described as it is on main (53e72f7): five short tasks. If a three-part
 
 ## Inspiration
 
+In high school, during COVID-19, we started a club to help senior citizens learn to use Zoom and online chat, so they
+could talk to their families while they couldn't see them in person. Sitting beside them, we saw how much of the web
+assumes sharp eyes, a steady hand and time to spare. That stayed with us.
+
 Reading the news, checking a tax refund or refilling a prescription gets hard when the text is too small, the buttons
 are hard to hit, and the page keeps competing for your attention. Finding and changing accessibility settings, site by
 site, adds even more work.
