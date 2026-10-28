@@ -8,7 +8,7 @@
 
 import type { Likert7, SusResponse } from '../contracts';
 
-export const SUS_INSTRUMENT = 'sus-brooke-1996-en-7pt-websites-awkward@1.1.0' as const;
+export const SUS_INSTRUMENT = 'sus-brooke-1996-en-7pt-websites-awkward-all-labelled@1.2.0' as const;
 
 export const SUS_ITEMS: readonly string[] = [
   'I think that I would like to use these websites frequently.',

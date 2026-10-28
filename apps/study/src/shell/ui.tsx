@@ -252,23 +252,63 @@ export function Checks<T extends string>(props: {
   );
 }
 
-/** Seven numbered buttons, 1 at the top, with words only at the two ends (SUS, SEQ, realism). */
+/** The words for each of a 1 to 7 scale's answers, 1 first: every answer carries words (protocol 2.1.0). */
+export type Scale7Words = readonly [string, string, string, string, string, string, string];
+
+/** The 10 statements (SUS). */
+export const AGREE_7: Scale7Words = [
+  'Strongly disagree',
+  'Disagree',
+  'Somewhat disagree',
+  'Neither agree nor disagree',
+  'Somewhat agree',
+  'Agree',
+  'Strongly agree',
+];
+
+/** The ease question after each website (SEQ), 1 = very easy (the owner's direction, 27 Oct 2026). */
+export const EASE_7: Scale7Words = [
+  'Very easy',
+  'Easy',
+  'Somewhat easy',
+  'Neither easy nor hard',
+  'Somewhat hard',
+  'Hard',
+  'Very hard',
+];
+
+/** How much the copies looked and worked like the real websites. */
+export const LIKE_7: Scale7Words = [
+  'Not at all like them',
+  'Very little like them',
+  'A little like them',
+  'Somewhat like them',
+  'Mostly like them',
+  'Very much like them',
+  'Exactly like them',
+];
+
+/** One of a scale's answers: its number, then its words. */
+export function scaleOption(n: Likert7, words: Scale7Words): ChoiceOption<Likert7> {
+  return {
+    value: n,
+    label: (
+      <>
+        <span class="st-num">{n}</span>{' '}
+        <span class="st-num-label">{words[n - 1]}</span>
+      </>
+    ),
+  };
+}
+
+/** Seven numbered buttons, 1 at the top, each with its words (SUS, SEQ). */
 export function Scale7(props: {
-  low: string;
-  high: string;
+  words: Scale7Words;
   value: Likert7 | null;
   onPick: (v: Likert7) => void;
   label: string;
 }): JSX.Element {
-  const options: Array<ChoiceOption<Likert7>> = ([1, 2, 3, 4, 5, 6, 7] as Likert7[]).map((n) => ({
-    value: n,
-    label: (
-      <>
-        <span class="st-num">{n}</span>
-        <span class="st-num-label">{n === 1 ? props.low : n === 7 ? props.high : ''}</span>
-      </>
-    ),
-  }));
+  const options = ([1, 2, 3, 4, 5, 6, 7] as Likert7[]).map((n) => scaleOption(n, props.words));
   return <Choices options={options} value={props.value} onPick={props.onPick} label={props.label} compact />;
 }
 

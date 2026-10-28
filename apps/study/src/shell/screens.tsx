@@ -11,7 +11,20 @@ import type { Debrief } from '../experiment/debrief';
 import { TROUBLES, type AgeAnswer } from '../experiment/eligibility';
 import { SUS_ITEMS } from '../experiment/sus';
 import { CONFIG, collectionReady, withdrawAnyTime } from '../store/config';
-import { Checks, Choices, ErrorLine, Primary, Scale7, Screen, TextButton, Title, type ChoiceOption } from './ui';
+import {
+  AGREE_7,
+  Checks,
+  Choices,
+  ErrorLine,
+  LIKE_7,
+  Primary,
+  Scale7,
+  scaleOption,
+  Screen,
+  TextButton,
+  Title,
+  type ChoiceOption,
+} from './ui';
 
 /** "‹ Back", above the heading, where going back is allowed. */
 function BackLink(props: { onClick: () => void }): JSX.Element {
@@ -477,7 +490,6 @@ export function BreakScreen(props: { count: number; onContinue: () => void; onLe
 
 /* ---------------- the 10 statements (SUS, 7 points) ---------------- */
 
-const AGREE_HINT = '1 means strongly disagree. 7 means strongly agree.';
 
 export function SusScreens(props: {
   round: 1 | 2;
@@ -513,8 +525,8 @@ export function SusScreens(props: {
           ) : null}
           <p>Think only about these websites, not the warm-up or this page.</p>
           <p>For each statement, choose how much you agree.</p>
-          <p>{AGREE_HINT}</p>
-          <p>If you are not sure, choose 4.</p>
+          <p>Each answer, from 1 to 7, says how much you agree.</p>
+          <p>If you are not sure, choose 4, Neither agree nor disagree.</p>
         </div>
       </Screen>
     );
@@ -571,14 +583,13 @@ export function SusScreens(props: {
       }
     >
       <BackLink onClick={() => go(i - 1)} />
-      <Title eyebrow={`Statement ${i + 1} of 10`} question deck={AGREE_HINT}>
+      <Title eyebrow={`Statement ${i + 1} of 10`} question>
         {SUS_ITEMS[i]}
       </Title>
-      {nudge ? <ErrorLine>Choose a number from 1 to 7, or tap Skip this question</ErrorLine> : null}
+      {nudge ? <ErrorLine>Choose an answer, or tap Skip this question</ErrorLine> : null}
       <Scale7
         key={i}
-        low="Strongly disagree"
-        high="Strongly agree"
+        words={AGREE_7}
         value={items[i] ?? null}
         onPick={(v) => {
           const next = items.slice();
@@ -814,15 +825,7 @@ export function FinalScreens(props: {
   if (step === 'realism') {
     const title = 'How much did these websites look and work like the real ones?';
     const options: Array<ChoiceOption<number>> = [
-      ...([1, 2, 3, 4, 5, 6, 7] as const).map((n) => ({
-        value: n,
-        label: (
-          <>
-            <span class="st-num">{n}</span>
-            <span class="st-num-label">{n === 1 ? 'Not at all like them' : n === 7 ? 'Exactly like them' : ''}</span>
-          </>
-        ),
-      })),
+      ...([1, 2, 3, 4, 5, 6, 7] as const).map((n): ChoiceOption<number> => scaleOption(n, LIKE_7)),
       { value: NOT_USED, label: 'I have not used the real websites before', quiet: true },
     ];
     const value = notUsed ? NOT_USED : f.realism;
@@ -842,21 +845,11 @@ export function FinalScreens(props: {
         <Title
           eyebrow={eyebrow}
           question
-          deck={
-            <>
-              1 means not at all like them. 7 means exactly like them.
-              {props.sources.length ? (
-                <>
-                  <br />
-                  The websites came from {listWords(props.sources)}.
-                </>
-              ) : null}
-            </>
-          }
+          deck={props.sources.length ? `The websites came from ${listWords(props.sources)}.` : undefined}
         >
           {title}
         </Title>
-        {nudge ? <ErrorLine>Choose a number from 1 to 7, or tap Skip this question</ErrorLine> : null}
+        {nudge ? <ErrorLine>Choose an answer, or tap Skip this question</ErrorLine> : null}
         <Choices
           options={options}
           value={value}

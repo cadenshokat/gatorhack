@@ -3,15 +3,14 @@
   "replicaId": "ap-mars",
   "family": "news",
   "set": "B",
-  "prompt": "Find out how many days the rover Idefix will spend driving on Phobos",
-  "question": "How many days will the rover Idefix spend driving on Phobos?",
-  "short": "Days Idefix drives on Phobos",
+  "kind": "go",
+  "prompt": "You liked this story and want to read more by the reporter who wrote it. Open the page that lists their stories.",
+  "short": "Reporter's stories",
   "label": "AP News, the story about a spacecraft going to Mars",
   "tag": "the Mars story",
-  "choices": ["2", "10", "50", "100"],
-  "correct": 3,
-  "answerText": "around Phobos for 100 days",
-  "answerTextSimplified": "100 days",
-  "answerSelector": ".RichTextStoryBody > p:nth-of-type(12)",
-  "answerDepthScreens": 4.11
+  "targets": [
+    "/author/marcia-dunn"
+  ],
+  "answerText": "MARCIA DUNN",
+  "answerSelector": "a[href=\"/author/marcia-dunn\"]"
 }

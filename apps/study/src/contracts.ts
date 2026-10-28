@@ -6,7 +6,7 @@
 
 import type { FitProfile, FittingRaw } from '@webable/core';
 
-export const PROTOCOL = 'mobile-replica-2.0.0';
+export const PROTOCOL = 'mobile-replica-2.1.0';
 
 /** The layout width every phone gets (shell viewport meta), so the fit, the replicas and the model answers agree. */
 export const LAYOUT_WIDTH = 390;
@@ -56,13 +56,21 @@ export interface ReplicaManifest {
   validation?: Record<string, unknown>;
 }
 
-/** A find-the-fact task on one replica. replicas/<id>/task.json holds the replica's task. */
+/**
+ * One task on one replica (replicas/<id>/task.json). Two kinds:
+ * - 'go' (protocol 2.1.0 on): reach a useful destination on the website. The person taps the link that would open it,
+ *   on whatever route they like; the study asks "Is this what you were looking for?" and the task ends on Yes. Success
+ *   is the outcome: the confirmed link goes to one of `targets`.
+ * - 'find' (1.0.0 to 2.0.0): find a fact, then pick it from four choices (`choices`, `correct`).
+ */
 export interface TaskSpec {
   id: string; // 'news-A'
   replicaId: string;
   family: FamilyId | 'practice';
   set: SetId | 'practice';
-  /** The task, as said before and during the website: 'Find out what year Kim went to France to look at the night sky'. */
+  /** Absent means 'find' (task files from before protocol 2.1.0). */
+  kind?: 'find' | 'go';
+  /** The task, as said before and during the website: 'Open the page that lists stories by the reporter who wrote this'. */
   prompt: string;
   /** The same task as a question, heading the answer sheet: 'What year did Kim go to France to look at the night sky?' */
   question?: string;
@@ -74,17 +82,25 @@ export interface TaskSpec {
   label?: string;
   /** The same, shorter, for naming a round's websites in a list: 'the Mars story'. */
   tag?: string;
-  /** Four answers in display order. "I couldn't find it" is added by the shell. */
-  choices: string[];
-  correct: number;
-  /** Words that identify the answer's sentence on the page, original or simplified, for "answer seen". */
+  /** 'find': four answers in display order ("I could not find it" is added by the shell), and the right one. */
+  choices?: string[];
+  correct?: number;
+  /**
+   * 'go': where the task is done. A link counts when where it goes (its path and query on the copy's site, or its full
+   * address for another site; see linkKey in src/frame/hit.ts) equals one of these. Every route to it counts.
+   */
+  targets?: string[];
+  /**
+   * Words that identify the answer on the page, original or simplified, for "answer seen". For 'go', the words of a
+   * link to the destination: "answer seen" then means a way to the destination was on screen.
+   */
   answerText: string;
   /**
    * The same answer as WebAble's simplified page shows it, when that differs from `answerText` (its AI may lay a
    * sentence out as a short fact: "Time on Phobos: 100 days"). Checked against the recorded model answers by e2e.mjs.
    */
   answerTextSimplified?: string;
-  /** CSS selector of the answer's element in the replica (original page). */
+  /** CSS selector of the answer's element in the replica (original page); for 'go', every link to the destination. */
   answerSelector: string;
   /** Measured on the live page: how far down the answer sits, in screens of 844 px. */
   answerDepthScreens?: number;
@@ -118,6 +134,17 @@ export interface FrameHost {
   ready(info: { settleMs: number; late: boolean }): void;
   /** Something the protocol must know about (a replay miss, an engine error, a blocked navigation…). */
   note(kind: string, detail?: string): void;
+  /**
+   * 'go' tasks: the person tapped a link (on the page, or in WebAble's layer, which passes the tap to the page's own
+   * link). Links never open; the shell asks whether this is what they were looking for.
+   */
+  picked?(p: LinkPick): void;
+}
+
+/** A link the person tapped: where it would go (linkKey) and its words (website text, never anything typed). */
+export interface LinkPick {
+  href: string;
+  text: string;
 }
 
 /** The frame's side, set on the iframe window as `__studyFrame` once its runtime runs. */
@@ -218,7 +245,11 @@ export type ChangeSource = 'fit' | 'jev' | 'check' | 'signals' | 'layout' | 'per
 export type Likert7 = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface SusResponse {
-  instrument: 'sus-brooke-1996-en-7pt-finstad-2010@1.0.0' | 'sus-brooke-1996-en-7pt-websites-awkward@1.1.0';
+  /** 1.2.0 (protocol 2.1.0): every one of the 7 answers carries words, not only the two ends. */
+  instrument:
+    | 'sus-brooke-1996-en-7pt-finstad-2010@1.0.0'
+    | 'sus-brooke-1996-en-7pt-websites-awkward@1.1.0'
+    | 'sus-brooke-1996-en-7pt-websites-awkward-all-labelled@1.2.0';
   /** Items 1..10 in the original order; null = not answered. */
   items: Array<Likert7 | null>;
   /** 0-100 (sum of contributions x 100/60); null unless all ten are answered. */
@@ -229,7 +260,8 @@ export interface SusResponse {
   submittedAt: string | null;
 }
 
-export type EndAction = 'answered' | 'cant_find' | 'skipped' | 'technical';
+/** 'chose': a 'go' task ended on "Yes, this is it" (see TrialRecord.chosen). */
+export type EndAction = 'answered' | 'chose' | 'cant_find' | 'skipped' | 'technical';
 
 export interface TrialRecord {
   taskId: string;
@@ -247,12 +279,23 @@ export interface TrialRecord {
   hiddenMs: number;
   hiddenEpisodes: number;
   endAction: EndAction;
-  /** Index into task.choices, -1 for "I couldn't find it", null when skipped. */
+  /** The task's kind (absent before protocol 2.1.0: 'find'). */
+  kind?: 'find' | 'go';
+  /** 'find': index into task.choices, -1 for "I couldn't find it", null when skipped. Always null for 'go'. */
   answer: number | null;
+  /** 'find': the right answer was picked. 'go': the confirmed link goes to a destination (chosen.meets). */
   correct: boolean;
   /**
+   * 'go': every link the person tapped, in order: active ms at the tap, where it goes, its words, whether it reaches
+   * the destination, and whether they confirmed it ("Yes, this is it") or went back ("No, keep looking").
+   */
+  picks?: Array<{ t: number; href: string; text: string; meets: boolean; confirmed: boolean }>;
+  /** 'go': the link they confirmed, or null (gave up, skipped). */
+  chosen?: { href: string; text: string; meets: boolean } | null;
+  /**
    * Single Ease Question as asked: with seqScale 'easy-1', 1 = Very easy … 7 = Very hard (the owner's choice, 27 Oct
-   * 2026). Without seqScale (earlier builds), 1 = Very difficult … 7 = Very easy. Null if left.
+   * 2026). Without seqScale (earlier builds), 1 = Very difficult … 7 = Very easy. Null if left. From protocol 2.1.0
+   * every answer has words (Very easy, Easy, Somewhat easy, Neither easy nor hard, Somewhat hard, Hard, Very hard).
    */
   seq: Likert7 | null;
   seqScale?: 'easy-1';

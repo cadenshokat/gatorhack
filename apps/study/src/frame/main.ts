@@ -56,6 +56,13 @@ const meter = new Meter(trial?.task ?? null, {
   linkNote: () => {
     if (host) showLinkNote();
   },
+  picked: (p) => {
+    try {
+      host?.picked?.(p);
+    } catch {
+      /* the shell is gone */
+    }
+  },
 });
 meter.install();
 

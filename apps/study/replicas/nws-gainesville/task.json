@@ -3,15 +3,16 @@
   "replicaId": "nws-gainesville",
   "family": "practice",
   "set": "practice",
-  "prompt": "Find out how warm it will get in Gainesville on Friday",
-  "question": "How warm will it get in Gainesville on Friday?",
+  "kind": "go",
+  "prompt": "You want to see the weather in Gainesville hour by hour. Open the page that shows it.",
   "context": "This weather forecast was saved on Tuesday, October 27.",
-  "short": "Friday's high temperature",
+  "short": "Hourly forecast",
   "label": "National Weather Service, the forecast for Gainesville",
   "tag": "the Gainesville forecast",
-  "choices": ["79°F", "81°F", "83°F", "85°F"],
-  "correct": 2,
-  "answerText": "Partly sunny, with a high near 83",
-  "answerSelector": "#detailed-forecast-body div:nth-of-type(6) > div:nth-of-type(2)",
-  "answerDepthScreens": 1.86
+  "targets": [
+    "/MapClick.php?lat=29.6742&lon=-82.3363&unit=0&lg=english&FcstType=graphical",
+    "/MapClick.php?lat=29.6742&lon=-82.3363&unit=0&lg=english&FcstType=digital"
+  ],
+  "answerText": "Hourly Weather Forecast",
+  "answerSelector": "a[href*=\"FcstType=graphical\"], a[href*=\"FcstType=digital\"]"
 }
