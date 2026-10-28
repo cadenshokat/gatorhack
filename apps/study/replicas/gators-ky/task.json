@@ -3,14 +3,14 @@
   "replicaId": "gators-ky",
   "family": "sports",
   "set": "A",
-  "prompt": "Find out the score when Florida played Kentucky in 1990",
-  "question": "What was the score when Florida played Kentucky in 1990?",
-  "short": "Score against Kentucky in 1990",
+  "kind": "go",
+  "prompt": "You want to see how Florida has done against other teams too. Open the page that lists every team Florida has played.",
+  "short": "All opponents",
   "label": "Florida Gators, the football results against Kentucky",
   "tag": "the Kentucky football results",
-  "choices": ["24-19", "35-26", "38-28", "47-15"],
-  "correct": 3,
-  "answerText": "47-15",
-  "answerSelector": ".c-opponent-history-detail-page__results tbody > tr:nth-of-type(38) > td:nth-of-type(4) > div > div:nth-of-type(2) > div > span:nth-of-type(2)",
-  "answerDepthScreens": 4.72
+  "targets": [
+    "/sports/football/opponent-history"
+  ],
+  "answerText": "Back To History",
+  "answerSelector": "a[href=\"/sports/football/opponent-history\"]"
 }

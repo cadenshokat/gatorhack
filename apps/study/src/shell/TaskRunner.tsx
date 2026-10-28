@@ -1,22 +1,39 @@
 // One website task. The replica loads in a same-origin iframe behind an opaque instruction card, so the person never
 // sees the page (or WebAble preparing it) before Start, and the card stays up at least the same time in both
-// conditions. Start begins the clock; Answer stops it while the four choices are open; the Single Ease Question
-// follows. Time counts only while the page is visible and not paused.
+// conditions. Start begins the clock; the Single Ease Question follows the task. Time counts only while the page is
+// visible, not paused, and no sheet is open.
+//
+// A 'go' task (protocol 2.1.0) is done on the website itself: the person taps the link that would open what they are
+// looking for, by any route (the page's own, or WebAble's simplified page, which passes the tap to the page's link).
+// Links never open; the frame reports the tap, and a sheet asks "Is this what you were looking for?". Yes ends the
+// task; its success is whether that link reaches one of the task's destinations. "I cannot find it" is the way out.
+// A 'find' task (protocol 1.0.0 to 2.0.0) ends with Answer and four choices.
 //
 // The shell is the frame's host (FrameHost in contracts.ts). On a phone the engine never zooms (it scales the page's
 // text sizes and keeps the page at full width). On a wider screen its zoom is imitated as tab zoom: the iframe is laid
 // out at width/f and drawn f times larger, so the replica reflows exactly as it would in a zoomed tab.
 //
-// The task bar (the task, Pause, Answer) always sits at the bottom of the screen: the website fills whatever height is
+// The task bar (the task, Pause, and "I cannot find it" or Answer) always sits at the bottom of the screen: the website fills whatever height is
 // left above it, so a browser toolbar that appears or hides never pushes the bar off screen, and while the person
 // pinch-zooms, the bar and everything over the website follow what is on screen at their normal size.
 
 import { defaultFit, type FitProfile } from '@webable/core';
 import type { JSX } from 'preact';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
-import type { EndAction, FrameApi, FrameHost, Likert7, TrialConfig, TrialRecord } from '../contracts';
+import type { EndAction, FrameApi, FrameHost, Likert7, LinkPick, TrialConfig, TrialRecord } from '../contracts';
 import { pageUrl, type PlannedTask } from '../experiment/plan';
-import { Choices, Dialog, ErrorLine, Header, HelpLine, Primary, Scale7, TextButton, type ChoiceOption } from './ui';
+import {
+  Choices,
+  Dialog,
+  EASE_7,
+  ErrorLine,
+  Header,
+  HelpLine,
+  Primary,
+  Scale7,
+  TextButton,
+  type ChoiceOption,
+} from './ui';
 
 /**
  * The frame draws its "Links are turned off" note in this document; when its frame goes away, the frame's timer that
@@ -30,7 +47,7 @@ function clearLinkNotes(): void {
 const MIN_CARD_MS = 2500;
 /** After this, the page counts as slow and the person can retry or skip. */
 const SLOW_MS = 15000;
-/** The bar under the website: the task (up to 3 lines), then Pause and Answer. */
+/** The bar under the website: the task (up to 3 lines), then Pause and "I cannot find it" (or Answer). */
 const BAR_H = 140;
 /** Pinch zoom counts from this much zoom (see zoomedBy). */
 const PINCH_AT = 1.1;
@@ -45,7 +62,10 @@ function zoomedBy(vv: VisualViewport): number {
   return w > 0 && vv.width > 0 ? w / vv.width : 1;
 }
 
-type Phase = 'card' | 'running' | 'answer' | 'paused' | 'seq';
+/** 'confirm': a 'go' task's "Is this what you were looking for?"; 'giveup': "Do you want to stop looking?". */
+type Phase = 'card' | 'running' | 'answer' | 'confirm' | 'giveup' | 'paused' | 'seq';
+
+type Pick = NonNullable<TrialRecord['picks']>[number];
 
 interface Props {
   planned: PlannedTask;
@@ -71,6 +91,7 @@ interface Clock {
 
 export function TaskRunner(props: Props): JSX.Element {
   const { task, condition, round, position } = props.planned;
+  const go = task.kind === 'go';
   const frame = useRef<HTMLIFrameElement>(null);
   const [phase, setPhase] = useState<Phase>('card');
   const [ready, setReady] = useState<{
@@ -86,6 +107,10 @@ export function TaskRunner(props: Props): JSX.Element {
   const [seqPick, setSeqPick] = useState<Likert7 | null>(null);
   const [nudge, setNudge] = useState(false);
   const [endAction, setEndAction] = useState<EndAction | null>(null);
+  /** 'go': the link waiting on "Is this what you were looking for?", every link tapped so far, and the confirmed one. */
+  const [pending, setPending] = useState<Omit<Pick, 'confirmed'> | null>(null);
+  const picks = useRef<Pick[]>([]);
+  const chosen = useRef<TrialRecord['chosen']>(null);
   const startedAt = useRef('');
   const loadStart = useRef(performance.now());
   const readyMs = useRef(0);
@@ -166,6 +191,7 @@ export function TaskRunner(props: Props): JSX.Element {
         setReady(info);
       },
       note: (kind, detail) => props.note(kind, `${task.id}${detail ? `: ${detail}` : ''}`),
+      picked: (p: LinkPick) => onPick(p),
     };
     (window as unknown as { __studyHost?: FrameHost }).__studyHost = host;
     clearLinkNotes();
@@ -301,6 +327,34 @@ export function TaskRunner(props: Props): JSX.Element {
     run();
   };
 
+  /** Active time so far, in ms (the clock may be running). */
+  const activeNow = () => {
+    const c = clock.current;
+    return Math.round(c.active + (c.since != null ? performance.now() - c.since : 0));
+  };
+
+  /**
+   * 'go': the person tapped a link. Only while the website is in use; the frame calls this from the first render's
+   * closure, so it reads refs and setters only.
+   */
+  const onPick = (p: LinkPick) => {
+    if (phaseRef.current !== 'running') return;
+    const meets = (task.targets ?? []).includes(p.href);
+    setPending({ t: activeNow(), href: p.href, text: p.text, meets });
+    stop();
+    setPhase('confirm');
+  };
+
+  /** "Yes, this is it" ends the task on that link; "No, keep looking" goes back to the website. */
+  const confirmPick = (yes: boolean) => {
+    if (!pending) return resume();
+    picks.current.push({ ...pending, confirmed: yes });
+    setPending(null);
+    if (!yes) return resume();
+    chosen.current = { href: pending.href, text: pending.text, meets: pending.meets };
+    end('chose', null);
+  };
+
   const end = (action: EndAction, choice: number | null) => {
     stop();
     const p = pinch.current;
@@ -341,8 +395,10 @@ export function TaskRunner(props: Props): JSX.Element {
       hiddenMs: Math.round(c.hidden),
       hiddenEpisodes: c.episodes,
       endAction: action,
-      answer: action === 'answered' ? answer : action === 'cant_find' ? -1 : null,
-      correct: action === 'answered' && answer === task.correct,
+      kind: go ? 'go' : 'find',
+      answer: go ? null : action === 'answered' ? answer : action === 'cant_find' ? -1 : null,
+      correct: go ? action === 'chose' && chosen.current?.meets === true : action === 'answered' && answer === task.correct,
+      ...(go ? { picks: picks.current, chosen: chosen.current ?? null } : {}),
       seq,
       seqScale: 'easy-1',
       pinch: {
@@ -387,6 +443,7 @@ export function TaskRunner(props: Props): JSX.Element {
   if (phase === 'seq' && skippedFromCard.current) return <div class="fl-app st-app" />;
 
   if (phase === 'seq') {
+    const seqTitle = go ? 'How easy or hard was this task?' : 'How easy or hard was it to find the answer?';
     return (
       <div class="fl-app st-app">
         <Header onLeave={props.onLeave} />
@@ -395,17 +452,15 @@ export function TaskRunner(props: Props): JSX.Element {
             <div class="st-head">
               <p class="fl-eyebrow">{props.eyebrow}</p>
               <h1 class="st-title st-title-q" tabIndex={-1}>
-                How easy or hard was it to find the answer?
+                {seqTitle}
               </h1>
-              <p class="st-hint">1 means very easy. 7 means very hard.</p>
             </div>
-            {nudge ? <ErrorLine>Choose a number from 1 to 7, or tap Skip this question</ErrorLine> : null}
+            {nudge ? <ErrorLine>Choose an answer, or tap Skip this question</ErrorLine> : null}
             <Scale7
-              low="Very easy"
-              high="Very hard"
+              words={EASE_7}
               value={seqPick}
               onPick={(v) => (setSeqPick(v), setNudge(false))}
-              label="How easy or hard was it to find the answer?"
+              label={seqTitle}
             />
             <HelpLine />
           </div>
@@ -419,7 +474,7 @@ export function TaskRunner(props: Props): JSX.Element {
   }
 
   const choices: Array<ChoiceOption<number>> = [
-    ...task.choices.map((c, i) => ({ value: i, label: c })),
+    ...(task.choices ?? []).map((c, i) => ({ value: i, label: c })),
     { value: -1, label: 'I could not find it', quiet: true },
   ];
 
@@ -439,9 +494,19 @@ export function TaskRunner(props: Props): JSX.Element {
             </svg>
             Pause
           </button>
-          <button type="button" class="btn btn-primary st-bar-answer" onClick={openAnswer}>
-            Answer
-          </button>
+          {go ? (
+            <button
+              type="button"
+              class="btn btn-secondary st-bar-answer"
+              onClick={() => (stop(), setPhase('giveup'))}
+            >
+              I cannot find it
+            </button>
+          ) : (
+            <button type="button" class="btn btn-primary st-bar-answer" onClick={openAnswer}>
+              Answer
+            </button>
+          )}
         </div>
       </div>
 
@@ -461,16 +526,35 @@ export function TaskRunner(props: Props): JSX.Element {
                 ) : null}
                 {condition === 'practice' ? <p>This website is for practice.</p> : null}
                 {task.context ? <p>{task.context}</p> : null}
-                <ol class="st-steps st-card-steps">
-                  <li>Look for the answer on the website, the way you usually would.</li>
-                  <li>
-                    When you find it, tap <strong>Answer</strong>.
-                  </li>
-                  <li>
-                    If you cannot find it, tap <strong>Answer</strong> and choose <strong>I could not find it</strong>.
-                  </li>
-                </ol>
-                <p>Links on this website are turned off. You can find the answer without them.</p>
+                {go ? (
+                  <>
+                    <ol class="st-steps st-card-steps">
+                      <li>Use the website the way you usually would.</li>
+                      <li>When you find what you need, tap it.</li>
+                      <li>
+                        If you cannot find it, tap <strong>I cannot find it</strong>.
+                      </li>
+                    </ol>
+                    <p>
+                      Links do not open other pages in this study. When you tap one, we ask if it is what you were
+                      looking for.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <ol class="st-steps st-card-steps">
+                      <li>Look for the answer on the website, the way you usually would.</li>
+                      <li>
+                        When you find it, tap <strong>Answer</strong>.
+                      </li>
+                      <li>
+                        If you cannot find it, tap <strong>Answer</strong> and choose{' '}
+                        <strong>I could not find it</strong>.
+                      </li>
+                    </ol>
+                    <p>Links on this website are turned off. You can find the answer without them.</p>
+                  </>
+                )}
                 <p>
                   To take a break, tap <strong>Pause</strong>.
                 </p>
@@ -499,6 +583,39 @@ export function TaskRunner(props: Props): JSX.Element {
                     <TextButton onClick={() => skip('skipped')}>Skip this website</TextButton>
                   </>
                 )}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {phase === 'confirm' && pending ? (
+          <div class="st-sheet-scrim">
+            <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="st-sheet-title">
+              <h2 id="st-sheet-title" class="st-sheet-title" tabIndex={-1}>
+                Is this what you were looking for?
+              </h2>
+              <div class="st-pick">
+                <p class="st-pick-label">You tapped</p>
+                <p class="st-pick-words">{pending.text || 'a link with no words'}</p>
+              </div>
+              <div class="st-sheet-actions">
+                <Primary onClick={() => confirmPick(true)}>Yes, this is it</Primary>
+                <TextButton onClick={() => confirmPick(false)}>No, keep looking</TextButton>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {phase === 'giveup' ? (
+          <div class="st-sheet-scrim">
+            <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="st-sheet-title">
+              <h2 id="st-sheet-title" class="st-sheet-title" tabIndex={-1}>
+                Do you want to stop looking?
+              </h2>
+              <p class="st-sheet-text">That is fine. We will move on to the next question.</p>
+              <div class="st-sheet-actions">
+                <Primary onClick={() => end('cant_find', null)}>Yes, stop looking</Primary>
+                <TextButton onClick={resume}>No, keep looking</TextButton>
               </div>
             </div>
           </div>

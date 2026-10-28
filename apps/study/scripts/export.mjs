@@ -136,18 +136,25 @@ for (const r of rows) {
 const seqEasy = (t) => (t.seq == null ? null : t.seqScale === 'easy-1' ? 8 - t.seq : t.seq);
 
 /**
- * What happened on a website, beyond the multiple-choice answer: whether the answer's sentence was ever on screen
- * ("reached") and how the person ended. On screen is not the same as read; it is the best the logs can say.
+ * How a website task ended. 'go' tasks (protocol 2.1.0): the confirmed link reached a destination, or another page, or
+ * the person gave up with or without a link to the destination ever on screen. 'find' tasks (earlier): whether the
+ * answer's sentence was ever on screen ("reached") and how the person answered. On screen is not the same as read; it
+ * is the best the logs can say.
  */
 function outcomeOf(t) {
   if (t.endAction === 'technical') return 'technical';
   if (t.endAction === 'skipped') return 'skipped';
   const reached = t.metrics?.answerSeen === true;
+  if (t.kind === 'go') {
+    if (t.endAction === 'chose') return t.chosen?.meets ? 'reached_destination' : 'wrong_destination';
+    return reached ? 'gave_up_after_seeing_a_way' : 'gave_up_without_seeing_a_way';
+  }
   if (t.endAction === 'answered' && t.correct) return reached ? 'correct' : 'correct_not_seen';
   if (t.endAction === 'answered') return reached ? 'wrong_after_reaching' : 'wrong_without_reaching';
   return reached ? 'gave_up_after_reaching' : 'gave_up_without_reaching';
 }
 const OUTCOMES = [
+  'reached_destination', 'wrong_destination', 'gave_up_after_seeing_a_way', 'gave_up_without_seeing_a_way',
   'correct', 'correct_not_seen', 'wrong_after_reaching', 'wrong_without_reaching', 'gave_up_after_reaching',
   'gave_up_without_reaching', 'skipped', 'technical',
 ];
@@ -204,7 +211,13 @@ for (const s of sessions.values()) {
       condition: t.condition, replica: t.replicaId, task: t.taskId,
       active_s: t.hiddenMs >= 300000 ? null : Math.round(t.activeMs) / 1000,
       interrupted: t.hiddenMs >= 60000 || t.hiddenEpisodes > 3,
-      end: t.endAction, outcome: outcomeOf(t), answer: t.answer, correct: t.correct,
+      kind: t.kind ?? 'find', end: t.endAction, outcome: outcomeOf(t), answer: t.answer, correct: t.correct,
+      chosen_href: t.chosen?.href ?? null, chosen_words: t.chosen?.text ?? null,
+      picks: t.picks ? t.picks.length : null,
+      wrong_picks: t.picks ? t.picks.filter((x) => !x.meets).length : null,
+      picks_taken_back: t.picks ? t.picks.filter((x) => !x.confirmed).length : null,
+      first_pick_reaches: t.picks?.length ? t.picks[0].meets : null,
+      first_reaching_pick_s: t.picks?.some((x) => x.meets) ? t.picks.find((x) => x.meets).t / 1000 : null,
       seq_as_asked: t.seq, seq_scale: t.seqScale ?? 'difficult-1', seq: seqEasy(t),
       taps: m.taps, misses: m.misses, near_misses: m.nearMisses, activations: m.activations, link_attempts: m.linkAttempts,
       repeat_taps: m.repeatTaps, rage: m.rageEpisodes, debounced: m.debounced, expands: m.expands,
@@ -248,9 +261,9 @@ Sensitivity (one missing item prorated): n = ${ciPro?.n ?? 0}, mean ${fmt(ciPro?
 
 | | Original | Adapted |
 |---|---|---|
-| Correct answers | ${rate('original')} | ${rate('adapted')} |
-| Answer's sentence on screen at some point | ${succ('original').filter((t) => t.answer_seen).length} of ${succ('original').length} | ${succ('adapted').filter((t) => t.answer_seen).length} of ${succ('adapted').length} |
-| Geometric-mean active time, correct answers (s) | ${fmt(gm('original'))} | ${fmt(gm('adapted'))} |
+| Task done (destination reached, or right answer before 2.1.0) | ${rate('original')} | ${rate('adapted')} |
+| A way to the destination (or the answer's sentence) on screen at some point | ${succ('original').filter((t) => t.answer_seen).length} of ${succ('original').length} | ${succ('adapted').filter((t) => t.answer_seen).length} of ${succ('adapted').length} |
+| Geometric-mean active time, tasks done (s) | ${fmt(gm('original'))} | ${fmt(gm('adapted'))} |
 | Mean SEQ (1–7, higher = easier) | ${fmt(mean(succ('original').map((t) => t.seq).filter((x) => x != null)), 2)} | ${fmt(mean(succ('adapted').map((t) => t.seq).filter((x) => x != null)), 2)} |
 | Misses per tap | ${fmt(mean(succ('original').filter((t) => t.taps).map((t) => t.misses / t.taps)), 3)} | ${fmt(mean(succ('adapted').filter((t) => t.taps).map((t) => t.misses / t.taps)), 3)} |
 | Pinch zoom used | ${succ('original').filter((t) => t.pinch_used).length} of ${succ('original').length} | ${succ('adapted').filter((t) => t.pinch_used).length} of ${succ('adapted').length} |

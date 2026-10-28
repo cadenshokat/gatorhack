@@ -3,14 +3,14 @@
   "replicaId": "gators-lsu",
   "family": "sports",
   "set": "B",
-  "prompt": "Find out the score when Florida played LSU in 1999",
-  "question": "What was the score when Florida played LSU in 1999?",
-  "short": "Score against LSU in 1999",
+  "kind": "go",
+  "prompt": "You want to see how Florida has done against other teams too. Open the page that lists every team Florida has played.",
+  "short": "All opponents",
   "label": "Florida Gators, the football results against LSU",
   "tag": "the LSU football results",
-  "choices": ["22-10", "28-10", "31-10", "41-9"],
-  "correct": 2,
-  "answerText": "31-10",
-  "answerSelector": ".c-opponent-history-detail-page__results tbody > tr:nth-of-type(28) > td:nth-of-type(4) > div > div:nth-of-type(2) > div > span:nth-of-type(2)",
-  "answerDepthScreens": 4.69
+  "targets": [
+    "/sports/football/opponent-history"
+  ],
+  "answerText": "Back To History",
+  "answerSelector": "a[href=\"/sports/football/opponent-history\"]"
 }

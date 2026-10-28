@@ -166,14 +166,62 @@ async function runTask(page, name, shots) {
     }
   }
   await page.screenshot({ path: join(shots, `${name}-scrolled.png`) });
-  await tapText(page, 'Answer');
-  await sleep(300);
-  const choices = page.locator('.st-sheet .st-choice');
-  await choices.first().waitFor({ state: 'visible' });
-  await choices.first().tap();
-  await tapText(page, 'Continue');
-  await page.getByText('How easy or hard was it to find the answer?').waitFor({ timeout: 10000 });
-  await choose(page, '3');
+  // On the original page, first a wrong link, taken back with "No, keep looking".
+  const wrong = await linkSpot(page, false);
+  if (wrong) {
+    await page.touchscreen.tap(wrong.x, wrong.y);
+    await sleep(500);
+    if (await page.getByRole('button', { name: 'No, keep looking', exact: true }).count()) await tapText(page, 'No, keep looking');
+  }
+  // Then the destination, by its own link on whatever version is showing.
+  const right = await linkSpot(page, true);
+  if (!right) failures.push(`${name}: no way to the destination on screen`);
+  else await page.touchscreen.tap(right.x, right.y);
+  await page.getByRole('heading', { name: 'Is this what you were looking for?' }).waitFor({ timeout: 10000 });
+  await page.screenshot({ path: join(shots, `${name}-confirm.png`) });
+  await tapText(page, 'Yes, this is it');
+  await page.getByRole('heading', { name: 'How easy or hard was this task?' }).waitFor({ timeout: 10000 });
+  await choose(page, /^3 Somewhat easy/);
+}
+
+/**
+ * Where to tap, in the shell's coordinates, for a link to the task's destination (`target`) or any other real link
+ * (not a target, original page only). Scrolls it into view first; null when there is none.
+ */
+async function linkSpot(page, target) {
+  const frame = page.frames().find((f) => f !== page.mainFrame());
+  const box = await page.locator('iframe.st-frame').boundingBox();
+  if (!frame || !box) return null;
+  const at = await frame.evaluate(async (target) => {
+    const task = window.parent.__studyHost.trial().task;
+    const open = window.__studyFrame?.delivery?.()?.simplified?.open === true;
+    const calm = document.querySelector('webable-ui')?.shadowRoot?.querySelector('.wa-calm-host')?.shadowRoot;
+    const shown = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 4 && r.height > 4 && getComputedStyle(el).visibility !== 'hidden' && el.getClientRects().length > 0;
+    };
+    let el = null;
+    if (open && calm) {
+      if (!target) return null;
+      const want = task.answerText.toLowerCase();
+      el = [...calm.querySelectorAll('button, a')].find((b) => shown(b) && b.textContent.toLowerCase().includes(want));
+    } else if (target) {
+      el = [...document.querySelectorAll(task.answerSelector)].find(shown);
+    } else {
+      const here = new URL(location.href);
+      el = [...document.querySelectorAll('a[href]')].find((a) => {
+        if (!shown(a) || a.closest('nav, header, footer, [role=navigation]')) return false;
+        const u = new URL(a.getAttribute('href'), here);
+        return u.pathname !== here.pathname && !(task.targets ?? []).includes(u.pathname + u.search) && (a.textContent ?? '').trim().length > 2;
+      });
+    }
+    if (!el) return null;
+    el.scrollIntoView({ block: 'center' });
+    await new Promise((r) => setTimeout(r, 400));
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }, target);
+  return at ? { x: box.x + at.x, y: box.y + at.y } : null;
 }
 
 for (const which of browsers) {
@@ -211,7 +259,7 @@ for (const which of browsers) {
         await runTask(page, `r${r}-${i}`, shots);
       }
       await tapText(page, 'Continue');
-      for (let k = 0; k < 10; k++) await choose(page, k % 2 === 0 ? '6' : '2');
+      for (let k = 0; k < 10; k++) await choose(page, k % 2 === 0 ? /^6 Agree/ : /^2 Disagree/);
       // What it was like (optional): a few words in round 1, nothing in round 2.
       await page.getByRole('heading', { name: /^What was it like to use these/ }).waitFor({ timeout: 10000 });
       if (r === 1) await page.locator('textarea').fill('The text was small.');
@@ -227,7 +275,7 @@ for (const which of browsers) {
     await tapText(page, 'Continue'); // what was different (optional)
     await tick(page, 'None of these');
     await tapText(page, 'Continue');
-    await choose(page, '5');
+    await choose(page, /^5 Mostly like them/);
     await choose(page, 'Yes, I took part carefully', { cont: 'Send my answers' });
     await page.getByText('You have finished the study').waitFor({ timeout: 10000 });
     await page.screenshot({ path: join(shots, 'done.png'), fullPage: true });
@@ -243,6 +291,8 @@ for (const which of browsers) {
       misses: t.metrics?.misses,
       scroll: t.metrics?.scrollScreens,
       seen: t.metrics?.answerSeen,
+      picks: t.picks?.map((x) => `${x.meets ? 'Y' : 'n'}${x.confirmed ? '!' : ''}`).join(' '),
+      chose: t.chosen?.text ?? '',
       simplified: t.delivery?.simplified?.open ?? '',
       zoom: t.delivery?.pageZoom ?? '',
       text: t.delivery?.textScale ?? '',
@@ -266,6 +316,8 @@ for (const which of browsers) {
     if (rec.trials.length !== expected || rec.trials.length < 3) failures.push(`${which}: ${rec.trials.length} trials saved`);
     for (const r of [1, 2]) if (!rec.sus[r] || rec.sus[r].score === null) failures.push(`${which}: no SUS score for round ${r}`);
     for (const t of rec.trials) {
+      if (t.kind !== 'go' || !t.correct || !t.chosen?.meets) failures.push(`${which}: ${t.taskId} did not end on its destination (${JSON.stringify(t.chosen)})`);
+      if (t.condition !== 'adapted' && !t.picks?.some((x) => !x.confirmed)) console.log(`${which}: ${t.taskId} had no wrong link to take back`);
       if (!t.metrics) failures.push(`${which}: no metrics for ${t.taskId}`);
       if (t.condition === 'adapted' && !t.delivery) failures.push(`${which}: no delivery record for ${t.taskId}`);
       if (t.seq != null && t.seqScale !== 'easy-1') failures.push(`${which}: ${t.taskId} ease answer saved without its direction`);

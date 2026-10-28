@@ -6,15 +6,17 @@
 // Every navigation is blocked here, in both conditions: links, form submits, window.open and, where the Navigation API
 // exists, location changes. A jump within the page is left alone.
 
-import type { FrameMetrics, TaskSpec } from '../contracts';
+import type { FrameMetrics, LinkPick, TaskSpec } from '../contracts';
 import { entryShown, findTextRange, linesShown } from './answer';
-import { inWebAble, interactiveIn, linkIn, linkKind, missDistance, tagOf } from './hit';
+import { inWebAble, interactiveIn, linkIn, linkKey, linkKind, linkWords, missDistance, tagOf } from './hit';
 import { ACTIVATE_MS, PROXY_MS, ScrollTrack, aggregate, isTap, type Tap } from './metrics';
 
 export interface MeterHooks {
   note(kind: string, detail?: string): void;
   /** Show the "Links are turned off" note (a no-op when there is no study host). */
   linkNote(): void;
+  /** 'go' tasks: the person tapped a link; the shell asks whether it is what they were looking for (no note then). */
+  picked?(p: LinkPick): void;
 }
 
 /** WebAble's layer: <webable-ui>'s shadow root, and the simplified page's host and nested root inside it. */
@@ -40,6 +42,7 @@ interface PendingClick {
   el: Element | null;
   kind: 'leave' | 'fragment' | null;
   proxied: boolean;
+  link: Element | null;
 }
 
 /** A person's own action (tap, key) makes an expand or a navigation theirs when it came within this. */
@@ -60,7 +63,9 @@ export class Meter {
   private lastPersonAt = -Infinity;
   private lastExpandFor = Number.NaN;
   private answerSeenAt: number | null = null;
-  private answerEl: Element | null = null;
+  /** Every element of the answer (for 'go', every link to the destination) and those on screen now. */
+  private answerEls: Element[] = [];
+  private answerShownEls = new Set<Element>();
   private answerMissingNoted = false;
   private pageAnswerShown = false;
   private io: IntersectionObserver | null = null;
@@ -147,7 +152,7 @@ export class Meter {
     if (this.measuring) this.checkAnswer();
     this.measuring = false;
     window.clearInterval(this.poll);
-    if (this.task && !this.answerEl && !this.answerMissingNoted) {
+    if (this.task && !this.answerEls.length && !this.answerMissingNoted) {
       this.answerMissingNoted = true;
       this.hooks.note('answer_selector_missing', this.task.answerSelector);
     }
@@ -259,7 +264,7 @@ export class Meter {
       if (kind === 'leave') this.hooks.note('navigation_blocked', 'page');
       return;
     }
-    const pending: PendingClick = { at: now, el: interactiveIn(path) ?? link, kind, proxied };
+    const pending: PendingClick = { at: now, el: interactiveIn(path) ?? link, kind, proxied, link };
     // Decided after the event has been dispatched: the engine's debounce (later on window capture) may drop it.
     window.setTimeout(() => this.settleClick(e, pending), 0);
   };
@@ -288,14 +293,22 @@ export class Meter {
         this.c.activations++;
       }
     }
-    if (p.kind === 'leave') this.linkAttempt(tap);
+    if (p.kind === 'leave') this.linkAttempt(tap, p.link);
   }
 
-  private linkAttempt(tap: Internal | null): void {
+  /**
+   * A person's tap on a link (blocked). On a 'go' task, while measuring, it is their pick: the shell asks whether it
+   * is what they were looking for. Otherwise the "Links are turned off" note shows, the same in both conditions.
+   */
+  private linkAttempt(tap: Internal | null, link: Element | null = null): void {
     if (tap?.link) return;
     if (tap) tap.link = true;
     if (this.measuring) this.c.linkAttempts++;
     this.hooks.note('link_blocked');
+    if (link && this.measuring && this.task?.kind === 'go' && this.hooks.picked) {
+      this.hooks.picked({ href: linkKey(link, location), text: linkWords(link) });
+      return;
+    }
     this.hooks.linkNote();
   }
 
@@ -403,30 +416,40 @@ export class Meter {
 
   /* ---------------- answer seen ---------------- */
 
+  private answerConnected(): boolean {
+    return this.answerEls.some((el) => el.isConnected);
+  }
+
+  /** Every element the selector matches (a 'go' destination often has several links), each watched for being on screen. */
   private findAnswer(): void {
-    if (!this.task || this.answerEl?.isConnected) return;
-    let el: Element | null = null;
+    if (!this.task || this.answerConnected()) return;
+    let els: Element[] = [];
     try {
-      el = document.querySelector(this.task.answerSelector);
+      els = Array.from(document.querySelectorAll(this.task.answerSelector));
     } catch {
-      el = null;
+      els = [];
     }
-    if (!el) return;
-    this.answerEl = el;
+    if (!els.length) return;
+    this.answerEls = els;
+    this.answerShownEls.clear();
+    this.pageAnswerShown = false;
     this.io?.disconnect();
     this.io = new IntersectionObserver((entries) => {
-      const last = entries[entries.length - 1];
-      if (last) this.pageAnswerShown = entryShown(last);
+      for (const e of entries) {
+        if (entryShown(e)) this.answerShownEls.add(e.target);
+        else this.answerShownEls.delete(e.target);
+      }
+      this.pageAnswerShown = this.answerShownEls.size > 0;
       if (this.measuring) this.checkAnswer();
     }, { threshold: [0, 0.05, 0.1, 0.25, 0.5, 0.75, 1] });
-    this.io.observe(el);
+    for (const el of els) this.io.observe(el);
   }
 
   private checkAnswer(): void {
     if (!this.measuring || this.answerSeenAt !== null || !this.task) return;
-    if (!this.answerEl?.isConnected) this.findAnswer();
+    if (!this.answerConnected()) this.findAnswer();
     const covered = this.covered();
-    let seen = !covered && this.pageAnswerShown && !!this.answerEl?.isConnected;
+    let seen = !covered && this.pageAnswerShown && this.answerConnected();
     const inLayer = this.task.answerTextSimplified ?? this.task.answerText;
     if (!seen && covered && this.layer?.calm && inLayer) {
       if (this.rangeDirty || !this.answerRange || !this.answerRange.startContainer.isConnected) {

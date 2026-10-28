@@ -44,6 +44,33 @@ export function linkIn(path: readonly EventTarget[]): HTMLAnchorElement | HTMLAr
 }
 
 /**
+ * Where a link goes, as a 'go' task's targets are written: path and query for a page of the copy's own site
+ * ('/author/marcia-dunn'), the full address for another site. Fragments never count.
+ */
+export function linkKey(link: Element, here: { href: string }): string {
+  const raw = (link.getAttribute('href') ?? '').trim();
+  try {
+    const cur = new URL(here.href);
+    const url = new URL(raw, cur);
+    return url.origin === cur.origin ? `${url.pathname}${url.search}` : `${url.origin}${url.pathname}${url.search}`;
+  } catch {
+    return raw;
+  }
+}
+
+/** A link's words as a person reads them: its text, else its label, else its picture's description. */
+export function linkWords(link: Element): string {
+  const text = (link.textContent ?? '').replace(/\s+/g, ' ').trim();
+  const words =
+    text ||
+    link.getAttribute('aria-label')?.trim() ||
+    link.getAttribute('title')?.trim() ||
+    link.querySelector('img[alt]')?.getAttribute('alt')?.trim() ||
+    '';
+  return words.slice(0, 120);
+}
+
+/**
  * Where activating this link would go: 'leave' for any other document (another page, a new tab, a download, a reload),
  * 'fragment' for a jump within this page, null when it does not navigate (javascript:, no href).
  */

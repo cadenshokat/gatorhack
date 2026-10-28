@@ -759,3 +759,26 @@ html:has(.st-task) {
   margin: -4px 0 8px;
   font-size: 16px;
 }
+
+/* A 'go' task's check after a tapped link: the link's own words, set apart, then Yes or No. */
+.st-pick {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--c-canvas-2);
+}
+.st-pick-label {
+  margin: 0 0 4px;
+  font: var(--f-small);
+  color: var(--c-ink-2);
+}
+.st-pick-words {
+  margin: 0;
+  font: 600 20px/27px var(--font);
+  color: var(--c-ink);
+  overflow-wrap: anywhere;
+}
+.st-sheet-text {
+  margin: 0;
+  font: 400 18px/26px var(--font);
+  color: var(--c-ink-2);
+}
