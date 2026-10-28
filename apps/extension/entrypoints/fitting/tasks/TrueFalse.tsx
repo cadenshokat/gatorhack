@@ -3,7 +3,8 @@
 
 import { textPriorPx, type ReadTrial } from '@webable/core';
 import type { JSX } from 'preact';
-import { useMemo, useRef, useState } from 'preact/hooks';
+import { useContext, useMemo, useRef, useState } from 'preact/hooks';
+import { StepLabelsContext } from '../ui/words';
 import { SENTENCES, type Sentence } from '../content/sentences';
 import { STIMULUS_FONT } from '../logic/env';
 import { shuffle } from '../logic/rand';
@@ -14,6 +15,7 @@ import { Answer, TaskLayout, type TaskProps } from './Task';
 type Reply = 'true' | 'false' | 'cant';
 
 export function TrueFalseTask(props: TaskProps): JSX.Element {
+  const L = useContext(StepLabelsContext);
   const { raw, env } = props;
   const zoom = raw.zoom || 1;
   const pool = useMemo(() => shuffle(SENTENCES, props.rng), []);
@@ -62,20 +64,21 @@ export function TrueFalseTask(props: TaskProps): JSX.Element {
 
   return (
     <TaskLayout
-      title="True or false?"
+      title={L.tfTitle}
+      sub={L.tfLine}
       stageClass="is-read"
       stageRef={ref}
       focusTitle
       actions={
         <>
           <Answer id="true" pressed={pressed} onClick={() => reply('true')} keys="T">
-            True
+            {L.yes}
           </Answer>
           <Answer id="false" pressed={pressed} onClick={() => reply('false')} keys="F">
-            False
+            {L.no}
           </Answer>
           <Answer id="cant" kind="quiet" pressed={pressed} onClick={() => reply('cant')} keys="C">
-            I can’t read it
+            {L.cantRead}
           </Answer>
         </>
       }

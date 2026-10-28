@@ -1,0 +1,16 @@
+{
+  "id": "gov-B",
+  "replicaId": "nps-bisc-basic",
+  "family": "gov",
+  "set": "B",
+  "prompt": "Find out what time the Convoy Point grounds close each day",
+  "question": "What time do the Convoy Point grounds close each day?",
+  "short": "Convoy Point grounds closing time",
+  "label": "National Park Service, the information about Biscayne National Park",
+  "tag": "the Biscayne park information",
+  "choices": ["4:30 p.m.", "5:00 p.m.", "5:30 p.m.", "6:00 p.m."],
+  "correct": 2,
+  "answerText": "7:00 AM–5:30 PM",
+  "answerSelector": "#ParkInfoAccordion1980Collapse3 div:nth-of-type(1) > div > div > ul > li > span:nth-of-type(2)",
+  "answerDepthScreens": 0.87
+}

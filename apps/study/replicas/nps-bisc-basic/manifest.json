@@ -1,0 +1,343 @@
+{
+  "v": "replica.1",
+  "id": "nps-bisc-basic",
+  "servePath": "/bisc/planyourvisit/basicinfo.htm",
+  "file": "index.html",
+  "sourceUrl": "https://www.nps.gov/bisc/planyourvisit/basicinfo.htm",
+  "originalHost": "www.nps.gov",
+  "siteName": "National Park Service",
+  "capturedAt": "2026-10-27T16:40:53.040Z",
+  "capture": {
+    "tool": "scripts/capture/capture.mjs (playwright 1.64.1)",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+    "stateNotes": [
+      "Start state as the site loads: \"Physical Address\" open, the other six sections closed (hidden=\"until-found\", as live)",
+      "Menu, search and chat closed; the black \"Search or ask anything\" chat banner shown, as live"
+    ]
+  },
+  "licence": "Text: public domain, a work of the US federal government (17 U.S.C. 105). The NPS Arrowhead is a protected emblem (18 U.S.C. 701); used here only inside a private, non-commercial research study. Fonts: Inter (OFL 1.1), Open Sans (Apache 2.0 / OFL), Font Awesome Free (OFL 1.1 / MIT).",
+  "attribution": "National Park Service, \"Basic Information - Biscayne National Park (U.S. National Park Service)\", https://www.nps.gov/bisc/planyourvisit/basicinfo.htm",
+  "behaviours": [
+    "accordion",
+    "find-on-page (beforematch opens a section)"
+  ],
+  "removed": [
+    "site scripts (35)",
+    "third-party scripts and trackers from 2 hosts: chat.doi.gov, www.googletagmanager.com",
+    "http-equiv meta (3)",
+    "inline event handlers (3)",
+    "<link> tags that fetch on their own (manifest, search…) (1)",
+    "iframe contents (2; src kept, local srcdoc: 0 snapshots)"
+  ],
+  "contentHash": "sha256:c0fbfa57cf4cd27b6639e1fe0effe2bbed292d242cbcc9f9a65141cbdeb17261",
+  "validation": {
+    "at": "2026-10-27T16:41:10.779Z",
+    "by": "scripts/capture/validate.mjs",
+    "served": "scripts/capture/lib/serve.mjs (frame.js stubbed)",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "liveCapturedAt": "2026-10-27T16:40:53.040Z",
+    "requests": {
+      "outside": 0,
+      "outsideHosts": {},
+      "missing": []
+    },
+    "frameTagFirst": true,
+    "pixels": {
+      "firstScreen": {
+        "pct": 0,
+        "target": 0.5,
+        "pass": true,
+        "size": [
+          1170,
+          2532
+        ],
+        "bandsCssPx": []
+      },
+      "fullPage": {
+        "pct": 0,
+        "target": 2,
+        "pass": true,
+        "liveSize": [
+          390,
+          3835
+        ],
+        "copySize": [
+          390,
+          3835
+        ],
+        "bandsCssPx": []
+      }
+    },
+    "layout": {
+      "scrollHeight": {
+        "live": 3835,
+        "copy": 3835,
+        "pass": true
+      },
+      "scrollWidth": {
+        "live": 390,
+        "copy": 390,
+        "pass": true
+      },
+      "links": {
+        "live": 302,
+        "copy": 302,
+        "pass": true
+      },
+      "visibleLinks": {
+        "live": 44,
+        "copy": 44,
+        "pass": true
+      },
+      "headings": {
+        "live": 16,
+        "copy": 16,
+        "pass": true
+      },
+      "headingOrder": {
+        "live": 16,
+        "copy": 16,
+        "pass": true
+      },
+      "tapTargets": {
+        "live": 61,
+        "copy": 61,
+        "pass": true
+      },
+      "tapUnder44": {
+        "live": 39,
+        "copy": 39,
+        "pass": true
+      },
+      "tapUnder24": {
+        "live": 28,
+        "copy": 28,
+        "pass": true
+      },
+      "bodyFontPx": {
+        "live": 16,
+        "copy": 16,
+        "pass": true
+      },
+      "paraFontPx": {
+        "live": 12.8,
+        "copy": 12.8,
+        "pass": true
+      },
+      "textUnder16Pct": {
+        "live": 63.6,
+        "copy": 63.6,
+        "pass": true
+      },
+      "fixedCoverTopPct": {
+        "live": 0,
+        "copy": 0,
+        "pass": true
+      },
+      "fixedCoverMidPct": {
+        "live": 0,
+        "copy": 0,
+        "pass": true
+      },
+      "visibleElements": {
+        "live": 307,
+        "copy": 307,
+        "pass": true
+      },
+      "imagesVisible": {
+        "live": 8,
+        "copy": 8,
+        "pass": true
+      },
+      "firstScreenText": {
+        "live": "358:693960703",
+        "copy": "358:693960703",
+        "pass": true
+      },
+      "loadedFontFamilies": {
+        "live": "InterVariable",
+        "copy": "InterVariable",
+        "pass": true
+      }
+    },
+    "widths": [
+      {
+        "w": 390,
+        "live": {
+          "scrollWidth": 390,
+          "scrollHeight": 3835,
+          "overflowing": 0
+        },
+        "copy": {
+          "scrollWidth": 390,
+          "scrollHeight": 3835,
+          "overflowing": 0,
+          "sample": []
+        },
+        "pass": true
+      },
+      {
+        "w": 312,
+        "live": {
+          "scrollWidth": 324,
+          "scrollHeight": 3809,
+          "overflowing": 1
+        },
+        "copy": {
+          "scrollWidth": 324,
+          "scrollHeight": 3809,
+          "overflowing": 1,
+          "sample": [
+            "button#base-ui-_r_3_.abd-popover__launcher.abd-popover__launcher--pill 324"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 260,
+        "live": {
+          "scrollWidth": 324,
+          "scrollHeight": 3995,
+          "overflowing": 2
+        },
+        "copy": {
+          "scrollWidth": 324,
+          "scrollHeight": 3995,
+          "overflowing": 2,
+          "sample": [
+            "button#base-ui-_r_3_.abd-popover__launcher.abd-popover__launcher--pill 324",
+            "span.abd-popover__launcher-search-label 304"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 223,
+        "live": {
+          "scrollWidth": 287,
+          "scrollHeight": 4123,
+          "overflowing": 2
+        },
+        "copy": {
+          "scrollWidth": 287,
+          "scrollHeight": 4123,
+          "overflowing": 2,
+          "sample": [
+            "button#base-ui-_r_3_.abd-popover__launcher.abd-popover__launcher--pill 287",
+            "span.abd-popover__launcher-search-label 285"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 195,
+        "live": {
+          "scrollWidth": 272,
+          "scrollHeight": 4310,
+          "overflowing": 4
+        },
+        "copy": {
+          "scrollWidth": 272,
+          "scrollHeight": 4310,
+          "overflowing": 4,
+          "sample": [
+            "button#base-ui-_r_3_.abd-popover__launcher.abd-popover__launcher--pill 259",
+            "span.abd-popover__launcher-search-label 271",
+            "a.usa-footer__logo 203",
+            "img.usa-footer__logo-img 203"
+          ]
+        },
+        "pass": true
+      }
+    ],
+    "behaviours": [
+      {
+        "name": "open \"Operating Hours & Seasons\"",
+        "live": {
+          "expanded": "true",
+          "buttonCollapsed": false,
+          "panelHeight": 682,
+          "growth": 563,
+          "openSections": 1
+        },
+        "copy": {
+          "expanded": "true",
+          "buttonCollapsed": false,
+          "panelHeight": 682,
+          "growth": 563,
+          "openSections": 1
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "open \"Fees & Passes\"",
+        "live": {
+          "expanded": "true",
+          "buttonCollapsed": false,
+          "panelHeight": 280,
+          "growth": 160,
+          "openSections": 1
+        },
+        "copy": {
+          "expanded": "true",
+          "buttonCollapsed": false,
+          "panelHeight": 280,
+          "growth": 160,
+          "openSections": 1
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "Find on Page reveals \"Weather\"",
+        "live": {
+          "expanded": "true",
+          "panelHeight": 272
+        },
+        "copy": {
+          "expanded": "true",
+          "panelHeight": 272
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "open the menu",
+        "live": {
+          "expanded": "true",
+          "menuHeight": 396
+        },
+        "copy": {
+          "expanded": "true",
+          "menuHeight": 396
+        },
+        "pass": true,
+        "diffs": []
+      }
+    ],
+    "roundTrip": {
+      "mismatches": 0,
+      "rootCauses": 0,
+      "parserAdded": 0
+    },
+    "pass": {
+      "hard": true,
+      "pixels": true,
+      "layout": true,
+      "widths": true,
+      "behaviours": true
+    },
+    "notes": []
+  }
+}

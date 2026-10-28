@@ -1,0 +1,3860 @@
+{
+ "v": "study-fixtures.1",
+ "replicaId": "nps-bisc-basic",
+ "version": "4",
+ "servePath": "/bisc/planyourvisit/basicinfo.htm",
+ "originalHost": "www.nps.gov",
+ "engineCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "serverCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "models": {
+  "jev": "jev-1.14.0",
+  "compose": "gpt-5.4-mini"
+ },
+ "recordedAt": "2026-10-27T22:37:08.965Z",
+ "matrix": {
+  "fits": [
+   "typical",
+   "rosa",
+   "reader",
+   "large",
+   "calm"
+  ],
+  "heights": [
+   456,
+   520,
+   600,
+   664,
+   760
+  ],
+  "engines": [
+   "chromium"
+  ],
+  "canonical": {
+   "fit": "typical",
+   "h": 664
+  }
+ },
+ "understand": {
+  "page": {
+   "purpose": {
+    "kind": "location_hours",
+    "p": 0.91,
+    "probs": {
+     "record_stats": 0,
+     "scoreboard": 0,
+     "schedule": 0,
+     "standings": 0,
+     "roster": 0,
+     "article": 0,
+     "news_index": 0,
+     "recipe": 0,
+     "product": 0,
+     "search_results": 0,
+     "form_task": 0,
+     "checkout": 0,
+     "sign_in": 0,
+     "account_dashboard": 0,
+     "bill_statement": 0,
+     "appointment": 0,
+     "status_lookup": 0,
+     "info_guide": 0.09,
+     "faq": 0,
+     "directory_listing": 0,
+     "location_hours": 0.91,
+     "calendar_dates": 0,
+     "comparison": 0,
+     "video": 0,
+     "gallery": 0,
+     "home_portal": 0,
+     "course_lesson": 0,
+     "course_overview": 0,
+     "live_blog": 0,
+     "product_listing": 0,
+     "game_detail": 0,
+     "other": 0
+    }
+   },
+   "mainRegion": {
+    "id": "n138",
+    "p": 0.97,
+    "probs": {
+     "n1": 0,
+     "n22": 0,
+     "n136": 0,
+     "n137": 0.005,
+     "n138": 0.98,
+     "n50": 0,
+     "n139": 0,
+     "n140": 0,
+     "none": 0.015
+    }
+   },
+   "mainPick": {
+    "id": "none",
+    "p": 1,
+    "probs": {
+     "n65": 0,
+     "n69": 0,
+     "n71": 0,
+     "n73": 0,
+     "n76": 0,
+     "n77": 0,
+     "n78": 0,
+     "none": 1
+    }
+   },
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 5,
+    "questions": 195,
+    "inputTokens": 100402,
+    "wallMs": 233,
+    "serverMs": 164,
+    "costUsd": 0.004216884000000001
+   },
+   "ids": {
+    "n1": [
+     "div|region|An official website of the United States government… · About U.S. Government Websites / Search…|none|chat embed banner||",
+     true
+    ],
+    "n2": [
+     "button|button|About U.S. Government Websites|none|chat banner official||",
+     true
+    ],
+    "n3": [
+     "button|button|Search or ask DOI|none|ui abd popover pill||",
+     true
+    ],
+    "n6": [
+     "a|link|[name] Service|banner|header branding link|this website|",
+     true
+    ],
+    "n8": [
+     "button|button|Open Menu|navigation|nav toggle usa button||",
+     true
+    ],
+    "n10": [
+     "nav|navigation|Links: Info / Alerts 5 / Maps|navigation|||",
+     true
+    ],
+    "n22": [
+     "div|region|Current Alerts and Conditions to include [name]… · See 5 park alerts|none|nps alert banner||",
+     true
+    ],
+    "n23": [
+     "div|region|Current Alerts and Conditions to include [name]… · See 5 park alerts|none|usa alert top warning||",
+     true
+    ],
+    "n24": [
+     "p|region|Current Alerts and Conditions to include [name]… · See 5 park alerts|none|usa alert||",
+     true
+    ],
+    "n31": [
+     "h1|heading level 1|Basic Information|main|page title||",
+     true
+    ],
+    "n33": [
+     "h2|heading level 2|Physical Address|main|info accordion header||",
+     true
+    ],
+    "n34": [
+     "button|button|Physical Address|main|accordion button||",
+     true
+    ],
+    "n35": [
+     "h2|heading level 2|Directions|main|info accordion header||",
+     true
+    ],
+    "n36": [
+     "button|button|Directions|main|accordion button collapsed||",
+     true
+    ],
+    "n37": [
+     "h2|heading level 2|Operating Hours & Seasons|main|info accordion header||",
+     true
+    ],
+    "n38": [
+     "button|button|Operating Hours & Seasons|main|accordion button collapsed||",
+     true
+    ],
+    "n40": [
+     "button|button|Weather|main|accordion button collapsed||",
+     true
+    ],
+    "n42": [
+     "button|button|Fees & Passes|main|accordion button collapsed||",
+     true
+    ],
+    "n44": [
+     "button|button|Visitor Centers|main|accordion button collapsed||",
+     true
+    ],
+    "n46": [
+     "button|button|Internet & Cellular Access|main|accordion button collapsed||",
+     true
+    ],
+    "n52": [
+     "fieldset|radiogroup|Yes No|main|usa fieldset radios||",
+     true
+    ],
+    "n65": [
+     "a|link|Contact Us|main|end|this website|",
+     true
+    ],
+    "n68": [
+     "li|text|FAQ|main|||",
+     true
+    ],
+    "n69": [
+     "a|link|FAQ|main||this website|",
+     true
+    ],
+    "n71": [
+     "a|link|Site Index|main||this website|",
+     true
+    ],
+    "n73": [
+     "a|link|Español|main||this website|",
+     true
+    ],
+    "n76": [
+     "a|link (image)||main||another website|",
+     false
+    ],
+    "n77": [
+     "a|link (image)||main||another website|",
+     false
+    ],
+    "n78": [
+     "a|link (image)||main||another website|",
+     false
+    ],
+    "n88": [
+     "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+     false
+    ],
+    "n89": [
+     "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+     false
+    ],
+    "n91": [
+     "div|region|Download the NPS app to navigate the parks… · Download on the App… / Get…|contentinfo|footer app promo bottom||",
+     true
+    ],
+    "n93": [
+     "p|region|· Download on the App… / Get it on [name]…|contentinfo|footer app promo badge links||",
+     true
+    ],
+    "n96": [
+     "div|region||contentinfo|footer app promo image container||",
+     true
+    ],
+    "n105": [
+     "div|region|Links: Search|contentinfo|chat embed footer search||",
+     true
+    ],
+    "n106": [
+     "form|search|Links: Search|search|chat embed footer search form||",
+     true
+    ],
+    "n119": [
+     "li|text|Contact [name]|navigation|usa required links item||",
+     true
+    ],
+    "n120": [
+     "a|link|Contact [name]|navigation|usa required link|this website|",
+     true
+    ],
+    "n121": [
+     "li|text|NPS FAQ|navigation|usa required links item||",
+     true
+    ],
+    "n122": [
+     "a|link|NPS FAQ|navigation|usa required link|this website|",
+     true
+    ],
+    "n136": [
+     "div|region holding links x1|[link] Plan Your Visit Basic Information · Plan Your Visit|main|container||",
+     true
+    ],
+    "n137": [
+     "div|region holding headings x1|Basic Information|main|content header size||",
+     true
+    ],
+    "n138": [
+     "div|region holding headings x7, pictures x2, tables x1, buttons x7, links x1|Physical Address · Physical Address / Directions / Operating Hours & Seasons|main|||",
+     true
+    ],
+    "n50": [
+     "div|region holding headings x1, paragraphs x1, links x1|Success · Touchpoints|main|survey fba modal dialog||",
+     true
+    ],
+    "n139": [
+     "div|region holding headings x4, paragraphs x1, links x1|Contact Info · Contact Us|main|||",
+     true
+    ],
+    "n140": [
+     "div|region holding headings x2, lists x2, links x6|Tools · FAQ / Site Index / Español|main|||",
+     true
+    ]
+   }
+  },
+  "elements": [
+   {
+    "id": "n1",
+    "fp": "div|region|An official website of the United States government… · About U.S. Government Websites / Search…|none|chat embed banner||",
+    "uniq": true,
+    "j": {
+     "id": "n1",
+     "role": "help_contact",
+     "roleP": 0.65,
+     "roleProbs": {
+      "navigation": 0.13,
+      "help_contact": 0.65,
+      "legal_footer": 0.03,
+      "other": 0.13
+     },
+     "task": 0.12,
+     "main": 0,
+     "help": 0.21,
+     "fine": "chat_widget",
+     "fineP": 0.65,
+     "importance": 1
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n2",
+    "fp": "button|button|About U.S. Government Websites|none|chat banner official||",
+    "uniq": true,
+    "j": {
+     "id": "n2",
+     "role": "help_contact",
+     "roleP": 0.79,
+     "roleProbs": {
+      "action_button": 0.06,
+      "navigation": 0.03,
+      "help_contact": 0.79,
+      "other": 0.07
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.33,
+     "fine": "chat_widget",
+     "fineP": 0.66,
+     "importance": 1.07
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n3",
+    "fp": "button|button|Search or ask DOI|none|ui abd popover pill||",
+    "uniq": true,
+    "j": {
+     "id": "n3",
+     "role": "search",
+     "roleP": 0.97,
+     "roleProbs": {
+      "search": 0.97
+     },
+     "task": 0.48,
+     "main": 0,
+     "help": 0.42,
+     "fine": "search_box",
+     "fineP": 0.97,
+     "importance": 1.03
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n6",
+    "fp": "a|link|[name] Service|banner|header branding link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n6",
+     "role": "navigation",
+     "roleP": 0.98,
+     "roleProbs": {
+      "navigation": 0.98
+     },
+     "task": 0.21,
+     "main": 0,
+     "help": 0.04,
+     "fine": "site_logo",
+     "fineP": 0.98,
+     "importance": 1.19
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n8",
+    "fp": "button|button|Open Menu|navigation|nav toggle usa button||",
+    "uniq": true,
+    "j": {
+     "id": "n8",
+     "role": "navigation",
+     "roleP": 0.92,
+     "roleProbs": {
+      "action_button": 0.06,
+      "navigation": 0.92
+     },
+     "task": 0.22,
+     "main": 0,
+     "help": 0.03,
+     "fine": "site_nav",
+     "fineP": 0.92,
+     "importance": 1.03
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n10",
+    "fp": "nav|navigation|Links: Info / Alerts 5 / Maps|navigation|||",
+    "uniq": true,
+    "j": {
+     "id": "n10",
+     "role": "navigation",
+     "roleP": 0.98,
+     "roleProbs": {
+      "navigation": 0.98
+     },
+     "task": 0.17,
+     "main": 0,
+     "help": 0.24,
+     "fine": "site_nav",
+     "fineP": 0.93,
+     "importance": 1.09
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n22",
+    "fp": "div|region|Current Alerts and Conditions to include [name]… · See 5 park alerts|none|nps alert banner||",
+    "uniq": true,
+    "j": {
+     "id": "n22",
+     "role": "main_content",
+     "roleP": 0.93,
+     "roleProbs": {
+      "main_content": 0.93,
+      "other": 0.04
+     },
+     "task": 0.77,
+     "main": 0,
+     "help": 0.08,
+     "fine": "breaking_banner",
+     "fineP": 0.51,
+     "importance": 2.41
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n23",
+    "fp": "div|region|Current Alerts and Conditions to include [name]… · See 5 park alerts|none|usa alert top warning||",
+    "uniq": true,
+    "j": {
+     "id": "n23",
+     "role": "main_content",
+     "roleP": 0.94,
+     "roleProbs": {
+      "main_content": 0.94,
+      "other": 0.03
+     },
+     "task": 0.78,
+     "main": 0,
+     "help": 0.07,
+     "fine": "breaking_banner",
+     "fineP": 0.52,
+     "importance": 2.41
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n24",
+    "fp": "p|region|Current Alerts and Conditions to include [name]… · See 5 park alerts|none|usa alert||",
+    "uniq": true,
+    "j": {
+     "id": "n24",
+     "role": "main_content",
+     "roleP": 0.89,
+     "roleProbs": {
+      "main_content": 0.89,
+      "other": 0.05
+     },
+     "task": 0.72,
+     "main": 0,
+     "help": 0.09,
+     "fine": "breaking_banner",
+     "fineP": 0.5,
+     "importance": 2.3
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n31",
+    "fp": "h1|heading level 1|Basic Information|main|page title||",
+    "uniq": true,
+    "j": {
+     "id": "n31",
+     "role": "main_content",
+     "roleP": 1,
+     "roleProbs": {
+      "main_content": 1
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.04,
+     "fine": "page_title",
+     "fineP": 1,
+     "importance": 3.64
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n33",
+    "fp": "h2|heading level 2|Physical Address|main|info accordion header||",
+    "uniq": true,
+    "j": {
+     "id": "n33",
+     "role": "action_button",
+     "roleP": 0.73,
+     "roleProbs": {
+      "main_content": 0.25,
+      "action_button": 0.73
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.16,
+     "fine": "accordion_item",
+     "fineP": 0.73,
+     "importance": 3.7
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n34",
+    "fp": "button|button|Physical Address|main|accordion button||",
+    "uniq": true,
+    "j": {
+     "id": "n34",
+     "role": "action_button",
+     "roleP": 0.99,
+     "roleProbs": {
+      "action_button": 0.99
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.14,
+     "fine": "accordion_item",
+     "fineP": 0.99,
+     "importance": 3.5
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n35",
+    "fp": "h2|heading level 2|Directions|main|info accordion header||",
+    "uniq": true,
+    "j": {
+     "id": "n35",
+     "role": "action_button",
+     "roleP": 0.63,
+     "roleProbs": {
+      "main_content": 0.37,
+      "action_button": 0.63
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.08,
+     "fine": "accordion_item",
+     "fineP": 0.63,
+     "importance": 3.53
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n36",
+    "fp": "button|button|Directions|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n36",
+     "role": "action_button",
+     "roleP": 0.99,
+     "roleProbs": {
+      "action_button": 0.99
+     },
+     "task": 0.9,
+     "main": 0,
+     "help": 0.13,
+     "fine": "accordion_item",
+     "fineP": 0.99,
+     "importance": 3.38
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n37",
+    "fp": "h2|heading level 2|Operating Hours & Seasons|main|info accordion header||",
+    "uniq": true,
+    "j": {
+     "id": "n37",
+     "role": "action_button",
+     "roleP": 0.66,
+     "roleProbs": {
+      "main_content": 0.34,
+      "action_button": 0.66
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.05,
+     "fine": "accordion_item",
+     "fineP": 0.66,
+     "importance": 3.7
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n38",
+    "fp": "button|button|Operating Hours & Seasons|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n38",
+     "role": "action_button",
+     "roleP": 1,
+     "roleProbs": {
+      "action_button": 1
+     },
+     "task": 0.9,
+     "main": 0,
+     "help": 0.06,
+     "fine": "accordion_item",
+     "fineP": 1,
+     "importance": 3.46
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n40",
+    "fp": "button|button|Weather|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n40",
+     "role": "action_button",
+     "roleP": 1,
+     "roleProbs": {
+      "action_button": 1
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.04,
+     "fine": "accordion_item",
+     "fineP": 1,
+     "importance": 3.3
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n42",
+    "fp": "button|button|Fees & Passes|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n42",
+     "role": "action_button",
+     "roleP": 0.99,
+     "roleProbs": {
+      "action_button": 0.99
+     },
+     "task": 0.83,
+     "main": 0,
+     "help": 0.05,
+     "fine": "accordion_item",
+     "fineP": 0.99,
+     "importance": 3.24
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n44",
+    "fp": "button|button|Visitor Centers|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n44",
+     "role": "action_button",
+     "roleP": 1,
+     "roleProbs": {
+      "action_button": 1
+     },
+     "task": 0.85,
+     "main": 0,
+     "help": 0.29,
+     "fine": "accordion_item",
+     "fineP": 1,
+     "importance": 3.08
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n46",
+    "fp": "button|button|Internet & Cellular Access|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n46",
+     "role": "action_button",
+     "roleP": 1,
+     "roleProbs": {
+      "action_button": 1
+     },
+     "task": 0.86,
+     "main": 0,
+     "help": 0.19,
+     "fine": "accordion_item",
+     "fineP": 1,
+     "importance": 3.23
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n52",
+    "fp": "fieldset|radiogroup|Yes No|main|usa fieldset radios||",
+    "uniq": true,
+    "j": {
+     "id": "n52",
+     "role": "form_field",
+     "roleP": 0.98,
+     "roleProbs": {
+      "form_field": 0.98
+     },
+     "task": 0.78,
+     "main": 0,
+     "help": 0.04,
+     "fine": "choice_group",
+     "fineP": 0.9400000000000001,
+     "importance": 2.3
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n65",
+    "fp": "a|link|Contact Us|main|end|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n65",
+     "role": "help_contact",
+     "roleP": 0.96,
+     "roleProbs": {
+      "help_contact": 0.96
+     },
+     "task": 0.2,
+     "main": 0.08,
+     "help": 0.93,
+     "fine": "contact_info",
+     "fineP": 0.87,
+     "importance": 1.94
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n68",
+    "fp": "li|text|FAQ|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n68",
+     "role": "main_content",
+     "roleP": 0.28,
+     "roleProbs": {
+      "main_content": 0.28,
+      "action_button": 0.07,
+      "navigation": 0.22,
+      "help_contact": 0.21,
+      "account_utility": 0.03,
+      "other": 0.11
+     },
+     "task": 0.17,
+     "main": 0,
+     "help": 0.9,
+     "fine": "help_link",
+     "fineP": 0.21000000000000002,
+     "importance": 1.85
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n69",
+    "fp": "a|link|FAQ|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n69",
+     "role": "help_contact",
+     "roleP": 0.89,
+     "roleProbs": {
+      "help_contact": 0.89,
+      "recommendations": 0.03
+     },
+     "task": 0.17,
+     "main": 0.04,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.89,
+     "importance": 1.98
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n71",
+    "fp": "a|link|Site Index|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n71",
+     "role": "navigation",
+     "roleP": 0.56,
+     "roleProbs": {
+      "action_button": 0.06,
+      "navigation": 0.56,
+      "help_contact": 0.2,
+      "account_utility": 0.05,
+      "other": 0.06
+     },
+     "task": 0.15,
+     "main": 0.05,
+     "help": 0.11,
+     "fine": "site_nav",
+     "fineP": 0.49,
+     "importance": 1.26
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n73",
+    "fp": "a|link|Español|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n73",
+     "role": "account_utility",
+     "roleP": 0.82,
+     "roleProbs": {
+      "action_button": 0.07,
+      "navigation": 0.03,
+      "account_utility": 0.82,
+      "other": 0.06
+     },
+     "task": 0.27,
+     "main": 0.03,
+     "help": 0.04,
+     "fine": "account_utility",
+     "fineP": 0.8200000000000001,
+     "importance": 1.45
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n76",
+    "fp": "a|link (image)||main||another website|",
+    "uniq": false,
+    "j": {
+     "id": "n76",
+     "role": "navigation",
+     "roleP": 0.22,
+     "roleProbs": {
+      "main_content": 0.05,
+      "action_button": 0.07,
+      "navigation": 0.22,
+      "help_contact": 0.11,
+      "advertising": 0.08,
+      "recommendations": 0.07,
+      "other": 0.22
+     },
+     "task": 0.24,
+     "main": 0.09,
+     "help": 0.18,
+     "fine": "site_logo",
+     "fineP": 0.22,
+     "importance": 0.85
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n77",
+    "fp": "a|link (image)||main||another website|",
+    "uniq": false,
+    "j": {
+     "id": "n77",
+     "role": "other",
+     "roleP": 0.23,
+     "roleProbs": {
+      "main_content": 0.07,
+      "action_button": 0.07,
+      "navigation": 0.19,
+      "help_contact": 0.14,
+      "advertising": 0.07,
+      "recommendations": 0.08,
+      "other": 0.23
+     },
+     "task": 0.26,
+     "main": 0.08,
+     "help": 0.18,
+     "fine": "site_logo",
+     "fineP": 0.19,
+     "importance": 0.88
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n78",
+    "fp": "a|link (image)||main||another website|",
+    "uniq": false,
+    "j": {
+     "id": "n78",
+     "role": "other",
+     "roleP": 0.21,
+     "roleProbs": {
+      "main_content": 0.06,
+      "action_button": 0.09,
+      "navigation": 0.2,
+      "help_contact": 0.12,
+      "advertising": 0.08,
+      "recommendations": 0.09,
+      "legal_footer": 0.03,
+      "other": 0.21
+     },
+     "task": 0.24,
+     "main": 0.09,
+     "help": 0.19,
+     "fine": "site_logo",
+     "fineP": 0.2,
+     "importance": 0.84
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n88",
+    "fp": "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+    "uniq": false,
+    "j": {
+     "id": "n88",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.05,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.12
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n89",
+    "fp": "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+    "uniq": false,
+    "j": {
+     "id": "n89",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.05,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.13
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n91",
+    "fp": "div|region|Download the NPS app to navigate the parks… · Download on the App… / Get…|contentinfo|footer app promo bottom||",
+    "uniq": true,
+    "j": {
+     "id": "n91",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.05,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.22
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n93",
+    "fp": "p|region|· Download on the App… / Get it on [name]…|contentinfo|footer app promo badge links||",
+    "uniq": true,
+    "j": {
+     "id": "n93",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.03,
+     "fine": "app_install_banner",
+     "fineP": 0.99,
+     "importance": 0.41
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n96",
+    "fp": "div|region||contentinfo|footer app promo image container||",
+    "uniq": true,
+    "j": {
+     "id": "n96",
+     "role": "advertising",
+     "roleP": 0.94,
+     "roleProbs": {
+      "advertising": 0.94,
+      "legal_footer": 0.04
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.11,
+     "fine": "app_install_banner",
+     "fineP": 0.91,
+     "importance": 0.42
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n105",
+    "fp": "div|region|Links: Search|contentinfo|chat embed footer search||",
+    "uniq": true,
+    "j": {
+     "id": "n105",
+     "role": "navigation",
+     "roleP": 0.31,
+     "roleProbs": {
+      "search": 0.17,
+      "navigation": 0.31,
+      "help_contact": 0.29,
+      "recommendations": 0.03,
+      "account_utility": 0.03,
+      "legal_footer": 0.06,
+      "other": 0.05
+     },
+     "task": 0.19,
+     "main": 0,
+     "help": 0.23,
+     "fine": "chat_widget",
+     "fineP": 0.29000000000000004,
+     "importance": 1.01
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n106",
+    "fp": "form|search|Links: Search|search|chat embed footer search form||",
+    "uniq": true,
+    "j": {
+     "id": "n106",
+     "role": "search",
+     "roleP": 0.98,
+     "roleProbs": {
+      "search": 0.98
+     },
+     "task": 0.67,
+     "main": 0,
+     "help": 0.08,
+     "fine": "search_box",
+     "fineP": 0.98,
+     "importance": 1.03
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n119",
+    "fp": "li|text|Contact [name]|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n119",
+     "role": "help_contact",
+     "roleP": 0.86,
+     "roleProbs": {
+      "navigation": 0.09,
+      "help_contact": 0.86,
+      "legal_footer": 0.03
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.87,
+     "fine": "contact_info",
+     "fineP": 0.86,
+     "importance": 1.13
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n120",
+    "fp": "a|link|Contact [name]|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n120",
+     "role": "help_contact",
+     "roleP": 0.93,
+     "roleProbs": {
+      "navigation": 0.03,
+      "help_contact": 0.93
+     },
+     "task": 0.16,
+     "main": 0,
+     "help": 0.93,
+     "fine": "contact_info",
+     "fineP": 0.93,
+     "importance": 1.11
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n121",
+    "fp": "li|text|NPS FAQ|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n121",
+     "role": "help_contact",
+     "roleP": 0.56,
+     "roleProbs": {
+      "navigation": 0.29,
+      "help_contact": 0.56,
+      "legal_footer": 0.07
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.56,
+     "importance": 1.12
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n122",
+    "fp": "a|link|NPS FAQ|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n122",
+     "role": "help_contact",
+     "roleP": 0.8,
+     "roleProbs": {
+      "navigation": 0.09,
+      "help_contact": 0.8,
+      "legal_footer": 0.07
+     },
+     "task": 0.11,
+     "main": 0,
+     "help": 0.94,
+     "fine": "help_link",
+     "fineP": 0.8,
+     "importance": 1.13
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n136",
+    "fp": "div|region holding links x1|[link] Plan Your Visit Basic Information · Plan Your Visit|main|container||",
+    "uniq": true,
+    "j": {
+     "id": "n136",
+     "role": "navigation",
+     "roleP": 0.83,
+     "roleProbs": {
+      "main_content": 0.04,
+      "navigation": 0.83
+     },
+     "task": 0.23,
+     "main": 0,
+     "help": 0.08,
+     "fine": "breadcrumb",
+     "fineP": 0.34,
+     "importance": 1.71
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n137",
+    "fp": "div|region holding headings x1|Basic Information|main|content header size||",
+    "uniq": true,
+    "j": {
+     "id": "n137",
+     "role": "main_content",
+     "roleP": 0.92,
+     "roleProbs": {
+      "main_content": 0.92,
+      "navigation": 0.03,
+      "other": 0.03
+     },
+     "task": 0.91,
+     "main": 0,
+     "help": 0.04,
+     "fine": "page_title",
+     "fineP": 0.81,
+     "importance": 3.34
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n138",
+    "fp": "div|region holding headings x7, pictures x2, tables x1, buttons x7, links x1|Physical Address · Physical Address / Directions / Operating Hours & Seasons|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n138",
+     "role": "other",
+     "roleP": 0.62,
+     "roleProbs": {
+      "main_content": 0.17,
+      "help_contact": 0.07,
+      "action_button": 0.03,
+      "navigation": 0.04,
+      "other": 0.62
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.12,
+     "fine": "other",
+     "fineP": 0.62,
+     "importance": 3.81
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n50",
+    "fp": "div|region holding headings x1, paragraphs x1, links x1|Success · Touchpoints|main|survey fba modal dialog||",
+    "uniq": true,
+    "j": {
+     "id": "n50",
+     "role": "popup_overlay",
+     "roleP": 0.86,
+     "roleProbs": {
+      "main_content": 0.1,
+      "popup_overlay": 0.86
+     },
+     "task": 0.23,
+     "main": 0,
+     "help": 0.13,
+     "fine": "popup",
+     "fineP": 0.86,
+     "importance": 0.32
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n139",
+    "fp": "div|region holding headings x4, paragraphs x1, links x1|Contact Info · Contact Us|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n139",
+     "role": "help_contact",
+     "roleP": 0.9,
+     "roleProbs": {
+      "help_contact": 0.9,
+      "other": 0.06
+     },
+     "task": 0.59,
+     "main": 0,
+     "help": 0.84,
+     "fine": "contact_info",
+     "fineP": 0.87,
+     "importance": 2.55
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n140",
+    "fp": "div|region holding headings x2, lists x2, links x6|Tools · FAQ / Site Index / Español|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n140",
+     "role": "navigation",
+     "roleP": 0.36,
+     "roleProbs": {
+      "navigation": 0.36,
+      "help_contact": 0.19,
+      "recommendations": 0.21,
+      "account_utility": 0.05,
+      "other": 0.1
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.8,
+     "fine": "help_link",
+     "fineP": 0.19,
+     "importance": 1.47
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n66",
+    "fp": "a|link|Contact Us|main|end|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n66",
+     "role": "help_contact",
+     "roleP": 0.96,
+     "roleProbs": {
+      "help_contact": 0.96
+     },
+     "task": 0.22,
+     "main": 0.09,
+     "help": 0.93,
+     "fine": "contact_info",
+     "fineP": 0.87,
+     "importance": 1.89
+    },
+    "from": "union"
+   },
+   {
+    "id": "n69",
+    "fp": "li|text|FAQ|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n69",
+     "role": "navigation",
+     "roleP": 0.26,
+     "roleProbs": {
+      "main_content": 0.23,
+      "action_button": 0.08,
+      "navigation": 0.26,
+      "help_contact": 0.22,
+      "account_utility": 0.04,
+      "other": 0.09
+     },
+     "task": 0.2,
+     "main": 0,
+     "help": 0.9,
+     "fine": "help_link",
+     "fineP": 0.22,
+     "importance": 1.85
+    },
+    "from": "union"
+   },
+   {
+    "id": "n70",
+    "fp": "a|link|FAQ|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n70",
+     "role": "help_contact",
+     "roleP": 0.87,
+     "roleProbs": {
+      "help_contact": 0.87,
+      "recommendations": 0.03
+     },
+     "task": 0.16,
+     "main": 0.04,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.87,
+     "importance": 1.98
+    },
+    "from": "union"
+   },
+   {
+    "id": "n72",
+    "fp": "a|link|Site Index|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n72",
+     "role": "navigation",
+     "roleP": 0.56,
+     "roleProbs": {
+      "action_button": 0.06,
+      "navigation": 0.56,
+      "help_contact": 0.19,
+      "account_utility": 0.06,
+      "legal_footer": 0.03,
+      "other": 0.05
+     },
+     "task": 0.14,
+     "main": 0.05,
+     "help": 0.1,
+     "fine": "site_nav",
+     "fineP": 0.47000000000000003,
+     "importance": 1.27
+    },
+    "from": "union"
+   },
+   {
+    "id": "n74",
+    "fp": "a|link|Español|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n74",
+     "role": "account_utility",
+     "roleP": 0.8,
+     "roleProbs": {
+      "action_button": 0.08,
+      "navigation": 0.03,
+      "account_utility": 0.8,
+      "other": 0.06
+     },
+     "task": 0.26,
+     "main": 0.04,
+     "help": 0.04,
+     "fine": "account_utility",
+     "fineP": 0.8,
+     "importance": 1.49
+    },
+    "from": "union"
+   },
+   {
+    "id": "n79",
+    "fp": "a|link (image)||main||another website|",
+    "uniq": false,
+    "j": {
+     "id": "n79",
+     "role": "other",
+     "roleP": 0.22,
+     "roleProbs": {
+      "main_content": 0.07,
+      "action_button": 0.08,
+      "navigation": 0.2,
+      "help_contact": 0.12,
+      "advertising": 0.1,
+      "recommendations": 0.08,
+      "other": 0.22
+     },
+     "task": 0.24,
+     "main": 0.09,
+     "help": 0.18,
+     "fine": "site_logo",
+     "fineP": 0.2,
+     "importance": 0.98
+    },
+    "from": "union"
+   },
+   {
+    "id": "n90",
+    "fp": "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+    "uniq": false,
+    "j": {
+     "id": "n90",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.05,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.12
+    },
+    "from": "union"
+   },
+   {
+    "id": "n92",
+    "fp": "div|region|Download the NPS app to navigate the parks… · Download on the App… / Get…|contentinfo|footer app promo bottom||",
+    "uniq": true,
+    "j": {
+     "id": "n92",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.05,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.18
+    },
+    "from": "union"
+   },
+   {
+    "id": "n94",
+    "fp": "p|region|· Download on the App… / Get it on [name]…|contentinfo|footer app promo badge links||",
+    "uniq": true,
+    "j": {
+     "id": "n94",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.03,
+     "fine": "app_install_banner",
+     "fineP": 0.99,
+     "importance": 0.3
+    },
+    "from": "union"
+   },
+   {
+    "id": "n97",
+    "fp": "div|region||contentinfo|footer app promo image container||",
+    "uniq": true,
+    "j": {
+     "id": "n97",
+     "role": "advertising",
+     "roleP": 0.92,
+     "roleProbs": {
+      "advertising": 0.92,
+      "legal_footer": 0.04
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.1,
+     "fine": "app_install_banner",
+     "fineP": 0.89,
+     "importance": 0.41
+    },
+    "from": "union"
+   },
+   {
+    "id": "n106",
+    "fp": "div|region|Links: Search|contentinfo|chat embed footer search||",
+    "uniq": true,
+    "j": {
+     "id": "n106",
+     "role": "help_contact",
+     "roleP": 0.39,
+     "roleProbs": {
+      "search": 0.2,
+      "navigation": 0.19,
+      "help_contact": 0.39,
+      "recommendations": 0.03,
+      "account_utility": 0.03,
+      "legal_footer": 0.05,
+      "other": 0.04
+     },
+     "task": 0.19,
+     "main": 0,
+     "help": 0.18,
+     "fine": "chat_widget",
+     "fineP": 0.39,
+     "importance": 1.01
+    },
+    "from": "union"
+   },
+   {
+    "id": "n107",
+    "fp": "form|search|Links: Search|search|chat embed footer search form||",
+    "uniq": true,
+    "j": {
+     "id": "n107",
+     "role": "search",
+     "roleP": 0.97,
+     "roleProbs": {
+      "search": 0.97,
+      "help_contact": 0.03
+     },
+     "task": 0.61,
+     "main": 0,
+     "help": 0.1,
+     "fine": "search_box",
+     "fineP": 0.97,
+     "importance": 1.02
+    },
+    "from": "union"
+   },
+   {
+    "id": "n121",
+    "fp": "li|text|Contact [name]|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n121",
+     "role": "help_contact",
+     "roleP": 0.8,
+     "roleProbs": {
+      "navigation": 0.12,
+      "help_contact": 0.8,
+      "legal_footer": 0.03
+     },
+     "task": 0.16,
+     "main": 0,
+     "help": 0.87,
+     "fine": "contact_info",
+     "fineP": 0.8,
+     "importance": 1.16
+    },
+    "from": "union"
+   },
+   {
+    "id": "n122",
+    "fp": "a|link|Contact [name]|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n122",
+     "role": "help_contact",
+     "roleP": 0.89,
+     "roleProbs": {
+      "navigation": 0.06,
+      "help_contact": 0.89,
+      "legal_footer": 0.03
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.93,
+     "fine": "contact_info",
+     "fineP": 0.89,
+     "importance": 1.14
+    },
+    "from": "union"
+   },
+   {
+    "id": "n123",
+    "fp": "li|text|NPS FAQ|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n123",
+     "role": "help_contact",
+     "roleP": 0.45,
+     "roleProbs": {
+      "navigation": 0.38,
+      "help_contact": 0.45,
+      "legal_footer": 0.1
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.45,
+     "importance": 1.12
+    },
+    "from": "union"
+   },
+   {
+    "id": "n124",
+    "fp": "a|link|NPS FAQ|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n124",
+     "role": "help_contact",
+     "roleP": 0.79,
+     "roleProbs": {
+      "navigation": 0.11,
+      "help_contact": 0.79,
+      "legal_footer": 0.07
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.79,
+     "importance": 1.13
+    },
+    "from": "union"
+   },
+   {
+    "id": "n138",
+    "fp": "div|region holding links x1|[link] Plan Your Visit Basic Information · Plan Your Visit|main|container||",
+    "uniq": true,
+    "j": {
+     "id": "n138",
+     "role": "navigation",
+     "roleP": 0.83,
+     "roleProbs": {
+      "main_content": 0.07,
+      "navigation": 0.83
+     },
+     "task": 0.23,
+     "main": 0,
+     "help": 0.08,
+     "fine": "breadcrumb",
+     "fineP": 0.33,
+     "importance": 1.69
+    },
+    "from": "union"
+   },
+   {
+    "id": "n139",
+    "fp": "div|region holding headings x1|Basic Information|main|content header size||",
+    "uniq": true,
+    "j": {
+     "id": "n139",
+     "role": "main_content",
+     "roleP": 0.93,
+     "roleProbs": {
+      "main_content": 0.93,
+      "other": 0.03
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.04,
+     "fine": "page_title",
+     "fineP": 0.86,
+     "importance": 3.35
+    },
+    "from": "union"
+   },
+   {
+    "id": "n140",
+    "fp": "div|region holding headings x7, pictures x2, tables x1, buttons x7, links x1|Physical Address · Physical Address / Directions / Operating Hours & Seasons|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n140",
+     "role": "other",
+     "roleP": 0.61,
+     "roleProbs": {
+      "main_content": 0.18,
+      "help_contact": 0.05,
+      "navigation": 0.08,
+      "other": 0.61
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.11,
+     "fine": "other",
+     "fineP": 0.61,
+     "importance": 3.83
+    },
+    "from": "union"
+   },
+   {
+    "id": "n141",
+    "fp": "div|region holding headings x4, paragraphs x1, links x1|Contact Info · Contact Us|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n141",
+     "role": "help_contact",
+     "roleP": 0.92,
+     "roleProbs": {
+      "help_contact": 0.92,
+      "other": 0.05
+     },
+     "task": 0.58,
+     "main": 0,
+     "help": 0.84,
+     "fine": "contact_info",
+     "fineP": 0.88,
+     "importance": 2.47
+    },
+    "from": "union"
+   },
+   {
+    "id": "n142",
+    "fp": "div|region holding headings x2, lists x2, links x6|Tools · FAQ / Site Index / Español|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n142",
+     "role": "navigation",
+     "roleP": 0.44,
+     "roleProbs": {
+      "navigation": 0.44,
+      "help_contact": 0.17,
+      "recommendations": 0.16,
+      "account_utility": 0.05,
+      "other": 0.08
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.76,
+     "fine": "section_nav",
+     "fineP": 0.22,
+     "importance": 1.42
+    },
+    "from": "union"
+   }
+  ]
+ },
+ "meaning": {
+  "697ed60a0f1bc63a399d62a16be099a17a7703f0b922e06e5e7a3fe6112997a6": {
+   "leadsWithMain": 0.04,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1107,
+    "wallMs": 127,
+    "serverMs": 59,
+    "costUsd": 0.000046494000000000006
+   }
+  },
+  "e2b327f6616ff5d939d537e35e5c4bc57e70dbf6aec2c3358b02a0e6fe138184": {
+   "leadsWithMain": 0.05,
+   "missingMain": 1,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1167,
+    "wallMs": 155,
+    "serverMs": 72,
+    "costUsd": 0.00004901400000000001
+   }
+  },
+  "5641ac8523f469b76d884fcca2f26d2ca492a5ba459bc807ae53bf8586dda6da": {
+   "leadsWithMain": 0.03,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1189,
+    "wallMs": 77,
+    "serverMs": 22,
+    "costUsd": 0.00004993800000000001
+   }
+  },
+  "b8c62228ec617af82aae1ced870ec5df1ad1139a165887d12fc888966b0eee5b": {
+   "leadsWithMain": 0.04,
+   "missingMain": 1,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1107,
+    "wallMs": 81,
+    "serverMs": 31,
+    "costUsd": 0.000046494000000000006
+   }
+  },
+  "7784f63a8e4cdb2042aa4d442efbeec64ad5adc000aa99470514a4dffad565ba": {
+   "leadsWithMain": 0.03,
+   "missingMain": 1,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1129,
+    "wallMs": 98,
+    "serverMs": 49,
+    "costUsd": 0.000047418000000000006
+   }
+  },
+  "f425c0067b6189ec5938ea356132ceaccf5d4917c7ff982dee4932e98a87c14f": {
+   "leadsWithMain": 0.04,
+   "missingMain": 1,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1129,
+    "wallMs": 92,
+    "serverMs": 42,
+    "costUsd": 0.000047418000000000006
+   }
+  }
+ },
+ "overlayClose": {},
+ "compose": {},
+ "composeMeta": null,
+ "runs": [
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-10-27T22:34:56.673Z",
+   "added": {
+    "elements": 46,
+    "page": true,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2139,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:35:02.191Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2144,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:35:07.484Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2023,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:35:12.798Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2029,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:35:18.339Z",
+   "added": {
+    "elements": 21,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2135,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 5,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:35:23.876Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2143,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 33 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:35:29.217Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2126,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 33 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.10; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:35:34.778Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2127,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 33 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.10; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:35:40.328Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2134,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 33 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.91; task 0.14; help 0.10; app banner 0.88"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 5,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:35:45.879Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2130,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 33 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.10; help 0.06; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:35:51.439Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2133,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:35:57.003Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2130,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:36:02.554Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2130,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:36:08.119Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2133,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:36:13.670Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2130,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.10; help 0.05; app banner 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.92; task 0.15; help 0.10; app banner 0.92"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 5,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:36:19.207Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2124,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 5,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:36:24.763Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2139,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:36:30.297Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2126,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:36:35.872Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2127,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 5,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:36:41.433Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2175,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.45,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 20.3,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.45 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 20 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:36:46.842Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2191,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 22 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:36:52.428Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2150,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 22 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:36:57.871Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2143,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 22 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.06; app banner 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.94; task 0.14; help 0.10; app banner 0.91"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 5,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:37:03.392Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2177,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 22 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.10; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:37:08.888Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2100,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 6 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 22 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 15 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  }
+ ],
+ "replicaHash": "sha256:c0fbfa57cf4cd27b6639e1fe0effe2bbed292d242cbcc9f9a65141cbdeb17261"
+}

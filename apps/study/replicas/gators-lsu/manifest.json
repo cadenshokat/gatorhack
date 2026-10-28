@@ -1,0 +1,474 @@
+{
+  "v": "replica.1",
+  "id": "gators-lsu",
+  "servePath": "/sports/football/opponent-history/louisiana-state-university/34",
+  "file": "index.html",
+  "sourceUrl": "https://floridagators.com/sports/football/opponent-history/louisiana-state-university/34",
+  "originalHost": "floridagators.com",
+  "siteName": "Florida Gators",
+  "capturedAt": "2026-10-27T17:55:37.520Z",
+  "capture": {
+    "tool": "scripts/capture/capture.mjs (playwright 1.64.1)",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+    "stateNotes": [
+      "Start state as a first-time visitor sees it: the Transcend cookie notice showing (bottom, 39% of the first screen) and answered by nobody; menus, calendar and dropdowns closed; scrolled to the top",
+      "The cookie notice is a closed shadow root on a host after <body> on the live page; the copy holds it as an open declarative shadow root and page.js moves the host back after <body> at load, so the engine sees what it sees live (a fixed host it cannot look inside) while the study can still measure taps on its buttons",
+      "Ads: one 300x250 creative in the results table (the first of its first two ad rows that filled at capture), the other ad rows unfilled. Live fills are random (none on about half the loads here; otherwise a 300x250 or 320x50 in any row). It appears when its row comes within 1200 px of the screen, as the site's lazy loader does; no rotation (the live slots refresh every 30 s)",
+      "The calendar's Upcoming/Results lists, the game \"Links\" menus, the video pop-ups and the cookie notice's other views are the ones the live site drew during capture"
+    ]
+  },
+  "licence": "Copyrighted: page design, text, photos and logos (c) University of Florida Athletic Association / LEARFIELD / Sidearm Sports; opponent logos belong to their schools; the cookie notice is Transcend's. Game scores and dates are facts. Copied only for a private, non-commercial research study, not redistributed. Fonts: the site's own Adobe Fonts (Typekit) files, self-hosted for the same study.",
+  "attribution": "Florida Gators (floridagators.com), \"Football History vs Louisiana State University\", https://floridagators.com/sports/football/opponent-history/louisiana-state-university/34",
+  "behaviours": [
+    "reveal-on-scroll",
+    "page",
+    "consent (page.js: X closes; language and \"Do Not Sell\" views)",
+    "menus and calendar (page.js)",
+    "tabs and sport filter (page.js)",
+    "links-dropdowns (page.js)",
+    "table-scroll-shadow (page.js)",
+    "video-popup (page.js)",
+    "ad-hide (page.js)",
+    "sticky-header (CSS only, as live)"
+  ],
+  "removed": [
+    "site scripts (44)",
+    "third-party scripts and trackers from 18 hosts: ats-wrapper.privacymanager.io, cdn.confiant-integrations.net, cdn.userway.org, googleads.g.doubleclick.net, htlbid.com, launchpad-wrapper.privacymanager.io, launchpad.privacymanager.io, pagead2.googlesyndication.com, rules.quantcount.com, rum-agent.na-01.cloud.solarwinds.com, sb.scorecardresearch.com, scripts.clarity.ms, secure.quantserve.com, securepubads.g.doubleclick.net, transcend-cdn.com, www.clarity.ms, www.google-analytics.com, www.googletagmanager.com",
+    "noscript (4)",
+    "preload/prefetch/preconnect hints (138)",
+    "http-equiv meta (10)",
+    "iframe contents (12; src kept, local srcdoc: 1 snapshots)",
+    "references that could not be stored (2)",
+    "ad refresh and rotation (frozen to one creative per slot)",
+    "video streams (a pop-up shows its player as a picture)"
+  ],
+  "contentHash": "sha256:0806317df5c9ddd5368ec268801f0e7b43b2d998a51c9f6244a9ee213146f453",
+  "validation": {
+    "at": "2026-10-27T17:59:37.482Z",
+    "by": "scripts/capture/validate.mjs",
+    "served": "scripts/capture/lib/serve.mjs (frame.js stubbed)",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "liveCapturedAt": "2026-10-27T17:55:37.520Z",
+    "requests": {
+      "outside": 0,
+      "outsideHosts": {},
+      "missing": []
+    },
+    "frameTagFirst": true,
+    "pixels": {
+      "firstScreen": {
+        "pct": 0,
+        "target": 0.5,
+        "pass": true,
+        "size": [
+          1170,
+          2532
+        ],
+        "bandsCssPx": []
+      },
+      "fullPage": {
+        "pct": 0.12,
+        "target": 2,
+        "pass": true,
+        "liveSize": [
+          390,
+          8722
+        ],
+        "copySize": [
+          390,
+          8722
+        ],
+        "bandsCssPx": [
+          [
+            3006,
+            3138,
+            3263
+          ],
+          [
+            3150,
+            3251,
+            974
+          ]
+        ]
+      }
+    },
+    "layout": {
+      "scrollHeight": {
+        "live": 8722,
+        "copy": 8722,
+        "pass": true
+      },
+      "scrollWidth": {
+        "live": 390,
+        "copy": 390,
+        "pass": true
+      },
+      "links": {
+        "live": 189,
+        "copy": 189,
+        "pass": true
+      },
+      "visibleLinks": {
+        "live": 32,
+        "copy": 32,
+        "pass": true
+      },
+      "headings": {
+        "live": 4,
+        "copy": 4,
+        "pass": true
+      },
+      "headingOrder": {
+        "live": 4,
+        "copy": 4,
+        "pass": true
+      },
+      "tapTargets": {
+        "live": 70,
+        "copy": 70,
+        "pass": true
+      },
+      "tapUnder44": {
+        "live": 53,
+        "copy": 53,
+        "pass": true
+      },
+      "tapUnder24": {
+        "live": 40,
+        "copy": 40,
+        "pass": true
+      },
+      "bodyFontPx": {
+        "live": 14,
+        "copy": 14,
+        "pass": true
+      },
+      "paraFontPx": {
+        "live": null,
+        "copy": null,
+        "pass": true
+      },
+      "textUnder16Pct": {
+        "live": 84.3,
+        "copy": 84.3,
+        "pass": true
+      },
+      "fixedCoverTopPct": {
+        "live": 56,
+        "copy": 56,
+        "pass": true
+      },
+      "fixedCoverMidPct": {
+        "live": 56,
+        "copy": 56,
+        "pass": true
+      },
+      "visibleElements": {
+        "live": 1802,
+        "copy": 1802,
+        "pass": true
+      },
+      "imagesVisible": {
+        "live": 6,
+        "copy": 6,
+        "pass": true
+      },
+      "firstScreenText": {
+        "live": "439:1755803486",
+        "copy": "439:1755803486",
+        "pass": true
+      },
+      "loadedFontFamilies": {
+        "live": "Proxima Nova, proxima-nova",
+        "copy": "Proxima Nova, proxima-nova",
+        "pass": true
+      }
+    },
+    "widths": [
+      {
+        "w": 390,
+        "live": {
+          "scrollWidth": 390,
+          "scrollHeight": 8472,
+          "overflowing": 0
+        },
+        "copy": {
+          "scrollWidth": 390,
+          "scrollHeight": 8722,
+          "overflowing": 0,
+          "sample": []
+        },
+        "pass": true
+      },
+      {
+        "w": 312,
+        "live": {
+          "scrollWidth": 312,
+          "scrollHeight": 8426,
+          "overflowing": 0
+        },
+        "copy": {
+          "scrollWidth": 312,
+          "scrollHeight": 8676,
+          "overflowing": 0,
+          "sample": []
+        },
+        "pass": true
+      },
+      {
+        "w": 260,
+        "live": {
+          "scrollWidth": 260,
+          "scrollHeight": 8365,
+          "overflowing": 0
+        },
+        "copy": {
+          "scrollWidth": 260,
+          "scrollHeight": 8615,
+          "overflowing": 0,
+          "sample": []
+        },
+        "pass": true
+      },
+      {
+        "w": 223,
+        "live": {
+          "scrollWidth": 237,
+          "scrollHeight": 8387,
+          "overflowing": 2
+        },
+        "copy": {
+          "scrollWidth": 237,
+          "scrollHeight": 8637,
+          "overflowing": 2,
+          "sample": [
+            "div.c-opponent-history-detail-page__resume-last-matchup__logos.mt-[32px] 237",
+            "div.s-text-hero.text-theme-safe-light 237"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 195,
+        "live": {
+          "scrollWidth": 223,
+          "scrollHeight": 8660,
+          "overflowing": 7
+        },
+        "copy": {
+          "scrollWidth": 223,
+          "scrollHeight": 8910,
+          "overflowing": 7,
+          "sample": [
+            "div.c-opponent-history-detail-page__resume-last-matchup__logos.mt-[32px] 223",
+            "div.s-text-hero.text-theme-safe-light 223",
+            "div.bottom-footer__left.s-text-title 207",
+            "div.bottom-footer__details 207",
+            "ul.bottom-footer__links 207",
+            "li.bottom-footer__links-item 207"
+          ]
+        },
+        "pass": true
+      }
+    ],
+    "behaviours": [
+      {
+        "name": "cookie notice: shown at load, X closes it",
+        "live": {
+          "parent": "HTML",
+          "coverBefore": 38,
+          "coverAfter": 0
+        },
+        "copy": {
+          "parent": "HTML",
+          "coverBefore": 38,
+          "coverAfter": 0
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "menu: open, \"Tickets\", then \"Sports\"",
+        "live": {
+          "expanded": "true",
+          "open": true,
+          "icon": "s-icon s-icon-close c-navigation__toggle-icon",
+          "ticketsExpanded": "true",
+          "sportsExpanded": "true",
+          "ticketsExpandedAfter": "false",
+          "sportsOpen": true,
+          "l2Height": 1138
+        },
+        "copy": {
+          "expanded": "true",
+          "open": true,
+          "icon": "s-icon s-icon-close c-navigation__toggle-icon",
+          "ticketsExpanded": "true",
+          "sportsExpanded": "true",
+          "ticketsExpandedAfter": "false",
+          "sportsOpen": true,
+          "l2Height": 1138
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "calendar: open, \"Results\" tab",
+        "live": {
+          "expanded": "true",
+          "icon": "s-icon s-icon-close s-events__toggle-icon",
+          "resultsSelected": "true",
+          "upcomingShown": false,
+          "resultsShown": true,
+          "results": 10
+        },
+        "copy": {
+          "expanded": "true",
+          "icon": "s-icon s-icon-close s-events__toggle-icon",
+          "resultsSelected": "true",
+          "upcomingShown": false,
+          "resultsShown": true,
+          "results": 10
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "calendar: filter Upcoming by \"Baseball\", then \"All Sports\"",
+        "live": {
+          "startValue": "24",
+          "startItems": 13,
+          "baseballLabel": "Filter by sports. Active filter: Baseball",
+          "baseballItems": 5,
+          "baseballFirst": "Upcoming Event: Baseball versus Ontario Blue Jays on Oct 28,",
+          "allItems": 8,
+          "allFirst": "Upcoming Event: Men's Tennis versus M25 Las Vegas on Oct 26,"
+        },
+        "copy": {
+          "startValue": "24",
+          "startItems": 13,
+          "baseballLabel": "Filter by sports. Active filter: Baseball",
+          "baseballItems": 5,
+          "baseballFirst": "Upcoming Event: Baseball versus Ontario Blue Jays on Oct 28,",
+          "allItems": 8,
+          "allFirst": "Upcoming Event: Men's Tennis versus M25 Las Vegas on Oct 26,"
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "\"More +\" opens the sport menu, then \"Facilities\"",
+        "live": {
+          "label": "More -",
+          "expanded": "true",
+          "open": true,
+          "facilitiesExpanded": "true",
+          "dropdownOpen": true,
+          "dropdownHeight": 104
+        },
+        "copy": {
+          "label": "More -",
+          "expanded": "true",
+          "open": true,
+          "facilitiesExpanded": "true",
+          "dropdownOpen": true,
+          "dropdownHeight": 104
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "results table scrolls sideways (shadow classes)",
+        "live": {
+          "atStart": "scroll-right",
+          "middle": "scroll-left scroll-right",
+          "atEnd": "scroll-left",
+          "maxScroll": 350,
+          "tableWidth": 672
+        },
+        "copy": {
+          "atStart": "scroll-right",
+          "middle": "scroll-left scroll-right",
+          "atEnd": "scroll-left",
+          "maxScroll": 350,
+          "tableWidth": 672
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "\"Links\" menu of October 15, 2022",
+        "live": {
+          "shown": true,
+          "items": "Box Score, Recap, Pregame Notes, Postgame Notes",
+          "chevron": "s-icon s-icon-chevron-up s-icon--size-small",
+          "dx": -181,
+          "dy": 10,
+          "width": 260,
+          "height": 212
+        },
+        "copy": {
+          "shown": true,
+          "items": "Box Score, Recap, Pregame Notes, Postgame Notes",
+          "chevron": "s-icon s-icon-chevron-up s-icon--size-small",
+          "dx": -181,
+          "dy": 10,
+          "width": 260,
+          "height": 212
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "video pop-up opens and closes",
+        "live": {
+          "modal": true,
+          "title": "Eric Singleton Jr. Media Availability 10-27-26",
+          "top": 0,
+          "height": 844,
+          "closed": true
+        },
+        "copy": {
+          "modal": true,
+          "title": "Eric Singleton Jr. Media Availability 10-27-26",
+          "top": 0,
+          "height": 844,
+          "closed": true
+        },
+        "pass": true,
+        "diffs": []
+      }
+    ],
+    "roundTrip": {
+      "mismatches": 0,
+      "rootCauses": 0,
+      "parserAdded": 0
+    },
+    "pass": {
+      "hard": true,
+      "pixels": true,
+      "layout": true,
+      "widths": true,
+      "behaviours": true
+    },
+    "notes": [
+      "Ads are pinned on both sides: the live reference comes from a load whose 300x250 filled where the copy keeps it, with the other ad rows emptied and the same 1200 px lazy reveal applied, so heights and pixels compare like for like. A fresh live load differs in its ads (random fills, none on about half the loads).",
+      "The copy focuses the notice's close button at load, as Transcend does (data-initialfocus); the focus ring is part of the first-screen match.",
+      "\"Hide advertisement\" is not in the live/copy checks (fresh live loads rarely have an ad): on a filled live load it sets aria-pressed=\"true\", hides the .s-advert and removes the button; the copy does the same (row back to 34 px), tapped in the dev-server test.",
+      "Tapped in the copy but not compared with live by the checks: the notice's language list and \"Go back\", the footer \"Do Not Sell or Share My Personal Information\" view and its close, a calendar event's media overlay, the video pop-up's close button and backdrop.",
+      "Not reproduced: choosing a language (the notice stays in English), playing a video (the pop-up shows a picture of its player), the menu's search box (no results); the calendar lists and related videos are as the site drew them on 2026-10-27.",
+      "Measured in Chromium only, not in WebKit or on a real phone.",
+      "Ad: the 300x250 sits in the table's first ad row (between the 2019 and 2018 games). The captured load also had a 320x50 in the second ad row; it was emptied so each Gators page carries one ad."
+    ]
+  }
+}

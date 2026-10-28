@@ -3,7 +3,8 @@
 
 import type { Polarity } from '@webable/core';
 import type { JSX } from 'preact';
-import { useMemo, useRef, useState } from 'preact/hooks';
+import { useContext, useMemo, useRef, useState } from 'preact/hooks';
+import { StepLabelsContext } from '../ui/words';
 import { SENTENCES, type Sentence } from '../content/sentences';
 import { STIMULUS_FONT } from '../logic/env';
 import { shuffle } from '../logic/rand';
@@ -22,6 +23,7 @@ function nearPx(ladder: ReadonlyArray<{ px: number; correct: boolean; cant?: boo
 }
 
 export function LightDarkTask(props: TaskProps): JSX.Element {
+  const L = useContext(StepLabelsContext);
   const { raw } = props;
   const pool = useMemo(() => shuffle(SENTENCES, props.rng).slice(0, SIDES.length), []);
   const eff = useMemo(() => nearPx(raw.ladder, raw.seedPx), []);
@@ -67,19 +69,19 @@ export function LightDarkTask(props: TaskProps): JSX.Element {
   if (asking) {
     return (
       <TaskLayout
-        title="Which felt easier to read?"
+        title={L.ldAskTitle}
         stageClass="is-ld-ask"
         focusTitle
         actions={
           <>
             <Answer id="light" pressed={pressed} onClick={() => choose('light', 'light')} keys="L">
-              Light
+              {L.light}
             </Answer>
             <Answer id="dark" pressed={pressed} onClick={() => choose('dark', 'dark')} keys="D">
-              Dark
+              {L.dark}
             </Answer>
             <Answer id="same" kind="quiet" pressed={pressed} onClick={() => choose('none', 'same')} keys="S">
-              About the same
+              {L.same}
             </Answer>
           </>
         }
@@ -102,16 +104,17 @@ export function LightDarkTask(props: TaskProps): JSX.Element {
 
   return (
     <TaskLayout
-      title="True or false?"
+      title={L.tfTitle}
+      sub={L.ldLine}
       stageClass={`is-read is-ld ${side === 'dark' ? 'is-dark' : ''}`}
       focusTitle={n === 0}
       actions={
         <>
           <Answer id="true" pressed={pressed} onClick={() => reply('true')} keys="T">
-            True
+            {L.yes}
           </Answer>
           <Answer id="false" pressed={pressed} onClick={() => reply('false')} keys="F">
-            False
+            {L.no}
           </Answer>
         </>
       }

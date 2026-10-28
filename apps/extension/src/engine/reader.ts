@@ -1000,7 +1000,10 @@ export class PageReader {
     const keptById = new Map(kept.map((d) => [d.info.id, d] as const));
     for (const d of kept) d.score = digestScore(d.info, vw) + contentBonus(d, keptById);
     // Nodes added only as regions are not candidates for element judgments (they go in `regions`); data boxes are.
-    const picked = pickDigest(kept.filter((d) => !d.forced || d.node.data));
+    // An article's body is what the page exists to show: it always has a place, so Jev gives it a role (body text)
+    // and the meaning check sees the story, not a headline among ads and buttons.
+    const bodyId = ext.article?.bodyId ?? null;
+    const picked = pickDigest(kept.filter((d) => !d.forced || d.node.data || d.info.id === bodyId), bodyId);
     const evidence: ElementEvidence[] = picked.map((d) => toEvidence(d, forms, vw, vh, sx, sy, docH, kept));
     const keptIds = new Set(kept.map((d) => d.info.id));
     const regionDrafts = ext.regions.filter((d) => keptIds.has(d.info.id));
@@ -1404,7 +1407,7 @@ function countVisibleChildren(el: Element): number {
 }
 
 /** Number of repeated sibling cards (same tag and class signature, each with a link or heading), or 0. */
-function repeatedCards(el: Element): number {
+export function repeatedCards(el: Element): number {
   const kids = el.children;
   if (kids.length < 4 || kids.length > 400) return 0;
   const counts = new Map<string, number>();
@@ -1416,10 +1419,19 @@ function repeatedCards(el: Element): number {
     if (n > best) best = n;
   }
   if (best < 4) return 0;
-  // Each card needs a titled link or heading.
+  // A run of paragraphs is prose (an article body), not cards, even when its sentences carry links.
+  const top = [...counts.entries()].find(([, n]) => n === best)?.[0] ?? '';
+  if (top.startsWith('P.')) return 0;
+  // Each card needs a heading, a button, or a link that titles it: a link that is a word inside a sentence doesn't.
   let titled = 0;
   for (const k of Array.from(kids).slice(0, 12)) {
-    if (k.querySelector('a[href], h2, h3, h4, button')) titled++;
+    if (k.querySelector('h2, h3, h4, button')) {
+      titled++;
+      continue;
+    }
+    const all = (k.textContent ?? '').trim().length;
+    const linked = Array.from(k.querySelectorAll('a[href]')).reduce((n, a) => n + (a.textContent ?? '').trim().length, 0);
+    if (linked > 0 && (all < 40 || linked >= 0.4 * all)) titled++;
   }
   return titled >= Math.min(4, kids.length) ? best : 0;
 }
@@ -1764,7 +1776,7 @@ function dupSignature(n: NodeInfo): string | null {
 
 const MAX_SAME = 3;
 
-function pickDigest(drafts: Draft[]): Draft[] {
+function pickDigest(drafts: Draft[], reserved: string | null = null): Draft[] {
   const quotas: Record<string, number> = { overlay: 6, container: 12, help: 5, field: 5, content: 4, nav: 3, action: 18, other: 6, data: 10 };
   const bucketOf = (n: NodeInfo, d: Draft): string => {
     if (n.overlay || n.consent) return 'overlay';
@@ -1779,10 +1791,11 @@ function pickDigest(drafts: Draft[]): Draft[] {
     if (n.kind === 'button' || n.kind === 'link') return n.landmark === 'navigation' || n.zone === 'header_band' ? 'nav' : 'action';
     return 'other';
   };
-  const ranked = [...drafts].filter((d) => d.score > 0.5).sort((a, b) => b.score - a.score || a.order - b.order);
+  const ranked = [...drafts].filter((d) => d.score > 0.5 && d.info.id !== reserved).sort((a, b) => b.score - a.score || a.order - b.order);
   const used: Record<string, number> = {};
   const same = new Map<string, number>();
-  const chosen: Draft[] = [];
+  const kept = reserved ? drafts.find((d) => d.info.id === reserved) : undefined;
+  const chosen: Draft[] = kept ? [kept] : [];
   const leftovers: Draft[] = [];
   const repeats: Draft[] = [];
   for (const d of ranked) {

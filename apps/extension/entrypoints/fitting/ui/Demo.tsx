@@ -1,8 +1,10 @@
 // Tiny looping illustrations of each step for the instruction card. Pure CSS; a still frame under reduced motion.
 
 import type { JSX } from 'preact';
+import { useContext } from 'preact/hooks';
 import { RING_COUNT, RING_ORDER } from '../logic/pointing';
 import type { StepId } from '../logic/steps';
+import { StepLabelsContext } from './words';
 
 function Lines(props: { widths: number[] }): JSX.Element {
   return (
@@ -15,6 +17,7 @@ function Lines(props: { widths: number[] }): JSX.Element {
 }
 
 function SizeDemo(): JSX.Element {
+  const L = useContext(StepLabelsContext);
   return (
     <div class="dm-col">
       <div class="dm-card dm-size">
@@ -23,14 +26,15 @@ function SizeDemo(): JSX.Element {
         </div>
       </div>
       <div class="dm-row">
-        <span class="dm-pill">Smaller</span>
-        <span class="dm-pill dm-press-b">Larger</span>
+        <span class="dm-pill">{L.smaller}</span>
+        <span class="dm-pill dm-press-b">{L.larger}</span>
       </div>
     </div>
   );
 }
 
 function TrueFalseDemo(): JSX.Element {
+  const L = useContext(StepLabelsContext);
   return (
     <div class="dm-col">
       <div class="dm-card dm-tf">
@@ -39,8 +43,8 @@ function TrueFalseDemo(): JSX.Element {
         </span>
       </div>
       <div class="dm-row">
-        <span class="dm-pill dm-press-a">True</span>
-        <span class="dm-pill dm-press-b">False</span>
+        <span class="dm-pill dm-press-a">{L.yes}</span>
+        <span class="dm-pill dm-press-b">{L.no}</span>
       </div>
     </div>
   );

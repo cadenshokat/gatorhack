@@ -1,0 +1,16 @@
+{
+  "id": "news-A",
+  "replicaId": "ap-vangogh",
+  "family": "news",
+  "set": "A",
+  "prompt": "Find out what year Kim went to France to look at the night sky",
+  "question": "What year did Kim go to France to look at the night sky?",
+  "short": "Year Kim went to France",
+  "label": "AP News, the story about the painting The Starry Night",
+  "tag": "the Starry Night story",
+  "choices": ["1889", "2003", "2019", "2026"],
+  "correct": 2,
+  "answerText": "Kim traveled to France in 2019",
+  "answerSelector": ".RichTextStoryBody > p:nth-of-type(12)",
+  "answerDepthScreens": 3.57
+}

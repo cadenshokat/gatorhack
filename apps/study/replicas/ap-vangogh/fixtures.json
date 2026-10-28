@@ -1,0 +1,5126 @@
+{
+ "v": "study-fixtures.1",
+ "replicaId": "ap-vangogh",
+ "version": "5",
+ "servePath": "/article/van-gogh-starry-night-space-6385c8e37f748bddc4137cdda5c76887",
+ "originalHost": "apnews.com",
+ "engineCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "serverCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "models": {
+  "jev": "jev-1.14.0",
+  "compose": "gpt-5.4-mini"
+ },
+ "recordedAt": "2026-10-27T22:27:15.180Z",
+ "matrix": {
+  "fits": [
+   "typical",
+   "rosa",
+   "reader",
+   "large",
+   "calm"
+  ],
+  "heights": [
+   456,
+   520,
+   600,
+   664,
+   760
+  ],
+  "engines": [
+   "chromium"
+  ],
+  "canonical": {
+   "fit": "typical",
+   "h": 664
+  }
+ },
+ "understand": {
+  "page": {
+   "purpose": {
+    "kind": "article",
+    "p": 1,
+    "probs": {
+     "record_stats": 0,
+     "scoreboard": 0,
+     "schedule": 0,
+     "standings": 0,
+     "roster": 0,
+     "article": 1,
+     "news_index": 0,
+     "recipe": 0,
+     "product": 0,
+     "search_results": 0,
+     "form_task": 0,
+     "checkout": 0,
+     "sign_in": 0,
+     "account_dashboard": 0,
+     "bill_statement": 0,
+     "appointment": 0,
+     "status_lookup": 0,
+     "info_guide": 0,
+     "faq": 0,
+     "directory_listing": 0,
+     "location_hours": 0,
+     "calendar_dates": 0,
+     "comparison": 0,
+     "video": 0,
+     "gallery": 0,
+     "home_portal": 0,
+     "course_lesson": 0,
+     "course_overview": 0,
+     "live_blog": 0,
+     "product_listing": 0,
+     "game_detail": 0,
+     "other": 0
+    }
+   },
+   "mainRegion": {
+    "id": "n219",
+    "p": 0.46,
+    "probs": {
+     "n16": 0.045,
+     "n219": 0.585,
+     "n220": 0.36,
+     "n92": 0,
+     "n221": 0.005,
+     "n222": 0,
+     "none": 0.005
+    }
+   },
+   "mainPick": {
+    "id": "none",
+    "p": 0.87,
+    "probs": {
+     "n4": 0,
+     "n27": 0.02,
+     "n34": 0.05,
+     "n37": 0.01,
+     "n41": 0.02,
+     "n42": 0.02,
+     "n48": 0,
+     "n61": 0,
+     "n71": 0,
+     "n98": 0,
+     "n107": 0,
+     "n108": 0,
+     "n112": 0.01,
+     "n113": 0,
+     "n114": 0,
+     "n115": 0,
+     "n116": 0,
+     "n118": 0,
+     "n119": 0,
+     "n158": 0,
+     "none": 0.87
+    }
+   },
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 5,
+    "questions": 217,
+    "inputTokens": 108178,
+    "wallMs": 307,
+    "serverMs": 222,
+    "costUsd": 0.004543476
+   },
+   "ids": {
+    "n2": [
+     "div|region|· home page / Sign in /|none|page header sticky wrap||",
+     true
+    ],
+    "n4": [
+     "a|link (image)|home page|none||this website|",
+     true
+    ],
+    "n18": [
+     "h1|heading level 1|New study traces van [name]'s famed ‘[name] Night’ to an actual night sky from [number]|none|page headline||",
+     true
+    ],
+    "n27": [
+     "button|button|Read More|main|read more button||",
+     false
+    ],
+    "n34": [
+     "button|button|Read More|main|read more button||",
+     false
+    ],
+    "n37": [
+     "button|button|Next|main|button prev next carousel controls||",
+     true
+    ],
+    "n41": [
+     "button|button|Add AP News on [name] Add AP News as your preferred source to see more…|main|page actions||",
+     true
+    ],
+    "n42": [
+     "button|button|Share|main|page actions||",
+     true
+    ],
+    "n44": [
+     "div|region|Links: Report Ad|main|ad mobile||",
+     true
+    ],
+    "n45": [
+     "bsp-header-leaderboard|region|Links: Report Ad|main|page header ad||",
+     true
+    ],
+    "n46": [
+     "div|region|Links: Report Ad|main|free advertisement||",
+     true
+    ],
+    "n48": [
+     "div|button|Report Ad|main|||",
+     false
+    ],
+    "n218": [
+     "div|region|CAPE CANAVERAL, Fla. (AP) — Scientists doubling as… · The Starry Night / van Gogh’s…|main|story body||",
+     true
+    ],
+    "n58": [
+     "div|region|Links: Report Ad|main|free advertisement fs feed ad||",
+     false
+    ],
+    "n59": [
+     "div|region|Links: Report Ad|main|||",
+     true
+    ],
+    "n60": [
+     "iframe|none|Advertisement|main|||inline_frame",
+     false
+    ],
+    "n61": [
+     "div|button|Report Ad|main|||",
+     false
+    ],
+    "n68": [
+     "div|region|Links: Report Ad|main|free advertisement fs feed ad||",
+     false
+    ],
+    "n70": [
+     "iframe|none|Advertisement|main|||inline_frame",
+     false
+    ],
+    "n71": [
+     "div|button|Report Ad|main|||",
+     false
+    ],
+    "n79": [
+     "iframe|none|Advertisement|main|||ad_network",
+     true
+    ],
+    "n89": [
+     "div|region|Powered By [number]K 0 .clsx-1{isolation:isolate;}.clsx-2{fill:#ff3e5f;}.clsx-3{fill:#fff;} Skip Ad|main|native player ad container div||",
+     true
+    ],
+    "n94": [
+     "iframe|none|Advertisement|main|||inline_frame",
+     false
+    ],
+    "n96": [
+     "div|region|Conversation Navigation · Jump to log in… / All Comments, 41 items / NEWEST|region|vf comments last child no||",
+     true
+    ],
+    "n98": [
+     "button|button|Jump to log in or sign Up|region|vf no outline small||",
+     true
+    ],
+    "n99": [
+     "textarea|textbox|Join the conversation|region|vf content editor input form||",
+     true
+    ],
+    "n101": [
+     "button|tab|All Comments, 41 items|navigation|all button vf nav accent colour||",
+     true
+    ],
+    "n107": [
+     "button|button||region|vf no outline small||",
+     false
+    ],
+    "n108": [
+     "button|button|AdamPHutter|region|vf button no outline link||",
+     true
+    ],
+    "n110": [
+     "p|text|Two questions. First is Why? Don’t they have Anything better to do? 🤷🏼😉|region|||",
+     true
+    ],
+    "n112": [
+     "button|button|Reply to AdamPHutter's comment.|region|vf button no outline accent color||",
+     true
+    ],
+    "n113": [
+     "button|button|0 likes, like.|region|vf button no outline size large||",
+     true
+    ],
+    "n114": [
+     "button|button|0 dislikes, dislike.|region|vf button no outline size large||",
+     true
+    ],
+    "n115": [
+     "button|button|share|region|vf button no outline link||",
+     true
+    ],
+    "n116": [
+     "button|button|report|region|vf button no outline accent||",
+     true
+    ],
+    "n118": [
+     "button|button||region|vf no outline small||",
+     false
+    ],
+    "n119": [
+     "button|button|Bahma|region|vf button no outline link||",
+     true
+    ],
+    "n157": [
+     "li|region|Links: A trending article titled…|main|vf trending article list item||",
+     true
+    ],
+    "n158": [
+     "a|link|A trending article titled \"AP investigation: Documents support claim ICE has detained a mentally ill…|main|vf trending article|this website|",
+     true
+    ],
+    "n173": [
+     "li|text|Contact Us|navigation|footer navigation item||",
+     true
+    ],
+    "n16": [
+     "div|region holding headings x1, links x1|New study traces van [name]'s famed ‘[name]… · Science|none|story page gtm main scroll||",
+     true
+    ],
+    "n219": [
+     "div|region holding paragraphs x2, pictures x2, video or embed x1, buttons x4|New study traces van [name]'s famed ‘[name]… · Read More / Read More / Previous|main|page gtm main scroll content||",
+     true
+    ],
+    "n220": [
+     "bsp-story-page|region holding cards with pictures x25, paragraphs x20, video or embed x4, buttons x6, links x8|By · MARCIA DUNN / Add AP News on… / Share|main|||",
+     true
+    ],
+    "n92": [
+     "div|region holding video or embed x1, buttons x1, marked as an ad|Links: Report Ad|main|advertisement ntv below article||",
+     true
+    ],
+    "n221": [
+     "div|region holding headings x2, paragraphs x7, lists x2, form fields x1, buttons x34, links x3|Conversation · Jump to log in… / All Comments, 41 items / NEWEST|main|module||",
+     true
+    ],
+    "n222": [
+     "div|region holding video or embed x1||main|module||",
+     true
+    ]
+   }
+  },
+  "elements": [
+   {
+    "id": "n2",
+    "fp": "div|region|· home page / Sign in /|none|page header sticky wrap||",
+    "uniq": true,
+    "j": {
+     "id": "n2",
+     "role": "navigation",
+     "roleP": 0.94,
+     "roleProbs": {
+      "navigation": 0.94
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.03,
+     "fine": "site_nav",
+     "fineP": 0.9400000000000001,
+     "importance": 0.99
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n4",
+    "fp": "a|link (image)|home page|none||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n4",
+     "role": "navigation",
+     "roleP": 0.96,
+     "roleProbs": {
+      "navigation": 0.96
+     },
+     "task": 0.1,
+     "main": 0.03,
+     "help": 0.03,
+     "fine": "site_logo",
+     "fineP": 0.89,
+     "importance": 1.01
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n18",
+    "fp": "h1|heading level 1|New study traces van [name]'s famed ‘[name] Night’ to an actual night sky from [number]|none|page headline||",
+    "uniq": true,
+    "j": {
+     "id": "n18",
+     "role": "main_content",
+     "roleP": 1,
+     "roleProbs": {
+      "main_content": 1
+     },
+     "task": 0.96,
+     "main": 0,
+     "help": 0.01,
+     "fine": "headline",
+     "fineP": 0.9,
+     "importance": 3.95
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n27",
+    "fp": "button|button|Read More|main|read more button||",
+    "uniq": false,
+    "j": {
+     "id": "n27",
+     "role": "action_button",
+     "roleP": 0.82,
+     "roleProbs": {
+      "action_button": 0.82,
+      "advertising": 0.06,
+      "recommendations": 0.04,
+      "other": 0.03
+     },
+     "task": 0.66,
+     "main": 0.2,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.8200000000000001,
+     "importance": 2.09
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n34",
+    "fp": "button|button|Read More|main|read more button||",
+    "uniq": false,
+    "j": {
+     "id": "n34",
+     "role": "action_button",
+     "roleP": 0.82,
+     "roleProbs": {
+      "action_button": 0.82,
+      "navigation": 0.03,
+      "advertising": 0.05,
+      "recommendations": 0.04,
+      "other": 0.04
+     },
+     "task": 0.6,
+     "main": 0.19,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.79,
+     "importance": 2.09
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n37",
+    "fp": "button|button|Next|main|button prev next carousel controls||",
+    "uniq": true,
+    "j": {
+     "id": "n37",
+     "role": "recommendations",
+     "roleP": 0.86,
+     "roleProbs": {
+      "action_button": 0.07,
+      "navigation": 0.05,
+      "recommendations": 0.86
+     },
+     "task": 0.85,
+     "main": 0.11,
+     "help": 0.02,
+     "fine": "carousel",
+     "fineP": 0.86,
+     "importance": 1.96
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n41",
+    "fp": "button|button|Add AP News on [name] Add AP News as your preferred source to see more…|main|page actions||",
+    "uniq": true,
+    "j": {
+     "id": "n41",
+     "role": "action_button",
+     "roleP": 0.36,
+     "roleProbs": {
+      "action_button": 0.36,
+      "advertising": 0.22,
+      "account_utility": 0.22,
+      "other": 0.07
+     },
+     "task": 0.17,
+     "main": 0.08,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.31,
+     "importance": 0.29
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n42",
+    "fp": "button|button|Share|main|page actions||",
+    "uniq": true,
+    "j": {
+     "id": "n42",
+     "role": "other",
+     "roleP": 0.89,
+     "roleProbs": {
+      "action_button": 0.11,
+      "other": 0.89
+     },
+     "task": 0.09,
+     "main": 0.05,
+     "help": 0.02,
+     "fine": "social_share",
+     "fineP": 0.89,
+     "importance": 1.08
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n44",
+    "fp": "div|region|Links: Report Ad|main|ad mobile||",
+    "uniq": true,
+    "j": {
+     "id": "n44",
+     "role": "advertising",
+     "roleP": 0.98,
+     "roleProbs": {
+      "advertising": 0.98
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.22,
+     "fine": "advertising",
+     "fineP": 0.98,
+     "importance": 0.08
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n45",
+    "fp": "bsp-header-leaderboard|region|Links: Report Ad|main|page header ad||",
+    "uniq": true,
+    "j": {
+     "id": "n45",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.21,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n46",
+    "fp": "div|region|Links: Report Ad|main|free advertisement||",
+    "uniq": true,
+    "j": {
+     "id": "n46",
+     "role": "advertising",
+     "roleP": 0.96,
+     "roleProbs": {
+      "advertising": 0.96
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.2,
+     "fine": "advertising",
+     "fineP": 0.91,
+     "importance": 0.13,
+     "paidAsStoryP": 0.13
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n48",
+    "fp": "div|button|Report Ad|main|||",
+    "uniq": false,
+    "j": {
+     "id": "n48",
+     "role": "action_button",
+     "roleP": 0.8,
+     "roleProbs": {
+      "action_button": 0.8,
+      "advertising": 0.11,
+      "account_utility": 0.03,
+      "other": 0.03
+     },
+     "task": 0.15,
+     "main": 0.02,
+     "help": 0.21,
+     "fine": "secondary_action",
+     "fineP": 0.8,
+     "importance": 0.83
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n218",
+    "fp": "div|region|CAPE CANAVERAL, Fla. (AP) — Scientists doubling as… · The Starry Night / van Gogh’s…|main|story body||",
+    "uniq": true,
+    "j": {
+     "id": "n218",
+     "role": "main_content",
+     "roleP": 0.97,
+     "roleProbs": {
+      "main_content": 0.97
+     },
+     "task": 0.96,
+     "main": 0,
+     "help": 0.01,
+     "fine": "body_text",
+     "fineP": 0.97,
+     "importance": 3.95
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n58",
+    "fp": "div|region|Links: Report Ad|main|free advertisement fs feed ad||",
+    "uniq": false,
+    "j": {
+     "id": "n58",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.18,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.05,
+     "paidAsStoryP": 0.22
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n59",
+    "fp": "div|region|Links: Report Ad|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n59",
+     "role": "advertising",
+     "roleP": 0.87,
+     "roleProbs": {
+      "help_contact": 0.03,
+      "advertising": 0.87
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.27,
+     "fine": "advertising",
+     "fineP": 0.8200000000000001,
+     "importance": 0.19
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n60",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n60",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06,
+     "paidAsStoryP": 0.11
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n61",
+    "fp": "div|button|Report Ad|main|||",
+    "uniq": false,
+    "j": {
+     "id": "n61",
+     "role": "action_button",
+     "roleP": 0.8,
+     "roleProbs": {
+      "action_button": 0.8,
+      "advertising": 0.12,
+      "account_utility": 0.03,
+      "other": 0.03
+     },
+     "task": 0.15,
+     "main": 0.02,
+     "help": 0.21,
+     "fine": "secondary_action",
+     "fineP": 0.8,
+     "importance": 0.98
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n68",
+    "fp": "div|region|Links: Report Ad|main|free advertisement fs feed ad||",
+    "uniq": false,
+    "j": {
+     "id": "n68",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.22,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06,
+     "paidAsStoryP": 0.26
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n70",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n70",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.08,
+     "paidAsStoryP": 0.16
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n71",
+    "fp": "div|button|Report Ad|main|||",
+    "uniq": false,
+    "j": {
+     "id": "n71",
+     "role": "action_button",
+     "roleP": 0.73,
+     "roleProbs": {
+      "action_button": 0.73,
+      "advertising": 0.19,
+      "other": 0.04
+     },
+     "task": 0.12,
+     "main": 0.02,
+     "help": 0.19,
+     "fine": "secondary_action",
+     "fineP": 0.73,
+     "importance": 0.87
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n79",
+    "fp": "iframe|none|Advertisement|main|||ad_network",
+    "uniq": true,
+    "j": {
+     "id": "n79",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06,
+     "paidAsStoryP": 0.12
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n89",
+    "fp": "div|region|Powered By [number]K 0 .clsx-1{isolation:isolate;}.clsx-2{fill:#ff3e5f;}.clsx-3{fill:#fff;} Skip Ad|main|native player ad container div||",
+    "uniq": true,
+    "j": {
+     "id": "n89",
+     "role": "advertising",
+     "roleP": 0.93,
+     "roleProbs": {
+      "popup_overlay": 0.03,
+      "advertising": 0.93
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.01,
+     "fine": "advertising",
+     "fineP": 0.93,
+     "importance": 0.06,
+     "paidAsStoryP": 0.09
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n94",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n94",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.04,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06,
+     "paidAsStoryP": 0.18
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n96",
+    "fp": "div|region|Conversation Navigation · Jump to log in… / All Comments, 41 items / NEWEST|region|vf comments last child no||",
+    "uniq": true,
+    "j": {
+     "id": "n96",
+     "role": "other",
+     "roleP": 0.9,
+     "roleProbs": {
+      "navigation": 0.08,
+      "other": 0.9
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.03,
+     "fine": "comments",
+     "fineP": 0.9,
+     "importance": 2.65
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n98",
+    "fp": "button|button|Jump to log in or sign Up|region|vf no outline small||",
+    "uniq": true,
+    "j": {
+     "id": "n98",
+     "role": "account_utility",
+     "roleP": 0.8,
+     "roleProbs": {
+      "action_button": 0.03,
+      "account_utility": 0.8,
+      "advertising": 0.1
+     },
+     "task": 0.11,
+     "main": 0.07,
+     "help": 0.02,
+     "fine": "login_prompt",
+     "fineP": 0.5700000000000001,
+     "importance": 1.11
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n99",
+    "fp": "textarea|textbox|Join the conversation|region|vf content editor input form||",
+    "uniq": true,
+    "j": {
+     "id": "n99",
+     "role": "form_field",
+     "roleP": 0.91,
+     "roleProbs": {
+      "form_field": 0.91,
+      "other": 0.09
+     },
+     "task": 0.45,
+     "main": 0,
+     "help": 0.03,
+     "fine": "form_field",
+     "fineP": 0.91,
+     "importance": 2.92
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n101",
+    "fp": "button|tab|All Comments, 41 items|navigation|all button vf nav accent colour||",
+    "uniq": true,
+    "j": {
+     "id": "n101",
+     "role": "navigation",
+     "roleP": 0.86,
+     "roleProbs": {
+      "action_button": 0.03,
+      "navigation": 0.86,
+      "other": 0.11
+     },
+     "task": 0.18,
+     "main": 0,
+     "help": 0.02,
+     "fine": "tabs",
+     "fineP": 0.83,
+     "importance": 2.15
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n107",
+    "fp": "button|button||region|vf no outline small||",
+    "uniq": false,
+    "j": {
+     "id": "n107",
+     "role": "action_button",
+     "roleP": 0.44,
+     "roleProbs": {
+      "action_button": 0.44,
+      "navigation": 0.04,
+      "other": 0.42,
+      "account_utility": 0.03
+     },
+     "task": 0.39,
+     "main": 0.09,
+     "help": 0.07,
+     "fine": "secondary_action",
+     "fineP": 0.41000000000000003,
+     "importance": 1.68
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n108",
+    "fp": "button|button|AdamPHutter|region|vf button no outline link||",
+    "uniq": true,
+    "j": {
+     "id": "n108",
+     "role": "other",
+     "roleP": 0.34,
+     "roleProbs": {
+      "main_content": 0.15,
+      "action_button": 0.32,
+      "other": 0.34,
+      "account_utility": 0.11
+     },
+     "task": 0.27,
+     "main": 0.07,
+     "help": 0.04,
+     "fine": "secondary_action",
+     "fineP": 0.32,
+     "importance": 1.86
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n110",
+    "fp": "p|text|Two questions. First is Why? Don’t they have Anything better to do? 🤷🏼😉|region|||",
+    "uniq": true,
+    "j": {
+     "id": "n110",
+     "role": "other",
+     "roleP": 0.74,
+     "roleProbs": {
+      "main_content": 0.23,
+      "other": 0.74
+     },
+     "task": 0.29,
+     "main": 0,
+     "help": 0.02,
+     "fine": "comments",
+     "fineP": 0.74,
+     "importance": 2.61
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n112",
+    "fp": "button|button|Reply to AdamPHutter's comment.|region|vf button no outline accent color||",
+    "uniq": true,
+    "j": {
+     "id": "n112",
+     "role": "action_button",
+     "roleP": 0.77,
+     "roleProbs": {
+      "action_button": 0.77,
+      "other": 0.23
+     },
+     "task": 0.18,
+     "main": 0.07,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.77,
+     "importance": 2.57
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n113",
+    "fp": "button|button|0 likes, like.|region|vf button no outline size large||",
+    "uniq": true,
+    "j": {
+     "id": "n113",
+     "role": "action_button",
+     "roleP": 0.54,
+     "roleProbs": {
+      "action_button": 0.54,
+      "other": 0.41
+     },
+     "task": 0.41,
+     "main": 0.06,
+     "help": 0.01,
+     "fine": "secondary_action",
+     "fineP": 0.54,
+     "importance": 1.7
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n114",
+    "fp": "button|button|0 dislikes, dislike.|region|vf button no outline size large||",
+    "uniq": true,
+    "j": {
+     "id": "n114",
+     "role": "action_button",
+     "roleP": 0.76,
+     "roleProbs": {
+      "main_content": 0.04,
+      "action_button": 0.76,
+      "other": 0.19
+     },
+     "task": 0.37,
+     "main": 0.04,
+     "help": 0.01,
+     "fine": "secondary_action",
+     "fineP": 0.76,
+     "importance": 2.03
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n115",
+    "fp": "button|button|share|region|vf button no outline link||",
+    "uniq": true,
+    "j": {
+     "id": "n115",
+     "role": "other",
+     "roleP": 0.88,
+     "roleProbs": {
+      "action_button": 0.12,
+      "other": 0.88
+     },
+     "task": 0.09,
+     "main": 0.05,
+     "help": 0.02,
+     "fine": "social_share",
+     "fineP": 0.88,
+     "importance": 1.05
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n116",
+    "fp": "button|button|report|region|vf button no outline accent||",
+    "uniq": true,
+    "j": {
+     "id": "n116",
+     "role": "action_button",
+     "roleP": 0.83,
+     "roleProbs": {
+      "action_button": 0.83,
+      "other": 0.15
+     },
+     "task": 0.39,
+     "main": 0.06,
+     "help": 0.19,
+     "fine": "secondary_action",
+     "fineP": 0.83,
+     "importance": 1.8
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n118",
+    "fp": "button|button||region|vf no outline small||",
+    "uniq": false,
+    "j": {
+     "id": "n118",
+     "role": "action_button",
+     "roleP": 0.43,
+     "roleProbs": {
+      "action_button": 0.43,
+      "navigation": 0.04,
+      "other": 0.42
+     },
+     "task": 0.37,
+     "main": 0.09,
+     "help": 0.08,
+     "fine": "secondary_action",
+     "fineP": 0.4,
+     "importance": 1.69
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n119",
+    "fp": "button|button|Bahma|region|vf button no outline link||",
+    "uniq": true,
+    "j": {
+     "id": "n119",
+     "role": "action_button",
+     "roleP": 0.41,
+     "roleProbs": {
+      "main_content": 0.03,
+      "action_button": 0.41,
+      "navigation": 0.04,
+      "other": 0.37
+     },
+     "task": 0.27,
+     "main": 0.06,
+     "help": 0.05,
+     "fine": "secondary_action",
+     "fineP": 0.41000000000000003,
+     "importance": 1.3
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n157",
+    "fp": "li|region|Links: A trending article titled…|main|vf trending article list item||",
+    "uniq": true,
+    "j": {
+     "id": "n157",
+     "role": "recommendations",
+     "roleP": 0.87,
+     "roleProbs": {
+      "main_content": 0.12,
+      "recommendations": 0.87
+     },
+     "task": 0.13,
+     "main": 0,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.87,
+     "importance": 0.44
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n158",
+    "fp": "a|link|A trending article titled \"AP investigation: Documents support claim ICE has detained a mentally ill…|main|vf trending article|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n158",
+     "role": "recommendations",
+     "roleP": 0.95,
+     "roleProbs": {
+      "main_content": 0.05,
+      "recommendations": 0.95
+     },
+     "task": 0.11,
+     "main": 0.03,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.95,
+     "importance": 0.25
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n173",
+    "fp": "li|text|Contact Us|navigation|footer navigation item||",
+    "uniq": true,
+    "j": {
+     "id": "n173",
+     "role": "help_contact",
+     "roleP": 0.83,
+     "roleProbs": {
+      "navigation": 0.1,
+      "help_contact": 0.83,
+      "legal_footer": 0.04
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.89,
+     "fine": "contact_info",
+     "fineP": 0.8,
+     "importance": 1.01
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n16",
+    "fp": "div|region holding headings x1, links x1|New study traces van [name]'s famed ‘[name]… · Science|none|story page gtm main scroll||",
+    "uniq": true,
+    "j": {
+     "id": "n16",
+     "role": "main_content",
+     "roleP": 0.83,
+     "roleProbs": {
+      "main_content": 0.83,
+      "recommendations": 0.06
+     },
+     "task": 0.81,
+     "main": 0,
+     "help": 0.02,
+     "fine": "headline",
+     "fineP": 0.54,
+     "importance": 3.21
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n219",
+    "fp": "div|region holding paragraphs x2, pictures x2, video or embed x1, buttons x4|New study traces van [name]'s famed ‘[name]… · Read More / Read More / Previous|main|page gtm main scroll content||",
+    "uniq": true,
+    "j": {
+     "id": "n219",
+     "role": "main_content",
+     "roleP": 0.82,
+     "roleProbs": {
+      "main_content": 0.82,
+      "recommendations": 0.03,
+      "other": 0.09
+     },
+     "task": 0.88,
+     "main": 0,
+     "help": 0.02,
+     "fine": "body_text",
+     "fineP": 0.8200000000000001,
+     "importance": 3.77
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n220",
+    "fp": "bsp-story-page|region holding cards with pictures x25, paragraphs x20, video or embed x4, buttons x6, links x8|By · MARCIA DUNN / Add AP News on… / Share|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n220",
+     "role": "main_content",
+     "roleP": 0.73,
+     "roleProbs": {
+      "main_content": 0.73,
+      "other": 0.2
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.03,
+     "fine": "body_text",
+     "fineP": 0.73,
+     "importance": 3.91
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n92",
+    "fp": "div|region holding video or embed x1, buttons x1, marked as an ad|Links: Report Ad|main|advertisement ntv below article||",
+    "uniq": true,
+    "j": {
+     "id": "n92",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.14,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06,
+     "paidAsStoryP": 0.19
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n221",
+    "fp": "div|region holding headings x2, paragraphs x7, lists x2, form fields x1, buttons x34, links x3|Conversation · Jump to log in… / All Comments, 41 items / NEWEST|main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n221",
+     "role": "other",
+     "roleP": 0.99,
+     "roleProbs": {
+      "other": 0.99
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.03,
+     "fine": "comments",
+     "fineP": 0.99,
+     "importance": 2.84
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n222",
+    "fp": "div|region holding video or embed x1||main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n222",
+     "role": "main_content",
+     "roleP": 0.58,
+     "roleProbs": {
+      "main_content": 0.58,
+      "advertising": 0.08,
+      "other": 0.29
+     },
+     "task": 0.65,
+     "main": 0,
+     "help": 0.03,
+     "fine": "video_player",
+     "fineP": 0.46,
+     "importance": 2.47
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n1",
+    "fp": "div|region|· Enable accessibility|none|||",
+    "uniq": true,
+    "j": {
+     "id": "n1",
+     "role": "account_utility",
+     "roleP": 0.47,
+     "roleProbs": {
+      "action_button": 0.11,
+      "help_contact": 0.09,
+      "popup_overlay": 0.12,
+      "account_utility": 0.47,
+      "other": 0.16
+     },
+     "task": 0.22,
+     "main": 0,
+     "help": 0.15,
+     "fine": "account_utility",
+     "fineP": 0.47000000000000003,
+     "importance": 1.34
+    },
+    "from": "union"
+   },
+   {
+    "id": "n3",
+    "fp": "div|region|· home page / Sign in /|none|page header sticky wrap||",
+    "uniq": true,
+    "j": {
+     "id": "n3",
+     "role": "navigation",
+     "roleP": 0.93,
+     "roleProbs": {
+      "navigation": 0.93
+     },
+     "task": 0.11,
+     "main": 0,
+     "help": 0.03,
+     "fine": "site_nav",
+     "fineP": 0.93,
+     "importance": 0.98
+    },
+    "from": "union"
+   },
+   {
+    "id": "n5",
+    "fp": "a|link (image)|home page|none||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n5",
+     "role": "navigation",
+     "roleP": 0.95,
+     "roleProbs": {
+      "navigation": 0.95
+     },
+     "task": 0.11,
+     "main": 0.03,
+     "help": 0.02,
+     "fine": "site_logo",
+     "fineP": 0.89,
+     "importance": 0.97
+    },
+    "from": "union"
+   },
+   {
+    "id": "n19",
+    "fp": "h1|heading level 1|New study traces van [name]'s famed ‘[name] Night’ to an actual night sky from [number]|none|page headline||",
+    "uniq": true,
+    "j": {
+     "id": "n19",
+     "role": "main_content",
+     "roleP": 1,
+     "roleProbs": {
+      "main_content": 1
+     },
+     "task": 0.96,
+     "main": 0,
+     "help": 0.01,
+     "fine": "headline",
+     "fineP": 0.9,
+     "importance": 3.94
+    },
+    "from": "union"
+   },
+   {
+    "id": "n28",
+    "fp": "button|button|Read More|main|read more button||",
+    "uniq": false,
+    "j": {
+     "id": "n28",
+     "role": "action_button",
+     "roleP": 0.83,
+     "roleProbs": {
+      "action_button": 0.83,
+      "advertising": 0.04,
+      "recommendations": 0.03,
+      "other": 0.04
+     },
+     "task": 0.68,
+     "main": 0.21,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.83,
+     "importance": 2.21
+    },
+    "from": "union"
+   },
+   {
+    "id": "n35",
+    "fp": "button|button|Read More|main|read more button||",
+    "uniq": false,
+    "j": {
+     "id": "n35",
+     "role": "action_button",
+     "roleP": 0.82,
+     "roleProbs": {
+      "action_button": 0.82,
+      "advertising": 0.04,
+      "recommendations": 0.03,
+      "other": 0.05
+     },
+     "task": 0.67,
+     "main": 0.21,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.8200000000000001,
+     "importance": 2.27
+    },
+    "from": "union"
+   },
+   {
+    "id": "n38",
+    "fp": "button|button|Next|main|button prev next carousel controls||",
+    "uniq": true,
+    "j": {
+     "id": "n38",
+     "role": "recommendations",
+     "roleP": 0.91,
+     "roleProbs": {
+      "action_button": 0.05,
+      "recommendations": 0.91
+     },
+     "task": 0.85,
+     "main": 0.1,
+     "help": 0.02,
+     "fine": "carousel",
+     "fineP": 0.91,
+     "importance": 1.88
+    },
+    "from": "union"
+   },
+   {
+    "id": "n42",
+    "fp": "button|button|Add AP News on [name] Add AP News as your preferred source to see more…|main|page actions||",
+    "uniq": true,
+    "j": {
+     "id": "n42",
+     "role": "action_button",
+     "roleP": 0.37,
+     "roleProbs": {
+      "action_button": 0.37,
+      "form_field": 0.03,
+      "advertising": 0.18,
+      "account_utility": 0.27,
+      "other": 0.05
+     },
+     "task": 0.17,
+     "main": 0.08,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.32,
+     "importance": 0.19
+    },
+    "from": "union"
+   },
+   {
+    "id": "n43",
+    "fp": "button|button|Share|main|page actions||",
+    "uniq": true,
+    "j": {
+     "id": "n43",
+     "role": "other",
+     "roleP": 0.9,
+     "roleProbs": {
+      "action_button": 0.1,
+      "other": 0.9
+     },
+     "task": 0.09,
+     "main": 0.05,
+     "help": 0.02,
+     "fine": "social_share",
+     "fineP": 0.9,
+     "importance": 1.07
+    },
+    "from": "union"
+   },
+   {
+    "id": "n45",
+    "fp": "div|region|Links: Report Ad|main|ad mobile||",
+    "uniq": true,
+    "j": {
+     "id": "n45",
+     "role": "advertising",
+     "roleP": 0.98,
+     "roleProbs": {
+      "advertising": 0.98
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.25,
+     "fine": "advertising",
+     "fineP": 0.98,
+     "importance": 0.09
+    },
+    "from": "union"
+   },
+   {
+    "id": "n46",
+    "fp": "bsp-header-leaderboard|region|Links: Report Ad|main|page header ad||",
+    "uniq": true,
+    "j": {
+     "id": "n46",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.22,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.08
+    },
+    "from": "union"
+   },
+   {
+    "id": "n47",
+    "fp": "div|region|Links: Report Ad|main|free advertisement||",
+    "uniq": true,
+    "j": {
+     "id": "n47",
+     "role": "advertising",
+     "roleP": 0.96,
+     "roleProbs": {
+      "advertising": 0.96
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.16,
+     "fine": "advertising",
+     "fineP": 0.96,
+     "importance": 0.11,
+     "paidAsStoryP": 0.15
+    },
+    "from": "union"
+   },
+   {
+    "id": "n49",
+    "fp": "div|button|Report Ad|main|||",
+    "uniq": false,
+    "j": {
+     "id": "n49",
+     "role": "action_button",
+     "roleP": 0.81,
+     "roleProbs": {
+      "action_button": 0.81,
+      "advertising": 0.1,
+      "account_utility": 0.03,
+      "other": 0.03
+     },
+     "task": 0.15,
+     "main": 0.02,
+     "help": 0.21,
+     "fine": "secondary_action",
+     "fineP": 0.81,
+     "importance": 0.93
+    },
+    "from": "union"
+   },
+   {
+    "id": "n219",
+    "fp": "div|region|CAPE CANAVERAL, Fla. (AP) — Scientists doubling as… · The Starry Night / van Gogh’s…|main|story body||",
+    "uniq": true,
+    "j": {
+     "id": "n219",
+     "role": "main_content",
+     "roleP": 0.97,
+     "roleProbs": {
+      "main_content": 0.97
+     },
+     "task": 0.96,
+     "main": 0,
+     "help": 0.02,
+     "fine": "body_text",
+     "fineP": 0.97,
+     "importance": 3.95
+    },
+    "from": "union"
+   },
+   {
+    "id": "n59",
+    "fp": "div|region|Links: Report Ad|main|free advertisement fs feed ad||",
+    "uniq": false,
+    "j": {
+     "id": "n59",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.2,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06,
+     "paidAsStoryP": 0.26
+    },
+    "from": "union"
+   },
+   {
+    "id": "n60",
+    "fp": "div|region|Links: Report Ad|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n60",
+     "role": "advertising",
+     "roleP": 0.91,
+     "roleProbs": {
+      "advertising": 0.91
+     },
+     "task": 0.12,
+     "main": 0,
+     "help": 0.23,
+     "fine": "advertising",
+     "fineP": 0.87,
+     "importance": 0.22
+    },
+    "from": "union"
+   },
+   {
+    "id": "n61",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n61",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.08,
+     "paidAsStoryP": 0.13
+    },
+    "from": "union"
+   },
+   {
+    "id": "n62",
+    "fp": "div|button|Report Ad|main|||",
+    "uniq": false,
+    "j": {
+     "id": "n62",
+     "role": "action_button",
+     "roleP": 0.81,
+     "roleProbs": {
+      "action_button": 0.81,
+      "advertising": 0.11,
+      "account_utility": 0.03,
+      "other": 0.03
+     },
+     "task": 0.15,
+     "main": 0.02,
+     "help": 0.23,
+     "fine": "secondary_action",
+     "fineP": 0.81,
+     "importance": 0.87
+    },
+    "from": "union"
+   },
+   {
+    "id": "n69",
+    "fp": "div|region|Links: Report Ad|main|free advertisement fs feed ad||",
+    "uniq": false,
+    "j": {
+     "id": "n69",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.21,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.05,
+     "paidAsStoryP": 0.26
+    },
+    "from": "union"
+   },
+   {
+    "id": "n71",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n71",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.07,
+     "paidAsStoryP": 0.14
+    },
+    "from": "union"
+   },
+   {
+    "id": "n72",
+    "fp": "div|button|Report Ad|main|||",
+    "uniq": false,
+    "j": {
+     "id": "n72",
+     "role": "action_button",
+     "roleP": 0.81,
+     "roleProbs": {
+      "action_button": 0.81,
+      "advertising": 0.11,
+      "account_utility": 0.03,
+      "other": 0.03
+     },
+     "task": 0.12,
+     "main": 0.02,
+     "help": 0.23,
+     "fine": "secondary_action",
+     "fineP": 0.81,
+     "importance": 0.83
+    },
+    "from": "union"
+   },
+   {
+    "id": "n80",
+    "fp": "iframe|none|Advertisement|main|||ad_network",
+    "uniq": true,
+    "j": {
+     "id": "n80",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06,
+     "paidAsStoryP": 0.1
+    },
+    "from": "union"
+   },
+   {
+    "id": "n90",
+    "fp": "div|region|Powered By [number]K 0 .clsx-1{isolation:isolate;}.clsx-2{fill:#ff3e5f;}.clsx-3{fill:#fff;} Skip Ad|main|native player ad container div||",
+    "uniq": true,
+    "j": {
+     "id": "n90",
+     "role": "advertising",
+     "roleP": 0.93,
+     "roleProbs": {
+      "popup_overlay": 0.03,
+      "advertising": 0.93
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.01,
+     "fine": "advertising",
+     "fineP": 0.93,
+     "importance": 0.05,
+     "paidAsStoryP": 0.14
+    },
+    "from": "union"
+   },
+   {
+    "id": "n95",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n95",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.05,
+     "paidAsStoryP": 0.18
+    },
+    "from": "union"
+   },
+   {
+    "id": "n97",
+    "fp": "div|region|Conversation Navigation · Jump to log in… / All Comments, 41 items / NEWEST|region|vf comments last child no||",
+    "uniq": true,
+    "j": {
+     "id": "n97",
+     "role": "other",
+     "roleP": 0.89,
+     "roleProbs": {
+      "navigation": 0.09,
+      "other": 0.89
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.03,
+     "fine": "comments",
+     "fineP": 0.89,
+     "importance": 2.62
+    },
+    "from": "union"
+   },
+   {
+    "id": "n99",
+    "fp": "button|button|Jump to log in or sign Up|region|vf no outline small||",
+    "uniq": true,
+    "j": {
+     "id": "n99",
+     "role": "account_utility",
+     "roleP": 0.75,
+     "roleProbs": {
+      "account_utility": 0.75,
+      "advertising": 0.17
+     },
+     "task": 0.11,
+     "main": 0.06,
+     "help": 0.03,
+     "fine": "login_prompt",
+     "fineP": 0.56,
+     "importance": 1.02
+    },
+    "from": "union"
+   },
+   {
+    "id": "n100",
+    "fp": "textarea|textbox|Join the conversation|region|vf content editor input form||",
+    "uniq": true,
+    "j": {
+     "id": "n100",
+     "role": "form_field",
+     "roleP": 0.92,
+     "roleProbs": {
+      "form_field": 0.92,
+      "other": 0.08
+     },
+     "task": 0.46,
+     "main": 0,
+     "help": 0.03,
+     "fine": "form_field",
+     "fineP": 0.92,
+     "importance": 2.91
+    },
+    "from": "union"
+   },
+   {
+    "id": "n108",
+    "fp": "button|button||region|vf no outline small||",
+    "uniq": false,
+    "j": {
+     "id": "n108",
+     "role": "action_button",
+     "roleP": 0.45,
+     "roleProbs": {
+      "action_button": 0.45,
+      "navigation": 0.03,
+      "other": 0.4,
+      "account_utility": 0.03
+     },
+     "task": 0.38,
+     "main": 0.1,
+     "help": 0.07,
+     "fine": "secondary_action",
+     "fineP": 0.42,
+     "importance": 1.71
+    },
+    "from": "union"
+   },
+   {
+    "id": "n109",
+    "fp": "button|button|AdamPHutter|region|vf button no outline link||",
+    "uniq": true,
+    "j": {
+     "id": "n109",
+     "role": "action_button",
+     "roleP": 0.4,
+     "roleProbs": {
+      "main_content": 0.1,
+      "action_button": 0.4,
+      "other": 0.33,
+      "account_utility": 0.12
+     },
+     "task": 0.26,
+     "main": 0.07,
+     "help": 0.05,
+     "fine": "secondary_action",
+     "fineP": 0.4,
+     "importance": 1.81
+    },
+    "from": "union"
+   },
+   {
+    "id": "n111",
+    "fp": "p|text|Two questions. First is Why? Don’t they have Anything better to do? 🤷🏼😉|region|||",
+    "uniq": true,
+    "j": {
+     "id": "n111",
+     "role": "other",
+     "roleP": 0.72,
+     "roleProbs": {
+      "main_content": 0.26,
+      "other": 0.72
+     },
+     "task": 0.3,
+     "main": 0,
+     "help": 0.02,
+     "fine": "comments",
+     "fineP": 0.68,
+     "importance": 2.6
+    },
+    "from": "union"
+   },
+   {
+    "id": "n113",
+    "fp": "button|button|Reply to AdamPHutter's comment.|region|vf button no outline accent color||",
+    "uniq": true,
+    "j": {
+     "id": "n113",
+     "role": "action_button",
+     "roleP": 0.81,
+     "roleProbs": {
+      "action_button": 0.81,
+      "other": 0.18
+     },
+     "task": 0.2,
+     "main": 0.08,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.81,
+     "importance": 2.61
+    },
+    "from": "union"
+   },
+   {
+    "id": "n114",
+    "fp": "button|button|0 likes, like.|region|vf button no outline size large||",
+    "uniq": true,
+    "j": {
+     "id": "n114",
+     "role": "action_button",
+     "roleP": 0.57,
+     "roleProbs": {
+      "main_content": 0.03,
+      "action_button": 0.57,
+      "other": 0.37
+     },
+     "task": 0.37,
+     "main": 0.06,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.5700000000000001,
+     "importance": 1.74
+    },
+    "from": "union"
+   },
+   {
+    "id": "n115",
+    "fp": "button|button|0 dislikes, dislike.|region|vf button no outline size large||",
+    "uniq": true,
+    "j": {
+     "id": "n115",
+     "role": "action_button",
+     "roleP": 0.76,
+     "roleProbs": {
+      "main_content": 0.03,
+      "action_button": 0.76,
+      "other": 0.19
+     },
+     "task": 0.37,
+     "main": 0.05,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.76,
+     "importance": 2.01
+    },
+    "from": "union"
+   },
+   {
+    "id": "n116",
+    "fp": "button|button|share|region|vf button no outline link||",
+    "uniq": true,
+    "j": {
+     "id": "n116",
+     "role": "other",
+     "roleP": 0.89,
+     "roleProbs": {
+      "action_button": 0.11,
+      "other": 0.89
+     },
+     "task": 0.09,
+     "main": 0.05,
+     "help": 0.02,
+     "fine": "social_share",
+     "fineP": 0.89,
+     "importance": 1.05
+    },
+    "from": "union"
+   },
+   {
+    "id": "n117",
+    "fp": "button|button|report|region|vf button no outline accent||",
+    "uniq": true,
+    "j": {
+     "id": "n117",
+     "role": "action_button",
+     "roleP": 0.86,
+     "roleProbs": {
+      "action_button": 0.86,
+      "other": 0.13
+     },
+     "task": 0.33,
+     "main": 0.06,
+     "help": 0.16,
+     "fine": "secondary_action",
+     "fineP": 0.86,
+     "importance": 1.83
+    },
+    "from": "union"
+   },
+   {
+    "id": "n119",
+    "fp": "button|button||region|vf no outline small||",
+    "uniq": false,
+    "j": {
+     "id": "n119",
+     "role": "action_button",
+     "roleP": 0.44,
+     "roleProbs": {
+      "action_button": 0.44,
+      "navigation": 0.04,
+      "other": 0.41,
+      "account_utility": 0.03
+     },
+     "task": 0.38,
+     "main": 0.1,
+     "help": 0.07,
+     "fine": "secondary_action",
+     "fineP": 0.41000000000000003,
+     "importance": 1.67
+    },
+    "from": "union"
+   },
+   {
+    "id": "n120",
+    "fp": "button|button|Bahma|region|vf button no outline link||",
+    "uniq": true,
+    "j": {
+     "id": "n120",
+     "role": "action_button",
+     "roleP": 0.47,
+     "roleProbs": {
+      "action_button": 0.47,
+      "navigation": 0.04,
+      "other": 0.34
+     },
+     "task": 0.28,
+     "main": 0.07,
+     "help": 0.05,
+     "fine": "secondary_action",
+     "fineP": 0.47000000000000003,
+     "importance": 1.31
+    },
+    "from": "union"
+   },
+   {
+    "id": "n158",
+    "fp": "li|region|Links: A trending article titled…|main|vf trending article list item||",
+    "uniq": true,
+    "j": {
+     "id": "n158",
+     "role": "recommendations",
+     "roleP": 0.87,
+     "roleProbs": {
+      "main_content": 0.12,
+      "recommendations": 0.87
+     },
+     "task": 0.13,
+     "main": 0,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.87,
+     "importance": 0.47
+    },
+    "from": "union"
+   },
+   {
+    "id": "n159",
+    "fp": "a|link|A trending article titled \"AP investigation: Documents support claim ICE has detained a mentally ill…|main|vf trending article|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n159",
+     "role": "recommendations",
+     "roleP": 0.89,
+     "roleProbs": {
+      "main_content": 0.09,
+      "recommendations": 0.89
+     },
+     "task": 0.12,
+     "main": 0.03,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.89,
+     "importance": 0.26
+    },
+    "from": "union"
+   },
+   {
+    "id": "n174",
+    "fp": "li|text|Contact Us|navigation|footer navigation item||",
+    "uniq": true,
+    "j": {
+     "id": "n174",
+     "role": "help_contact",
+     "roleP": 0.81,
+     "roleProbs": {
+      "navigation": 0.13,
+      "help_contact": 0.81,
+      "legal_footer": 0.04
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.9,
+     "fine": "contact_info",
+     "fineP": 0.77,
+     "importance": 1.01
+    },
+    "from": "union"
+   },
+   {
+    "id": "n17",
+    "fp": "div|region holding headings x1, links x1|New study traces van [name]'s famed ‘[name]… · Science|none|story page gtm main scroll||",
+    "uniq": true,
+    "j": {
+     "id": "n17",
+     "role": "main_content",
+     "roleP": 0.82,
+     "roleProbs": {
+      "main_content": 0.82,
+      "recommendations": 0.07
+     },
+     "task": 0.8,
+     "main": 0,
+     "help": 0.02,
+     "fine": "headline",
+     "fineP": 0.56,
+     "importance": 3.19
+    },
+    "from": "union"
+   },
+   {
+    "id": "n220",
+    "fp": "div|region holding paragraphs x2, pictures x2, video or embed x1, buttons x4|New study traces van [name]'s famed ‘[name]… · Read More / Read More / Previous|main|page gtm main scroll content||",
+    "uniq": true,
+    "j": {
+     "id": "n220",
+     "role": "main_content",
+     "roleP": 0.84,
+     "roleProbs": {
+      "main_content": 0.84,
+      "recommendations": 0.03,
+      "other": 0.06
+     },
+     "task": 0.89,
+     "main": 0,
+     "help": 0.02,
+     "fine": "body_text",
+     "fineP": 0.84,
+     "importance": 3.81
+    },
+    "from": "union"
+   },
+   {
+    "id": "n221",
+    "fp": "bsp-story-page|region holding cards with pictures x25, paragraphs x20, video or embed x4, buttons x6, links x8|By · MARCIA DUNN / Add AP News on… / Share|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n221",
+     "role": "main_content",
+     "roleP": 0.74,
+     "roleProbs": {
+      "main_content": 0.74,
+      "recommendations": 0.03,
+      "other": 0.16
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.03,
+     "fine": "body_text",
+     "fineP": 0.74,
+     "importance": 3.91
+    },
+    "from": "union"
+   },
+   {
+    "id": "n93",
+    "fp": "div|region holding video or embed x1, buttons x1, marked as an ad|Links: Report Ad|main|advertisement ntv below article||",
+    "uniq": true,
+    "j": {
+     "id": "n93",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.13,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06,
+     "paidAsStoryP": 0.24
+    },
+    "from": "union"
+   },
+   {
+    "id": "n222",
+    "fp": "div|region holding headings x2, paragraphs x7, lists x2, form fields x1, buttons x34, links x3|Conversation · Jump to log in… / All Comments, 41 items / NEWEST|main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n222",
+     "role": "other",
+     "roleP": 0.99,
+     "roleProbs": {
+      "other": 0.99
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.03,
+     "fine": "comments",
+     "fineP": 0.99,
+     "importance": 2.86
+    },
+    "from": "union"
+   },
+   {
+    "id": "n223",
+    "fp": "div|region holding video or embed x1||main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n223",
+     "role": "main_content",
+     "roleP": 0.58,
+     "roleProbs": {
+      "main_content": 0.58,
+      "advertising": 0.08,
+      "other": 0.29
+     },
+     "task": 0.63,
+     "main": 0,
+     "help": 0.03,
+     "fine": "video_player",
+     "fineP": 0.47000000000000003,
+     "importance": 2.27
+    },
+    "from": "union"
+   }
+  ]
+ },
+ "meaning": {
+  "f0f3dd9563c877d9ac0d9699b7e43857591679ea53197c8ad43cd25c72555f36": {
+   "leadsWithMain": 0.95,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1124,
+    "wallMs": 117,
+    "serverMs": 53,
+    "costUsd": 0.000047208000000000006
+   }
+  },
+  "bbd0367dddbb3d92b051195e2f48f9d98fa9bce17f3e9be7e320cb2cd671b1ea": {
+   "leadsWithMain": 0.93,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1106,
+    "wallMs": 175,
+    "serverMs": 25,
+    "costUsd": 0.00004645200000000001
+   }
+  },
+  "ccd2dfdf6bf1d0e2e37bd8ef476b90883649ec825c9fd50bf1be982d6fc88768": {
+   "leadsWithMain": 0.98,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1123,
+    "wallMs": 98,
+    "serverMs": 35,
+    "costUsd": 0.00004716600000000001
+   }
+  },
+  "7533de2ae57bfab0dfb200c25dee65b07c140cd777f1a0f07b57fa3c1459fe50": {
+   "leadsWithMain": 0.98,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1086,
+    "wallMs": 109,
+    "serverMs": 39,
+    "costUsd": 0.000045612
+   }
+  },
+  "a85bb77e95a3e670ab9f1d16fc1b79593c178150cf331de7c0ff5486cf7454a4": {
+   "leadsWithMain": 0.94,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1132,
+    "wallMs": 84,
+    "serverMs": 33,
+    "costUsd": 0.000047544000000000004
+   }
+  },
+  "069e0d979b2811d79e897128f62fa34aca61d7eb5eac4c7a3951b304476103d3": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1124,
+    "wallMs": 90,
+    "serverMs": 33,
+    "costUsd": 0.000047208000000000006
+   }
+  },
+  "fde59416f26704bb901c01cd7268a443782d74d7907a28b9605fdbcc8853284b": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1106,
+    "wallMs": 111,
+    "serverMs": 54,
+    "costUsd": 0.00004645200000000001
+   }
+  },
+  "439ec438a3956cad1265bc82d6521290c6dcbebbf954aed306eb7fccc77b7d9e": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1095,
+    "wallMs": 118,
+    "serverMs": 51,
+    "costUsd": 0.000045990000000000005
+   }
+  },
+  "4e142a768072c9eac77c4b0c4e6bdc321b291646c3b66afe3f6ba0919c905c69": {
+   "leadsWithMain": 0.98,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1115,
+    "wallMs": 84,
+    "serverMs": 31,
+    "costUsd": 0.000046830000000000004
+   }
+  },
+  "ac69994feef8ac2ee02f8ec7f92260661d9e6e41f076cde342d6b162eef9ef40": {
+   "leadsWithMain": 0.95,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1087,
+    "wallMs": 102,
+    "serverMs": 38,
+    "costUsd": 0.00004565400000000001
+   }
+  },
+  "0e2cf207e7402b2b02c83541b098fc196f4bd1314b0447e87d261c81251ca8d7": {
+   "leadsWithMain": 0.93,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1095,
+    "wallMs": 96,
+    "serverMs": 36,
+    "costUsd": 0.000045990000000000005
+   }
+  },
+  "2c16208e854e8107cca206952f85ac66d5703642b5d36ddcfafe3dcf1ceb1ed4": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1132,
+    "wallMs": 79,
+    "serverMs": 32,
+    "costUsd": 0.000047544000000000004
+   }
+  }
+ },
+ "overlayClose": {},
+ "compose": {
+  "g1egb363": {
+   "id": "g1egb363",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u5",
+      "u6",
+      "u7"
+     ],
+     "text": "“No two skies are the same. Something always changes. I believe Vincent noticed those changes and put them into the painting,” Kim said in an email.\n\nHe added: “I am confident that July 22 is the better date. I will bet on this date.”\n\nThe latest study addresses “a real puzzle” that in mid-June 1889, the moon was not the thin crescent painted by van Gogh, said Jose Luis Aragon at the National Autonomous University of Mexico. He has studied “The Starry Night” as a physicist, but did not take part in the new research.\n\n“Still, I would see the July date as an intriguing hypothesis rather than a settled answer,” Aragon said in an email.\n\nLong fascinated by van Gogh’s art, Kim traveled to France in 2019, the first time in mid-June and the second around July 22. He found brilliant stars rising in July’s predawn sky, unlike June.\n\nKim and his team discovered through further celestial sleuthing that around July 22, 1889, the shape of the moon before dawn appeared like the one in the painting, with the Hyades star cluster in the constellation Taurus rising in the east alongside Venus. The sky should have been clear enough for van Gogh to see all this, based on their weather analyses.\n\nVan Gogh is thought to have suffered a seizure around that time in July. But Kim and his team contend that the seizure occurred later in July, based on their analyses of letters between the painter and one of his brothers. Some of those letters refer to cicadas, another clue that points toward the hotter July, according to Kim."
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  },
+  "g17ub7nu": {
+   "id": "g17ub7nu",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u5",
+      "u6",
+      "u7"
+     ],
+     "text": "The researchers tested and verified their methods on night skies in other paintings, making for what Aragon considers “a careful and genuinely interdisciplinary study.”\n\nSince van Gogh painted in a studio at the asylum from sketches and memory, “the sky is likely a composite of many nights as the authors themselves acknowledge,” Aragon said.\n\n“What I find most convincing is the broader message: The painting is not pure fantasy. Van Gogh watched the real sky very closely,” Aragon said.\n\nDespite all his research, Kim has never seen “The Starry Night” at the Museum of Modern Art in New York.\n\n“Now that the paper is out, I really have to go and see ‘The Starry Night’ in person, don’t I?” he said.\n\n___\n\nThe Associated Press’ health and science coverage receives financial support from the ⟦1⟧ and private foundations. AP is solely responsible for all content. Find AP’s ⟦2⟧ for working with philanthropies, a list of supporters and funded coverage areas at ⟦3⟧"
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  },
+  "gtgskm5": {
+   "id": "gtgskm5",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2"
+     ],
+     "text": "1 of 2 |\n\n2 of 2 | Visitors to the Museum of Fine Arts, Houston view Vincent van Gogh’s painting, “The Starry Night,” on Oct. 17, 2003, in Houston. (AP Photo/David J. Phillip, File)"
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  },
+  "g1lpxicu": {
+   "id": "g1lpxicu",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u5",
+      "u6",
+      "u7",
+      "u8"
+     ],
+     "text": "41\n\nCAPE CANAVERAL, Fla. (AP) — Scientists doubling as art detectives have traced Vincent van Gogh’s “⟦1⟧” to a celestial scene that suggests a new date for one of the world’s most famous paintings.\n\nTheir findings indicate that rather than being a product of ⟦2⟧ imagination, “The Starry Night” may have been inspired by what he saw as he gazed heavenward from his French asylum 137 years ago.\n\nA South Korean team reported Thursday that after years of forensic astronomy and research into the ⟦3⟧, they have matched his masterpiece to a predawn sky over France’s Saint-Remy de Provence right around July 22, 1889.\n\nThat’s a month later than the long-accepted time frame for the postimpressionist painting depicting a ⟦4⟧ and Venus surrounded by a sky of swirling stars with a village nestled below and cypress trees looming on one side.\n\nArt historians have long dated the painting to June 1889, soon after Van Gogh checked into the asylum. He’d cut off his left ear several months earlier during an argument with painter Paul Gauguin.\n\nA team led by Elijah Jeong-hyun Kim, the CEO of a Seoul telescope maker, is now disputing that date in a study appearing in the journal Scientific Reports.\n\nThe sky that is most similar to the painting occurred around July 22, 1889, said Kim, who is also a doctoral candidate at Kyung Hee University. He noted that the few days before and after could have inspired van Gogh as well."
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  },
+  "ggoh6lo": {
+   "id": "ggoh6lo",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3"
+     ],
+     "text": "1 day ago\n\nTwo questions. First is Why? Don’t they have Anything better to do? 🤷🏼😉\n\nSecond. This is not fact. Art is not so exact and measured and planned. It is feeling and emotion."
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  }
+ },
+ "composeMeta": {
+  "model": "gpt-5.4-mini",
+  "ms": 3242,
+  "jev": {
+   "model": "jev-1.14.0",
+   "calls": 0,
+   "questions": 0,
+   "inputTokens": 0,
+   "wallMs": 0,
+   "serverMs": null,
+   "costUsd": 0
+  }
+ },
+ "runs": [
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-10-27T22:24:58.923Z",
+   "added": {
+    "elements": 46,
+    "page": true,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 4
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 5729,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:25:04.403Z",
+   "added": {
+    "elements": 46,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2189,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:25:09.932Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2180,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:25:15.403Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2181,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:25:20.885Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2210,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:25:26.647Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2514,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 65 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 25,
+    "decisions": {
+     "folded": 5,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:25:32.532Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2519,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 65 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 26,
+    "decisions": {
+     "folded": 5,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:25:38.118Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2383,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 65 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 25,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:25:43.904Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2481,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 64 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 26,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:25:49.702Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2525,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 65 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 21,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:25:55.461Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2481,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 25,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:26:01.228Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2383,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.94; task 0.11; help 0.01; teaser for other pages 0.94"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 27,
+    "decisions": {
+     "folded": 6,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:26:07.044Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 1
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2381,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 0,
+     "kept": 5,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 25,
+    "decisions": {
+     "folded": 5,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:26:12.885Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2513,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 26,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:26:18.634Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2512,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.01; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 21,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:26:24.463Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2390,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 29,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:26:30.209Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2481,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 29,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:26:35.997Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2496,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.27 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 30,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:26:41.810Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2532,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 29,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:26:47.567Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2493,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     }
+    ],
+    "checksFailed": 25,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:26:53.115Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2295,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:26:58.636Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2210,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:27:04.149Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2190,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:27:09.660Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2191,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:27:15.126Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2179,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  }
+ ],
+ "replicaHash": "sha256:b42a538368a54428e27fe63f330d4fbf784d282cce66a95f9d2d53959ccac992"
+}

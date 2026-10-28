@@ -109,12 +109,14 @@ function popupLine(list: OverlayAction[]): DidLine | null {
  * moved a pop-up are listed by the pop-up (with "Show it"), not as a change of their own.
  */
 export function didLines(
-  s: Pick<EngineState, 'ops' | 'overlays' | 'decisions' | 'pageZoom' | 'textZoom'>,
+  s: Pick<EngineState, 'ops' | 'overlays' | 'decisions' | 'pageZoom' | 'textZoom' | 'textScale'>,
   gone: ReadonlySet<string> = new Set(),
   max = MAX_LINES,
 ): DidLine[] {
   const applied = (s.ops ?? []).filter((o) => o && o.status === 'applied');
-  const zoom = typeof s.textZoom === 'number' && s.textZoom > 0 ? s.textZoom : typeof s.pageZoom === 'number' && s.pageZoom > 0 ? s.pageZoom : 1;
+  const z = typeof s.textZoom === 'number' && s.textZoom > 0 ? s.textZoom : typeof s.pageZoom === 'number' && s.pageZoom > 0 ? s.pageZoom : 1;
+  // Round 11: on a phone the text map carries part of the size (text shown at zoom × textScale).
+  const zoom = z * (typeof s.textScale === 'number' && s.textScale > 0 ? s.textScale : 1);
   const ctx: Ctx = { decisions: s.decisions ?? [], zoom };
   const lines: DidLine[] = [];
   const add = (g: Group) => {

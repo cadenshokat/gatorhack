@@ -2,7 +2,8 @@
 // 3 under "More contrast"). Four word buttons and "I can't see a word". Fills reading.faint.
 
 import type { JSX } from 'preact';
-import { useMemo, useState } from 'preact/hooks';
+import { useContext, useMemo, useState } from 'preact/hooks';
+import { StepLabelsContext } from '../ui/words';
 import { FAINT_WORDS } from '../content/sentences';
 import { STIMULUS_FONT } from '../logic/env';
 import { FaintQuest, type GrayStimulus } from '../logic/quest';
@@ -11,6 +12,7 @@ import { useKeys, usePressed, useTrialClock } from '../ui/hooks';
 import { Answer, TaskLayout, type TaskProps } from './Task';
 
 export function FaintTask(props: TaskProps): JSX.Element {
+  const L = useContext(StepLabelsContext);
   const { raw } = props;
   const body = props.draft.text.override ?? props.draft.text.bodyPx;
   const quest = useMemo(() => new FaintQuest(body >= 32, props.settings?.contrastMore ? 3 : 6), []);
@@ -55,7 +57,8 @@ export function FaintTask(props: TaskProps): JSX.Element {
   const g = stim?.gray ?? 128;
   return (
     <TaskLayout
-      title="Which word is it?"
+      title={L.faintTitle}
+      sub={L.faintLine}
       stageClass="is-faint"
       focusTitle
       actions={
@@ -68,7 +71,7 @@ export function FaintTask(props: TaskProps): JSX.Element {
             ))}
           </div>
           <Answer id="none" kind="quiet" pressed={pressed} onClick={() => answer(null, 'none')} keys="0">
-            I can’t see a word
+            {L.cantSee}
           </Answer>
         </>
       }

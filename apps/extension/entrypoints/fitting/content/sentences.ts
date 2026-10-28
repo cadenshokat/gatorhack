@@ -59,7 +59,7 @@ export const SENTENCES: readonly Sentence[] = [
   { text: "Babies are born knowing how to drive a big red fire truck.", truth: false },
   { text: "The ocean is dry and you can walk across it in an hour.", truth: false },
   { text: "Rabbits have long ears and use them to fly to the moon.", truth: false },
-  { text: "You can see better at night when all the lights are off.", truth: false },
+  { text: "Snow is hot, so people use it to warm up their houses.", truth: false },
   { text: "A banana is bright blue and grows inside a hard metal box.", truth: false },
   { text: "Hands have ten toes that we use to walk down the street.", truth: false },
   { text: "A table can run fast and jump over the fence to get away.", truth: false },

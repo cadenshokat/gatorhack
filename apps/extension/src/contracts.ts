@@ -99,6 +99,11 @@ export interface EngineState {
    */
   textZoom?: number;
   /**
+   * Round 11: on a narrow screen where the page's width capped the zoom, every text size on the page is also this
+   * many times the site's own (the text map); body text is shown at textZoom x textScale. 1 or absent: zoom alone.
+   */
+  textScale?: number;
+  /**
    * Round 9: paragraphs rewritten for this person, from what their AI assistant knows about them.
    * 'off': no AI answer imported, WebAble off, or not a page where it runs. 'none': nothing needed changing.
    */

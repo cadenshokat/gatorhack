@@ -1,0 +1,71 @@
+/*
+ * The Typekit service used to deliver this font or fonts for use on websites
+ * is provided by Adobe and is subject to these Terms of Use
+ * http://www.adobe.com/products/eulas/tou_typekit. For font license
+ * information, see the list below.
+ *
+ * proxima-nova:
+ *   - http://typekit.com/eulas/00000000000000007735e602
+ *   - http://typekit.com/eulas/00000000000000007758cf7c
+ *   - http://typekit.com/eulas/00000000000000007735e603
+ *   - http://typekit.com/eulas/00000000000000007758cf7d
+ *   - http://typekit.com/eulas/00000000000000007735e611
+ *   - http://typekit.com/eulas/00000000000000007758cf8c
+ *   - http://typekit.com/eulas/00000000000000007735e609
+ *   - http://typekit.com/eulas/00000000000000007758cf8f
+ *
+ * © 2009-2026 Adobe Systems Incorporated. All Rights Reserved.
+ */
+/*{"last_published":"2025-07-30 13:49:00 UTC"}*/
+
+@import url("/_r/gators-ky/assets/f0cafc285ee23bb6c28c5166f305493c4331c84d.css");
+
+@font-face {
+font-family:"proxima-nova";
+src:url("/_r/gators-ky/assets/df59c32377127b3017dedb6ecbb9640e4ab712d3.woff2") format("woff2"),url("/_r/gators-ky/assets/42b08409a5404965f07f00c89cbe858d9bd2abef.woff") format("woff"),url("/_r/gators-ky/assets/35985408bae450889574d703b2074b108484e430.otf") format("opentype");
+font-display:auto;font-style:normal;font-weight:900;font-stretch:normal;
+}
+
+@font-face {
+font-family:"proxima-nova";
+src:url("/_r/gators-ky/assets/a7a8b6fa7eb20573a6c9398359e4ee14a747041e.woff2") format("woff2"),url("/_r/gators-ky/assets/39219561cea14231c4b3e91166f55271792ed591.woff") format("woff"),url("/_r/gators-ky/assets/48a96d081d92e703224a3ee513bde0cac3603198.otf") format("opentype");
+font-display:auto;font-style:italic;font-weight:900;font-stretch:normal;
+}
+
+@font-face {
+font-family:"proxima-nova";
+src:url("/_r/gators-ky/assets/e108f696b3a86727368960c0ffa99e05c95b2f2e.woff2") format("woff2"),url("/_r/gators-ky/assets/70b858660ba78a3149d62489a6693e5b034ede07.woff") format("woff"),url("/_r/gators-ky/assets/7a6af3af934ccef9b753a341068dd96dd47558ac.otf") format("opentype");
+font-display:auto;font-style:normal;font-weight:700;font-stretch:normal;
+}
+
+@font-face {
+font-family:"proxima-nova";
+src:url("/_r/gators-ky/assets/285332e04fe017ad71b391e2acc41fda15092724.woff2") format("woff2"),url("/_r/gators-ky/assets/03b453305a8cfcf17b6083ba2af6ca777c7bfa6f.woff") format("woff"),url("/_r/gators-ky/assets/4115589d99c7a29e62a5ff41cf8ee57509a065be.otf") format("opentype");
+font-display:auto;font-style:italic;font-weight:700;font-stretch:normal;
+}
+
+@font-face {
+font-family:"proxima-nova";
+src:url("/_r/gators-ky/assets/7215b6d64b374faa1b427400307f2cd2208f3548.woff2") format("woff2"),url("/_r/gators-ky/assets/1af56a8489a9600eb3315901d929505b3a59f61e.woff") format("woff"),url("/_r/gators-ky/assets/d2264d427d1da594e88ff68ecc0130fe6a659c11.otf") format("opentype");
+font-display:auto;font-style:normal;font-weight:800;font-stretch:normal;
+}
+
+@font-face {
+font-family:"proxima-nova";
+src:url("/_r/gators-ky/assets/fb2834ab25ae27a55fe225bb7583da8aefccb09b.woff2") format("woff2"),url("/_r/gators-ky/assets/cf9b07a837d6c6e03e7901fa22179fb6590f659c.woff") format("woff"),url("/_r/gators-ky/assets/b2d9ca3824d4b97d8efaac20c854d6bce186abe7.otf") format("opentype");
+font-display:auto;font-style:italic;font-weight:800;font-stretch:normal;
+}
+
+@font-face {
+font-family:"proxima-nova";
+src:url("/_r/gators-ky/assets/54d3fdb0f84d95b7075d2bd5358b42dc9c8fffb8.woff2") format("woff2"),url("/_r/gators-ky/assets/607b38cb8a703334a23d62b0bcbff839483ad3a2.woff") format("woff"),url("/_r/gators-ky/assets/5432fe79958f2fcce65ca19a9c1852f872fe477c.otf") format("opentype");
+font-display:auto;font-style:normal;font-weight:400;font-stretch:normal;
+}
+
+@font-face {
+font-family:"proxima-nova";
+src:url("/_r/gators-ky/assets/fdc70ffc376aebae7d05e32c4e40244489c4f3b0.woff2") format("woff2"),url("/_r/gators-ky/assets/b4e583d3be250864cf8c9602b517eee8a4946da3.woff") format("woff"),url("/_r/gators-ky/assets/eedf4aa1d793e68e57d6388793978abdad21f696.otf") format("opentype");
+font-display:auto;font-style:italic;font-weight:400;font-stretch:normal;
+}
+
+.tk-proxima-nova { font-family: "proxima-nova",sans-serif; }

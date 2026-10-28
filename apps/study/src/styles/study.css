@@ -1,0 +1,761 @@
+/* The study shell on a phone, in the onboarding's design (fitting/ui/tokens.css): pure white, ink text, one accent green
+   only for WebAble, 64 px pills, full-width answer buttons, nothing under 15 px. Every phone lays out at 390 CSS px
+   (index.html), so these sizes are the same on every phone. Loaded after flow.css. */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+body,
+.fl-app {
+  min-height: 100svh;
+}
+
+/* Taps leave no hover tint behind on touch screens. */
+@media (hover: none) {
+  .fl-app .answer:hover,
+  .answer:hover,
+  .btn-secondary:hover {
+    background: var(--c-card);
+  }
+  .answer.is-on:hover {
+    background: var(--c-ink);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Screens                                                             */
+/* ------------------------------------------------------------------ */
+
+.st-top {
+  height: 60px;
+  padding: 0 16px 0 20px;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+}
+/* The progress line: edge to edge across the top of the screen, above the header, filled in ink as the study goes. */
+.st-progress {
+  height: 3px;
+  background: var(--c-line);
+}
+.st-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 0 999px 999px 0;
+  background: var(--c-ink);
+  transition: width 300ms var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .st-progress-fill {
+    transition: none;
+  }
+}
+.st-app {
+  display: flex;
+  flex-direction: column;
+}
+.st-main {
+  flex: 1;
+  padding: 12px 20px 24px;
+}
+.st-col {
+  max-width: 560px;
+  margin: 0 auto;
+}
+.st-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 18px);
+}
+.st-actions:has(.btn-text:only-child),
+.st-actions:not(:has(.btn)) {
+  flex-direction: row;
+  justify-content: space-between;
+}
+.st-wide {
+  width: 100%;
+}
+.st-text-btn {
+  min-height: 48px;
+}
+
+.st-head {
+  margin: 8px 0 24px;
+}
+.st-title {
+  margin: 0;
+  font: 600 32px/38px var(--font);
+  letter-spacing: var(--track-h1);
+}
+.st-title-q {
+  font: 600 26px/33px var(--font);
+  letter-spacing: -0.01em;
+}
+.st-deck {
+  margin: 14px 0 0;
+  font: var(--f-deck);
+  color: var(--c-ink-2);
+}
+.st-preview {
+  margin: 20px 0 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--c-canvas-2);
+  font: var(--f-small);
+  color: var(--c-ink-2);
+}
+.st-nudge {
+  margin: -8px 0 16px;
+  font: var(--f-small);
+  color: var(--c-ink);
+}
+
+.st-welcome {
+  padding-top: 8px;
+}
+.st-welcome .fl-welcome-mark {
+  margin: 8px 0 24px;
+}
+.st-outline {
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--c-line);
+}
+.st-outline li {
+  display: grid;
+  gap: 2px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--c-line);
+}
+.st-outline strong {
+  font: 600 18px/26px var(--font);
+}
+.st-outline span {
+  font: var(--f-small);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--c-ink-2);
+}
+
+.st-prose h2 {
+  margin: 24px 0 6px;
+  font: 600 18px/26px var(--font);
+}
+.st-prose p {
+  margin: 0 0 12px;
+  font: 400 17px/26px var(--font);
+  color: var(--c-ink);
+}
+.st-prose a {
+  color: var(--c-ink);
+}
+.st-steps {
+  margin: 0;
+  padding: 0 0 0 24px;
+  display: grid;
+  gap: 14px;
+  font: var(--f-body);
+}
+.st-steps li::marker {
+  font-weight: 600;
+}
+.st-list {
+  margin: 0 0 12px;
+  padding: 0 0 0 24px;
+  display: grid;
+  gap: 6px;
+  font: 400 17px/26px var(--font);
+}
+.st-gap {
+  margin-top: 24px;
+}
+/* "‹ Back", above the heading. */
+.st-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 48px;
+  margin: 0 0 0 -6px;
+  padding: 0 6px;
+  font: 600 17px/1 var(--font);
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.st-label {
+  display: block;
+  margin: 24px 0 8px;
+  font: 600 18px/26px var(--font);
+}
+/* The thank-you page's outcome, set apart at the top. */
+.st-panel {
+  margin: 8px 0 24px;
+  padding: 24px 20px;
+  border-radius: 20px;
+  background: var(--c-canvas-2);
+}
+.st-panel .st-deck {
+  color: var(--c-ink);
+}
+.st-card-text p,
+.st-card-steps {
+  margin: 14px 0 0;
+  font: 400 18px/26px var(--font);
+  color: var(--c-ink);
+}
+/* What 1 and 7 mean, on every rating page. */
+.st-hint {
+  margin: 10px 0 0;
+  font: 500 18px/26px var(--font);
+  color: var(--c-ink-2);
+}
+.st-sheet-actions {
+  display: grid;
+  gap: 4px;
+}
+/* On a short phone the sheet scrolls; Continue and "Go back" stay pinned to its bottom edge (they carry the sheet's
+   bottom padding, so they clear the home bar). */
+.st-sheet .st-sheet-actions {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 0 calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--c-card) 18px);
+}
+
+.st-check {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  margin: 20px 0 8px;
+  padding: 0 18px;
+  border: 1.5px solid var(--c-line-strong);
+  border-radius: var(--r-answer);
+  font: 500 18px/1.3 var(--font);
+}
+.st-check input {
+  width: 26px;
+  height: 26px;
+  accent-color: var(--c-ink);
+  flex: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Answer lists and the 1–7 scales                                     */
+/* ------------------------------------------------------------------ */
+
+.st-choices {
+  display: grid;
+  gap: 10px;
+}
+.st-choices.is-compact {
+  gap: 8px;
+}
+.st-choice {
+  width: 100%;
+  min-height: 64px;
+  padding: 0 20px;
+  text-align: left;
+  font: 500 19px/1.25 var(--font);
+}
+.st-choices.is-compact .st-choice {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.st-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.st-choice-text {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+/* The chosen answer: ink fill and a tick (more than colour alone), until Continue. */
+.st-tick {
+  flex: none;
+  visibility: hidden;
+}
+.st-choice.is-on .st-tick {
+  visibility: visible;
+}
+.st-choice.is-quiet {
+  border-style: dashed;
+  color: var(--c-ink-2);
+}
+.st-choice.is-on {
+  background: var(--c-ink);
+  border-color: var(--c-ink);
+  color: #fff;
+}
+/* "or", between the answers and the way out. */
+.st-or {
+  margin: 4px 0 -2px;
+  font: 500 17px/1.2 var(--font);
+  color: var(--c-ink-2);
+}
+.st-error {
+  margin: -8px 0 16px;
+  padding: 12px 16px;
+  border-left: 5px solid #b3261e;
+  background: #fdf1f0;
+  font: 600 18px/1.35 var(--font);
+  color: var(--c-ink);
+}
+.st-help {
+  margin: 32px 0 0;
+  font: var(--f-small);
+  color: var(--c-ink-2);
+}
+.st-help a {
+  color: inherit;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.st-num {
+  width: 28px;
+  flex: none;
+  font: 600 22px/1 var(--font);
+  text-align: center;
+}
+.st-num-label {
+  font: 500 17px/1.2 var(--font);
+  color: inherit;
+  opacity: 0.85;
+}
+
+.st-chips {
+  display: grid;
+  gap: 10px;
+}
+.st-chip {
+  min-height: 56px;
+  text-align: left;
+  font: 500 18px/1.25 var(--font);
+}
+.st-chip.is-on {
+  background: var(--c-ink);
+  border-color: var(--c-ink);
+  color: #fff;
+}
+.st-text {
+  width: 100%;
+  min-height: 150px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--c-line-strong);
+  border-radius: var(--r-answer);
+  font: 400 18px/27px var(--font);
+  color: var(--c-ink);
+  resize: vertical;
+}
+.st-text.is-short {
+  min-height: 96px;
+  margin-top: 16px;
+}
+.st-text:focus {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+/* ------------------------------------------------------------------ */
+/* Rounds and the last screen                                          */
+/* ------------------------------------------------------------------ */
+
+.st-round-num {
+  margin: 24px 0 8px;
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--c-canvas-2);
+  font: 600 34px/1 var(--font);
+}
+.st-code {
+  margin: 4px 0 12px !important;
+  font: 600 30px/1.2 ui-monospace, 'SF Mono', Menlo, monospace !important;
+  letter-spacing: 0.12em;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dialogs                                                             */
+/* ------------------------------------------------------------------ */
+
+/* While a dialog or the answer sheet is open, the page behind it never scrolls: on a phone a swipe could otherwise move
+   the page underneath instead of the dialog. */
+html:has(.fl-scrim),
+html:has(.st-sheet-scrim) {
+  overflow: hidden;
+}
+.fl-scrim,
+.st-sheet {
+  overscroll-behavior: contain;
+}
+.st-scrim {
+  z-index: 60;
+  padding: 16px;
+}
+.st-modal {
+  padding: 32px 24px 24px;
+}
+.st-modal-text p {
+  margin: 12px 0 0;
+  font: var(--f-body);
+  color: var(--c-ink-2);
+}
+.st-modal-actions {
+  display: grid;
+  gap: 4px;
+  margin-top: 24px;
+}
+/* ------------------------------------------------------------------ */
+/* A website task                                                      */
+/* ------------------------------------------------------------------ */
+
+.st-task {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+  /* clip, not hidden: the page's own scrollIntoView must never scroll the shell. */
+  overflow: clip;
+}
+/* The website takes whatever height is left above the task bar, so the bar always sits at the bottom of the screen
+   even when a browser toolbar appears or hides. */
+.st-frame-box {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  overflow: clip;
+  background: #fff;
+}
+/* During a website nothing behind it scrolls (that would also hide and show the browser's toolbar). */
+html:has(.st-task) {
+  overflow: hidden;
+}
+/* What covers the website (instruction page, answer sheet, pause dialog). While the person pinch-zooms, TaskRunner
+   moves this layer and the bar onto the visible part of the screen and undoes the zoom on them. */
+.st-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  transform-origin: 0 0;
+}
+.st-layer > * {
+  pointer-events: auto;
+}
+.st-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
+  transform-origin: 0 0;
+  background: #fff;
+}
+.st-bar {
+  flex: none;
+  position: relative;
+  z-index: 1;
+  transform-origin: 0 0;
+  height: 140px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 8px;
+  padding: 10px 16px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--c-line);
+  background: #fff;
+  box-shadow: 0 -8px 24px rgba(22, 21, 15, 0.06);
+}
+/* The task stays in view the whole time, in the same words as on the card. */
+.st-bar-q {
+  margin: 0;
+  align-self: center;
+  font: 600 16px/20px var(--font);
+  color: var(--c-ink);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+.st-bar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.st-bar-pause {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 18px 0 14px;
+  border-radius: 999px;
+  background: var(--c-canvas-2);
+  font: 600 17px/1 var(--font);
+  color: var(--c-ink);
+}
+.st-bar-answer {
+  height: 52px;
+  padding: 0 32px;
+  font-size: 18px;
+}
+
+/* The website's instruction page covers it completely until Open the website: a full white page with the header, the
+   task and its steps, and the buttons pinned to the bottom of the screen (the page scrolls under them on a short phone). */
+.st-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #fff;
+}
+.st-card {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 12px 20px 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  animation: none;
+  background: #fff;
+}
+.st-card .fl-modal-title {
+  font: 600 26px/33px var(--font);
+}
+.st-card .fl-modal-text {
+  margin-bottom: 24px;
+}
+.st-card-actions {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  display: grid;
+  gap: 4px;
+  padding: 12px 0 calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 18px);
+}
+.st-card-note {
+  margin: 0 0 8px;
+  font: var(--f-small);
+  color: var(--c-ink-2);
+}
+
+/* The answer sheet rises from the bottom over a white veil; the clock is stopped while it is open. */
+.st-sheet-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fl-fade var(--t-ui) var(--ease) both;
+}
+.st-sheet {
+  width: 100%;
+  max-height: 92%;
+  overflow-y: auto;
+  padding: 28px 20px 0;
+  border-radius: var(--r-modal) var(--r-modal) 0 0;
+  background: var(--c-card);
+  box-shadow: var(--shadow-modal);
+  display: grid;
+  gap: 16px;
+}
+.st-sheet-title {
+  margin: 0;
+  font: 600 22px/29px var(--font);
+}
+
+/* ------------------------------------------------------------------ */
+/* The warm-up (the onboarding's own steps) on a phone                 */
+/* ------------------------------------------------------------------ */
+
+.st-warmup .fl-top {
+  height: 60px;
+  padding: 0 16px 0 20px;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+.st-warmup .fl-skip {
+  white-space: nowrap;
+}
+.st-warmup .fl-main {
+  padding: 8px 16px 40px;
+}
+/* The page before each activity: what to do, one step per line as written, then the activity's tiny moving picture. */
+.st-instr-set {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 0;
+  font: 600 17px/24px var(--font);
+  color: var(--c-ink);
+}
+.st-instr-set .fl-check {
+  color: var(--c-accent);
+}
+.st-instr {
+  display: grid;
+  gap: 12px;
+  margin: -8px 0 24px;
+}
+.st-instr-todo,
+.st-instr-success {
+  margin: 0;
+  white-space: pre-line;
+  font: 400 18px/26px var(--font);
+  color: var(--c-ink);
+}
+.st-instr-success {
+  color: var(--c-ink-2);
+}
+.st-instr .dm {
+  height: 168px;
+  margin-top: 4px;
+}
+/* The picture's button labels on one line, smaller. */
+.st-instr .dm-pill {
+  white-space: nowrap;
+  font-size: 12px;
+  padding: 0 10px;
+}
+.st-warmup .fl-stage.is-size {
+  height: min(480px, 52svh);
+}
+/* The reading boxes keep their full height (it sets the largest text the step can show, so it is part of the
+   measurement); the answer buttons stay pinned to the bottom of the screen instead, so they are always in reach. */
+.st-warmup .fl-task .fl-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 16px;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 14px);
+}
+/* Each step fits one phone screen: the heading, the stage and every answer button. No line under the heading (the
+   owner's decision, 28 Oct 2026); the page before the step says what to do. */
+.st-warmup .fl-task-title {
+  min-height: 0;
+  margin: 4px 0 18px;
+  font: 600 26px/32px var(--font);
+}
+.st-warmup .fl-task-sub {
+  display: none;
+}
+.st-warmup .fl-stage.is-faint {
+  height: min(200px, 20svh);
+}
+.st-warmup .fl-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.st-warmup .fl-actions .answer {
+  min-width: 0;
+}
+.st-warmup .fl-actions .fl-answer-quiet,
+.st-warmup .fl-actions > :only-child {
+  grid-column: 1 / -1;
+}
+/* The four words, one per row at full width, with "I cannot see a word" under them. */
+.st-warmup .fl-actions > .fl-words {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.st-warmup .fl-words .answer {
+  min-height: 56px;
+  font-size: 20px;
+}
+.st-warmup .fl-pair .btn {
+  white-space: normal;
+  line-height: 1.2;
+  min-height: 56px;
+  height: auto;
+}
+.st-warm-end {
+  display: grid;
+  justify-items: center;
+  padding-top: 32px;
+  text-align: center;
+}
+.st-warm-end .fl-closing-mark {
+  margin-bottom: 8px;
+}
+.st-warmup .fl-words .answer {
+  min-width: 0;
+  width: 100%;
+  padding: 0 8px;
+  overflow-wrap: anywhere;
+}
+.st-warmup .fl-ld-pair {
+  width: 100%;
+  gap: 12px;
+}
+.st-warmup .fl-ld-swatch {
+  flex: 1;
+  width: auto;
+  height: 120px;
+}
+/* "Smaller · Larger" sits on its own row, with "This is comfortable" under it. */
+.st-warmup .fl-actions > .fl-pair,
+.st-warmup .fl-actions > .btn {
+  grid-column: 1 / -1;
+}
+.st-warmup .fl-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+.st-warmup .fl-pair .btn,
+.st-warmup .fl-actions > .btn {
+  width: 100%;
+  min-width: 0;
+  padding: 0 12px;
+}
+
+/* An answer with a second line (a round and its websites). */
+.st-choice-two {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+}
+.st-choice-sub {
+  font: 400 16px/22px var(--font);
+  opacity: 0.8;
+}
+.st-hint-tight {
+  margin: -4px 0 8px;
+  font-size: 16px;
+}
