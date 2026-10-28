@@ -3,7 +3,8 @@
 // is a slip. Blocks of 8 scored presses, up to 3 blocks, from 44 px. Fills pointing.blocks.
 
 import type { JSX } from 'preact';
-import { useMemo, useRef, useState } from 'preact/hooks';
+import { useContext, useMemo, useRef, useState } from 'preact/hooks';
+import { StepLabelsContext } from '../ui/words';
 import { BlockWalk, RING_COUNT, RING_ORDER, ringDiameter } from '../logic/pointing';
 import { useBox } from '../ui/hooks';
 import { TaskLayout, type TaskProps } from './Task';
@@ -20,6 +21,7 @@ interface Down {
 }
 
 export function DotsTask(props: TaskProps): JSX.Element {
+  const L = useContext(StepLabelsContext);
   const { raw } = props;
   const touch = props.input === 'touch';
   const walk = useMemo(() => new BlockWalk(touch), []);
@@ -80,7 +82,7 @@ export function DotsTask(props: TaskProps): JSX.Element {
 
   const verb = touch ? 'Tap' : 'Click';
   return (
-    <TaskLayout title={`${verb} the dots`} stageClass="is-dots" focusTitle>
+    <TaskLayout title={L.dotsTitle(touch)} sub={L.dotsLine} stageClass="is-dots" focusTitle>
       <div
         ref={ref}
         class="fl-ring"

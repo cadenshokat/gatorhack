@@ -1,0 +1,16 @@
+{
+  "id": "gov-A",
+  "replicaId": "nps-ever-basic",
+  "family": "gov",
+  "set": "A",
+  "prompt": "Find out what time the staff at the Everglades park entrance finish each day",
+  "question": "What time do the staff at the Everglades park entrance finish each day?",
+  "short": "Everglades entrance staff hours",
+  "label": "National Park Service, the information about Everglades National Park",
+  "tag": "the Everglades park information",
+  "choices": ["4:30 p.m.", "5:00 p.m.", "5:30 p.m.", "6:00 p.m."],
+  "correct": 0,
+  "answerText": "staffed from 8:00 a.m. to 4:30 p.m.",
+  "answerSelector": "#ParkInfoAccordion8317Collapse3 p",
+  "answerDepthScreens": 1.76
+}

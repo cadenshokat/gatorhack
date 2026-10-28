@@ -41,6 +41,7 @@ import { createStore, throttle } from './store';
 import { routeKey, settle, sleep, waitForLoad, waitForQuiet, waitForVisible, watchNavigation } from './nav';
 import { PageReader, collapse, type NodeInfo, type ReadResult } from './reader';
 import { Tailor, resetBackgroundCache, type ColumnOp, type Op } from './tailor';
+import { TEXT_SCALE_MAX, TEXT_SCALE_MIN, TextMap, WIDTH_TRIALS, fallbackTextScale, planTextScale, scaleWords, textCover, textMapOp, textScaleGate, widthLimitedZoom } from './textmap';
 import { Verifier, calmCoverage, completeSpec, plainCheck, type Snapshot } from './verify-dom';
 import { noteOfferOutcome, startSignals, type SignalsHost } from './signals';
 import { isExcludedHost } from './hosts';
@@ -173,6 +174,8 @@ interface SettledSize {
   /** Column width in screen px, or null for full width. */
   column: number | null;
   mode: 'auto' | 'person';
+  /** Round 11: the text map's factor on a narrow screen whose width capped the zoom (absent: none). */
+  textScale?: number;
 }
 
 function settledKey(): string {
@@ -226,7 +229,13 @@ function isSearchResults(pageKind: string): boolean {
 /** A web app or mail: the page is a tool to work in, not a page to read (Calm view would replace the tool). */
 function isWebApp(privatePage: boolean): boolean {
   if (privatePage || APP_HOSTS.test(location.hostname)) return true;
-  if (document.querySelector('[role="application"]')) return true;
+  // Embedded video players (JW Player, video.js) mark themselves role="application" too; only an application box
+  // that holds most of the page's text is the page itself.
+  const apps = Array.from(document.querySelectorAll('[role="application"]')).slice(0, 20);
+  if (apps.length) {
+    const all = (document.body?.innerText ?? '').length;
+    if (apps.some((el) => all > 0 && ((el as HTMLElement).innerText ?? '').length >= 0.5 * all)) return true;
+  }
   const vw = document.documentElement.clientWidth || innerWidth;
   const vh = document.documentElement.clientHeight || innerHeight;
   for (const el of Array.from(document.querySelectorAll('[contenteditable="true"], [contenteditable=""], canvas')).slice(0, 20)) {
@@ -372,6 +381,7 @@ function initialState(): EngineState {
     pageZoom: 1,
     passive: null,
     textZoom: 1,
+    textScale: 1,
     reword: { status: 'off', source: null, items: [], showingOriginal: false, version: 0 },
     compose: { status: 'idle', groups: {}, version: 0 },
   };
@@ -504,6 +514,8 @@ export function createController(): Controller {
     },
   });
   const verifier = new Verifier({ idOf, isOurUi: safeOurs });
+  /** Round 11: every text size × one factor, on narrow screens where the page's width capped the zoom. */
+  const textMap = new TextMap({ isOurUi: (el) => safeOurs(el), sheets: tailor.sheets });
 
   // Engine-internal state (not part of EngineState).
   let generation = 0;
@@ -584,6 +596,27 @@ export function createController(): Controller {
   };
 
   const activeColumn = (): ColumnOp | null => (opsList.find((o) => o.rec.kind === 'column' && o.active) as ColumnOp | undefined) ?? null;
+
+  /* ---------------- round 11: the text map (narrow screens whose width capped the zoom) ---------------- */
+
+  const activeTextMap = (): Op | null => opsList.find((o) => o.rec.kind === 'text_map' && o.active) ?? null;
+  /** The factor every text size is multiplied by now (1: zoom alone). */
+  const textScaleNow = (): number => (activeTextMap() && textMap.active ? textMap.scale : 1);
+  /**
+   * The largest text zoom this page view is known to take on a narrow screen without scrolling sideways (measured by
+   * the size step that found it), or null when the width never capped the zoom here.
+   */
+  let widthCap: number | null = null;
+  /** The page read as the site sets it: the text map is lifted while the reader measures (no runaway re-reads). */
+  const readPage = (): ReadResult => textMap.suspend(() => reader.read());
+  /** Body text as the person sees it at text zoom `zoom`: the page's own size × zoom × the text map. */
+  const effBody = (r: ReadResult, zoom: number): number => Math.round(r.pageBodyPx * zoom * textScaleNow() * 10) / 10;
+  /** The plan, the state and the panel follow the text map. */
+  const syncTextScale = (): void => {
+    const k = textScaleNow();
+    if (plan && read) plan = { ...plan, textScale: k, effectiveBodyPx: Math.round(read.pageBodyPx * plan.zoom * k * 10) / 10 };
+    if ((store.get().textScale ?? 1) !== k) store.set({ textScale: k });
+  };
 
   /** Viewport width in screen px (CSS px × zoom). */
   const screenWidth = (): number => {
@@ -1085,7 +1118,7 @@ export function createController(): Controller {
   /** Zoom stopped short of the person's size: say so, and offer Calm view (it renders at their size). */
   function noteSizeShortfall(p: ZoomPlan): void {
     if (!p.capped || p.step !== 0) return;
-    const eff = Math.round(p.bodyPx * p.zoom);
+    const eff = Math.round(p.bodyPx * p.zoom * (p.textScale ?? 1));
     const target = Math.round(p.targetPx);
     log({
       source: 'fit',
@@ -1325,18 +1358,196 @@ export function createController(): Controller {
     return f ? plainCheck(f.name).replace(/^it /, '') : 'failed a check';
   }
 
-  /** What the size is planned for: the fit's text size and the person's A−/A+ steps and width choice on this site. */
+  /**
+   * What the size is planned for: the fit's text size and the person's A−/A+ steps and width choice on this site, and
+   * (round 11) whether the screen is narrow, so a phone turned sideways plans again.
+   */
   function sizeSig(fit: FitProfile): string {
     return JSON.stringify([
       fit.text.override ?? fit.text.bodyPx, !!fit.text.largePrint, fit.text.source === 'default' && fit.text.override == null,
-      fit.layout?.column ?? 'auto', sitePrefs.textStep ?? 0, sitePrefs.column ?? null,
+      fit.layout?.column ?? 'auto', sitePrefs.textStep ?? 0, sitePrefs.column ?? null, textScaleGate(screenWidth()),
     ]);
   }
 
   function rememberSize(t: SizeTarget): void {
     const fit = getFit();
     if (!fit) return;
-    saveSettled({ sig: sizeSig(fit), zoom: t.zoom, column: t.column, mode: t.mode });
+    const k = textScaleNow();
+    saveSettled({ sig: sizeSig(fit), zoom: t.zoom, column: t.column, mode: t.mode, ...(k > 1.001 ? { textScale: k } : {}) });
+  }
+
+  /* ---------------- round 11: the text map step ---------------- */
+
+  /**
+   * The checks a text map rolls back for: all of them. It is WebAble's own CSS, not the site's design at a size, so
+   * text cut off, text over text, sideways scrolling, sizes out of order, lost content and unreachable controls all
+   * count.
+   */
+  const TEXT_IGNORES: CheckName[] = [];
+
+  /** The page before the first text step (the verifier's snapshot, and where text was already partly covered). */
+  type TextBase = { snap: Snapshot; probe: Element[]; cover: Map<Element, number> } | null;
+
+  interface TextStep {
+    ok: boolean;
+    fails: CheckResult[];
+    op: Op | null;
+    /** The page before the first text step, so the one fallback is checked against the page without the map. */
+    base: TextBase;
+  }
+
+  /** The page with every text size × k (null: the site's own sizes) in one step, checked once. Runs under the lock. */
+  async function stepTextScale(r: ReadResult, k: number | null, o: { source: LedgerEntry['source']; zoom: number; wantZoom: number; base?: TextBase; check?: boolean }): Promise<TextStep> {
+    const cur = activeTextMap();
+    if (stopped || (k === null && !cur) || (cur && k !== null && Math.abs(textMap.scale - k) < 0.005)) {
+      return { ok: true, fails: [], op: cur, base: o.base ?? null };
+    }
+    const fit = getFit();
+    const op = k === null ? null : textMapOp(textMap, k, {
+      zoom: o.zoom, wantZoom: o.wantZoom, source: o.source, bodyPx: r.pageBodyPx, targetPx: fit ? fit.text.override ?? fit.text.bodyPx : null, idOf,
+    });
+    const check = o.check !== false && !!op;
+    const coverOps = [...opsList.filter((x) => x.active && x !== cur), ...(op ? [op] : [])];
+    const mainRoot = r.mainRoot ?? null;
+    let base = o.base ?? null;
+    if (check && !base && op) {
+      const probe = verifier.probe(r, [], { wide: true });
+      base = {
+        snap: verifier.snapshot(probe, { ops: opsList.filter((x) => x.active), coverOps, contrastFloor: fit?.contrast.floor, mainRoot }),
+        probe,
+        cover: textCover(op.elements, safeOurs),
+      };
+    }
+    if (check) verifier.watchVolatile();
+    try {
+      if (cur) {
+        // Superseded: the new op takes the page over (its Undo goes back to the site's own sizes).
+        cur.active = false;
+        cur.rec.status = 'reversed';
+        if (!op) textMap.clear();
+      }
+      if (op) {
+        await op.apply();
+        opsList.push(op);
+      }
+      await settle();
+    } catch (err) {
+      if (op && !op.active) {
+        op.rec.status = 'skipped';
+        op.rec.reason = `${op.rec.reason}; not applied: ${errText(err)}`;
+      }
+      addError(plainError(err));
+    }
+    syncOps();
+    syncTextScale();
+    if (!check || !base || !op || !op.active || stopped) {
+      if (check) verifier.stopVolatile();
+      return { ok: true, fails: [], op: op && op.active ? op : null, base };
+    }
+    const res = verifier.check([op], base.snap, base.probe, {
+      ops: opsList.filter((x) => x.active), coverOps, contrastFloor: fit?.contrast.floor, mainRoot, ignore: TEXT_IGNORES,
+    });
+    verifier.stopVolatile();
+    // The page must never scroll sideways because of the map: the overflow check allows 8 px for zoom rounding; the
+    // map is checked at the same zoom as its base, so any new sideways scroll counts.
+    const ovB = base.snap.measure.docScrollW - base.snap.measure.viewportW;
+    const ovA = res.scrollW - res.viewW;
+    let fails = res.fails;
+    let checks = res.checks;
+    if (ovA > Math.max(0, ovB) && !fails.some((f) => f.name === 'overflow')) {
+      const f: CheckResult = { name: 'overflow', pass: false, detail: `The page now scrolls sideways (by ${Math.round(ovA)} px)`, opId: op.rec.id };
+      fails = [...fails, f];
+      checks = [...checks.filter((c) => c.name !== 'overflow'), f];
+    }
+    // Text partly covered: the end of a line now running under a button or box beside it (the verifier samples the
+    // middle of a line only). Only new cover counts, on screen.
+    const after = textCover(op.elements, safeOurs, base.cover);
+    const covered: Element[] = [];
+    for (const [el, n] of after) if (n > (base.cover.get(el) ?? 0) && !verifier.volatileHas(el)) covered.push(el);
+    if (covered.length) {
+      const f: CheckResult = { name: 'overlap', pass: false, detail: `Text is now partly covered by something else (${covered.slice(0, 4).map(idOf).join(', ')})`, opId: op.rec.id };
+      fails = [...fails, f];
+      checks = [...checks.filter((c) => !(c.name === 'overlap' && c.pass)), f];
+    }
+    store.set((s) => ({ checks: [...s.checks, ...checks].slice(-80) }));
+    return { ok: !fails.length, fails, op, base };
+  }
+
+  /**
+   * The one smaller try after the map at k failed a check: halfway; when the page scrolled sideways or text got
+   * covered, the largest k at which neither happens (measured by laying the page out at trial sizes, the map still on
+   * at k), alone when those were the only failures, else whichever is smaller. Null: nothing worth trying.
+   */
+  function textFallback(first: TextStep, k: number): number | null {
+    let half = fallbackTextScale(k);
+    const base = first.base;
+    const measurable = (f: CheckResult) => f.name === 'overflow' || f.name === 'overlap';
+    if (base && first.op && first.op.active && first.fails.some(measurable)) {
+      const de = document.documentElement;
+      const ovB = Math.max(0, base.snap.measure.docScrollW - base.snap.measure.viewportW);
+      const els = first.op.elements;
+      const kd = textMap.largestScale(k, () => {
+        if (de.scrollWidth - de.clientWidth > ovB) return false;
+        for (const [el, n] of textCover(els, safeOurs, base.cover)) if (n > (base.cover.get(el) ?? 0)) return false;
+        return true;
+      });
+      if (kd === null) return null;
+      const only = first.fails.every(measurable);
+      const pick = only || half === null ? kd : Math.min(half, kd);
+      half = pick >= TEXT_SCALE_MIN && pick < k - 0.005 ? pick : null;
+    }
+    return half;
+  }
+
+  /**
+   * The text map for a page whose zoom the width stopped at `zoom` (round 11): k, checked; one smaller k when a check
+   * fails (textFallback); then the site's own sizes. Says in the ledger what happened.
+   */
+  async function fitTextScale(gen: number, r: ReadResult, k: number, zoom: number, wantZoom: number, source: LedgerEntry['source'], kind: 'first' | 'navigation' | 'refit', remembered: boolean): Promise<void> {
+    const t0 = performance.now();
+    const first = await withLock(() => stepTextScale(r, k, { source, zoom, wantZoom }));
+    if (gen !== generation || stopped) return;
+    let res = first;
+    let used: number | null = k;
+    if (!first.ok) {
+      const half = textFallback(first, k);
+      if (half !== null) {
+        res = await withLock(() => stepTextScale(r, half, { source: 'check', zoom, wantZoom, base: first.base }));
+        if (gen !== generation || stopped) return;
+        used = half;
+      }
+      if (half === null || !res.ok) {
+        await withLock(() => stepTextScale(r, null, { source: 'check', zoom, wantZoom, check: false }));
+        used = null;
+      }
+      log({
+        source: 'check',
+        title: used !== null
+          ? `Made the text ${scaleWords(used)}× bigger, not ${scaleWords(k)}×: ${scaleWords(k)}× ${failWords(first.fails)}`
+          : `Kept this page’s own text sizes: ${scaleWords(k)}× ${failWords(first.fails)}${half !== null ? ` and ${scaleWords(half)}× ${failWords(res.fails)}` : ''}`,
+        detail: `${first.fails[0]?.detail ?? ''} WebAble changed the text once, tried one smaller size, and stopped.`.trim(),
+        action: 'reversed',
+      });
+    }
+    const op = activeTextMap();
+    if (op && kind !== 'navigation') {
+      const ms = Math.round(performance.now() - t0);
+      const st = textMap.stats;
+      const left = [st.skipped.icon ? `${st.skipped.icon} icons` : '', st.skipped.control ? `${st.skipped.control} form fields too short for bigger text` : '', st.skipped.hidden ? `${st.skipped.hidden} hidden labels` : ''].filter(Boolean).join(', ');
+      log({
+        source: op.source,
+        title: op.title,
+        detail: `${op.detail ?? ''} ${st.tokened} text elements${left ? ` (left as they are: ${left})` : ''}; checked in ${ms} ms.${remembered ? ' This is the size this site settled at earlier in this session.' : ''}`,
+        action: 'applied',
+        opId: op.rec.id,
+      });
+    }
+    syncTextScale();
+  }
+
+  /** The page now scrolls sideways (the overflow check failed and the page is wider than its window). */
+  function sideways(res: SizeStep): boolean {
+    return res.fails.some((f) => f.name === 'overflow') && res.scrollW > res.viewW + 8;
   }
 
   /** The automatic column did not fit this site: it stays off here (remembered), instead of a try on every visit. */
@@ -1356,8 +1567,8 @@ export function createController(): Controller {
     const kept = opsList.some((o) => (o.rec.kind === 'page_zoom' || o.rec.kind === 'column') && o.active);
     const own = kept && plan ? plan.ownZoom : zi.factor;
     if (kind === 'navigation' && plan) {
-      // A new route of the same page view: zoom and column stay exactly as they are.
-      const p = { ...plan, bodyPx: r.pageBodyPx, effectiveBodyPx: Math.round(r.pageBodyPx * plan.zoom * 10) / 10 };
+      // A new route of the same page view: zoom, column and text map stay exactly as they are.
+      const p = { ...plan, bodyPx: r.pageBodyPx, textScale: textScaleNow(), effectiveBodyPx: effBody(r, plan.zoom) };
       plan = p;
       return { p, reversedAt: null };
     }
@@ -1367,8 +1578,11 @@ export function createController(): Controller {
     const largePrint = !!fit.text.largePrint;
     const settled = await loadSettled();
     if (gen !== generation) return { p, reversedAt: null };
+    // Round 11: a narrow screen (a phone): the text map, never the zoom, makes text bigger there.
+    const narrow = textScaleGate(screenWidth());
     let t: SizeTarget;
     let remembered = false;
+    let rememberedScale: number | null = null;
     if (settled && settled.sig === sizeSig(fit) && !zi.personChanged) {
       // This site settled earlier in this session: its final size, with no trials.
       remembered = true;
@@ -1376,16 +1590,62 @@ export function createController(): Controller {
       const lim = columnLimits(screenWidth());
       const col = settled.column && lim ? Math.min(lim.maxPx, Math.max(lim.minPx, settled.column)) : null;
       t = { zoom: z, column: col, mode: settled.mode };
+      if (narrow && settled.textScale && settled.textScale > 1.001) rememberedScale = settled.textScale;
     } else {
       const wish = columnWish(p.zoom > own + 0.005);
       t = { zoom: p.zoom, column: columnWidthFor(p.zoom, wish), mode: wish?.mode ?? 'auto' };
     }
+    // On a phone the page never gets narrower: zoom lays the page out at a narrower width (and the column is a narrower
+    // window), which on a 390 px screen folds and squeezes the site. The page stays at the person's own zoom and full
+    // width, and the text map carries the whole planned size.
+    const wantZoom = t.zoom;
+    if (narrow) t = { zoom: own, column: null, mode: t.mode };
+    // A refit plans from the site's own text sizes: a text map from the last plan comes off first (the size the site
+    // settled at keeps it as it is).
+    if (activeTextMap() && !rememberedScale) await withLock(() => stepTextScale(r, null, { source: 'fit', zoom: t.zoom, wantZoom: t.zoom, check: false }));
+    widthCap = null;
     const first = await withLock(() => stepSize(r, t, { source: p.step ? 'person' : 'fit', step: p.step }));
     if (gen !== generation || stopped) return { p, reversedAt: null };
     let final = t;
     let reversedAt: number | null = null;
     let res = first;
-    if (!first.ok) {
+    if (narrow) widthCap = own;
+    else if (first.ok && rememberedScale) widthCap = t.zoom;
+    if (!first.ok && narrow && !t.column && sideways(first)) {
+      // Round 11: the page can't get narrower on this screen. Not a linear guess: the largest zoom that gives the page
+      // the width it measured, measured again there, at most WIDTH_TRIALS more steps; then the person's own zoom.
+      const ladder = personZoomLadder(largePrint);
+      const tried: number[] = [t.zoom];
+      let cur = t;
+      let trials = 0;
+      while (!res.ok && trials < WIDTH_TRIALS && sideways(res)) {
+        const z = widthLimitedZoom({ screenPx: res.viewW * cur.zoom, scrollW: res.scrollW, failedZoom: cur.zoom, own, ladder });
+        if (z === null) break;
+        const next: SizeTarget = { zoom: z, column: null, mode: t.mode };
+        res = await withLock(() => stepSize(r, next, { source: 'check', step: p.step, base: first.base }));
+        if (gen !== generation || stopped) return { p, reversedAt: null };
+        trials++;
+        tried.push(z);
+        cur = next;
+      }
+      final = cur;
+      if (!res.ok) {
+        // Nothing above the person's own zoom fits: back to it, and the text map carries the size.
+        if (Math.abs(cur.zoom - own) > 0.005) {
+          await withLock(() => stepSize(r, { zoom: own, column: null, mode: t.mode }, { source: 'check', step: p.step, check: false }));
+        }
+        final = { zoom: own, column: null, mode: t.mode };
+        res = { ...res, zoomOp: null, colOp: null };
+      }
+      widthCap = final.zoom;
+      reversedAt = t.zoom;
+      log({
+        source: 'check',
+        title: `Kept this page at ${pct(final.zoom)}: ${pct(t.zoom)} ${failWords(first.fails)}`,
+        detail: `${first.fails[0]?.detail ?? ''} The page can’t get narrower than about ${Math.round(first.scrollW)} px on this phone, so WebAble measured the largest zoom it fits at (tried ${tried.map(pct).join(', ')}: ${trials} more size step${trials === 1 ? '' : 's'}) and makes the text bigger by itself instead.`.trim(),
+        action: 'reversed',
+      });
+    } else if (!first.ok) {
       const fb = fallbackFor(t, first, largePrint);
       if (t.column) noteColumnFailed(t);
       const second = await withLock(() => stepSize(r, fb, { source: 'check', step: p.step, base: first.base }));
@@ -1399,6 +1659,9 @@ export function createController(): Controller {
         res = { ...second, zoomOp: null, colOp: null };
       }
       if (final.zoom < t.zoom - 0.005) reversedAt = t.zoom;
+      // On a phone a narrower layout that breaks (text over text, text cut off) caps the zoom just as a sideways scroll
+      // does: the text map carries the rest of the size, under its own checks.
+      if (narrow && !t.column && final.zoom < t.zoom - 0.005) widthCap = final.zoom;
       log({
         source: 'check',
         title: final.zoom < t.zoom - 0.005
@@ -1409,14 +1672,24 @@ export function createController(): Controller {
       });
     }
     const zOp = res.zoomOp && res.zoomOp.active ? res.zoomOp : null;
-    p = { ...p, zoom: zOp ? final.zoom : own, effectiveBodyPx: Math.round(r.pageBodyPx * (zOp ? final.zoom : own) * 10) / 10 };
+    const zNow = zOp ? final.zoom : own;
+    p = { ...p, zoom: zNow, textScale: textScaleNow(), effectiveBodyPx: effBody(r, zNow) };
     plan = p;
-    rememberSize({ ...final, zoom: zOp ? final.zoom : own });
     if (zOp && kind !== 'navigation') {
       log({ source: zOp.source, title: zOp.title, detail: `${zOp.detail} Body text was measured at ${r.pageBodyPx} px (${r.body.source}).${remembered ? ' This is the size this site settled at earlier in this session.' : ''}`, action: 'applied', opId: zOp.rec.id });
     }
     const col = activeColumn();
     if (col && kind !== 'navigation') log({ source: col.source, title: col.title, detail: col.detail, action: 'applied', opId: col.rec.id });
+    // Round 11: the width capped the zoom on a narrow screen: every text size × k, the rest of the way to the plan.
+    if (narrow && widthCap !== null && !undoneKinds.has('text_map')) {
+      const k = rememberedScale ?? planTextScale(wantZoom, zNow);
+      if (k !== null) {
+        await fitTextScale(gen, r, k, zNow, rememberedScale !== null ? zNow * rememberedScale : wantZoom, p.step ? 'person' : 'fit', kind, remembered);
+        if (gen !== generation || stopped) return { p: plan ?? p, reversedAt };
+        p = plan ?? p;
+      }
+    }
+    rememberSize({ ...final, zoom: zNow });
     return { p, reversedAt };
   }
 
@@ -1428,14 +1701,22 @@ export function createController(): Controller {
   async function textTo(r: ReadResult, next: number, source: LedgerEntry['source'], step: number): Promise<{ ok: boolean; zoomOp: Op | null; columnOff: boolean }> {
     const cur = sizeNow();
     const own = ownZoom();
+    // A narrow screen (a phone): the page stays at full width and the text map carries the size.
+    if (textScaleGate(screenWidth()) && !cur.column) return textToNarrow(r, next, source, step);
     const wish = columnWish(next > own + 0.005);
     const t: SizeTarget = { zoom: next, column: columnWidthFor(next, wish), mode: wish?.mode ?? 'auto' };
     const res = await withLock(() => stepSize(r, t, { source, step }));
     const finish = (to: SizeTarget, op: Op | null, columnOff: boolean) => {
-      if (plan) plan = { ...plan, zoom: to.zoom, step, effectiveBodyPx: Math.round(r.pageBodyPx * to.zoom * 10) / 10 };
+      if (plan) plan = { ...plan, zoom: to.zoom, step, effectiveBodyPx: effBody(r, to.zoom) };
       return { ok: true, zoomOp: op && op.active ? op : null, columnOff };
     };
     if (res.ok) return finish(t, res.zoomOp, false);
+    if (!t.column && next > cur.zoom + 0.005 && textScaleGate(screenWidth()) && sideways(res) && !undoneKinds.has('text_map')) {
+      // The page can't get narrower on this phone: it stays at the zoom it has, and the text map goes the rest of the way.
+      await withLock(() => stepSize(r, cur, { source: 'check', step: plan?.step ?? 0, check: false }));
+      widthCap = cur.zoom;
+      return textToNarrow(r, next, source, step);
+    }
     // The person asked for this size: with the column on, the size stays and the column comes off (when the page can
     // take the size at full width); otherwise the page goes back as it was.
     const fb = res.colOp ? fallbackFor(t, res, !!getFit()?.text.largePrint) : null;
@@ -1447,6 +1728,47 @@ export function createController(): Controller {
     await withLock(() => stepSize(r, cur, { source: 'check', step: plan?.step ?? 0, check: false }));
     log({ source: 'check', title: `Kept the page as it was: ${pct(next)} ${failWords(res.fails)}`, detail: res.fails[0]?.detail ?? '', action: 'reversed' });
     return { ok: false, zoomOp: null, columnOff: false };
+  }
+
+  /**
+   * Round 11: text to `next` (a size on the zoom ladder) on a narrow screen: the page stays at the person's own zoom
+   * (a phone never gets a narrower page) and every text size × next ÷ own. Each part is checked; a failure puts the
+   * page back to the size it had. The returned op is the one that carries the size (the text map when it is on).
+   */
+  async function textToNarrow(r: ReadResult, next: number, source: LedgerEntry['source'], step: number): Promise<{ ok: boolean; zoomOp: Op | null; columnOff: boolean }> {
+    const cur = sizeNow();
+    const curK = textScaleNow();
+    const own = ownZoom();
+    const cap = own;
+    const zoom = own;
+    const k = next > cap + 0.005 && !undoneKinds.has('text_map') ? planTextScale(next, cap) : null;
+    const restore = async (fails: CheckResult[], what: string) => {
+      await withLock(() => stepTextScale(r, null, { source: 'check', zoom: cur.zoom, wantZoom: cur.zoom, check: false }));
+      await withLock(() => stepSize(r, cur, { source: 'check', step: plan?.step ?? 0, check: false }));
+      if (curK > 1.001) await withLock(() => stepTextScale(r, curK, { source: 'check', zoom: cur.zoom, wantZoom: cur.zoom * curK, check: false }));
+      log({ source: 'check', title: `Kept the page as it was: ${what} ${failWords(fails)}`, detail: fails[0]?.detail ?? '', action: 'reversed' });
+      return { ok: false, zoomOp: null, columnOff: false };
+    };
+    if (Math.abs(zoom - cur.zoom) > 0.005) {
+      // The zoom moves (below the cap): the text map comes off first, so the zoom is checked on the site's own sizes.
+      if (curK > 1.001) await withLock(() => stepTextScale(r, null, { source, zoom: cur.zoom, wantZoom: cur.zoom, check: false }));
+      const res = await withLock(() => stepSize(r, { zoom, column: null, mode: cur.mode }, { source, step }));
+      if (!res.ok) return restore(res.fails, pct(zoom));
+    }
+    if (k !== null) {
+      const res = await withLock(() => stepTextScale(r, k, { source, zoom, wantZoom: next }));
+      if (!res.ok) {
+        // The one smaller try (as when the page was fitted); taken only when it is still a step the person asked for.
+        const kb = textFallback(res, k);
+        const further = kb !== null && (next > cur.zoom * curK ? kb > curK + 0.005 || Math.abs(zoom - cur.zoom) > 0.005 : true);
+        const res2 = kb !== null && further ? await withLock(() => stepTextScale(r, kb, { source: 'check', zoom, wantZoom: next, base: res.base })) : null;
+        if (!res2?.ok) return restore(res.fails, `text ${scaleWords(k)}× bigger`);
+      }
+    } else if (textScaleNow() > 1.001) await withLock(() => stepTextScale(r, null, { source, zoom, wantZoom: next, check: false }));
+    if (plan) plan = { ...plan, zoom, step, textScale: textScaleNow(), effectiveBodyPx: effBody(r, zoom) };
+    syncTextScale();
+    const carrier = activeTextMap() ?? opsList.find((o) => o.rec.kind === 'page_zoom' && o.active) ?? null;
+    return { ok: true, zoomOp: carrier, columnOff: false };
   }
 
   /** Follow a window resize: keep the column's planned width for the new window (a zoom change alone does nothing). */
@@ -1528,8 +1850,12 @@ export function createController(): Controller {
     if (!fit || !r || store.get().showingOriginal) return;
     const cur = sizeNow();
     const largePrint = !!fit.text.largePrint;
-    const next = stepZoom(cur.zoom, dir, largePrint);
-    if (Math.abs(next - cur.zoom) < 0.005) {
+    // Round 11: with the text map on (a phone whose width capped the zoom), the steps move the size the person sees.
+    const k0 = textScaleNow();
+    const shownZoom = cur.zoom * k0;
+    const next = stepZoom(shownZoom, dir, largePrint);
+    const atMax = dir > 0 && k0 >= TEXT_SCALE_MAX - 0.005;
+    if (Math.abs(next - shownZoom) < 0.005 || atMax) {
       toast(dir > 0 ? 'Text is as large as WebAble makes it' : 'Text is as small as it goes');
       return;
     }
@@ -1547,10 +1873,14 @@ export function createController(): Controller {
     rememberSize(sizeNow());
     // Round 4: the person's own size choice on this site is evidence about their comfortable text size.
     passiveObs.noteSize(next, 'step', dir);
+    const k1 = textScaleNow();
+    const z1 = sizeNow().zoom;
     log({
       source: 'person',
-      title: `Text ${dir > 0 ? 'larger' : 'smaller'}: page zoom ${pct(next)}`,
-      detail: `Body text is ${Math.round(r.pageBodyPx * next)} px here.${res.columnOff ? ' The narrower page did not fit at this size, so it is at full width.' : ''} WebAble remembers this for ${siteKey()}.`,
+      title: k1 > 1.001
+        ? `Text ${dir > 0 ? 'larger' : 'smaller'}: page zoom ${pct(z1)}, text ${scaleWords(k1)}× the site’s own`
+        : `Text ${dir > 0 ? 'larger' : 'smaller'}: page zoom ${pct(z1)}`,
+      detail: `Body text is ${Math.round(r.pageBodyPx * z1 * k1)} px here.${k1 > 1.001 ? ' The page can’t get narrower on this phone, so the text grows by itself past that zoom.' : ''}${res.columnOff ? ' The narrower page did not fit at this size, so it is at full width.' : ''} WebAble remembers this for ${siteKey()}.`,
       action: 'applied',
       ...(res.zoomOp ? { opId: res.zoomOp.rec.id } : {}),
     });
@@ -2013,7 +2343,7 @@ export function createController(): Controller {
     try {
       store.set({ phase: 'reading' });
       resetBackgroundCache();
-      const r = reader.read();
+      const r = readPage();
       read = r;
       store.set({ digest: r.digest, outline: r.outline });
       log({
@@ -2036,7 +2366,8 @@ export function createController(): Controller {
       if (gen !== generation) return;
       const p = sized.p;
       store.set({ textStep: p.step });
-      const zoomOp = opsList.find((o) => o.rec.kind === 'page_zoom' && o.active);
+      // The text map (round 11) also made the text bigger: then the page did not keep its own size.
+      const zoomOp = opsList.find((o) => (o.rec.kind === 'page_zoom' || o.rec.kind === 'text_map') && o.active);
       if (zi.factor > 1.001 && !zoomOp && kind === 'first') {
         log({ source: 'fit', title: `Kept your own zoom (${pct(zi.factor)})`, action: 'kept' });
       } else if (!zoomOp && kind === 'first' && !undoneKinds.has('page_zoom')) {
@@ -2067,7 +2398,8 @@ export function createController(): Controller {
 
       // 4. Headings: raise weak ones to the minimum ramp (verified; a heading that does not fit keeps its size).
       if (!undoneKinds.has('heading_scale')) {
-        const hs = tailor.headingScaleOp(r, liveBodyPx(r));
+        // Planned on the site's own sizes (the text map lifted); the map then multiplies the raised headings too.
+        const hs = textMap.suspend(() => tailor.headingScaleOp(r, liveBodyPx(r)));
         if (hs) await applyBatch([hs], r, { wide: true });
         if (gen !== generation) return;
       }
@@ -2611,7 +2943,7 @@ export function createController(): Controller {
     if (phase === 'reading' || phase === 'idle' || phase === 'error') return;
     incrementalRounds++;
     lastIncrementalAt = Date.now();
-    const r = reader.read();
+    const r = readPage();
     read = r;
     store.set({ digest: judgedDigest(r.digest), outline: r.outline });
     refreshCalmSpec();
@@ -3093,7 +3425,7 @@ export function createController(): Controller {
     if (s.showingOriginal) showOriginal(false);
     const fit = s.fit;
     if (!read) {
-      read = reader.read();
+      read = readPage();
       store.set({ digest: read.digest, outline: read.outline });
     }
     const r = read;
@@ -3394,6 +3726,7 @@ export function createController(): Controller {
       reword.pageOriginal(true);
       void (async () => {
         await revertAll(opsList);
+        syncTextScale();
       })();
       log({ source: 'person', title: 'Showing the original page', action: 'kept' });
     } else {
@@ -3404,14 +3737,26 @@ export function createController(): Controller {
         const col = opsList.find((o) => o.rec.kind === 'column' && o.rec.status === 'applied' && !o.active) as ColumnOp | undefined;
         const zoomBack = opsList.some((o) => o.rec.kind === 'page_zoom' && o.rec.status === 'applied' && !o.active);
         if (col?.spec.scale && col.spec.scale < 1 && zoomBack) colMul = 1 / col.spec.scale;
+        const tm = opsList.find((o) => o.rec.kind === 'text_map' && o.rec.status === 'applied' && !o.active);
         for (const op of opsList) {
-          if (op.rec.status === 'applied' && !op.active) {
+          if (op.rec.status === 'applied' && !op.active && op !== tm) {
             try {
               await op.apply();
             } catch (err) {
               addError(plainError(err));
             }
           }
+        }
+        if (tm && !store.get().showingOriginal) {
+          // Round 11: the text map reads the site's own sizes for the window it is on: after the zoom's resize.
+          if (zoomBack) await waitResize(900);
+          await settle();
+          try {
+            await tm.apply();
+          } catch (err) {
+            addError(plainError(err));
+          }
+          syncTextScale();
         }
         overlays.setHidden(store.get().calm.open);
         overlays.schedule('original-off');
@@ -3449,11 +3794,12 @@ export function createController(): Controller {
           : { ...cur, column: null };
         undoneKinds.add(op.rec.kind);
         await withLock(() => stepSize(r, t, { source: 'person', step: plan?.step ?? 0, check: false }));
-        if (op.rec.kind === 'page_zoom' && plan) plan = { ...plan, zoom: ownZoom(), effectiveBodyPx: Math.round(r.pageBodyPx * ownZoom() * 10) / 10 };
+        if (op.rec.kind === 'page_zoom' && plan) plan = { ...plan, zoom: ownZoom(), effectiveBodyPx: effBody(r, ownZoom()) };
       } else await revertOp(op);
       op.rec.status = 'reversed';
       undoneKinds.add(op.rec.kind);
       syncOps();
+      if (op.rec.kind === 'text_map' || op.rec.kind === 'page_zoom') syncTextScale();
       const offer = opOffer.get(opId);
       if (offer) {
         try {
@@ -3482,16 +3828,18 @@ export function createController(): Controller {
     const keep: Op[] = [];
     const drop: Op[] = [];
     for (const op of opsList) {
-      const sizeOp = op.rec.kind === 'page_zoom' || op.rec.kind === 'column';
+      const sizeOp = op.rec.kind === 'page_zoom' || op.rec.kind === 'column' || op.rec.kind === 'text_map';
       if ((!full && op.persistent && op.rec.status === 'applied') || (keepSize && sizeOp && op.active)) keep.push(op);
       else drop.push(op);
     }
     await revertAll(drop);
     opsList = keep;
+    syncTextScale();
     if (full) {
       if (!keepSize) {
         tailor.sheets.clear();
         plan = null;
+        widthCap = null;
       }
       undoneKinds.clear();
     }
@@ -3675,6 +4023,7 @@ export function createController(): Controller {
         /* ignore */
       }
       // The column's CSS comes off with the zoom: one tab zoom change back to the person's own.
+      textMap.dispose();
       void revertAll(opsList).catch(() => undefined);
       reword.dispose();
       composer.reset();

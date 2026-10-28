@@ -10,3 +10,6 @@ dist/
 test-results/
 playwright-report/
 eval-output/
+
+# Study sandbox: live reference captures stay local
+apps/study/replicas/*/reference/

@@ -84,6 +84,11 @@ export interface ZoomPlan {
   effectiveBodyPx: number;
   /** How far short of the person's size the page stays at the fit's own zoom (0 when reached). */
   shortPx: number;
+  /**
+   * Round 11: on a narrow screen whose width capped the zoom, every text size is also multiplied by this (the
+   * extension's text map); effectiveBodyPx then includes it. Absent or 1: zoom alone.
+   */
+  textScale?: number;
 }
 
 export interface ZoomOptions {

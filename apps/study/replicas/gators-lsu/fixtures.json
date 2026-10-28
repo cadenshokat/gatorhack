@@ -1,0 +1,3567 @@
+{
+ "v": "study-fixtures.1",
+ "replicaId": "gators-lsu",
+ "version": "4",
+ "servePath": "/sports/football/opponent-history/louisiana-state-university/34",
+ "originalHost": "floridagators.com",
+ "engineCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "serverCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "models": {
+  "jev": "jev-1.14.0",
+  "compose": "gpt-5.4-mini"
+ },
+ "recordedAt": "2026-10-27T22:34:51.182Z",
+ "matrix": {
+  "fits": [
+   "typical",
+   "rosa",
+   "reader",
+   "large",
+   "calm"
+  ],
+  "heights": [
+   456,
+   520,
+   600,
+   664,
+   760
+  ],
+  "engines": [
+   "chromium"
+  ],
+  "canonical": {
+   "fit": "typical",
+   "h": 664
+  }
+ },
+ "understand": {
+  "page": {
+   "purpose": {
+    "kind": "record_stats",
+    "p": 1,
+    "probs": {
+     "record_stats": 1,
+     "scoreboard": 0,
+     "schedule": 0,
+     "standings": 0,
+     "roster": 0,
+     "article": 0,
+     "news_index": 0,
+     "recipe": 0,
+     "product": 0,
+     "search_results": 0,
+     "form_task": 0,
+     "checkout": 0,
+     "sign_in": 0,
+     "account_dashboard": 0,
+     "bill_statement": 0,
+     "appointment": 0,
+     "status_lookup": 0,
+     "info_guide": 0,
+     "faq": 0,
+     "directory_listing": 0,
+     "location_hours": 0,
+     "calendar_dates": 0,
+     "comparison": 0,
+     "video": 0,
+     "gallery": 0,
+     "home_portal": 0,
+     "course_lesson": 0,
+     "course_overview": 0,
+     "live_blog": 0,
+     "product_listing": 0,
+     "game_detail": 0,
+     "other": 0
+    }
+   },
+   "mainRegion": {
+    "id": "n169",
+    "p": 0.66,
+    "probs": {
+     "n167": 0.03,
+     "n168": 0.015,
+     "n169": 0.755,
+     "n166": 0.17,
+     "n170": 0.025,
+     "n171": 0,
+     "n172": 0,
+     "none": 0.005
+    }
+   },
+   "mainPick": {
+    "id": "none",
+    "p": 0.83,
+    "probs": {
+     "n6": 0,
+     "n13": 0.08,
+     "n21": 0.09,
+     "n22": 0,
+     "n54": 0,
+     "n55": 0,
+     "n56": 0,
+     "n81": 0,
+     "n107": 0,
+     "n129": 0,
+     "n131": 0,
+     "n134": 0,
+     "n135": 0,
+     "n136": 0,
+     "n137": 0,
+     "n141": 0,
+     "n142": 0,
+     "n143": 0,
+     "n144": 0,
+     "n148": 0,
+     "n150": 0,
+     "n152": 0,
+     "none": 0.83
+    }
+   },
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 5,
+    "questions": 211,
+    "inputTokens": 108970,
+    "wallMs": 218,
+    "serverMs": 156,
+    "costUsd": 0.004576740000000001
+   },
+   "ids": {
+    "n3": [
+     "a|link (image)|University of [name]|navigation|main navigation logo site header link|this website|",
+     true
+    ],
+    "n4": [
+     "button|button|Toggle Main Navigation|navigation|navigation toggle main mobile primary||",
+     true
+    ],
+    "n6": [
+     "button|button|Toggle Calendar Dropdown|region|events toggle main mobile primary||",
+     true
+    ],
+    "n9": [
+     "a|link|Football|navigation|navigation link url center|this website|",
+     true
+    ],
+    "n10": [
+     "button|button|More Football links|navigation|navigation toggle mobile none||",
+     true
+    ],
+    "n12": [
+     "h1|heading level 1|Opponent History - Football History vs Louisiana State University from [date] - [date]|main|common header title heading large||",
+     true
+    ],
+    "n13": [
+     "a|link|Back To History|main|btn select none|this website|",
+     true
+    ],
+    "n20": [
+     "table|table|Team 1 2 3 4 F Florida FLA 3 7 0 0 10 LSU LSU…|main|full||",
+     true
+    ],
+    "n21": [
+     "a|link|Full [name] for game on [date]|main|btn select none|this website|",
+     true
+    ],
+    "n22": [
+     "a|link|Recap for game on [date]|main|btn select none|this website|",
+     true
+    ],
+    "n165": [
+     "div|region|Wins 34 Losses 35 Ties 3 Home Record…|main|history detail page top left||",
+     true
+    ],
+    "n166": [
+     "div|region|First Matchup L 0-19 [date] Last 10 Matchups…|main|history detail page bottom||",
+     true
+    ],
+    "n53": [
+     "table|table|Date Season Location Score Media Saturday, [date] Away [name], La. L [number] Links Saturday, [date]…|main|full||",
+     true
+    ],
+    "n54": [
+     "button|button|Links for game on [date]|main|center||",
+     false
+    ],
+    "n55": [
+     "button|button|Links for game on [date]|main|center||",
+     false
+    ],
+    "n56": [
+     "button|button|Links for game on [date]|main|center||",
+     false
+    ],
+    "n81": [
+     "a|link|Boxscore for game on [date]|main|link light|this website|",
+     true
+    ],
+    "n84": [
+     "h2|heading level 2|Related Videos|main|heading main center left self end||",
+     true
+    ],
+    "n85": [
+     "div|list|Related Videos: 4 cards, first: [name]. Media Availability [date]…|main|videos content||",
+     true
+    ],
+    "n107": [
+     "a|link|All Videos|main|btn select none|this website|",
+     true
+    ],
+    "n108": [
+     "h2|heading level 2|Related News|main|heading main center left self end||",
+     true
+    ],
+    "n109": [
+     "div|list|Related News: 4 cards, first: LJ McCray's Comeback Is Picking Up…|main|stories content||",
+     true
+    ],
+    "n127": [
+     "div|region|Links: Florida-Georgia: A Century Of…|main|card wrapper||",
+     true
+    ],
+    "n128": [
+     "div|region|Links: Florida-Georgia: A Century Of…|main|card content title||",
+     true
+    ],
+    "n129": [
+     "a|link|Florida-Georgia: A Century Of Hate, A New Setting And QB Questions Florida-Georgia: A Century Of…|main|brand light|this website|",
+     true
+    ],
+    "n131": [
+     "a|link|All News|main|btn select none|this website|",
+     true
+    ],
+    "n134": [
+     "a|link (image)|University of [name], opens in new window|region|site footer link none full|another website|",
+     true
+    ],
+    "n135": [
+     "a|link (image)|[name], opens in new window|region|site footer link none full|another website|",
+     true
+    ],
+    "n136": [
+     "a|link (image)|NCAA, opens in new window|region|site footer link none full|another website|",
+     true
+    ],
+    "n137": [
+     "a|link (image)|Jordan, opens in new window|region|site footer link none full|another website|",
+     true
+    ],
+    "n139": [
+     "div|region|Links: Facebook , Opens in… / Twitter , Opens in… / Instagram , Opens in…|none|ads social links enabled||",
+     true
+    ],
+    "n140": [
+     "div|list|List of 4 items, begins: Facebook , Opens in new window… · Facebook , Opens…|none|promotion container||",
+     true
+    ],
+    "n141": [
+     "a|link|Facebook , Opens in new window|none|icons ad link|this website|",
+     true
+    ],
+    "n142": [
+     "a|link|Twitter , Opens in new window|none|icons ad link|this website|",
+     true
+    ],
+    "n143": [
+     "a|link|Instagram , Opens in new window|none|icons ad link|this website|",
+     true
+    ],
+    "n144": [
+     "a|link|Youtube , Opens in new window|none|icons ad link|this website|",
+     true
+    ],
+    "n147": [
+     "li|text|Contact|none|bottom footer links item||",
+     true
+    ],
+    "n148": [
+     "a|link|Contact|none|bottom footer links link|this website|",
+     true
+    ],
+    "n150": [
+     "a|link|Partnerships|none|bottom footer links link|this website|",
+     true
+    ],
+    "n152": [
+     "a|link|Gator Shop|none|bottom footer links link|another website|",
+     true
+    ],
+    "n167": [
+     "div|region holding headings x1, links x1|Opponent History - Football History vs Louisiana… · Back To History|main|skeleton loader||",
+     true
+    ],
+    "n168": [
+     "div|region||main|history detail page title heading||",
+     true
+    ],
+    "n169": [
+     "div|region holding data table 2 rows x 6 columns, number cards x7, links x2|Last Matchup [date] 10 at 20 Team 1… · Full [name] for game… / [name]…|main|history detail page top||",
+     true
+    ],
+    "n170": [
+     "div|region holding data table 72 rows x 5 columns|History from [date] - [date],… · Links for game on… / Links for game on……|main|history detail page results||",
+     true
+    ],
+    "n171": [
+     "div|region holding headings x1, buttons x6, links x1|Related Videos · Play [name].… / [name]. Media… / Play [name] Media…|main|videos module light wrapper template||",
+     true
+    ],
+    "n172": [
+     "div|region holding headings x1, pictures x6, links x7|Related News · McCray, LJ ([number] at… / LJ McCray's [name] Is… / [name] football…|main|stories module light wrapper template||",
+     true
+    ]
+   }
+  },
+  "elements": [
+   {
+    "id": "n3",
+    "fp": "a|link (image)|University of [name]|navigation|main navigation logo site header link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n3",
+     "role": "navigation",
+     "roleP": 0.98,
+     "roleProbs": {
+      "navigation": 0.98
+     },
+     "task": 0.14,
+     "main": 0,
+     "help": 0.03,
+     "fine": "site_logo",
+     "fineP": 0.93,
+     "importance": 0.95
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n4",
+    "fp": "button|button|Toggle Main Navigation|navigation|navigation toggle main mobile primary||",
+    "uniq": true,
+    "j": {
+     "id": "n4",
+     "role": "navigation",
+     "roleP": 0.91,
+     "roleProbs": {
+      "action_button": 0.05,
+      "navigation": 0.91
+     },
+     "task": 0.25,
+     "main": 0,
+     "help": 0.02,
+     "fine": "site_nav",
+     "fineP": 0.91,
+     "importance": 1.04
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n6",
+    "fp": "button|button|Toggle Calendar Dropdown|region|events toggle main mobile primary||",
+    "uniq": true,
+    "j": {
+     "id": "n6",
+     "role": "form_field",
+     "roleP": 0.28,
+     "roleProbs": {
+      "form_field": 0.28,
+      "action_button": 0.28,
+      "navigation": 0.07,
+      "popup_overlay": 0.12,
+      "account_utility": 0.1,
+      "other": 0.08
+     },
+     "task": 0.23,
+     "main": 0.06,
+     "help": 0.03,
+     "fine": "secondary_action",
+     "fineP": 0.21000000000000002,
+     "importance": 0.92
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n9",
+    "fp": "a|link|Football|navigation|navigation link url center|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n9",
+     "role": "navigation",
+     "roleP": 0.97,
+     "roleProbs": {
+      "navigation": 0.97
+     },
+     "task": 0.12,
+     "main": 0,
+     "help": 0.02,
+     "fine": "site_nav",
+     "fineP": 0.83,
+     "importance": 1.03
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n10",
+    "fp": "button|button|More Football links|navigation|navigation toggle mobile none||",
+    "uniq": true,
+    "j": {
+     "id": "n10",
+     "role": "navigation",
+     "roleP": 0.91,
+     "roleProbs": {
+      "action_button": 0.05,
+      "navigation": 0.91
+     },
+     "task": 0.22,
+     "main": 0,
+     "help": 0.02,
+     "fine": "site_nav",
+     "fineP": 0.86,
+     "importance": 1
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n12",
+    "fp": "h1|heading level 1|Opponent History - Football History vs Louisiana State University from [date] - [date]|main|common header title heading large||",
+    "uniq": true,
+    "j": {
+     "id": "n12",
+     "role": "main_content",
+     "roleP": 0.98,
+     "roleProbs": {
+      "main_content": 0.98
+     },
+     "task": 0.96,
+     "main": 0,
+     "help": 0.01,
+     "fine": "page_title",
+     "fineP": 0.98,
+     "importance": 3.81
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n13",
+    "fp": "a|link|Back To History|main|btn select none|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n13",
+     "role": "navigation",
+     "roleP": 0.99,
+     "roleProbs": {
+      "navigation": 0.99
+     },
+     "task": 0.65,
+     "main": 0.12,
+     "help": 0.02,
+     "fine": "back_link",
+     "fineP": 0.99,
+     "importance": 2.14
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n20",
+    "fp": "table|table|Team 1 2 3 4 F Florida FLA 3 7 0 0 10 LSU LSU…|main|full||",
+    "uniq": true,
+    "j": {
+     "id": "n20",
+     "role": "main_content",
+     "roleP": 0.98,
+     "roleProbs": {
+      "main_content": 0.98
+     },
+     "task": 0.95,
+     "main": 0,
+     "help": 0.01,
+     "fine": "scoreboard",
+     "fineP": 0.62,
+     "importance": 3.87
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n21",
+    "fp": "a|link|Full [name] for game on [date]|main|btn select none|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n21",
+     "role": "action_button",
+     "roleP": 0.61,
+     "roleProbs": {
+      "main_content": 0.28,
+      "action_button": 0.61,
+      "other": 0.04
+     },
+     "task": 0.71,
+     "main": 0.2,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.54,
+     "importance": 3.3
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n22",
+    "fp": "a|link|Recap for game on [date]|main|btn select none|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n22",
+     "role": "action_button",
+     "roleP": 0.39,
+     "roleProbs": {
+      "main_content": 0.28,
+      "action_button": 0.39,
+      "recommendations": 0.23,
+      "other": 0.05
+     },
+     "task": 0.59,
+     "main": 0.11,
+     "help": 0.01,
+     "fine": "secondary_action",
+     "fineP": 0.39,
+     "importance": 2.94
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n165",
+    "fp": "div|region|Wins 34 Losses 35 Ties 3 Home Record…|main|history detail page top left||",
+    "uniq": true,
+    "j": {
+     "id": "n165",
+     "role": "main_content",
+     "roleP": 0.91,
+     "roleProbs": {
+      "main_content": 0.91,
+      "other": 0.03
+     },
+     "task": 0.93,
+     "main": 0,
+     "help": 0.01,
+     "fine": "data_table",
+     "fineP": 0.42,
+     "importance": 3.93
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n166",
+    "fp": "div|region|First Matchup L 0-19 [date] Last 10 Matchups…|main|history detail page bottom||",
+    "uniq": true,
+    "j": {
+     "id": "n166",
+     "role": "main_content",
+     "roleP": 0.91,
+     "roleProbs": {
+      "main_content": 0.91,
+      "other": 0.04
+     },
+     "task": 0.93,
+     "main": 0,
+     "help": 0.01,
+     "fine": "data_table",
+     "fineP": 0.67,
+     "importance": 3.89
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n53",
+    "fp": "table|table|Date Season Location Score Media Saturday, [date] Away [name], La. L [number] Links Saturday, [date]…|main|full||",
+    "uniq": true,
+    "j": {
+     "id": "n53",
+     "role": "main_content",
+     "roleP": 0.98,
+     "roleProbs": {
+      "main_content": 0.98
+     },
+     "task": 0.96,
+     "main": 0,
+     "help": 0.01,
+     "fine": "data_table",
+     "fineP": 0.98,
+     "importance": 3.97
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n54",
+    "fp": "button|button|Links for game on [date]|main|center||",
+    "uniq": false,
+    "j": {
+     "id": "n54",
+     "role": "action_button",
+     "roleP": 0.57,
+     "roleProbs": {
+      "main_content": 0.03,
+      "action_button": 0.57,
+      "navigation": 0.04,
+      "recommendations": 0.27
+     },
+     "task": 0.67,
+     "main": 0.13,
+     "help": 0.03,
+     "fine": "secondary_action",
+     "fineP": 0.5700000000000001,
+     "importance": 2.39
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n55",
+    "fp": "button|button|Links for game on [date]|main|center||",
+    "uniq": false,
+    "j": {
+     "id": "n55",
+     "role": "action_button",
+     "roleP": 0.64,
+     "roleProbs": {
+      "main_content": 0.04,
+      "action_button": 0.64,
+      "navigation": 0.05,
+      "recommendations": 0.2,
+      "other": 0.03
+     },
+     "task": 0.66,
+     "main": 0.13,
+     "help": 0.03,
+     "fine": "secondary_action",
+     "fineP": 0.61,
+     "importance": 2.46
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n56",
+    "fp": "button|button|Links for game on [date]|main|center||",
+    "uniq": false,
+    "j": {
+     "id": "n56",
+     "role": "action_button",
+     "roleP": 0.66,
+     "roleProbs": {
+      "main_content": 0.03,
+      "action_button": 0.66,
+      "navigation": 0.04,
+      "recommendations": 0.19
+     },
+     "task": 0.62,
+     "main": 0.13,
+     "help": 0.03,
+     "fine": "secondary_action",
+     "fineP": 0.66,
+     "importance": 2.34
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n81",
+    "fp": "a|link|Boxscore for game on [date]|main|link light|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n81",
+     "role": "recommendations",
+     "roleP": 0.4,
+     "roleProbs": {
+      "main_content": 0.21,
+      "action_button": 0.31,
+      "recommendations": 0.4,
+      "other": 0.05
+     },
+     "task": 0.53,
+     "main": 0.08,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.31,
+     "importance": 2.73
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n84",
+    "fp": "h2|heading level 2|Related Videos|main|heading main center left self end||",
+    "uniq": true,
+    "j": {
+     "id": "n84",
+     "role": "recommendations",
+     "roleP": 0.58,
+     "roleProbs": {
+      "main_content": 0.41,
+      "recommendations": 0.58
+     },
+     "task": 0.43,
+     "main": 0,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.48,
+     "importance": 2.37
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n85",
+    "fp": "div|list|Related Videos: 4 cards, first: [name]. Media Availability [date]…|main|videos content||",
+    "uniq": true,
+    "j": {
+     "id": "n85",
+     "role": "recommendations",
+     "roleP": 0.91,
+     "roleProbs": {
+      "main_content": 0.08,
+      "recommendations": 0.91
+     },
+     "task": 0.29,
+     "main": 0,
+     "help": 0.02,
+     "fine": "teaser_other_content",
+     "fineP": 0.85,
+     "importance": 2.18
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n107",
+    "fp": "a|link|All Videos|main|btn select none|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n107",
+     "role": "action_button",
+     "roleP": 0.44,
+     "roleProbs": {
+      "action_button": 0.44,
+      "navigation": 0.03,
+      "recommendations": 0.41,
+      "other": 0.03
+     },
+     "task": 0.45,
+     "main": 0.12,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.41000000000000003,
+     "importance": 2.18
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n108",
+    "fp": "h2|heading level 2|Related News|main|heading main center left self end||",
+    "uniq": true,
+    "j": {
+     "id": "n108",
+     "role": "main_content",
+     "roleP": 0.5,
+     "roleProbs": {
+      "main_content": 0.5,
+      "recommendations": 0.47
+     },
+     "task": 0.45,
+     "main": 0,
+     "help": 0.01,
+     "fine": "subheading",
+     "fineP": 0.5,
+     "importance": 2.49
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n109",
+    "fp": "div|list|Related News: 4 cards, first: LJ McCray's Comeback Is Picking Up…|main|stories content||",
+    "uniq": true,
+    "j": {
+     "id": "n109",
+     "role": "recommendations",
+     "roleP": 0.99,
+     "roleProbs": {
+      "recommendations": 0.99
+     },
+     "task": 0.24,
+     "main": 0,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.93,
+     "importance": 2.11
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n127",
+    "fp": "div|region|Links: Florida-Georgia: A Century Of…|main|card wrapper||",
+    "uniq": true,
+    "j": {
+     "id": "n127",
+     "role": "recommendations",
+     "roleP": 0.83,
+     "roleProbs": {
+      "main_content": 0.15,
+      "recommendations": 0.83
+     },
+     "task": 0.17,
+     "main": 0,
+     "help": 0.02,
+     "fine": "teaser_other_content",
+     "fineP": 0.59,
+     "importance": 1.15
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n128",
+    "fp": "div|region|Links: Florida-Georgia: A Century Of…|main|card content title||",
+    "uniq": true,
+    "j": {
+     "id": "n128",
+     "role": "recommendations",
+     "roleP": 0.81,
+     "roleProbs": {
+      "main_content": 0.16,
+      "recommendations": 0.81
+     },
+     "task": 0.19,
+     "main": 0,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.58,
+     "importance": 1.22
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n129",
+    "fp": "a|link|Florida-Georgia: A Century Of Hate, A New Setting And QB Questions Florida-Georgia: A Century Of…|main|brand light|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n129",
+     "role": "recommendations",
+     "roleP": 0.78,
+     "roleProbs": {
+      "main_content": 0.21,
+      "recommendations": 0.78
+     },
+     "task": 0.14,
+     "main": 0.04,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.67,
+     "importance": 0.51
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n131",
+    "fp": "a|link|All News|main|btn select none|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n131",
+     "role": "recommendations",
+     "roleP": 0.56,
+     "roleProbs": {
+      "action_button": 0.31,
+      "form_field": 0.03,
+      "navigation": 0.04,
+      "recommendations": 0.56,
+      "other": 0.03
+     },
+     "task": 0.32,
+     "main": 0.09,
+     "help": 0.02,
+     "fine": "related_links",
+     "fineP": 0.4,
+     "importance": 2.04
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n134",
+    "fp": "a|link (image)|University of [name], opens in new window|region|site footer link none full|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n134",
+     "role": "navigation",
+     "roleP": 0.55,
+     "roleProbs": {
+      "main_content": 0.16,
+      "navigation": 0.55,
+      "legal_footer": 0.18,
+      "other": 0.04
+     },
+     "task": 0.13,
+     "main": 0.05,
+     "help": 0.04,
+     "fine": "site_logo",
+     "fineP": 0.5,
+     "importance": 1.04,
+     "paidAsStoryP": 0.18
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n135",
+    "fp": "a|link (image)|[name], opens in new window|region|site footer link none full|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n135",
+     "role": "navigation",
+     "roleP": 0.58,
+     "roleProbs": {
+      "main_content": 0.07,
+      "navigation": 0.58,
+      "legal_footer": 0.23,
+      "other": 0.05
+     },
+     "task": 0.15,
+     "main": 0.05,
+     "help": 0.06,
+     "fine": "site_logo",
+     "fineP": 0.54,
+     "importance": 0.97
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n136",
+    "fp": "a|link (image)|NCAA, opens in new window|region|site footer link none full|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n136",
+     "role": "navigation",
+     "roleP": 0.53,
+     "roleProbs": {
+      "main_content": 0.15,
+      "navigation": 0.53,
+      "legal_footer": 0.27
+     },
+     "task": 0.12,
+     "main": 0.03,
+     "help": 0.03,
+     "fine": "site_logo",
+     "fineP": 0.53,
+     "importance": 0.97
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n137",
+    "fp": "a|link (image)|Jordan, opens in new window|region|site footer link none full|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n137",
+     "role": "legal_footer",
+     "roleP": 0.37,
+     "roleProbs": {
+      "action_button": 0.03,
+      "navigation": 0.12,
+      "help_contact": 0.05,
+      "advertising": 0.07,
+      "recommendations": 0.03,
+      "legal_footer": 0.37,
+      "other": 0.22
+     },
+     "task": 0.12,
+     "main": 0.04,
+     "help": 0.04,
+     "fine": "legal_footer",
+     "fineP": 0.37,
+     "importance": 0.48
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n139",
+    "fp": "div|region|Links: Facebook , Opens in… / Twitter , Opens in… / Instagram , Opens in…|none|ads social links enabled||",
+    "uniq": true,
+    "j": {
+     "id": "n139",
+     "role": "other",
+     "roleP": 0.86,
+     "roleProbs": {
+      "advertising": 0.06,
+      "recommendations": 0.03,
+      "other": 0.86
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.03,
+     "fine": "social_share",
+     "fineP": 0.86,
+     "importance": 0.71
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n140",
+    "fp": "div|list|List of 4 items, begins: Facebook , Opens in new window… · Facebook , Opens…|none|promotion container||",
+    "uniq": true,
+    "j": {
+     "id": "n140",
+     "role": "other",
+     "roleP": 0.71,
+     "roleProbs": {
+      "advertising": 0.09,
+      "recommendations": 0.09,
+      "other": 0.71
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.03,
+     "fine": "social_share",
+     "fineP": 0.67,
+     "importance": 0.34
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n141",
+    "fp": "a|link|Facebook , Opens in new window|none|icons ad link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n141",
+     "role": "other",
+     "roleP": 0.87,
+     "roleProbs": {
+      "action_button": 0.03,
+      "advertising": 0.04,
+      "other": 0.87
+     },
+     "task": 0.08,
+     "main": 0.03,
+     "help": 0.04,
+     "fine": "social_share",
+     "fineP": 0.87,
+     "importance": 0.76
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n142",
+    "fp": "a|link|Twitter , Opens in new window|none|icons ad link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n142",
+     "role": "other",
+     "roleP": 0.8,
+     "roleProbs": {
+      "action_button": 0.05,
+      "advertising": 0.03,
+      "other": 0.8,
+      "account_utility": 0.05
+     },
+     "task": 0.09,
+     "main": 0.03,
+     "help": 0.04,
+     "fine": "social_share",
+     "fineP": 0.8,
+     "importance": 0.68
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n143",
+    "fp": "a|link|Instagram , Opens in new window|none|icons ad link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n143",
+     "role": "other",
+     "roleP": 0.78,
+     "roleProbs": {
+      "action_button": 0.03,
+      "help_contact": 0.04,
+      "advertising": 0.06,
+      "other": 0.78,
+      "account_utility": 0.05
+     },
+     "task": 0.08,
+     "main": 0.03,
+     "help": 0.03,
+     "fine": "social_share",
+     "fineP": 0.75,
+     "importance": 0.43
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n144",
+    "fp": "a|link|Youtube , Opens in new window|none|icons ad link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n144",
+     "role": "other",
+     "roleP": 0.41,
+     "roleProbs": {
+      "action_button": 0.08,
+      "navigation": 0.04,
+      "advertising": 0.26,
+      "recommendations": 0.03,
+      "other": 0.41,
+      "account_utility": 0.07
+     },
+     "task": 0.09,
+     "main": 0.02,
+     "help": 0.03,
+     "fine": "social_share",
+     "fineP": 0.31,
+     "importance": 0.41
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n147",
+    "fp": "li|text|Contact|none|bottom footer links item||",
+    "uniq": true,
+    "j": {
+     "id": "n147",
+     "role": "help_contact",
+     "roleP": 0.82,
+     "roleProbs": {
+      "navigation": 0.03,
+      "help_contact": 0.82,
+      "legal_footer": 0.12
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.82,
+     "fine": "contact_info",
+     "fineP": 0.77,
+     "importance": 1.02
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n148",
+    "fp": "a|link|Contact|none|bottom footer links link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n148",
+     "role": "help_contact",
+     "roleP": 0.91,
+     "roleProbs": {
+      "help_contact": 0.91,
+      "legal_footer": 0.06
+     },
+     "task": 0.08,
+     "main": 0.03,
+     "help": 0.87,
+     "fine": "contact_info",
+     "fineP": 0.91,
+     "importance": 1.01
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n150",
+    "fp": "a|link|Partnerships|none|bottom footer links link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n150",
+     "role": "legal_footer",
+     "roleP": 0.55,
+     "roleProbs": {
+      "navigation": 0.2,
+      "help_contact": 0.03,
+      "legal_footer": 0.55,
+      "other": 0.17
+     },
+     "task": 0.1,
+     "main": 0.02,
+     "help": 0.04,
+     "fine": "legal_footer",
+     "fineP": 0.55,
+     "importance": 1
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n152",
+    "fp": "a|link|Gator Shop|none|bottom footer links link|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n152",
+     "role": "advertising",
+     "roleP": 0.34,
+     "roleProbs": {
+      "action_button": 0.03,
+      "navigation": 0.29,
+      "advertising": 0.34,
+      "account_utility": 0.03,
+      "legal_footer": 0.11,
+      "other": 0.15
+     },
+     "task": 0.08,
+     "main": 0.02,
+     "help": 0.02,
+     "fine": "upsell_promo",
+     "fineP": 0.34,
+     "importance": 0.49
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n167",
+    "fp": "div|region holding headings x1, links x1|Opponent History - Football History vs Louisiana… · Back To History|main|skeleton loader||",
+    "uniq": true,
+    "j": {
+     "id": "n167",
+     "role": "main_content",
+     "roleP": 0.89,
+     "roleProbs": {
+      "main_content": 0.89,
+      "navigation": 0.04
+     },
+     "task": 0.85,
+     "main": 0,
+     "help": 0.02,
+     "fine": "page_title",
+     "fineP": 0.77,
+     "importance": 3.33
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n168",
+    "fp": "div|region||main|history detail page title heading||",
+    "uniq": true,
+    "j": {
+     "id": "n168",
+     "role": "main_content",
+     "roleP": 0.98,
+     "roleProbs": {
+      "main_content": 0.98
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.02,
+     "fine": "page_title",
+     "fineP": 0.92,
+     "importance": 3.67
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n169",
+    "fp": "div|region holding data table 2 rows x 6 columns, number cards x7, links x2|Last Matchup [date] 10 at 20 Team 1… · Full [name] for game… / [name]…|main|history detail page top||",
+    "uniq": true,
+    "j": {
+     "id": "n169",
+     "role": "main_content",
+     "roleP": 0.96,
+     "roleProbs": {
+      "main_content": 0.96
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.02,
+     "fine": "data_table",
+     "fineP": 0.9,
+     "importance": 3.88
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n170",
+    "fp": "div|region holding data table 72 rows x 5 columns|History from [date] - [date],… · Links for game on… / Links for game on……|main|history detail page results||",
+    "uniq": true,
+    "j": {
+     "id": "n170",
+     "role": "main_content",
+     "roleP": 0.99,
+     "roleProbs": {
+      "main_content": 0.99
+     },
+     "task": 0.96,
+     "main": 0,
+     "help": 0.02,
+     "fine": "data_table",
+     "fineP": 0.99,
+     "importance": 3.98
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n171",
+    "fp": "div|region holding headings x1, buttons x6, links x1|Related Videos · Play [name].… / [name]. Media… / Play [name] Media…|main|videos module light wrapper template||",
+    "uniq": true,
+    "j": {
+     "id": "n171",
+     "role": "recommendations",
+     "roleP": 0.93,
+     "roleProbs": {
+      "main_content": 0.05,
+      "recommendations": 0.93
+     },
+     "task": 0.3,
+     "main": 0,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.87,
+     "importance": 2
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n172",
+    "fp": "div|region holding headings x1, pictures x6, links x7|Related News · McCray, LJ ([number] at… / LJ McCray's [name] Is… / [name] football…|main|stories module light wrapper template||",
+    "uniq": true,
+    "j": {
+     "id": "n172",
+     "role": "recommendations",
+     "roleP": 0.99,
+     "roleProbs": {
+      "recommendations": 0.99
+     },
+     "task": 0.32,
+     "main": 0,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.9400000000000001,
+     "importance": 2.34
+    },
+    "from": "canonical"
+   }
+  ]
+ },
+ "meaning": {
+  "a3628650acb2c7285e3153cd9af31a57752cbc2d49b06e561c288e2507affb9d": {
+   "leadsWithMain": 0.98,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1206,
+    "wallMs": 102,
+    "serverMs": 44,
+    "costUsd": 0.00005065200000000001
+   }
+  },
+  "956573d9b4635b581abdc054eef4f190169c39b84740e70d2c7b972e35c61b46": {
+   "leadsWithMain": 0.98,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1173,
+    "wallMs": 88,
+    "serverMs": 34,
+    "costUsd": 0.000049266000000000006
+   }
+  },
+  "a7fdabdf16b66b874a753cc61a045ed62cc64256a56c9e506d1c0e9c164faf5f": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1201,
+    "wallMs": 84,
+    "serverMs": 32,
+    "costUsd": 0.00005044200000000001
+   }
+  },
+  "1aa708f2da9a8a8b645380906225d5f7dd9013d24f4ca37354603d4fe223cb8e": {
+   "leadsWithMain": 0.98,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1206,
+    "wallMs": 91,
+    "serverMs": 34,
+    "costUsd": 0.00005065200000000001
+   }
+  },
+  "e8e1724b30652169a5023deaafc734da288dc61323ac68d7cb7560d821d14903": {
+   "leadsWithMain": 0.98,
+   "missingMain": 0.04,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1255,
+    "wallMs": 173,
+    "serverMs": 40,
+    "costUsd": 0.00005271000000000001
+   }
+  },
+  "0542ae083c2edc33ec235c0aadd61a168a0d840f0d0cc32fec026995686d84fd": {
+   "leadsWithMain": 0.99,
+   "missingMain": 0.04,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1181,
+    "wallMs": 86,
+    "serverMs": 37,
+    "costUsd": 0.000049602000000000004
+   }
+  }
+ },
+ "overlayClose": {},
+ "compose": {},
+ "composeMeta": null,
+ "runs": [
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-10-27T22:32:38.436Z",
+   "added": {
+    "elements": 46,
+    "page": true,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2158,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 20% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:32:43.797Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2073,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 30% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 37,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:32:49.101Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2063,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 26% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:32:54.435Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2044,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 23% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:33:00.006Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2146,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:33:05.576Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2247,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 30% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:33:11.171Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2244,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 26% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 37,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:33:16.742Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2249,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 23% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:33:22.361Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2259,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 20% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:33:27.933Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2244,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:33:33.521Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2148,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 30% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 37,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:33:39.095Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2248,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 26% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 37,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:33:44.666Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2145,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 23% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:33:50.241Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2265,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 20% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:33:55.800Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2252,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 0,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:34:01.417Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2348,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 30% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 9,
+    "decisions": {
+     "folded": 0,
+     "protected": 38,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:34:07.032Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2250,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 26% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 9,
+    "decisions": {
+     "folded": 0,
+     "protected": 37,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:34:12.627Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2242,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 23% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 9,
+    "decisions": {
+     "folded": 0,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:34:18.485Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2444,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 20% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 9,
+    "decisions": {
+     "folded": 0,
+     "protected": 37,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:34:24.091Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2345,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 9,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:34:29.446Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2040,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 30% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 37,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:34:34.762Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2058,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 26% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:34:40.243Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2085,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 23% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:34:45.554Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2082,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "unpin_sticky",
+      "status": "applied",
+      "reason": "sticky top bars cover 20% of the screen"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 37,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:34:51.092Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2159,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": null,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "spacing",
+      "status": "applied",
+      "reason": "line height 1.5 on 2 blocks with relative line height"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 42 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "3 headings raised against body 16 px (levels 1, 2)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 0,
+     "protected": 36,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  }
+ ],
+ "replicaHash": "sha256:0806317df5c9ddd5368ec268801f0e7b43b2d998a51c9f6244a9ee213146f453"
+}

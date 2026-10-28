@@ -1,0 +1,392 @@
+{
+  "v": "replica.1",
+  "id": "nws-gainesville",
+  "servePath": "/MapClick",
+  "file": "index.html",
+  "sourceUrl": "https://forecast.weather.gov/MapClick.php?CityName=Gainesville&state=FL&site=JAX&textField1=29.6742&textField2=-82.3363",
+  "originalHost": "forecast.weather.gov",
+  "siteName": "National Weather Service",
+  "capturedAt": "2026-10-27T21:44:47.863Z",
+  "capture": {
+    "tool": "scripts/capture/capture.mjs (playwright 1.64.1)",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+    "stateNotes": [
+      "As the site loads: menu closed, the Jacksonville office's \"Coastal Flood Warnings\" briefing at the top, the 7-day strip at its start, the map on its default Topographic basemap, the \"View in Desktop Mode\" bar fixed at the bottom",
+      "The forecast is the one issued at 4:26 pm EDT on 27 Oct 2026; every participant sees that forecast",
+      "Served at /MapClick rather than /MapClick.php (see servePath in capture.config.mjs)"
+    ]
+  },
+  "licence": "Forecast text, graphics and images: public domain, works of the US federal government (NOAA / National Weather Service, 17 U.S.C. 105). The NOAA and NWS emblems are government insignia, used here only inside a private, non-commercial research study. Map tiles: (c) Esri and its data providers, kept as captured in a non-commercial research copy. Icons: Font Awesome 4 (OFL 1.1). Page CSS: Bootstrap 3 (MIT) and NWS styles.",
+  "attribution": "National Weather Service, \"7-Day Forecast 29.67N 82.33W\" (Gainesville FL), https://forecast.weather.gov/MapClick.php?CityName=Gainesville&state=FL&site=JAX&textField1=29.6742&textField2=-82.3363, forecast issued 4:26 pm EDT 27 Oct 2026. Changed: scripts removed, menu toggling re-created, files stored locally; shown as the site made it (practice).",
+  "behaviours": [
+    "accordion",
+    "page",
+    "menu dropdowns (site/page.js)"
+  ],
+  "removed": [
+    "site scripts (11)",
+    "third-party scripts and trackers from 2 hosts: dap.digitalgov.gov, www.googletagmanager.com",
+    "inline event handlers (1)",
+    "\"View in Desktop Mode\" does nothing in the copy (on the live site a script sets a cookie and reloads)"
+  ],
+  "contentHash": "sha256:989bfb235b0c41de61d5f2824920bc948702d6834c869b2f2f77ca5e67a9d0a1",
+  "validation": {
+    "at": "2026-10-27T21:45:12.768Z",
+    "by": "scripts/capture/validate.mjs",
+    "served": "scripts/capture/lib/serve.mjs (frame.js stubbed)",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "liveCapturedAt": "2026-10-27T21:44:47.863Z",
+    "requests": {
+      "outside": 0,
+      "outsideHosts": {},
+      "missing": []
+    },
+    "frameTagFirst": true,
+    "pixels": {
+      "firstScreen": {
+        "pct": 0,
+        "target": 0.5,
+        "pass": true,
+        "size": [
+          1170,
+          2532
+        ],
+        "bandsCssPx": []
+      },
+      "fullPage": {
+        "pct": 0.06,
+        "target": 2,
+        "pass": true,
+        "liveSize": [
+          390,
+          4177
+        ],
+        "copySize": [
+          390,
+          4177
+        ],
+        "bandsCssPx": [
+          [
+            2636,
+            2836,
+            954
+          ],
+          [
+            2846,
+            2852,
+            5
+          ],
+          [
+            2863,
+            2863,
+            1
+          ]
+        ]
+      }
+    },
+    "layout": {
+      "scrollHeight": {
+        "live": 4177,
+        "copy": 4177,
+        "pass": true
+      },
+      "scrollWidth": {
+        "live": 390,
+        "copy": 390,
+        "pass": true
+      },
+      "links": {
+        "live": 106,
+        "copy": 106,
+        "pass": true
+      },
+      "visibleLinks": {
+        "live": 58,
+        "copy": 58,
+        "pass": true
+      },
+      "headings": {
+        "live": 11,
+        "copy": 11,
+        "pass": true
+      },
+      "headingOrder": {
+        "live": 11,
+        "copy": 11,
+        "pass": true
+      },
+      "tapTargets": {
+        "live": 63,
+        "copy": 63,
+        "pass": true
+      },
+      "tapUnder44": {
+        "live": 54,
+        "copy": 54,
+        "pass": true
+      },
+      "tapUnder24": {
+        "live": 47,
+        "copy": 47,
+        "pass": true
+      },
+      "bodyFontPx": {
+        "live": 11,
+        "copy": 11,
+        "pass": true
+      },
+      "paraFontPx": {
+        "live": 12,
+        "copy": 12,
+        "pass": true
+      },
+      "textUnder16Pct": {
+        "live": 95.8,
+        "copy": 95.8,
+        "pass": true
+      },
+      "fixedCoverTopPct": {
+        "live": 3.6,
+        "copy": 3.6,
+        "pass": true
+      },
+      "fixedCoverMidPct": {
+        "live": 3.6,
+        "copy": 3.6,
+        "pass": true
+      },
+      "visibleElements": {
+        "live": 406,
+        "copy": 406,
+        "pass": true
+      },
+      "imagesVisible": {
+        "live": 23,
+        "copy": 23,
+        "pass": true
+      },
+      "firstScreenText": {
+        "live": "534:2050469610",
+        "copy": "534:2050469610",
+        "pass": true
+      },
+      "loadedFontFamilies": {
+        "live": "FontAwesome",
+        "copy": "FontAwesome",
+        "pass": true
+      }
+    },
+    "widths": [
+      {
+        "w": 390,
+        "live": {
+          "scrollWidth": 390,
+          "scrollHeight": 4177,
+          "overflowing": 0
+        },
+        "copy": {
+          "scrollWidth": 390,
+          "scrollHeight": 4177,
+          "overflowing": 0,
+          "sample": []
+        },
+        "pass": true
+      },
+      {
+        "w": 312,
+        "live": {
+          "scrollWidth": 333,
+          "scrollHeight": 4706,
+          "overflowing": 18
+        },
+        "copy": {
+          "scrollWidth": 333,
+          "scrollHeight": 4706,
+          "overflowing": 18,
+          "sample": [
+            "main.container 320",
+            "header#page-header.row.clearfix 320",
+            "a#header-doc.pull-right 320",
+            "img 320",
+            "nav.navbar.navbar-default 320",
+            "div.container-fluid 320"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 260,
+        "live": {
+          "scrollWidth": 333,
+          "scrollHeight": 4706,
+          "overflowing": 71
+        },
+        "copy": {
+          "scrollWidth": 333,
+          "scrollHeight": 4706,
+          "overflowing": 71,
+          "sample": [
+            "main.container 320",
+            "header#page-header.row.clearfix 320",
+            "a#header-nws.pull-left 263",
+            "img 263",
+            "a#header-doc.pull-right 320",
+            "img 320"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 223,
+        "live": {
+          "scrollWidth": 333,
+          "scrollHeight": 4706,
+          "overflowing": 72
+        },
+        "copy": {
+          "scrollWidth": 333,
+          "scrollHeight": 4706,
+          "overflowing": 72,
+          "sample": [
+            "main.container 320",
+            "header#page-header.row.clearfix 320",
+            "a#header-nws.pull-left 263",
+            "img 263",
+            "a#header-doc.pull-right 320",
+            "img 320"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 195,
+        "live": {
+          "scrollWidth": 333,
+          "scrollHeight": 4706,
+          "overflowing": 107
+        },
+        "copy": {
+          "scrollWidth": 333,
+          "scrollHeight": 4706,
+          "overflowing": 107,
+          "sample": [
+            "main.container 320",
+            "header#page-header.row.clearfix 320",
+            "a#header-nws.pull-left 263",
+            "img 263",
+            "a#header-doc.pull-right 320",
+            "img 320"
+          ]
+        },
+        "pass": true
+      }
+    ],
+    "behaviours": [
+      {
+        "name": "open the menu",
+        "live": {
+          "expanded": "true",
+          "buttonCollapsed": false,
+          "navOpen": true,
+          "navHeight": 322,
+          "growth": 322
+        },
+        "copy": {
+          "expanded": "true",
+          "buttonCollapsed": false,
+          "navOpen": true,
+          "navHeight": 322,
+          "growth": 322
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "menu: open \"FORECAST\", then \"SAFETY\"",
+        "live": {
+          "forecast_open": true,
+          "forecast_expanded": "true",
+          "forecast_openMenus": 1,
+          "forecast_menuHeight": 298,
+          "forecast_growth": 298,
+          "safety_open": true,
+          "safety_expanded": "true",
+          "safety_openMenus": 1,
+          "safety_menuHeight": 10,
+          "safety_growth": -288
+        },
+        "copy": {
+          "forecast_open": true,
+          "forecast_expanded": "true",
+          "forecast_openMenus": 1,
+          "forecast_menuHeight": 298,
+          "forecast_growth": 298,
+          "safety_open": true,
+          "safety_expanded": "true",
+          "safety_openMenus": 1,
+          "safety_menuHeight": 10,
+          "safety_growth": -288
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "menu: \"FORECAST\" twice closes it",
+        "live": {
+          "open": false,
+          "expanded": "false",
+          "openMenus": 0,
+          "menuHeight": 0,
+          "growth": -298
+        },
+        "copy": {
+          "open": false,
+          "expanded": "false",
+          "openMenus": 0,
+          "menuHeight": 0,
+          "growth": -298
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "7-day strip scrolls sideways",
+        "live": {
+          "scrollWidth": 1116,
+          "clientWidth": 344,
+          "scrollLeft": 772
+        },
+        "copy": {
+          "scrollWidth": 1116,
+          "clientWidth": 344,
+          "scrollLeft": 772
+        },
+        "pass": true,
+        "diffs": []
+      }
+    ],
+    "roundTrip": {
+      "mismatches": 0,
+      "rootCauses": 0,
+      "parserAdded": 0
+    },
+    "pass": {
+      "hard": true,
+      "pixels": true,
+      "layout": true,
+      "widths": true,
+      "behaviours": true
+    },
+    "notes": []
+  }
+}

@@ -1,0 +1,4166 @@
+{
+ "v": "study-fixtures.1",
+ "replicaId": "nps-ever-basic",
+ "version": "4",
+ "servePath": "/ever/planyourvisit/basicinfo.htm",
+ "originalHost": "www.nps.gov",
+ "engineCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "serverCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "models": {
+  "jev": "jev-1.14.0",
+  "compose": "gpt-5.4-mini"
+ },
+ "recordedAt": "2026-10-27T22:39:26.647Z",
+ "matrix": {
+  "fits": [
+   "typical",
+   "rosa",
+   "reader",
+   "large",
+   "calm"
+  ],
+  "heights": [
+   456,
+   520,
+   600,
+   664,
+   760
+  ],
+  "engines": [
+   "chromium"
+  ],
+  "canonical": {
+   "fit": "typical",
+   "h": 664
+  }
+ },
+ "understand": {
+  "page": {
+   "purpose": {
+    "kind": "info_guide",
+    "p": 0.5700000000000001,
+    "probs": {
+     "record_stats": 0,
+     "scoreboard": 0,
+     "schedule": 0,
+     "standings": 0,
+     "roster": 0,
+     "article": 0,
+     "news_index": 0,
+     "recipe": 0,
+     "product": 0,
+     "search_results": 0,
+     "form_task": 0,
+     "checkout": 0,
+     "sign_in": 0,
+     "account_dashboard": 0,
+     "bill_statement": 0,
+     "appointment": 0,
+     "status_lookup": 0,
+     "info_guide": 0.5700000000000001,
+     "faq": 0,
+     "directory_listing": 0,
+     "location_hours": 0.43,
+     "calendar_dates": 0,
+     "comparison": 0,
+     "video": 0,
+     "gallery": 0,
+     "home_portal": 0,
+     "course_lesson": 0,
+     "course_overview": 0,
+     "live_blog": 0,
+     "product_listing": 0,
+     "game_detail": 0,
+     "other": 0
+    }
+   },
+   "mainRegion": {
+    "id": "n155",
+    "p": 0.93,
+    "probs": {
+     "n1": 0,
+     "n22": 0,
+     "n153": 0,
+     "n154": 0.02,
+     "n155": 0.96,
+     "n63": 0,
+     "n71": 0.005,
+     "none": 0.015
+    }
+   },
+   "mainPick": {
+    "id": "none",
+    "p": 1,
+    "probs": {
+     "n79": 0,
+     "n83": 0,
+     "n85": 0,
+     "n87": 0,
+     "n90": 0,
+     "n91": 0,
+     "n92": 0,
+     "none": 1
+    }
+   },
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 5,
+    "questions": 191,
+    "inputTokens": 98530,
+    "wallMs": 297,
+    "serverMs": 226,
+    "costUsd": 0.00413826
+   },
+   "ids": {
+    "n1": [
+     "div|region|An official website of the United States government… · About U.S. Government Websites / Search…|none|chat embed banner||",
+     true
+    ],
+    "n2": [
+     "button|button|About U.S. Government Websites|none|chat banner official||",
+     true
+    ],
+    "n3": [
+     "button|button|Search or ask DOI|none|ui abd popover pill||",
+     true
+    ],
+    "n6": [
+     "a|link|[name] Service|banner|header branding link|this website|",
+     true
+    ],
+    "n8": [
+     "button|button|Open Menu|navigation|nav toggle usa button||",
+     true
+    ],
+    "n22": [
+     "div|region|Current Alerts and Conditions See 3 park alerts… · See 3 park alerts|none|nps alert banner||",
+     true
+    ],
+    "n23": [
+     "div|region|Current Alerts and Conditions See 3 park alerts · See 3 park alerts|none|usa alert top warning||",
+     true
+    ],
+    "n24": [
+     "p|region|Current Alerts and Conditions See 3 park alerts · See 3 park alerts|none|usa alert||",
+     true
+    ],
+    "n31": [
+     "h1|heading level 1|Basic Information|main|page title||",
+     true
+    ],
+    "n152": [
+     "td|region|It is important to know that…: 5 cards|main|cs id layout td||",
+     true
+    ],
+    "n36": [
+     "h2|heading level 2|Physical Address|main|info accordion header||",
+     true
+    ],
+    "n37": [
+     "button|button|Physical Address|main|accordion button||",
+     true
+    ],
+    "n38": [
+     "h2|heading level 2|Directions|main|info accordion header||",
+     true
+    ],
+    "n39": [
+     "button|button|Directions|main|accordion button collapsed||",
+     true
+    ],
+    "n40": [
+     "h2|heading level 2|Operating Hours & Seasons|main|info accordion header||",
+     true
+    ],
+    "n41": [
+     "button|button|Operating Hours & Seasons|main|accordion button collapsed||",
+     true
+    ],
+    "n43": [
+     "button|button|Weather|main|accordion button collapsed||",
+     true
+    ],
+    "n45": [
+     "button|button|Fees & Passes|main|accordion button collapsed||",
+     true
+    ],
+    "n47": [
+     "button|button|Visitor Centers|main|accordion button collapsed||",
+     true
+    ],
+    "n49": [
+     "button|button|Internet & Cellular Access|main|accordion button collapsed||",
+     true
+    ],
+    "n65": [
+     "fieldset|radiogroup|Yes No|main|usa fieldset radios||",
+     true
+    ],
+    "n79": [
+     "a|link|Contact Us|main|end|this website|",
+     true
+    ],
+    "n82": [
+     "li|text|FAQ|main|||",
+     true
+    ],
+    "n83": [
+     "a|link|FAQ|main||this website|",
+     true
+    ],
+    "n85": [
+     "a|link|Site Index|main||this website|",
+     true
+    ],
+    "n87": [
+     "a|link|Español|main||this website|",
+     true
+    ],
+    "n90": [
+     "a|link (image)||main||another website|",
+     false
+    ],
+    "n91": [
+     "a|link (image)||main||another website|",
+     false
+    ],
+    "n92": [
+     "a|link (image)||main||another website|",
+     false
+    ],
+    "n104": [
+     "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+     false
+    ],
+    "n105": [
+     "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+     false
+    ],
+    "n107": [
+     "div|region|Download the NPS app to navigate the parks… · Download on the App… / Get…|contentinfo|footer app promo bottom||",
+     true
+    ],
+    "n109": [
+     "p|region|· Download on the App… / Get it on [name]…|contentinfo|footer app promo badge links||",
+     true
+    ],
+    "n112": [
+     "div|region||contentinfo|footer app promo image container||",
+     true
+    ],
+    "n121": [
+     "div|region|Links: Search|contentinfo|chat embed footer search||",
+     true
+    ],
+    "n122": [
+     "form|search|Links: Search|search|chat embed footer search form||",
+     true
+    ],
+    "n135": [
+     "li|text|Contact [name]|navigation|usa required links item||",
+     true
+    ],
+    "n136": [
+     "a|link|Contact [name]|navigation|usa required link|this website|",
+     true
+    ],
+    "n137": [
+     "li|text|NPS FAQ|navigation|usa required links item||",
+     true
+    ],
+    "n138": [
+     "a|link|NPS FAQ|navigation|usa required link|this website|",
+     true
+    ],
+    "n153": [
+     "div|region holding links x1|[link] Plan Your Visit Basic Information · Plan Your Visit|main|container||",
+     true
+    ],
+    "n154": [
+     "div|region holding headings x1|Basic Information|main|content header size||",
+     true
+    ],
+    "n155": [
+     "div|region holding cards with pictures x6, headings x11, paragraphs x7, tables x1, buttons x7, links x6|It is important to know that the… · calendar / guided tour operators / [name]…|main|||",
+     true
+    ],
+    "n63": [
+     "div|region holding headings x1, paragraphs x1, links x1|Success · Touchpoints|main|survey fba modal dialog||",
+     true
+    ],
+    "n71": [
+     "div|region holding headings x6, lists x2, links x9|Park footer · Contact Us / FAQ / Site Index|main|footer||",
+     true
+    ]
+   }
+  },
+  "elements": [
+   {
+    "id": "n1",
+    "fp": "div|region|An official website of the United States government… · About U.S. Government Websites / Search…|none|chat embed banner||",
+    "uniq": true,
+    "j": {
+     "id": "n1",
+     "role": "help_contact",
+     "roleP": 0.77,
+     "roleProbs": {
+      "navigation": 0.04,
+      "help_contact": 0.77,
+      "legal_footer": 0.03,
+      "other": 0.11
+     },
+     "task": 0.14,
+     "main": 0,
+     "help": 0.24,
+     "fine": "chat_widget",
+     "fineP": 0.77,
+     "importance": 1.03
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n2",
+    "fp": "button|button|About U.S. Government Websites|none|chat banner official||",
+    "uniq": true,
+    "j": {
+     "id": "n2",
+     "role": "help_contact",
+     "roleP": 0.76,
+     "roleProbs": {
+      "action_button": 0.05,
+      "help_contact": 0.76,
+      "account_utility": 0.04,
+      "other": 0.09
+     },
+     "task": 0.12,
+     "main": 0,
+     "help": 0.31,
+     "fine": "chat_widget",
+     "fineP": 0.59,
+     "importance": 1.13
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n3",
+    "fp": "button|button|Search or ask DOI|none|ui abd popover pill||",
+    "uniq": true,
+    "j": {
+     "id": "n3",
+     "role": "search",
+     "roleP": 0.93,
+     "roleProbs": {
+      "search": 0.93
+     },
+     "task": 0.46,
+     "main": 0,
+     "help": 0.52,
+     "fine": "search_box",
+     "fineP": 0.93,
+     "importance": 1.02
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n6",
+    "fp": "a|link|[name] Service|banner|header branding link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n6",
+     "role": "navigation",
+     "roleP": 0.97,
+     "roleProbs": {
+      "navigation": 0.97
+     },
+     "task": 0.19,
+     "main": 0,
+     "help": 0.05,
+     "fine": "site_logo",
+     "fineP": 0.97,
+     "importance": 1.13
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n8",
+    "fp": "button|button|Open Menu|navigation|nav toggle usa button||",
+    "uniq": true,
+    "j": {
+     "id": "n8",
+     "role": "navigation",
+     "roleP": 0.93,
+     "roleProbs": {
+      "action_button": 0.05,
+      "navigation": 0.93
+     },
+     "task": 0.21,
+     "main": 0,
+     "help": 0.04,
+     "fine": "site_nav",
+     "fineP": 0.93,
+     "importance": 1.02
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n22",
+    "fp": "div|region|Current Alerts and Conditions See 3 park alerts… · See 3 park alerts|none|nps alert banner||",
+    "uniq": true,
+    "j": {
+     "id": "n22",
+     "role": "main_content",
+     "roleP": 0.92,
+     "roleProbs": {
+      "main_content": 0.92,
+      "other": 0.04
+     },
+     "task": 0.74,
+     "main": 0,
+     "help": 0.07,
+     "fine": "breaking_banner",
+     "fineP": 0.61,
+     "importance": 2.17
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n23",
+    "fp": "div|region|Current Alerts and Conditions See 3 park alerts · See 3 park alerts|none|usa alert top warning||",
+    "uniq": true,
+    "j": {
+     "id": "n23",
+     "role": "main_content",
+     "roleP": 0.93,
+     "roleProbs": {
+      "main_content": 0.93,
+      "other": 0.03
+     },
+     "task": 0.78,
+     "main": 0,
+     "help": 0.09,
+     "fine": "breaking_banner",
+     "fineP": 0.49,
+     "importance": 2.29
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n24",
+    "fp": "p|region|Current Alerts and Conditions See 3 park alerts · See 3 park alerts|none|usa alert||",
+    "uniq": true,
+    "j": {
+     "id": "n24",
+     "role": "main_content",
+     "roleP": 0.88,
+     "roleProbs": {
+      "main_content": 0.88,
+      "other": 0.08
+     },
+     "task": 0.75,
+     "main": 0,
+     "help": 0.1,
+     "fine": "breaking_banner",
+     "fineP": 0.45,
+     "importance": 2.25
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n31",
+    "fp": "h1|heading level 1|Basic Information|main|page title||",
+    "uniq": true,
+    "j": {
+     "id": "n31",
+     "role": "main_content",
+     "roleP": 1,
+     "roleProbs": {
+      "main_content": 1
+     },
+     "task": 0.95,
+     "main": 0,
+     "help": 0.05,
+     "fine": "page_title",
+     "fineP": 1,
+     "importance": 3.68
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n152",
+    "fp": "td|region|It is important to know that…: 5 cards|main|cs id layout td||",
+    "uniq": true,
+    "j": {
+     "id": "n152",
+     "role": "main_content",
+     "roleP": 0.78,
+     "roleProbs": {
+      "main_content": 0.78,
+      "recommendations": 0.04,
+      "other": 0.1
+     },
+     "task": 0.88,
+     "main": 0,
+     "help": 0.12,
+     "fine": "body_text",
+     "fineP": 0.3,
+     "importance": 3.69
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n36",
+    "fp": "h2|heading level 2|Physical Address|main|info accordion header||",
+    "uniq": true,
+    "j": {
+     "id": "n36",
+     "role": "action_button",
+     "roleP": 0.69,
+     "roleProbs": {
+      "main_content": 0.27,
+      "help_contact": 0.03,
+      "action_button": 0.69
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.22,
+     "fine": "accordion_item",
+     "fineP": 0.6900000000000001,
+     "importance": 3.66
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n37",
+    "fp": "button|button|Physical Address|main|accordion button||",
+    "uniq": true,
+    "j": {
+     "id": "n37",
+     "role": "action_button",
+     "roleP": 0.99,
+     "roleProbs": {
+      "action_button": 0.99
+     },
+     "task": 0.93,
+     "main": 0,
+     "help": 0.13,
+     "fine": "accordion_item",
+     "fineP": 0.99,
+     "importance": 3.58
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n38",
+    "fp": "h2|heading level 2|Directions|main|info accordion header||",
+    "uniq": true,
+    "j": {
+     "id": "n38",
+     "role": "action_button",
+     "roleP": 0.65,
+     "roleProbs": {
+      "main_content": 0.35,
+      "action_button": 0.65
+     },
+     "task": 0.93,
+     "main": 0,
+     "help": 0.13,
+     "fine": "accordion_item",
+     "fineP": 0.65,
+     "importance": 3.43
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n39",
+    "fp": "button|button|Directions|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n39",
+     "role": "action_button",
+     "roleP": 0.99,
+     "roleProbs": {
+      "action_button": 0.99
+     },
+     "task": 0.91,
+     "main": 0,
+     "help": 0.19,
+     "fine": "accordion_item",
+     "fineP": 0.99,
+     "importance": 3.42
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n40",
+    "fp": "h2|heading level 2|Operating Hours & Seasons|main|info accordion header||",
+    "uniq": true,
+    "j": {
+     "id": "n40",
+     "role": "action_button",
+     "roleP": 0.53,
+     "roleProbs": {
+      "main_content": 0.47,
+      "action_button": 0.53
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.05,
+     "fine": "accordion_item",
+     "fineP": 0.53,
+     "importance": 3.53
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n41",
+    "fp": "button|button|Operating Hours & Seasons|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n41",
+     "role": "action_button",
+     "roleP": 1,
+     "roleProbs": {
+      "action_button": 1
+     },
+     "task": 0.91,
+     "main": 0,
+     "help": 0.08,
+     "fine": "accordion_item",
+     "fineP": 1,
+     "importance": 3.49
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n43",
+    "fp": "button|button|Weather|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n43",
+     "role": "action_button",
+     "roleP": 1,
+     "roleProbs": {
+      "action_button": 1
+     },
+     "task": 0.9,
+     "main": 0,
+     "help": 0.05,
+     "fine": "accordion_item",
+     "fineP": 1,
+     "importance": 3.34
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n45",
+    "fp": "button|button|Fees & Passes|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n45",
+     "role": "action_button",
+     "roleP": 0.99,
+     "roleProbs": {
+      "action_button": 0.99
+     },
+     "task": 0.85,
+     "main": 0,
+     "help": 0.08,
+     "fine": "accordion_item",
+     "fineP": 0.99,
+     "importance": 3.33
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n47",
+    "fp": "button|button|Visitor Centers|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n47",
+     "role": "action_button",
+     "roleP": 0.99,
+     "roleProbs": {
+      "action_button": 0.99
+     },
+     "task": 0.85,
+     "main": 0,
+     "help": 0.3,
+     "fine": "accordion_item",
+     "fineP": 0.99,
+     "importance": 3.11
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n49",
+    "fp": "button|button|Internet & Cellular Access|main|accordion button collapsed||",
+    "uniq": true,
+    "j": {
+     "id": "n49",
+     "role": "action_button",
+     "roleP": 1,
+     "roleProbs": {
+      "action_button": 1
+     },
+     "task": 0.87,
+     "main": 0,
+     "help": 0.16,
+     "fine": "accordion_item",
+     "fineP": 1,
+     "importance": 2.94
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n65",
+    "fp": "fieldset|radiogroup|Yes No|main|usa fieldset radios||",
+    "uniq": true,
+    "j": {
+     "id": "n65",
+     "role": "form_field",
+     "roleP": 1,
+     "roleProbs": {
+      "form_field": 1
+     },
+     "task": 0.78,
+     "main": 0,
+     "help": 0.04,
+     "fine": "choice_group",
+     "fineP": 0.96,
+     "importance": 2.28
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n79",
+    "fp": "a|link|Contact Us|main|end|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n79",
+     "role": "help_contact",
+     "roleP": 0.95,
+     "roleProbs": {
+      "help_contact": 0.95
+     },
+     "task": 0.2,
+     "main": 0.08,
+     "help": 0.93,
+     "fine": "contact_info",
+     "fineP": 0.86,
+     "importance": 1.83
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n82",
+    "fp": "li|text|FAQ|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n82",
+     "role": "main_content",
+     "roleP": 0.3,
+     "roleProbs": {
+      "main_content": 0.3,
+      "action_button": 0.03,
+      "navigation": 0.18,
+      "help_contact": 0.18,
+      "recommendations": 0.03,
+      "account_utility": 0.03,
+      "other": 0.15
+     },
+     "task": 0.22,
+     "main": 0,
+     "help": 0.89,
+     "fine": "faq_item",
+     "fineP": 0.19,
+     "importance": 1.88
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n83",
+    "fp": "a|link|FAQ|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n83",
+     "role": "help_contact",
+     "roleP": 0.89,
+     "roleProbs": {
+      "action_button": 0.03,
+      "help_contact": 0.89,
+      "recommendations": 0.03
+     },
+     "task": 0.16,
+     "main": 0.05,
+     "help": 0.92,
+     "fine": "help_link",
+     "fineP": 0.89,
+     "importance": 1.98
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n85",
+    "fp": "a|link|Site Index|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n85",
+     "role": "navigation",
+     "roleP": 0.53,
+     "roleProbs": {
+      "action_button": 0.07,
+      "navigation": 0.53,
+      "help_contact": 0.14,
+      "account_utility": 0.04,
+      "legal_footer": 0.1,
+      "other": 0.05
+     },
+     "task": 0.12,
+     "main": 0.05,
+     "help": 0.12,
+     "fine": "site_nav",
+     "fineP": 0.47000000000000003,
+     "importance": 1.28
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n87",
+    "fp": "a|link|Español|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n87",
+     "role": "account_utility",
+     "roleP": 0.78,
+     "roleProbs": {
+      "action_button": 0.08,
+      "navigation": 0.03,
+      "account_utility": 0.78,
+      "other": 0.06
+     },
+     "task": 0.25,
+     "main": 0.03,
+     "help": 0.04,
+     "fine": "account_utility",
+     "fineP": 0.78,
+     "importance": 1.48
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n90",
+    "fp": "a|link (image)||main||another website|",
+    "uniq": false,
+    "j": {
+     "id": "n90",
+     "role": "other",
+     "roleP": 0.27,
+     "roleProbs": {
+      "main_content": 0.05,
+      "action_button": 0.06,
+      "navigation": 0.24,
+      "help_contact": 0.09,
+      "advertising": 0.05,
+      "recommendations": 0.07,
+      "legal_footer": 0.04,
+      "other": 0.27
+     },
+     "task": 0.22,
+     "main": 0.09,
+     "help": 0.19,
+     "fine": "site_logo",
+     "fineP": 0.24000000000000002,
+     "importance": 0.95
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n91",
+    "fp": "a|link (image)||main||another website|",
+    "uniq": false,
+    "j": {
+     "id": "n91",
+     "role": "other",
+     "roleP": 0.3,
+     "roleProbs": {
+      "main_content": 0.04,
+      "action_button": 0.05,
+      "navigation": 0.2,
+      "help_contact": 0.1,
+      "advertising": 0.06,
+      "recommendations": 0.07,
+      "legal_footer": 0.04,
+      "other": 0.3
+     },
+     "task": 0.22,
+     "main": 0.09,
+     "help": 0.2,
+     "fine": "other",
+     "fineP": 0.21000000000000002,
+     "importance": 0.92
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n92",
+    "fp": "a|link (image)||main||another website|",
+    "uniq": false,
+    "j": {
+     "id": "n92",
+     "role": "other",
+     "roleP": 0.3,
+     "roleProbs": {
+      "action_button": 0.08,
+      "navigation": 0.17,
+      "help_contact": 0.1,
+      "advertising": 0.06,
+      "recommendations": 0.07,
+      "legal_footer": 0.04,
+      "other": 0.3
+     },
+     "task": 0.23,
+     "main": 0.09,
+     "help": 0.18,
+     "fine": "other",
+     "fineP": 0.2,
+     "importance": 0.76
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n104",
+    "fp": "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+    "uniq": false,
+    "j": {
+     "id": "n104",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.05,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.16
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n105",
+    "fp": "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+    "uniq": false,
+    "j": {
+     "id": "n105",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.05,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.19
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n107",
+    "fp": "div|region|Download the NPS app to navigate the parks… · Download on the App… / Get…|contentinfo|footer app promo bottom||",
+    "uniq": true,
+    "j": {
+     "id": "n107",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.04,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.26
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n109",
+    "fp": "p|region|· Download on the App… / Get it on [name]…|contentinfo|footer app promo badge links||",
+    "uniq": true,
+    "j": {
+     "id": "n109",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.03,
+     "fine": "app_install_banner",
+     "fineP": 0.99,
+     "importance": 0.37
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n112",
+    "fp": "div|region||contentinfo|footer app promo image container||",
+    "uniq": true,
+    "j": {
+     "id": "n112",
+     "role": "advertising",
+     "roleP": 0.92,
+     "roleProbs": {
+      "advertising": 0.92,
+      "legal_footer": 0.04
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.11,
+     "fine": "app_install_banner",
+     "fineP": 0.92,
+     "importance": 0.44
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n121",
+    "fp": "div|region|Links: Search|contentinfo|chat embed footer search||",
+    "uniq": true,
+    "j": {
+     "id": "n121",
+     "role": "help_contact",
+     "roleP": 0.39,
+     "roleProbs": {
+      "search": 0.18,
+      "navigation": 0.21,
+      "help_contact": 0.39,
+      "recommendations": 0.03,
+      "legal_footer": 0.07,
+      "other": 0.05
+     },
+     "task": 0.19,
+     "main": 0,
+     "help": 0.24,
+     "fine": "chat_widget",
+     "fineP": 0.39,
+     "importance": 1.01
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n122",
+    "fp": "form|search|Links: Search|search|chat embed footer search form||",
+    "uniq": true,
+    "j": {
+     "id": "n122",
+     "role": "search",
+     "roleP": 0.96,
+     "roleProbs": {
+      "search": 0.96,
+      "help_contact": 0.04
+     },
+     "task": 0.59,
+     "main": 0,
+     "help": 0.11,
+     "fine": "search_box",
+     "fineP": 0.96,
+     "importance": 1.02
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n135",
+    "fp": "li|text|Contact [name]|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n135",
+     "role": "help_contact",
+     "roleP": 0.76,
+     "roleProbs": {
+      "navigation": 0.18,
+      "help_contact": 0.76,
+      "legal_footer": 0.03
+     },
+     "task": 0.13,
+     "main": 0,
+     "help": 0.89,
+     "fine": "contact_info",
+     "fineP": 0.76,
+     "importance": 1.16
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n136",
+    "fp": "a|link|Contact [name]|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n136",
+     "role": "help_contact",
+     "roleP": 0.94,
+     "roleProbs": {
+      "navigation": 0.05,
+      "help_contact": 0.94
+     },
+     "task": 0.16,
+     "main": 0,
+     "help": 0.93,
+     "fine": "contact_info",
+     "fineP": 0.91,
+     "importance": 1.12
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n137",
+    "fp": "li|text|NPS FAQ|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n137",
+     "role": "help_contact",
+     "roleP": 0.54,
+     "roleProbs": {
+      "navigation": 0.35,
+      "help_contact": 0.54,
+      "legal_footer": 0.06
+     },
+     "task": 0.11,
+     "main": 0,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.54,
+     "importance": 1.12
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n138",
+    "fp": "a|link|NPS FAQ|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n138",
+     "role": "help_contact",
+     "roleP": 0.8,
+     "roleProbs": {
+      "navigation": 0.11,
+      "help_contact": 0.8,
+      "legal_footer": 0.08
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.76,
+     "importance": 1.13
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n153",
+    "fp": "div|region holding links x1|[link] Plan Your Visit Basic Information · Plan Your Visit|main|container||",
+    "uniq": true,
+    "j": {
+     "id": "n153",
+     "role": "navigation",
+     "roleP": 0.88,
+     "roleProbs": {
+      "navigation": 0.88
+     },
+     "task": 0.23,
+     "main": 0,
+     "help": 0.12,
+     "fine": "site_nav",
+     "fineP": 0.4,
+     "importance": 1.51
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n154",
+    "fp": "div|region holding headings x1|Basic Information|main|content header size||",
+    "uniq": true,
+    "j": {
+     "id": "n154",
+     "role": "main_content",
+     "roleP": 0.97,
+     "roleProbs": {
+      "main_content": 0.97
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.05,
+     "fine": "page_title",
+     "fineP": 0.9400000000000001,
+     "importance": 3.41
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n155",
+    "fp": "div|region holding cards with pictures x6, headings x11, paragraphs x7, tables x1, buttons x7, links x6|It is important to know that the… · calendar / guided tour operators / [name]…|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n155",
+     "role": "main_content",
+     "roleP": 0.5,
+     "roleProbs": {
+      "main_content": 0.5,
+      "recommendations": 0.1,
+      "other": 0.31
+     },
+     "task": 0.76,
+     "main": 0,
+     "help": 0.19,
+     "fine": "body_text",
+     "fineP": 0.5,
+     "importance": 3.4
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n63",
+    "fp": "div|region holding headings x1, paragraphs x1, links x1|Success · Touchpoints|main|survey fba modal dialog||",
+    "uniq": true,
+    "j": {
+     "id": "n63",
+     "role": "popup_overlay",
+     "roleP": 0.88,
+     "roleProbs": {
+      "main_content": 0.09,
+      "popup_overlay": 0.88
+     },
+     "task": 0.21,
+     "main": 0,
+     "help": 0.15,
+     "fine": "popup",
+     "fineP": 0.88,
+     "importance": 0.29
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n71",
+    "fp": "div|region holding headings x6, lists x2, links x9|Park footer · Contact Us / FAQ / Site Index|main|footer||",
+    "uniq": true,
+    "j": {
+     "id": "n71",
+     "role": "navigation",
+     "roleP": 0.44,
+     "roleProbs": {
+      "navigation": 0.44,
+      "help_contact": 0.09,
+      "recommendations": 0.04,
+      "legal_footer": 0.26,
+      "other": 0.12
+     },
+     "task": 0.17,
+     "main": 0,
+     "help": 0.87,
+     "fine": "site_nav",
+     "fineP": 0.4,
+     "importance": 1.15
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n151",
+    "fp": "td|region|It is important to know that…: 5 cards|main|cs id layout td||",
+    "uniq": true,
+    "j": {
+     "id": "n151",
+     "role": "main_content",
+     "roleP": 0.77,
+     "roleProbs": {
+      "main_content": 0.77,
+      "recommendations": 0.07,
+      "other": 0.07
+     },
+     "task": 0.89,
+     "main": 0,
+     "help": 0.15,
+     "fine": "body_text",
+     "fineP": 0.31,
+     "importance": 3.71
+    },
+    "from": "union"
+   },
+   {
+    "id": "n78",
+    "fp": "a|link|Contact Us|main|end|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n78",
+     "role": "help_contact",
+     "roleP": 0.96,
+     "roleProbs": {
+      "help_contact": 0.96
+     },
+     "task": 0.19,
+     "main": 0.09,
+     "help": 0.92,
+     "fine": "contact_info",
+     "fineP": 0.85,
+     "importance": 1.78
+    },
+    "from": "union"
+   },
+   {
+    "id": "n81",
+    "fp": "li|text|FAQ|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n81",
+     "role": "main_content",
+     "roleP": 0.28,
+     "roleProbs": {
+      "main_content": 0.28,
+      "action_button": 0.03,
+      "navigation": 0.22,
+      "help_contact": 0.21,
+      "recommendations": 0.06,
+      "other": 0.11
+     },
+     "task": 0.22,
+     "main": 0,
+     "help": 0.88,
+     "fine": "help_link",
+     "fineP": 0.21000000000000002,
+     "importance": 1.88
+    },
+    "from": "union"
+   },
+   {
+    "id": "n82",
+    "fp": "a|link|FAQ|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n82",
+     "role": "help_contact",
+     "roleP": 0.91,
+     "roleProbs": {
+      "help_contact": 0.91,
+      "recommendations": 0.03
+     },
+     "task": 0.17,
+     "main": 0.04,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.88,
+     "importance": 1.98
+    },
+    "from": "union"
+   },
+   {
+    "id": "n84",
+    "fp": "a|link|Site Index|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n84",
+     "role": "navigation",
+     "roleP": 0.52,
+     "roleProbs": {
+      "action_button": 0.07,
+      "navigation": 0.52,
+      "help_contact": 0.16,
+      "account_utility": 0.06,
+      "legal_footer": 0.08,
+      "other": 0.07
+     },
+     "task": 0.13,
+     "main": 0.05,
+     "help": 0.11,
+     "fine": "site_nav",
+     "fineP": 0.42,
+     "importance": 1.24
+    },
+    "from": "union"
+   },
+   {
+    "id": "n86",
+    "fp": "a|link|Español|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n86",
+     "role": "account_utility",
+     "roleP": 0.77,
+     "roleProbs": {
+      "action_button": 0.09,
+      "navigation": 0.04,
+      "account_utility": 0.77,
+      "other": 0.07
+     },
+     "task": 0.24,
+     "main": 0.04,
+     "help": 0.04,
+     "fine": "account_utility",
+     "fineP": 0.77,
+     "importance": 1.45
+    },
+    "from": "union"
+   },
+   {
+    "id": "n89",
+    "fp": "a|link (image)||main||another website|",
+    "uniq": false,
+    "j": {
+     "id": "n89",
+     "role": "other",
+     "roleP": 0.25,
+     "roleProbs": {
+      "main_content": 0.06,
+      "action_button": 0.06,
+      "navigation": 0.22,
+      "help_contact": 0.09,
+      "advertising": 0.06,
+      "recommendations": 0.08,
+      "legal_footer": 0.05,
+      "other": 0.25
+     },
+     "task": 0.25,
+     "main": 0.08,
+     "help": 0.2,
+     "fine": "site_logo",
+     "fineP": 0.22,
+     "importance": 0.9
+    },
+    "from": "union"
+   },
+   {
+    "id": "n103",
+    "fp": "div|region|Experience Your America. Download the NPS app to… · Download on the App… / Get…|contentinfo|footer app promo||",
+    "uniq": false,
+    "j": {
+     "id": "n103",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.06,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.15
+    },
+    "from": "union"
+   },
+   {
+    "id": "n106",
+    "fp": "div|region|Download the NPS app to navigate the parks… · Download on the App… / Get…|contentinfo|footer app promo bottom||",
+    "uniq": true,
+    "j": {
+     "id": "n106",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.05,
+     "fine": "app_install_banner",
+     "fineP": 1,
+     "importance": 0.26
+    },
+    "from": "union"
+   },
+   {
+    "id": "n108",
+    "fp": "p|region|· Download on the App… / Get it on [name]…|contentinfo|footer app promo badge links||",
+    "uniq": true,
+    "j": {
+     "id": "n108",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.03,
+     "fine": "app_install_banner",
+     "fineP": 0.99,
+     "importance": 0.34
+    },
+    "from": "union"
+   },
+   {
+    "id": "n111",
+    "fp": "div|region||contentinfo|footer app promo image container||",
+    "uniq": true,
+    "j": {
+     "id": "n111",
+     "role": "advertising",
+     "roleP": 0.95,
+     "roleProbs": {
+      "advertising": 0.95,
+      "legal_footer": 0.03
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.11,
+     "fine": "app_install_banner",
+     "fineP": 0.92,
+     "importance": 0.48
+    },
+    "from": "union"
+   },
+   {
+    "id": "n120",
+    "fp": "div|region|Links: Search|contentinfo|chat embed footer search||",
+    "uniq": true,
+    "j": {
+     "id": "n120",
+     "role": "help_contact",
+     "roleP": 0.45,
+     "roleProbs": {
+      "search": 0.13,
+      "navigation": 0.18,
+      "help_contact": 0.45,
+      "recommendations": 0.03,
+      "account_utility": 0.03,
+      "legal_footer": 0.08,
+      "other": 0.05
+     },
+     "task": 0.19,
+     "main": 0,
+     "help": 0.25,
+     "fine": "chat_widget",
+     "fineP": 0.45,
+     "importance": 1.01
+    },
+    "from": "union"
+   },
+   {
+    "id": "n121",
+    "fp": "form|search|Links: Search|search|chat embed footer search form||",
+    "uniq": true,
+    "j": {
+     "id": "n121",
+     "role": "search",
+     "roleP": 0.95,
+     "roleProbs": {
+      "search": 0.95,
+      "help_contact": 0.04
+     },
+     "task": 0.62,
+     "main": 0,
+     "help": 0.11,
+     "fine": "search_box",
+     "fineP": 0.95,
+     "importance": 1.02
+    },
+    "from": "union"
+   },
+   {
+    "id": "n134",
+    "fp": "li|text|Contact [name]|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n134",
+     "role": "help_contact",
+     "roleP": 0.76,
+     "roleProbs": {
+      "navigation": 0.16,
+      "help_contact": 0.76,
+      "legal_footer": 0.04
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.9,
+     "fine": "contact_info",
+     "fineP": 0.76,
+     "importance": 1.15
+    },
+    "from": "union"
+   },
+   {
+    "id": "n135",
+    "fp": "a|link|Contact [name]|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n135",
+     "role": "help_contact",
+     "roleP": 0.93,
+     "roleProbs": {
+      "navigation": 0.06,
+      "help_contact": 0.93
+     },
+     "task": 0.16,
+     "main": 0,
+     "help": 0.93,
+     "fine": "contact_info",
+     "fineP": 0.9,
+     "importance": 1.15
+    },
+    "from": "union"
+   },
+   {
+    "id": "n136",
+    "fp": "li|text|NPS FAQ|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n136",
+     "role": "help_contact",
+     "roleP": 0.56,
+     "roleProbs": {
+      "navigation": 0.33,
+      "help_contact": 0.56,
+      "legal_footer": 0.05
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.56,
+     "importance": 1.13
+    },
+    "from": "union"
+   },
+   {
+    "id": "n137",
+    "fp": "a|link|NPS FAQ|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n137",
+     "role": "help_contact",
+     "roleP": 0.82,
+     "roleProbs": {
+      "navigation": 0.12,
+      "help_contact": 0.82,
+      "legal_footer": 0.06
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.94,
+     "fine": "help_link",
+     "fineP": 0.78,
+     "importance": 1.14
+    },
+    "from": "union"
+   },
+   {
+    "id": "n152",
+    "fp": "div|region holding links x1|[link] Plan Your Visit Basic Information · Plan Your Visit|main|container||",
+    "uniq": true,
+    "j": {
+     "id": "n152",
+     "role": "navigation",
+     "roleP": 0.9,
+     "roleProbs": {
+      "main_content": 0.03,
+      "navigation": 0.9
+     },
+     "task": 0.2,
+     "main": 0,
+     "help": 0.13,
+     "fine": "site_nav",
+     "fineP": 0.48,
+     "importance": 1.49
+    },
+    "from": "union"
+   },
+   {
+    "id": "n153",
+    "fp": "div|region holding headings x1|Basic Information|main|content header size||",
+    "uniq": true,
+    "j": {
+     "id": "n153",
+     "role": "main_content",
+     "roleP": 0.97,
+     "roleProbs": {
+      "main_content": 0.97
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.05,
+     "fine": "page_title",
+     "fineP": 0.93,
+     "importance": 3.39
+    },
+    "from": "union"
+   },
+   {
+    "id": "n154",
+    "fp": "div|region holding cards with pictures x6, headings x11, paragraphs x7, tables x1, buttons x7, links x6|It is important to know that the… · calendar / guided tour operators / [name]…|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n154",
+     "role": "main_content",
+     "roleP": 0.44,
+     "roleProbs": {
+      "main_content": 0.44,
+      "recommendations": 0.13,
+      "other": 0.34
+     },
+     "task": 0.8,
+     "main": 0,
+     "help": 0.18,
+     "fine": "body_text",
+     "fineP": 0.44,
+     "importance": 3.52
+    },
+    "from": "union"
+   },
+   {
+    "id": "n155",
+    "fp": "div|region holding headings x6, lists x2, links x9|Park footer · Contact Us / FAQ / Site Index|main|footer||",
+    "uniq": true,
+    "j": {
+     "id": "n155",
+     "role": "navigation",
+     "roleP": 0.41,
+     "roleProbs": {
+      "navigation": 0.41,
+      "help_contact": 0.1,
+      "legal_footer": 0.33,
+      "other": 0.11
+     },
+     "task": 0.17,
+     "main": 0,
+     "help": 0.86,
+     "fine": "site_nav",
+     "fineP": 0.37,
+     "importance": 1.18
+    },
+    "from": "union"
+   },
+   {
+    "id": "n153",
+    "fp": "td|region|It is important to know that…: 5 cards|main|cs id layout td||",
+    "uniq": true,
+    "j": {
+     "id": "n153",
+     "role": "main_content",
+     "roleP": 0.79,
+     "roleProbs": {
+      "main_content": 0.79,
+      "recommendations": 0.05,
+      "other": 0.08
+     },
+     "task": 0.89,
+     "main": 0,
+     "help": 0.13,
+     "fine": "body_text",
+     "fineP": 0.34,
+     "importance": 3.66
+    },
+    "from": "union"
+   },
+   {
+    "id": "n72",
+    "fp": "div|region|Contact Info · Contact Us|main|footer contact||",
+    "uniq": true,
+    "j": {
+     "id": "n72",
+     "role": "help_contact",
+     "roleP": 0.95,
+     "roleProbs": {
+      "help_contact": 0.95,
+      "other": 0.03
+     },
+     "task": 0.33,
+     "main": 0,
+     "help": 0.82,
+     "fine": "contact_info",
+     "fineP": 0.95,
+     "importance": 1.6
+    },
+    "from": "union"
+   },
+   {
+    "id": "n136",
+    "fp": "li|text|Contact [name]|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n136",
+     "role": "help_contact",
+     "roleP": 0.78,
+     "roleProbs": {
+      "navigation": 0.15,
+      "help_contact": 0.78
+     },
+     "task": 0.14,
+     "main": 0,
+     "help": 0.9,
+     "fine": "contact_info",
+     "fineP": 0.78,
+     "importance": 1.13
+    },
+    "from": "union"
+   },
+   {
+    "id": "n137",
+    "fp": "a|link|Contact [name]|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n137",
+     "role": "help_contact",
+     "roleP": 0.93,
+     "roleProbs": {
+      "navigation": 0.06,
+      "help_contact": 0.93
+     },
+     "task": 0.17,
+     "main": 0,
+     "help": 0.93,
+     "fine": "contact_info",
+     "fineP": 0.89,
+     "importance": 1.14
+    },
+    "from": "union"
+   },
+   {
+    "id": "n138",
+    "fp": "li|text|NPS FAQ|navigation|usa required links item||",
+    "uniq": true,
+    "j": {
+     "id": "n138",
+     "role": "help_contact",
+     "roleP": 0.55,
+     "roleProbs": {
+      "navigation": 0.32,
+      "help_contact": 0.55,
+      "legal_footer": 0.06
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.93,
+     "fine": "help_link",
+     "fineP": 0.55,
+     "importance": 1.13
+    },
+    "from": "union"
+   },
+   {
+    "id": "n139",
+    "fp": "a|link|NPS FAQ|navigation|usa required link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n139",
+     "role": "help_contact",
+     "roleP": 0.86,
+     "roleProbs": {
+      "navigation": 0.1,
+      "help_contact": 0.86,
+      "legal_footer": 0.04
+     },
+     "task": 0.11,
+     "main": 0,
+     "help": 0.94,
+     "fine": "help_link",
+     "fineP": 0.83,
+     "importance": 1.12
+    },
+    "from": "union"
+   },
+   {
+    "id": "n154",
+    "fp": "div|region holding links x1|[link] Plan Your Visit Basic Information · Plan Your Visit|main|container||",
+    "uniq": true,
+    "j": {
+     "id": "n154",
+     "role": "navigation",
+     "roleP": 0.88,
+     "roleProbs": {
+      "main_content": 0.03,
+      "navigation": 0.88
+     },
+     "task": 0.23,
+     "main": 0,
+     "help": 0.11,
+     "fine": "site_nav",
+     "fineP": 0.36,
+     "importance": 1.52
+    },
+    "from": "union"
+   },
+   {
+    "id": "n155",
+    "fp": "div|region holding headings x1|Basic Information|main|content header size||",
+    "uniq": true,
+    "j": {
+     "id": "n155",
+     "role": "main_content",
+     "roleP": 0.95,
+     "roleProbs": {
+      "main_content": 0.95
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.05,
+     "fine": "page_title",
+     "fineP": 0.92,
+     "importance": 3.45
+    },
+    "from": "union"
+   },
+   {
+    "id": "n156",
+    "fp": "div|region holding cards with pictures x6, headings x11, paragraphs x7, tables x1, buttons x7, links x6|It is important to know that the… · calendar / guided tour operators / [name]…|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n156",
+     "role": "main_content",
+     "roleP": 0.45,
+     "roleProbs": {
+      "main_content": 0.45,
+      "recommendations": 0.1,
+      "other": 0.36
+     },
+     "task": 0.76,
+     "main": 0,
+     "help": 0.19,
+     "fine": "body_text",
+     "fineP": 0.45,
+     "importance": 3.54
+    },
+    "from": "union"
+   }
+  ]
+ },
+ "meaning": {
+  "8440820143a7cb921e33e07375d1182c32fc6b8280a2b3e38610dc1c4d0ad12b": {
+   "leadsWithMain": 0.1,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1153,
+    "wallMs": 86,
+    "serverMs": 33,
+    "costUsd": 0.00004842600000000001
+   }
+  },
+  "5e94aa99761661bf14842ed7094b729bcbba32abba42e3954699d7dc9b31e4fb": {
+   "leadsWithMain": 0.06,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1164,
+    "wallMs": 77,
+    "serverMs": 22,
+    "costUsd": 0.000048888000000000004
+   }
+  },
+  "b25c2f60e0b1552a5b1a7c32d1b6839a870c7565f4c77f216b5edff8dc1fcee2": {
+   "leadsWithMain": 0.04,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1088,
+    "wallMs": 111,
+    "serverMs": 51,
+    "costUsd": 0.000045696000000000004
+   }
+  },
+  "715b2b5896964138cc1177adf7875b423d08b058ecd3613aefb5b3cf1c4ac33d": {
+   "leadsWithMain": 0.06,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1126,
+    "wallMs": 86,
+    "serverMs": 33,
+    "costUsd": 0.00004729200000000001
+   }
+  },
+  "e397b0d9a6c601c86e913c64c822338e17ee8e974f333ff39584ae047c711a28": {
+   "leadsWithMain": 0.05,
+   "missingMain": 1,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1064,
+    "wallMs": 89,
+    "serverMs": 36,
+    "costUsd": 0.000044688
+   }
+  },
+  "eb7564d137fe5035f9931ae52769039ea2261401cce1934dc6b72a3f9f66ab0e": {
+   "leadsWithMain": 0.08,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1104,
+    "wallMs": 82,
+    "serverMs": 34,
+    "costUsd": 0.00004636800000000001
+   }
+  },
+  "077d4f26b7037f7c882680bb82d40347de5cdb591f65570ba1e3000b2052d12c": {
+   "leadsWithMain": 0.07,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1126,
+    "wallMs": 126,
+    "serverMs": 76,
+    "costUsd": 0.00004729200000000001
+   }
+  },
+  "0d194cdfd908484440636f01f08f86dfabbd9fb756fec299a6307b45f0549735": {
+   "leadsWithMain": 0.07,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1080,
+    "wallMs": 69,
+    "serverMs": 23,
+    "costUsd": 0.000045360000000000006
+   }
+  },
+  "b6226ec116a88b3e7a52176f96baa728cd3c2d571def88f18b6462055cef8770": {
+   "leadsWithMain": 0.05,
+   "missingMain": 1,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1148,
+    "wallMs": 103,
+    "serverMs": 47,
+    "costUsd": 0.00004821600000000001
+   }
+  },
+  "4aca17e69c31281701f600b360655c4bd734a59b3512385e564e19c7196db356": {
+   "leadsWithMain": 0.07,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1101,
+    "wallMs": 84,
+    "serverMs": 35,
+    "costUsd": 0.00004624200000000001
+   }
+  },
+  "beaf4662e6ee5ca899ec5c56c8ac2b94bb531e6c02e526c5c9b312e28f2ad33a": {
+   "leadsWithMain": 0.09,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1153,
+    "wallMs": 88,
+    "serverMs": 34,
+    "costUsd": 0.00004842600000000001
+   }
+  },
+  "87d7d101a3eba1ec3576f111410cccead9b49d9cc915fe0dfee27882cbca8317": {
+   "leadsWithMain": 0.03,
+   "missingMain": 1,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1088,
+    "wallMs": 113,
+    "serverMs": 44,
+    "costUsd": 0.000045696000000000004
+   }
+  },
+  "7f0387ebdaca5d3cfa6b69f5987b834ac146348f776de59c2418f5c2f039bbdf": {
+   "leadsWithMain": 0.04,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1110,
+    "wallMs": 67,
+    "serverMs": 19,
+    "costUsd": 0.000046620000000000004
+   }
+  },
+  "a4440e50aece4d3f10ce1ecac69eb7fccfca4bced80e801a494c51e9b6f7058a": {
+   "leadsWithMain": 0.06,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1102,
+    "wallMs": 69,
+    "serverMs": 20,
+    "costUsd": 0.000046284000000000006
+   }
+  },
+  "c42959e4e968f744541bb0923a9383daa312e1ce87055672e0bed69acca395bd": {
+   "leadsWithMain": 0.03,
+   "missingMain": 0.99,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1085,
+    "wallMs": 86,
+    "serverMs": 34,
+    "costUsd": 0.000045570000000000006
+   }
+  },
+  "35de593381418f1822da1b9e12d36f4df8e34eb1da79c8335b0d7517fb03faa4": {
+   "leadsWithMain": 0.03,
+   "missingMain": 1,
+   "pass": false,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1086,
+    "wallMs": 88,
+    "serverMs": 41,
+    "costUsd": 0.000045612
+   }
+  }
+ },
+ "overlayClose": {},
+ "compose": {},
+ "composeMeta": null,
+ "runs": [
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-10-27T22:37:14.278Z",
+   "added": {
+    "elements": 45,
+    "page": true,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2058,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:37:19.833Z",
+   "added": {
+    "elements": 21,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2130,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:37:25.152Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2046,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:37:30.462Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2027,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:37:35.837Z",
+   "added": {
+    "elements": 9,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2030,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": false
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:37:41.414Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2126,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 37 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:37:46.967Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2164,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 37 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:37:52.336Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2127,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 37 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.10; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:37:57.869Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2131,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 37 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.08; help 0.05; app banner 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.90; task 0.16; help 0.10; app banner 0.90"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 5,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:38:03.428Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2159,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 37 controls"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.06; app banner 1.00"
+     }
+    ],
+    "checksFailed": 3,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:38:08.746Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2126,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.10; help 0.05; app banner 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.91; task 0.16; help 0.10; app banner 0.91"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 5,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:38:14.316Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2139,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:38:19.860Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2130,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:38:25.419Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2160,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.95; task 0.14; help 0.10; app banner 0.92"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 5,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:38:30.969Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2162,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 7 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 7,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:38:36.526Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2123,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:38:42.077Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2125,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:38:47.654Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2138,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:38:53.208Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2125,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:38:58.813Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2141,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.36,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 19,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.36 at 100% zoom (planned 250%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 24 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 456,
+   "canonical": false,
+   "at": "2026-10-27T22:39:04.364Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2130,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 27 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.10; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 520,
+   "canonical": false,
+   "at": "2026-10-27T22:39:09.937Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2121,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 27 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.10; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 600,
+   "canonical": false,
+   "at": "2026-10-27T22:39:15.511Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2119,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 27 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-10-27T22:39:21.040Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2128,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 27 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-10-27T22:39:26.588Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "62ec557e3b2e+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2124,
+    "phase": "understood",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 14,
+    "bodyPxAfter": 14,
+    "simplified": {
+     "open": false,
+     "auto": false
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 27 controls"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "reversed",
+      "reason": "10 headings raised against body 14 px (levels 2, 3)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.09; help 0.05; app banner 1.00"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 4,
+     "protected": 35,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  }
+ ],
+ "replicaHash": "sha256:4e99ec67ddb84ef966cbfbf332109739ce21da07b49135df8706fc32bf68f115"
+}

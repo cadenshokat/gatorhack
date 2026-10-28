@@ -1,0 +1,600 @@
+{
+  "v": "replica.1",
+  "id": "ap-mars",
+  "servePath": "/article/japan-mars-moon-mission-fb51fbbf90374631e8ae658f9ca46154",
+  "file": "index.html",
+  "sourceUrl": "https://apnews.com/article/japan-mars-moon-mission-fb51fbbf90374631e8ae658f9ca46154",
+  "originalHost": "apnews.com",
+  "siteName": "AP News",
+  "capturedAt": "2026-10-27T17:34:40.704Z",
+  "capture": {
+    "tool": "scripts/capture/capture.mjs (playwright 1.64.1)",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+    "stateNotes": [
+      "The page after one scroll pass, back at the top: AP adds modules, ads and comments while you scroll, and the Primis player starts floating (bottom right) at the first scroll. Live and copy are compared in this state.",
+      "Lead video (JW Player) playing muted in the gallery; the copy loops a 12 s muted clip recorded from the live screen at capture, with its burned-in captions. Live plays the whole AP video once (paused while scrolled out of view), then shows its \"More Videos\" panel; JW's \"Next Up\" card (shown near a video's end) is removed from the copy.",
+      "Floating Primis player: the copy loops a 12 s muted clip of what it was playing at capture (live: AP videos and video ads in turn).",
+      "Ad creatives frozen as captured (screenshots in each ad iframe's srcdoc; the iframe src is kept). Live ads refresh and rotate.",
+      "Removed because they appear on some loads only: Wunderkind/BounceX's ad above the header (blocked) and Teads outstream video in the in-story slots (blocked, so both pages carry display ads there).",
+      "Floating player clip: the same 12 s commercial (Metro by T-Mobile) as ap-vangogh. On this capture load the player showed a political campaign ad, which the study should not show; the player state (its ad layout with \"Skip Ad\") is as captured."
+    ]
+  },
+  "licence": "Copyright The Associated Press; all rights reserved. Copied for a closed, non-commercial research study (noindex, served only behind study links); not for redistribution. Ad creatives, video frames and third-party widgets belong to their owners.",
+  "attribution": "The Associated Press, https://apnews.com/article/japan-mars-moon-mission-fb51fbbf90374631e8ae658f9ca46154. Changed: scripts removed; behaviours re-created as local scripts; ads and video frozen as captured (local creatives and clips); files stored locally; in the adapted condition WebAble changes the page.",
+  "behaviours": [
+    "autoplay-video",
+    "carousel",
+    "page",
+    "sticky-header (site CSS)",
+    "ad-slots (captured creatives in srcdoc)",
+    "menu",
+    "caption-read-more",
+    "share-sheet",
+    "floating-player dock and close",
+    "accessibility-button expand"
+  ],
+  "removed": [
+    "site scripts (171)",
+    "third-party scripts and trackers from 73 hosts: a.ad.gt, a.pub.network, a40.usablenet.com, accounts.google.com, ad.turn.com, ak.sail-horizon.com, apcdp.apnews.com, appleid.cdn-apple.com, assets.apnews.com, assets.connatix.com, assets.zephr.com, ats-wrapper.privacymanager.io, bh.contextweb.com, btloader.com, c.amazon-adsystem.com, cd.connatix.com, cdn-ima.33across.com, cdn.cookielaw.org, cdn.hadronid.net, cdn.id5-sync.com, cdn.jwplayer.com, cdn.mintthimblemedley.apnews.com, cdn.onesignal.com, cdn.parsely.com, cdn.viafoura.net, cds.connatix.com, client.px-cloud.net, config.aps.amazon-adsystem.com, connect.facebook.net, csync.loopme.me, dualping.com, experiments.parsely.com, freestar.solutions.cdn.optable.co, ih.adscale.de, imasdk.googleapis.com, jadserve.postrelease.com, launchpad-wrapper.privacymanager.io, launchpad.privacymanager.io, live.primis.tech, match.adsrvr.org, match.sharethrough.com, metrics.rapidedge.io, p.ad.gt, pixel-sync.sitescout.com, pixels.ad.gt, prebid.wurflcloud.com, pxl.iqm.com, s.ad.smaato.net, s.ntv.io, s0.2mdn.net, sb.scorecardresearch.com, scripts.mf.webcontentassessor.com, secure.adnxs.com, secure.cdn.fastclick.net, securepubads.g.doubleclick.net, ssl.p.jwpcdn.com, ssum.casalemedia.com, static.cloudflareinsights.com, sync.1rx.io, sync.go.sonobi.com, sync.inmobi.com, sync.ipredictive.com, sync.srv.stackadapt.com, tag.durationmedia.net, tag.wknd.ai, tags.crwdcntrl.net, tru.am, user-sync.fwmrm.net, web-cf-event-cell8005.ads.aps.amazon-adsystem.com, www.dianomi.com, www.google.com, www.googletagmanager.com, www.gstatic.com",
+    "noscript (3)",
+    "preload/prefetch/preconnect hints (26)",
+    "http-equiv meta (6)",
+    "inline event handlers (9)",
+    "elements scripts had put inside <head> (1; never drawn)",
+    "<link> tags that fetch on their own (manifest, search…) (2)",
+    "iframe contents (36; src kept, local srcdoc: 8 snapshots)",
+    "references that could not be stored (39)",
+    "Wunderkind/BounceX top ad and Teads outstream (hosts blocked at capture; appear on some loads only)",
+    "live video streams (replaced by local clips)"
+  ],
+  "contentHash": "sha256:76a1157c12a4b2775f3e01d96bed1fa7ae3b0d2b76c90f05bcd95a821a033af7",
+  "validation": {
+    "at": "2026-10-27T18:53:32.185Z",
+    "by": "scripts/capture/validate.mjs",
+    "served": "scripts/capture/lib/serve.mjs (frame.js stubbed)",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "liveCapturedAt": "2026-10-27T17:34:40.704Z",
+    "requests": {
+      "outside": 0,
+      "outsideHosts": {},
+      "missing": []
+    },
+    "frameTagFirst": true,
+    "pixels": {
+      "firstScreen": {
+        "pct": 13.57,
+        "target": 0.5,
+        "pass": false,
+        "size": [
+          1170,
+          2532
+        ],
+        "bandsCssPx": [
+          [
+            722,
+            834,
+            204604
+          ],
+          [
+            298,
+            498,
+            197457
+          ]
+        ]
+      },
+      "fullPage": {
+        "pct": 1.21,
+        "target": 2,
+        "pass": true,
+        "liveSize": [
+          390,
+          16328
+        ],
+        "copySize": [
+          390,
+          16328
+        ],
+        "bandsCssPx": [
+          [
+            722,
+            833,
+            22539
+          ],
+          [
+            298,
+            497,
+            21356
+          ],
+          [
+            5284,
+            5412,
+            13042
+          ],
+          [
+            1642,
+            1891,
+            7216
+          ],
+          [
+            5423,
+            5474,
+            3447
+          ],
+          [
+            2793,
+            3042,
+            2234
+          ],
+          [
+            7974,
+            7999,
+            1134
+          ],
+          [
+            6900,
+            6928,
+            922
+          ]
+        ]
+      }
+    },
+    "layout": {
+      "scrollHeight": {
+        "live": 16328,
+        "copy": 16328,
+        "pass": true
+      },
+      "scrollWidth": {
+        "live": 390,
+        "copy": 390,
+        "pass": true
+      },
+      "links": {
+        "live": 1419,
+        "copy": 1419,
+        "pass": true
+      },
+      "visibleLinks": {
+        "live": 50,
+        "copy": 50,
+        "pass": true
+      },
+      "headings": {
+        "live": 12,
+        "copy": 12,
+        "pass": true
+      },
+      "headingOrder": {
+        "live": 12,
+        "copy": 12,
+        "pass": true
+      },
+      "tapTargets": {
+        "live": 108,
+        "copy": 106,
+        "pass": false
+      },
+      "tapUnder44": {
+        "live": 92,
+        "copy": 92,
+        "pass": true
+      },
+      "tapUnder24": {
+        "live": 69,
+        "copy": 69,
+        "pass": true
+      },
+      "bodyFontPx": {
+        "live": 16,
+        "copy": 16,
+        "pass": true
+      },
+      "paraFontPx": {
+        "live": 16,
+        "copy": 16,
+        "pass": true
+      },
+      "textUnder16Pct": {
+        "live": 38.2,
+        "copy": 38.3,
+        "pass": true
+      },
+      "fixedCoverTopPct": {
+        "live": 17.2,
+        "copy": 17.2,
+        "pass": true
+      },
+      "fixedCoverMidPct": {
+        "live": 17.2,
+        "copy": 17.2,
+        "pass": true
+      },
+      "visibleElements": {
+        "live": 793,
+        "copy": 799,
+        "pass": true
+      },
+      "imagesVisible": {
+        "live": 21,
+        "copy": 22,
+        "pass": false
+      },
+      "firstScreenText": {
+        "live": "1835:1335837616",
+        "copy": "1842:2730615730",
+        "pass": false
+      },
+      "loadedFontFamilies": {
+        "live": "AP, APvar",
+        "copy": "AP, APvar, Assistant",
+        "pass": false
+      }
+    },
+    "widths": [
+      {
+        "w": 390,
+        "live": {
+          "scrollWidth": 390,
+          "scrollHeight": 16580,
+          "overflowing": 0
+        },
+        "copy": {
+          "scrollWidth": 390,
+          "scrollHeight": 16328,
+          "overflowing": 0,
+          "sample": []
+        },
+        "pass": true
+      },
+      {
+        "w": 312,
+        "live": {
+          "scrollWidth": 312,
+          "scrollHeight": 17672,
+          "overflowing": 1
+        },
+        "copy": {
+          "scrollWidth": 312,
+          "scrollHeight": 17446,
+          "overflowing": 9,
+          "sample": [
+            "div.CarouselControls 370",
+            "div.CarouselControls-nav.CarouselControls-nav--next 358",
+            "button.flickity-button.flickity-prev-next-button 358",
+            "svg.CarouselControls-icon 357",
+            "div#placeHolder 370",
+            "div#google_ads_iframe_/15786418/APNews/site/apnews_nativo_backfill_0__container__ 324"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 260,
+        "live": {
+          "scrollWidth": 260,
+          "scrollHeight": 18653,
+          "overflowing": 7
+        },
+        "copy": {
+          "scrollWidth": 260,
+          "scrollHeight": 18888,
+          "overflowing": 15,
+          "sample": [
+            "div.CarouselControls 370",
+            "div.CarouselControls-nav.CarouselControls-nav--next 358",
+            "button.flickity-button.flickity-prev-next-button 358",
+            "svg.CarouselControls-icon 357",
+            "div.FreeStar.Advertisement 280",
+            "div#vjvvtvkr5gj.apnews_leaderboard 280"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 223,
+        "live": {
+          "scrollWidth": 223,
+          "scrollHeight": 19996,
+          "overflowing": 45
+        },
+        "copy": {
+          "scrollWidth": 223,
+          "scrollHeight": 20385,
+          "overflowing": 53,
+          "sample": [
+            "div.CarouselControls 370",
+            "div.CarouselControls-nav.CarouselControls-nav--next 358",
+            "button.flickity-button.flickity-prev-next-button 358",
+            "svg.CarouselControls-icon 357",
+            "div.StoryPage-actions-byline 236",
+            "div.Page-byline 236"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 195,
+        "live": {
+          "scrollWidth": 195,
+          "scrollHeight": 21440,
+          "overflowing": 96
+        },
+        "copy": {
+          "scrollWidth": 195,
+          "scrollHeight": 21870,
+          "overflowing": 104,
+          "sample": [
+            "div.Page-header-end 223",
+            "button.Page-header-menu-trigger.mobile-icon 223",
+            "svg.burger-menu 223",
+            "span.label 211",
+            "div.CarouselControls 370",
+            "div.CarouselControls-nav.CarouselControls-nav--next 358"
+          ]
+        },
+        "pass": true
+      }
+    ],
+    "behaviours": [
+      {
+        "name": "menu opens and closes",
+        "live": {
+          "openToggle": "hamburger-menu",
+          "openExpanded": "true,true",
+          "openLeft": 0,
+          "openShown": "visible",
+          "closedToggle": null,
+          "closedExpanded": "false,false",
+          "closedLeft": -390,
+          "closedShown": "hidden"
+        },
+        "copy": {
+          "openToggle": "hamburger-menu",
+          "openExpanded": "true,true",
+          "openLeft": 0,
+          "openShown": "visible",
+          "closedToggle": null,
+          "closedExpanded": "false,false",
+          "closedLeft": -390,
+          "closedShown": "hidden"
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "lead gallery next and back",
+        "live": {
+          "nextSelected": 1,
+          "nextSlide2Left": 20,
+          "backSelected": 0,
+          "backSlide1Left": 20
+        },
+        "copy": {
+          "nextSelected": 1,
+          "nextSlide2Left": 20,
+          "backSelected": 0,
+          "backSlide1Left": 20
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "caption Read More",
+        "live": {
+          "beforeStatus": "unexpanded",
+          "beforeH": 35,
+          "afterStatus": "isexpanded",
+          "afterExpanded": true,
+          "afterH": 102
+        },
+        "copy": {
+          "beforeStatus": "unexpanded",
+          "beforeH": 35,
+          "afterStatus": "isexpanded",
+          "afterExpanded": true,
+          "afterH": 102
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "Share sheet opens and closes",
+        "live": {
+          "openDisplay": "flex",
+          "openH": 844,
+          "openState": "expanded",
+          "closedDisplay": "none",
+          "closedState": "collapsed"
+        },
+        "copy": {
+          "openDisplay": "flex",
+          "openH": 844,
+          "openState": "expanded",
+          "closedDisplay": "none",
+          "closedState": "collapsed"
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "floating player: floats, docks at its slot, close docks it",
+        "live": {
+          "topPosition": "fixed",
+          "topLeft": 181,
+          "topBottomGap": 10,
+          "topW": 199,
+          "topH": 112,
+          "topClose": "block",
+          "topPlaying": true,
+          "slotPosition": "relative",
+          "slotW": 350,
+          "slotH": 197,
+          "slotClose": "none",
+          "awayPosition": "fixed",
+          "awayW": 199,
+          "closedPosition": "relative",
+          "closedW": 350,
+          "closedClose": "none",
+          "laterPosition": "relative"
+        },
+        "copy": {
+          "topPosition": "fixed",
+          "topLeft": 181,
+          "topBottomGap": 10,
+          "topW": 199,
+          "topH": 112,
+          "topClose": "block",
+          "topPlaying": true,
+          "slotPosition": "relative",
+          "slotW": 350,
+          "slotH": 197,
+          "slotClose": "none",
+          "awayPosition": "fixed",
+          "awayW": 199,
+          "closedPosition": "relative",
+          "closedW": 350,
+          "closedClose": "none",
+          "laterPosition": "relative"
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "accessibility button, sticky header, lead video box",
+        "live": {
+          "leadMuted": true,
+          "leadW": 350,
+          "leadH": 233,
+          "a11yW0": 48,
+          "a11yExpanded": true,
+          "a11yW": 186,
+          "a11yLeft": 12,
+          "a11yBottomGap": 12,
+          "headerTop": -1,
+          "headerH": 80
+        },
+        "copy": {
+          "leadMuted": true,
+          "leadW": 350,
+          "leadH": 233,
+          "a11yW0": 48,
+          "a11yExpanded": true,
+          "a11yW": 186,
+          "a11yLeft": 12,
+          "a11yBottomGap": 12,
+          "headerTop": -1,
+          "headerH": 80
+        },
+        "pass": true,
+        "diffs": []
+      }
+    ],
+    "roundTrip": {
+      "mismatches": 0,
+      "rootCauses": 0,
+      "parserAdded": 0
+    },
+    "pass": {
+      "hard": true,
+      "pixels": false,
+      "layout": false,
+      "widths": true,
+      "behaviours": true
+    },
+    "notes": [
+      "Pixel diffs include the two moving videos (lead video and floating player), whose frames differ by design; reference/validation-masked.json gives the same diffs with those two boxes masked."
+    ],
+    "masked": {
+      "by": "masked pixel diff (validate.mjs criterion: any channel > 24), lead video and floating player masked",
+      "masksCssPx": {
+        "lead": [
+          19,
+          277,
+          371,
+          513
+        ],
+        "float": [
+          173,
+          691,
+          388,
+          842
+        ]
+      },
+      "firstScreen": {
+        "pctOfAll": 0.32,
+        "pctOfUnmasked": 0.49,
+        "unmaskedPct": 64.9,
+        "rawPct": 13.57,
+        "bandsCssPx": [
+          [
+            729,
+            779,
+            9380
+          ]
+        ],
+        "target": 0.5,
+        "pass": true
+      },
+      "fullPage": {
+        "pctOfAll": 0.54,
+        "pctOfUnmasked": 0.55,
+        "unmaskedPct": 98.2,
+        "rawPct": 1.21,
+        "bandsCssPx": [
+          [
+            5284,
+            5412,
+            13042
+          ],
+          [
+            1642,
+            1891,
+            7216
+          ],
+          [
+            5423,
+            5474,
+            3447
+          ],
+          [
+            2793,
+            3042,
+            2234
+          ],
+          [
+            7974,
+            7999,
+            1134
+          ],
+          [
+            729,
+            778,
+            1082
+          ],
+          [
+            6900,
+            6928,
+            922
+          ],
+          [
+            5488,
+            5524,
+            887
+          ]
+        ],
+        "target": 2,
+        "pass": true
+      }
+    }
+  }
+}

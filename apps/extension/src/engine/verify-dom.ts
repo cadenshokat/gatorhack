@@ -409,6 +409,11 @@ export class Verifier {
     this.mo = null;
   }
 
+  /** The page itself changed `el` (or a box around it) during the last watched step. */
+  volatileHas(el: Element): boolean {
+    return this.volatile.size > 0 && this.isVolatile(el);
+  }
+
   private isVolatile(el: Element): boolean {
     for (const v of this.volatile) if (v === el || v.contains(el)) return true;
     return false;
