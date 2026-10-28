@@ -15,7 +15,7 @@ which one carries the confirmatory test.
 | Option | For | Against |
 |---|---|---|
 | **A. SUS alone** (perceived usability, paired difference); performance as key secondary | One validated score per person per condition; the most power for the participants we can get; 1.0.0 already planned it. | Leaves "task performance" without a confirmatory test. A 1–7 SUS can't be compared with published norms. |
-| **B. Two primaries, SUS and correct answers**, Holm-adjusted | Matches the two halves of the question. | Correct answers are coarse: 3 websites per condition gives each person 0–3. If the pilot finds nearly everyone succeeds, this outcome can't move. Splitting α needs more people. |
+| **B. Two primaries, SUS and destinations reached**, Holm-adjusted | Matches the two halves of the question. | Success is coarse: 3 websites per condition gives each person 0–3. If the pilot finds nearly everyone succeeds, this outcome can't move. Splitting α needs more people. Wrong links tapped per task is a finer performance measure to consider. |
 | **C. A performance primary** (correct answers, or time) | Behaviour, not opinion. | Same coarseness; time on bigger, longer pages can go either way (one adapted-page study found a scroll-heavy task 23.8 s slower when adapted, `docs/STUDY-MEASURES.md`). |
 
 **Suggestion:** decide after the pilot. If pilot success is well below 100% in both conditions, B. If nearly everyone
@@ -61,10 +61,10 @@ with Dr. Rani, since it decides whether people whose main trouble is physical ar
 
 ## 4. Comprehension
 
-The tasks ask people to find a fact and pick it from four choices. That shows they found the information. It does
-not show they understood it. Nothing in 2.0.0 claims understanding, and the simplified page does not rewrite
-sentences. One exception: on the Mars story, the AI lays one sentence out as a short fact ("Time on Phobos: 100
-days"), so the wording people read differs between the two versions.
+From protocol 2.1.0 the tasks ask people to reach a useful destination (a reporter's page, a park's alerts page, a
+list of opponents). That shows they could find their way and recognise the right link. It does not show they
+understood the page's content. Nothing claims understanding, and the simplified page does not rewrite sentences (on
+the Mars story the AI lays one sentence out as a short fact, which no task now depends on).
 
 | Option | What it means |
 |---|---|
@@ -121,11 +121,12 @@ Options:
 
 ## 8. Same information in both versions, with each person's own settings
 
-`scripts/e2e.mjs` checks on every website that the answer is in what the person sees. It has run with three demo
-settings, not with real people's settings:
-- **Mars story:** the answer appears as a short fact.
-- **Gators:** the score is behind "Show all … rows", one more tap than on the original.
-- **Park pages:** keep their own layout.
+`scripts/e2e.mjs` does every task through the real tap on every website, in whatever version is showing. It has run
+with demo settings, not with real people's settings. With them:
+- **News:** the reporter's byline is in the simplified page as on the original.
+- **Gators:** "Back To History" moves from the top of the original (under the cookie notice until it is closed) to
+  near the end of the simplified page.
+- **Park pages:** keep their own layout, so every way to the alerts page is there in both versions.
 
 Real settings could change whether a simplified page opens. **Suggestion:** during the pilot, rerun the check with
 each pilot's saved settings, and accept the route differences above as part of the adaptation. Routes may differ; the
@@ -149,3 +150,21 @@ each round. For this broader question, a matching "How much mental effort …?" 
 Two more screens per round. Neither item is validated alone, so they suit group comparisons only.
 **Suggestion:** leave out unless Dr. Rani wants a workload measure; SUS, SEQ and the comment already ask about
 experience.
+
+## 11. Choice and short-action tasks (not built)
+
+The measures research recommended three task types per condition: reach a destination, choose an option that meets
+simple requirements, and complete a short action (Patsoule & Koutsabasis 2014; Mirski et al.; Rapson et al. 2026).
+2.1.0 builds only the first, because the other two are not supported equally in both versions of these copies:
+- the copies are frozen and have no working listings or forms to choose from or fill in;
+- WebAble's simplified page drops the Gators results table's per-row link menus, so "open the recap of a home win"
+  would work on the original only;
+- the one natural choice on a park page (Everglades: open the wet-season or dry-season page for a July trip) has no
+  matching choice on the Biscayne page.
+
+**What it would take:** a working study page per family (for example a park activity list with times and prices and
+an "Add to my visit plan" button, or a short event sign-up that stops at a review screen), copied the same way, with a
+check that WebAble keeps every option and control usable. The task engine already scores any number of destinations,
+so a choice task needs only its pages and a list of which options meet the requirement.
+**Suggestion:** decide whether the thesis needs these before the pilot; they add pages to build and match, and a new
+pilot.

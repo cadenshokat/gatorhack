@@ -1,11 +1,34 @@
-# WebAble mobile study: protocol `mobile-replica-2.0.0`
+# WebAble mobile study: protocol `mobile-replica-2.1.0`
 
-*Revised 28 Oct 2026 from 1.0.0 (27 Oct 2026). The code is in `apps/study`; this file is the protocol, the measures
+*Revised 28 Oct 2026: 2.1.0 (outcome tasks, every scale point labelled) on 2.0.0, itself on 1.0.0 (27 Oct 2026). The code is in `apps/study`; this file is the protocol, the measures
 and the analysis plan. When the code and this file disagree, fix one of them before collecting data. Change the
 protocol version for any change to pages, tasks, wording, scoring or engine. Choices still open for Caden and
 Dr. Rani are in `docs/STUDY-DECISIONS.md`.*
 
-## 0. What changed in 2.0.0
+## 0. What changed
+
+### In 2.1.0
+
+- **The quiz is gone. Each website task is now reaching a useful destination on the website**, instead of finding a
+  fact and picking it from four choices. Example: "Before you visit, you want to check if any part of the park is
+  closed or has a warning. Open the page that would tell you." The person taps the link that would open it, by any
+  route; links never open, and a sheet asks "Is this what you were looking for?" (Yes, this is it / No, keep
+  looking). Yes ends the task. Success is the outcome: the confirmed link goes to one of the task's destinations
+  (§3, §6). "I cannot find it" is the way out, with its own "Do you want to stop looking?".
+  - Basis: original vs adapted (or redesigned) websites with older or motor-impaired adults judged by reaching the
+    right destination, with completion, time, errors and experience measured (Valencia et al. 2017; Patsoule &
+    Koutsabasis 2014). Success defined by the outcome, any route allowed; adaptation may come out worse.
+  - Not built: **choose an option that meets requirements** and **complete a short action** (form-like tasks). The
+    frozen copies have no working listings or forms, WebAble's simplified page drops the Gators table's per-row link
+    menus, and the one natural choice on a park page (Everglades: wet or dry season page) has no match on Biscayne.
+    They need working study pages that WebAble keeps usable, checked in both versions (`docs/STUDY-DECISIONS.md` §11).
+- **Every answer on every 1 to 7 scale carries words**, not only 1 and 7: the 10 statements (Strongly disagree,
+  Disagree, Somewhat disagree, Neither agree nor disagree, Somewhat agree, Agree, Strongly agree; instrument 1.2.0),
+  the ease question (Very easy, Easy, Somewhat easy, Neither easy nor hard, Somewhat hard, Hard, Very hard) and the
+  realism question (Not at all like them … Exactly like them). The owner's direction, 28 Oct 2026.
+- The ease question after a website reads "How easy or hard was this task?".
+
+### In 2.0.0
 
 - **Question and people.** Older adults (50 or over) who say websites often give them trouble: getting around a
   website, finding the information they need, or understanding what it says. Fine-motor disability is no longer the
@@ -109,21 +132,27 @@ does; it goes through the same checks as every other change and is stored per tr
   made it, before round 1. Not scored. Whether it should also show the adapted version is open (decisions §6).
 - **Blinding:** none is possible. The rounds are called Round 1 and Round 2; which one used WebAble is told at the end.
 
-### Same goal, same information, different routes
+### The tasks: same goal, same destination, any route
 
-Each task has the same goal and the same answer in both conditions; the route to it may differ because the adapted
-page is laid out differently. `scripts/e2e.mjs` checks on every website that the answer is in the layer the person
-sees (the page, or the simplified page), tapping "Show all … rows" when that is the route.
+Each family's two pages (set A and B) share one task, so the pair differs only in the page. The task names the need,
+never the link's words or where it is. A destination counts by where the confirmed link goes (`targets` in
+`replicas/<id>/task.json`), so every route to it counts: the page's own link, a menu, or WebAble's simplified page,
+which passes the tap to the page's own link. Every target below was checked present in both versions on both pages
+of its pair (28 Oct 2026, demo settings `rosa`).
 
-| Page | Original | Adapted (demo settings `rosa`, 28 Oct 2026) |
-|---|---|---|
-| AP van Gogh | The sentence in the article | Simplified page; the same sentence |
-| AP Mars | The sentence in the article | Simplified page; the answer as a short fact ("Time on Phobos: 100 days"), matched by `answerTextSimplified` |
-| Gators Kentucky / LSU | A row of the full results table | Simplified page; the first 10 rows, then **Show all 76 / 72 rows** (one more tap) |
-| NPS Everglades / Biscayne | Inside a collapsed section | The same page with the person's settings and fading; no simplified page |
+| Family | Task (as the person reads it) | Destination | Ways there, original | Ways there, adapted |
+|---|---|---|---|---|
+| news (AP van Gogh / Mars) | You liked this story and want to read more by the reporter who wrote it. Open the page that lists their stories. | `/author/marcia-dunn` | The byline "By MARCIA DUNN" under the headline | Simplified page: the same byline |
+| sports (Gators Kentucky / LSU) | You want to see how Florida has done against other teams too. Open the page that lists every team Florida has played. | `/sports/football/opponent-history` | "Back To History" at the top (under the cookie notice until it is closed) | Simplified page: "Back To History", near the end |
+| gov (NPS Everglades / Biscayne) | Before you visit, you want to check if any part of the park is closed or has a warning. Open the page that would tell you. | `/ever/…` or `/bisc/planyourvisit/conditions.htm` | "Alerts 3/5" in the park's bar, "See 3/5 park alerts", the park menu | The same page with the person's settings (no simplified page) |
+| practice (NWS) | You want to see the weather in Gainesville hour by hour. Open the page that shows it. | Hourly or tabular forecast | "Hourly Weather Forecast", "Tabular Forecast" | Original only |
 
-With real warm-up settings this may differ (for example a simplified page may or may not open); the pilot repeats
-the check with participants' own settings (`docs/STUDY-DECISIONS.md` §8).
+Known differences to watch in the pilot: on the sports pages the destination moves from the top (original) to near
+the end (simplified page), and on the original the cookie notice covers it until closed. These are what the study
+measures, in either direction. With real warm-up settings a simplified page may or may not open; the pilot repeats the
+check with participants' own settings (`docs/STUDY-DECISIONS.md` §8). `scripts/e2e.mjs` does every task the way a
+person would: a wrong link taken back with "No, keep looking", the cookie notice closed when it covers the link, then
+the destination's own link on whatever version is showing.
 
 ## 4. Participants
 
@@ -159,11 +188,13 @@ thing, and how they will hold the phone. These describe the sample; they are not
    rest of the study. The onboarding's Finding step needs the extension and is skipped, so the settings it would feed
    (motion, clutter) take their defaults. "Skip the warm-up" gives the default settings.
 7. Practice website.
-8. Round 1: three websites. Each one: a card with the task as a "Find out …" sentence and three numbered steps (the
-   card stays at least 2.5 s in every condition while the page loads and WebAble prepares behind it) → Open the
-   website → find the fact, with the task kept in view above Pause and Answer → the answer sheet (four choices, "or",
-   "I could not find it", Continue) → the ease question. Then the 10 statements, then "What was it like to use these
-   3 websites? (optional)".
+8. Round 1: three websites. Each one: a page with the task and three numbered steps ("Use the website the way you
+   usually would." "When you find what you need, tap it." "If you cannot find it, tap I cannot find it.") and
+   "Links do not open other pages in this study. When you tap one, we ask if it is what you were looking for." (it
+   stays at least 2.5 s in every condition while the page loads and WebAble prepares behind it) → Open the website →
+   use it, with the task kept in view above Pause and "I cannot find it" → each tapped link: "Is this what you were
+   looking for?" with the link's own words (Yes, this is it / No, keep looking) → the ease question. Then the 10
+   statements, then "What was it like to use these 3 websites? (optional)".
 9. Break.
 10. Round 2, the same way.
 11. Last questions (5), then the thank-you page: the code, which round used WebAble and what it did for this person,
@@ -171,10 +202,11 @@ thing, and how they will hold the phone. These describe the sample; they are not
     Its decisions were the same for everyone. On your websites, it: …" (only changes the delivery records show and
     the person could see; changes under an open simplified page are left out).
 
-**Wording** follows `docs/STUDY-WRITING.md` (one question per page, everyday words, "cannot" in full, every rating
-page says what 1 and 7 mean, a help line on every page, nothing saved until Continue). A thin progress line runs
-across the top of the screen with no words. Instructions give the goal, never the route. There is no timer on
-screen. Pause stops the clock. Links on the copies are turned off in both conditions with the same note.
+**Wording** follows `docs/STUDY-WRITING.md` (one question per page, everyday words, "cannot" in full, words on every
+answer of every rating, a help line on every page, nothing saved until Continue). A thin progress line runs across
+the top of the screen with no words. Instructions give the goal, never the route. There is no timer on screen. Pause
+stops the clock, and so does any sheet. Links never open, in both conditions; on a task, a tapped link brings up
+"Is this what you were looking for?".
 
 ## 6. Measures
 
@@ -186,10 +218,11 @@ All taps, scrolls and visibility are measured by the frame runtime (`apps/study/
 
 | Measure | Definition |
 |---|---|
-| Correct answer | The chosen answer is correct. The multiple-choice answer checks the information found; it is not the only evidence of performance. |
-| How it ended (`outcome`) | correct; correct but the answer never on screen; wrong after the answer was on screen; wrong without it; gave up after it was on screen; gave up without it; skipped; technical. "On screen" means the answer's sentence was in view at some point (original page by selector; simplified page by its words, `answerTextSimplified` where the AI laid it out differently). It is not proof the person read it. |
-| Active time | Visible, unpaused time from Open the website to Answer; answer-sheet time not counted. Missing if hidden ≥ 5 min; flagged if hidden ≥ 60 s. Analysed as ln(s). |
-| Time to reach the answer | Active time until the answer was first on screen (`answerSeenMs`). |
+| Destination reached (`correct`) | The link they confirmed with "Yes, this is it" goes to one of the task's destinations. |
+| How it ended (`outcome`) | reached the destination; confirmed another page (`wrong_destination`); gave up after a way to the destination had been on screen; gave up without one ever on screen; skipped; technical. "On screen" means a link to the destination was in view at some point (original page: every link matching `answerSelector`; simplified page: the link's words). It is not proof the person noticed it. |
+| Links tapped (`picks`) | Every link tapped during the task, in order, with the active time, where it goes, its words, whether it reaches the destination, and whether it was confirmed or taken back. From these: wrong links tapped, links taken back with "No, keep looking", whether the first link tapped was right, and the time to the first right one. A tap on the wrong link counts the same whether or not it was confirmed. |
+| Active time | Visible, unpaused time from Open the website to "Yes, this is it" (or "Yes, stop looking"); time with a sheet open is not counted. Missing if hidden ≥ 5 min; flagged if hidden ≥ 60 s. Analysed as ln(s). |
+| Time to a way there | Active time until a link to the destination was first on screen (`answerSeenMs`). |
 | Interaction difficulties | Taps; misses (a tap on nothing interactive) and near misses (within 24 px); taps on links (navigation is off, the same in both conditions); a second tap within 500 ms on something that already responded; bursts of 3+ quick taps in one place (`rageEpisodes` in the data); taps the engine ignored (adapted only); sections opened; scroll travel and direction changes; pinch zoom (zoomed at least 1.10 times relative to the page at rest, the most zoomed, time zoomed). |
 
 These describe what happened on these pages. **Slow work, repeated taps or misses are never labelled as a
@@ -199,15 +232,15 @@ cognitive, visual or motor impairment**, in the data, the analysis or any report
 
 | Measure | Definition |
 |---|---|
-| SUS | Ten Brooke (1996) statements after each round, original order, meaning and tone, one per screen, answered 1–7 (Finstad 2010), with two published wording changes (instrument 1.1.0): "these websites" for "this system" and "awkward" for "cumbersome". Odd items r − 1, even items 7 − r; sum × 100/60 → 0–100. No score unless all ten are answered; never imputed. Flagged if all ten identical or two or more opposite pairs both ≥ 6. A 1–7 SUS cannot be compared with published 1–5 norms. |
-| SEQ | After every website: 1 = Very easy … 7 = Very hard (Caden's decision, 27 Oct 2026), stored with `seqScale: "easy-1"`; the export turns it back (8 − answer) so higher = easier. |
+| SUS | Ten Brooke (1996) statements after each round, original order, meaning and tone, one per screen, answered 1–7 (Finstad 2010), with two published wording changes: "these websites" for "this system" and "awkward" for "cumbersome". From instrument 1.2.0 (protocol 2.1.0) every answer has words: Strongly disagree, Disagree, Somewhat disagree, Neither agree nor disagree, Somewhat agree, Agree, Strongly agree. Odd items r − 1, even items 7 − r; sum × 100/60 → 0–100. No score unless all ten are answered; never imputed. Flagged if all ten identical or two or more opposite pairs both ≥ 6. A 1–7 SUS cannot be compared with published 1–5 norms. |
+| SEQ | After every website, "How easy or hard was this task?": 1 Very easy, 2 Easy, 3 Somewhat easy, 4 Neither easy nor hard, 5 Somewhat hard, 6 Hard, 7 Very hard (direction: Caden's decision, 27 Oct 2026; words on every answer from 2.1.0), stored with `seqScale: "easy-1"`; the export turns it back (8 − answer) so higher = easier. |
 
 **Participant feedback**
 
 | Measure | Definition |
 |---|---|
 | Round comment | "What was it like to use these 3 websites? (optional)" after each round's statements, so comments can be told apart by condition (`comments`). Replaces the single end-of-study "anything that was hard" question of 1.0.0. |
-| Last questions | Preferred round; "Did the 2 rounds feel different?" and, after yes, what was different (asked after both SUS, as a check that the difference was noticed); what else affected them; how real the copies felt (1–7, or "I have not used the real websites before"); "Should we use your answers?" |
+| Last questions | Preferred round; "Did the 2 rounds feel different?" and, after yes, what was different (asked after both SUS, as a check that the difference was noticed); what else affected them; how real the copies felt (1 Not at all like them, 2 Very little like them, 3 A little like them, 4 Somewhat like them, 5 Mostly like them, 6 Very much like them, 7 Exactly like them, or "I have not used the real websites before"); "Should we use your answers?" |
 
 **Delivery (manipulation check), each adapted page:** each change with its status and source (person's settings, AI
 page decision, safety check), body text size before and after, text factor, simplified page open, how its parts were
@@ -229,8 +262,8 @@ dark mode, input types seen; noted again at each round to catch a change of phon
 - **Models, whichever is primary:**
   - SUS: paired difference (mean, 95% CI, dz), Wilcoxon signed-rank and a BCa bootstrap as sensitivity;
     `lmer(sus ~ condition + period + set + (1|pid))`; round-1-only between-subjects contrast as a sensitivity check.
-  - Correct answer: `glmer(correct ~ condition + period + family + (1|pid), binomial)`; outcome levels reported as
-    counts by condition.
+  - Destination reached: `glmer(correct ~ condition + period + family + (1|pid), binomial)`; outcome levels and wrong
+    links tapped (Poisson GLMM) reported by condition.
   - Time: `lmer(log(active_s) ~ condition + period + set + family + (1 + condition | pid))`. Whether this uses
     correct answers only or all ended tasks is open (`docs/STUDY-DECISIONS.md` §7).
   - SEQ: `clmm`. Misses per tap and pinch zoom: binomial GLMMs.
@@ -290,4 +323,5 @@ dark mode, input types seen; noted again at each round to catch a change of phon
 Brooke 1996 (SUS); Finstad 2010 (7-point SUS); Lewis & Sauro 2017 (dropping an item); Sauro & Lewis 2011 (respondent
 mistakes); Sauro & Dumas 2009 (SEQ); Callan & Kortum 2014 (task vs test SUS); Revilla, Toninelli & Ochoa 2017 (item by
 item on phones); Meade & Craig 2012 and Aust et al. 2013 (seriousness checks); Freeman 1989 (no carry-over pretest);
-Barr et al. 2013 (random effects). Touch and motor literature: `docs/STUDY-MEASURES.md`.
+Barr et al. 2013 (random effects); Valencia et al. 2017 and Patsoule & Koutsabasis 2014 (outcome tasks on original vs
+adapted or redesigned websites). Touch and motor literature: `docs/STUDY-MEASURES.md`.

@@ -70,11 +70,16 @@ export interface TaskSpec {
   set: SetId | 'practice';
   /** Absent means 'find' (task files from before protocol 2.1.0). */
   kind?: 'find' | 'go';
-  /** The task, as said before and during the website: 'Open the page that lists stories by the reporter who wrote this'. */
+  /** The task as the bar under the website keeps it in view: 'Find the link that opens …, and tap it'. */
   prompt: string;
   /** The same task as a question, heading the answer sheet: 'What year did Kim go to France to look at the night sky?' */
   question?: string;
-  /** At most one sentence the card shows before the steps ("This weather forecast was saved on …"). */
+  /** The instruction page's heading: the goal in a few plain words ("Find more stories by the same reporter"). */
+  title?: string;
+  /**
+   * What the person needs to know before opening the website, one short sentence per line: which website it is, the
+   * situation to imagine, and "Your task: …".
+   */
   context?: string;
   /** A 2 to 5 word reminder of the task (exports and logs). */
   short: string;

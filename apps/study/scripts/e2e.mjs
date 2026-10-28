@@ -173,15 +173,21 @@ async function runTask(page, name, shots) {
     await sleep(500);
     if (await page.getByRole('button', { name: 'No, keep looking', exact: true }).count()) await tapText(page, 'No, keep looking');
   }
-  // Then the destination, by its own link on whatever version is showing.
-  const right = await linkSpot(page, true);
-  if (!right) failures.push(`${name}: no way to the destination on screen`);
+  // Then the destination, by its own link on whatever version is showing; a box over it (a cookie notice) is closed
+  // first, as a person would.
+  let right = await linkSpot(page, true);
+  for (let i = 0; right?.close && i < 2; i++) {
+    await page.touchscreen.tap(right.close.x, right.close.y);
+    await sleep(600);
+    right = await linkSpot(page, true);
+  }
+  if (!right || right.covered) failures.push(`${name}: no way to the destination on screen (${JSON.stringify(right)})`);
   else await page.touchscreen.tap(right.x, right.y);
   await page.getByRole('heading', { name: 'Is this what you were looking for?' }).waitFor({ timeout: 10000 });
   await page.screenshot({ path: join(shots, `${name}-confirm.png`) });
   await tapText(page, 'Yes, this is it');
   await page.getByRole('heading', { name: 'How easy or hard was this task?' }).waitFor({ timeout: 10000 });
-  await choose(page, /^3 Somewhat easy/);
+  await choose(page, 'Somewhat easy');
 }
 
 /**
@@ -219,9 +225,28 @@ async function linkSpot(page, target) {
     el.scrollIntoView({ block: 'center' });
     await new Promise((r) => setTimeout(r, 400));
     const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    const x = r.left + r.width / 2;
+    const y = r.top + r.height / 2;
+    // Something over it? Then where its close button is.
+    const root = open && calm ? calm : document;
+    const hit = root.elementFromPoint(x, y);
+    if (!hit || hit === el || el.contains(hit)) return { x, y };
+    const isClose = (b) =>
+      shown(b) && (/close|dismiss/i.test(b.getAttribute('aria-label') ?? '') || /^(×|✕|x|close)$/i.test((b.textContent ?? '').trim()));
+    for (let a = hit; a && a !== document.body; a = a.parentElement) {
+      // The notice may draw itself inside its own shadow root (the Gators consent manager does).
+      const inside = [a, ...(a.shadowRoot ? [a.shadowRoot] : [])].flatMap((r) => [...r.querySelectorAll('button, [role=button]')]);
+      const b = inside.find(isClose);
+      if (b) {
+        const c = b.getBoundingClientRect();
+        return { x, y, covered: true, close: { x: c.left + c.width / 2, y: c.top + c.height / 2 } };
+      }
+    }
+    return { x, y, covered: true };
   }, target);
-  return at ? { x: box.x + at.x, y: box.y + at.y } : null;
+  if (!at) return null;
+  const shift = (p) => ({ x: box.x + p.x, y: box.y + p.y });
+  return { ...at, ...shift(at), ...(at.close ? { close: shift(at.close) } : {}) };
 }
 
 for (const which of browsers) {
@@ -259,7 +284,7 @@ for (const which of browsers) {
         await runTask(page, `r${r}-${i}`, shots);
       }
       await tapText(page, 'Continue');
-      for (let k = 0; k < 10; k++) await choose(page, k % 2 === 0 ? /^6 Agree/ : /^2 Disagree/);
+      for (let k = 0; k < 10; k++) await choose(page, k % 2 === 0 ? 'Agree' : 'Disagree');
       // What it was like (optional): a few words in round 1, nothing in round 2.
       await page.getByRole('heading', { name: /^What was it like to use these/ }).waitFor({ timeout: 10000 });
       if (r === 1) await page.locator('textarea').fill('The text was small.');
@@ -275,7 +300,7 @@ for (const which of browsers) {
     await tapText(page, 'Continue'); // what was different (optional)
     await tick(page, 'None of these');
     await tapText(page, 'Continue');
-    await choose(page, /^5 Mostly like them/);
+    await choose(page, 'Mostly like them');
     await choose(page, 'Yes, I took part carefully', { cont: 'Send my answers' });
     await page.getByText('You have finished the study').waitFor({ timeout: 10000 });
     await page.screenshot({ path: join(shots, 'done.png'), fullPage: true });

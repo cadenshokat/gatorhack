@@ -288,20 +288,19 @@ export const LIKE_7: Scale7Words = [
   'Exactly like them',
 ];
 
-/** One of a scale's answers: its number, then its words. */
+/** One of a scale's answers: its words only (no number shown; the value stored is still 1 to 7). */
 export function scaleOption(n: Likert7, words: Scale7Words): ChoiceOption<Likert7> {
   return {
     value: n,
     label: (
       <>
-        <span class="st-num">{n}</span>{' '}
         <span class="st-num-label">{words[n - 1]}</span>
       </>
     ),
   };
 }
 
-/** Seven numbered buttons, 1 at the top, each with its words (SUS, SEQ). */
+/** Seven answers, the 1 end at the top, each shown by its words (SUS, SEQ). */
 export function Scale7(props: {
   words: Scale7Words;
   value: Likert7 | null;

@@ -16,6 +16,8 @@ In this guide, "(current)" marks wording taken from the live study code on 27 Oc
 
 - The ease rating goes from 1 (very easy) to 7 (very hard).
 - Progress is shown as one thin line across the top of the screen, above the header, with no words (changed 28 Oct 2026; it was a segmented bar under the header).
+- Every answer on a 1 to 7 scale carries words, not only 1 and 7 (28 Oct 2026). Agreement: Strongly disagree, Disagree, Somewhat disagree, Neither agree nor disagree, Somewhat agree, Agree, Strongly agree. Ease: Very easy, Easy, Somewhat easy, Neither easy nor hard, Somewhat hard, Hard, Very hard. The rating page then needs no "1 means … 7 means …" line.
+- Website tasks name a need and a destination ("Open the page that would tell you"), never a fact to report and never the link's words or where it is (protocol 2.1.0).
 - Wikipedia is not used. Do not mention it anywhere.
 - Describe only what WebAble does in the study: settings from the person's warm-up, and AI decisions made once per website before the study (the same for everyone). Never say or imply that it learns about the person, tests or diagnoses anything (memory, thinking, eyesight, hands), or that the study tries everything the full product does (28 Oct 2026).
 - None of the text may sound machine-written.
@@ -49,7 +51,7 @@ The rules are ranked by how much they matter for older, less confident people us
 
 ### 2. Put one idea in each sentence. Keep most sentences under 12 words and none over 20.
 - **Why.** Readers take in over 90% of the information when sentences average 14 words, and under 10% at 43 words. GOV.UK splits any sentence over 25 words, and NN/g sets 15 to 20 words as the limit for general readers. Lower-literacy readers read word by word. The tighter limit here is our own choice for this audience.
-- **Good.** "On each website, look for one fact. Then answer 2 short questions."
+- **Good.** "On each website, there is one task to do. Then answer 2 short questions."
 - **Bad (current).** "What we record" is a single 45-word sentence joined by 5 semicolons: "Where and when you tap, scroll and zoom on the study pages; how long each website takes…"
 - **Sources.** https://insidegovuk.blog.gov.uk/2014/08/04/sentence-length-why-25-words-is-our-limit/ ; https://guidance.publishing.service.gov.uk/writing-to-gov-uk-standards/writing-guidelines/clear-language/ ; https://www.nngroup.com/articles/writing-for-lower-literacy-users/ ; https://www.w3.org/WAI/WCAG2/supplemental/patterns/o3p05-succinct-text/
 
@@ -289,7 +291,7 @@ Use these exact names in the bar, on the welcome page and in the text. The code 
 | 1 | Getting started | welcome, agreement, 4 questions about you, get ready | "Answer 4 questions about you." |
 | 2 | Warm-up | reading activities, tapping dots | "Read some text and tap some dots." |
 | 3 | Practice | one practice website | "Try one website for practice." |
-| 4 | Round 1 | 3 websites and 10 statements | "Find one fact on each of 3 websites. Then answer 10 short statements." |
+| 4 | Round 1 | 3 websites and 10 statements | "Do one task on each of 3 websites, such as finding a page. Then answer 10 short statements." |
 | 5 | Round 2 | break, 3 websites and 10 statements | "The same again with 3 different websites." |
 | 6 | Last questions | final questions | "Answer a few last questions." |
 | (all filled) | Finished | thank-you page | |
@@ -368,7 +370,7 @@ What you will do
 1. Answer 5 questions about you.
 2. Warm-up. Read some text and tap some dots.
 3. Try one website for practice.
-4. Round 1. Find one fact on each of 3 websites.
+4. Round 1. Do one task on each of 3 websites, such as finding a page.
 5. Round 2. The same again with 3 different websites.
 6. Answer a few last questions.
 
@@ -397,7 +399,7 @@ Who is doing this study
 [Team] at [university] is doing this study. [Ethics approval reference.]
 
 What you will do
-You look for one fact on 7 websites. Then you answer some questions. It takes about [25] minutes.
+You do one task on each of 7 websites, such as finding a page. Then you answer some questions. It takes about [25] minutes.
 In one round, the websites are shown through WebAble, a program we are testing. In the other round, they look as they normally do. We will tell you which was which at the end.
 
 The websites are copies
@@ -591,7 +593,7 @@ Part 4 of 6: Round 1
 
 Round 1
 
-You will see 3 websites. On each one, look for one fact.
+You will see 3 websites. On each one, there is one task to do.
 After each website, tell us how easy or hard it was.
 
 [Start round 1]
@@ -599,7 +601,7 @@ After each website, tell us how easy or hard it was.
 
 ### 3.7 Website task
 
-**Task page (before the website opens).** Structure: caption → the task as the heading (a "Find out…" sentence) → at most one sentence of context → numbered steps → a note about links → **Open the website** → "Skip this website".
+**Task page (before the website opens).** Structure: caption → the task as the heading (a need, then "Open the page that…"; before 2.1.0 a "Find out…" sentence) → at most one sentence of context → numbered steps → a note that tapping a link asks whether it is what you were looking for → **Open the website** → "Skip this website".
 
 ```
 Part 4 of 6: Round 1
@@ -640,6 +642,8 @@ How the current task sentences should change:
 | What was the score when Florida played Kentucky in 1990? | Fine as a question | Find out the score when Florida played Kentucky in 1990 |
 
 ### 3.8 Answer sheet
+
+*Protocol 2.1.0 replaced the answer sheet: a tapped link brings up "Is this what you were looking for?" with the link's own words, then **Yes, this is it** or **No, keep looking**; the bar's way out is **I cannot find it**, which asks "Do you want to stop looking?". The patterns below are kept for the record.*
 
 Structure: the task as a question heading, using the same words as the task sentence → the 4 answers stacked full width, nothing chosen in advance, lowest to highest → "or" → "I could not find it" at the same size → **Continue** → "Go back to the website".
 

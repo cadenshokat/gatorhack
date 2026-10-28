@@ -782,3 +782,13 @@ html:has(.st-task) {
   font: 400 18px/26px var(--font);
   color: var(--c-ink-2);
 }
+
+/* The instruction page: "Your task: …" stands out, then the steps under their own small heading. */
+.st-card-text .st-card-goal {
+  font-weight: 600;
+}
+.st-card-how {
+  margin: 22px 0 0;
+  font: 600 18px/24px var(--font);
+  color: var(--c-ink);
+}

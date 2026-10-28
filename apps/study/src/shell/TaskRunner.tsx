@@ -518,27 +518,34 @@ export function TaskRunner(props: Props): JSX.Element {
             <div class="fl-modal st-card" role="dialog" aria-modal="true" aria-labelledby="st-card-title">
               <p class="fl-eyebrow">{props.eyebrow}</p>
               <h2 id="st-card-title" class="fl-modal-title" tabIndex={-1}>
-                {task.prompt}
+                {task.title ?? task.prompt}
               </h2>
               <div class="fl-modal-text st-card-text">
                 {props.restarted ? (
                   <p>The study closed while you were on this website. It starts again from the beginning.</p>
                 ) : null}
                 {condition === 'practice' ? <p>This website is for practice.</p> : null}
-                {task.context ? <p>{task.context}</p> : null}
+                {task.context
+                  ? task.context.split('\n').map((line) => (
+                      <p key={line} class={line.startsWith('Your task:') ? 'st-card-goal' : undefined}>
+                        {line}
+                      </p>
+                    ))
+                  : null}
                 {go ? (
                   <>
+                    <h3 class="st-card-how">How to do it</h3>
                     <ol class="st-steps st-card-steps">
-                      <li>Use the website the way you usually would.</li>
-                      <li>When you find what you need, tap it.</li>
                       <li>
-                        If you cannot find it, tap <strong>I cannot find it</strong>.
+                        Tap <strong>Open the website</strong>.
+                      </li>
+                      <li>Look around the website the way you normally would. You can scroll and tap things.</li>
+                      <li>When you find the right link, tap it. We will ask you to check it is the right one.</li>
+                      <li>
+                        If you cannot find it, tap <strong>I cannot find it</strong> at the bottom of the screen.
                       </li>
                     </ol>
-                    <p>
-                      Links do not open other pages in this study. When you tap one, we ask if it is what you were
-                      looking for.
-                    </p>
+                    <p>In this study, links do not take you to a new page. That is normal.</p>
                   </>
                 ) : (
                   <>

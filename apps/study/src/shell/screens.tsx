@@ -72,7 +72,10 @@ export function WelcomeScreen(props: { onStart: () => void; preview: boolean }):
           <li>Answer 5 questions about you.</li>
           <li>Warm-up. Read some text and tap some dots.</li>
           <li>Try one website for practice.</li>
-          <li>Round 1. Find one fact on each of 3 websites. Then choose how much you agree with 10 statements.</li>
+          <li>
+            Round 1. Do one task on each of 3 websites, such as finding a page. Then choose how much you agree with 10
+            statements.
+          </li>
           <li>Round 2. The same again on 3 different websites.</li>
           <li>Answer 5 last questions.</li>
         </ol>
@@ -214,7 +217,7 @@ export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void;
         <p>You will:</p>
         <ul class="st-list">
           <li>do a warm-up, where you read some text and tap some dots</li>
-          <li>look for one fact on each of 7 websites, including one for practice</li>
+          <li>do one task on each of 7 websites, including one for practice, such as finding a page</li>
           <li>answer questions about you and about the websites</li>
         </ul>
         <p>It takes about 20 to 25 minutes.</p>
@@ -464,7 +467,8 @@ export function RoundIntro(props: {
     >
       <Title eyebrow={props.afterPractice ? 'The practice is finished.' : undefined}>Round {props.round}</Title>
       <div class="st-prose">
-        <p>You will see {props.count} websites. On each one, look for one fact.</p>
+        <p>You will see {props.count} websites, one at a time.</p>
+        <p>Before each website, we tell you what to find on it. You find it on the website and tap it.</p>
         <p>After each website, tell us how easy or hard it was.</p>
         <p>Then you choose how much you agree with 10 statements about the {props.count} websites.</p>
       </div>
@@ -525,8 +529,8 @@ export function SusScreens(props: {
           ) : null}
           <p>Think only about these websites, not the warm-up or this page.</p>
           <p>For each statement, choose how much you agree.</p>
-          <p>Each answer, from 1 to 7, says how much you agree.</p>
-          <p>If you are not sure, choose 4, Neither agree nor disagree.</p>
+          <p>Choose the answer that fits best.</p>
+          <p>If you are not sure, choose Neither agree nor disagree.</p>
         </div>
       </Screen>
     );
