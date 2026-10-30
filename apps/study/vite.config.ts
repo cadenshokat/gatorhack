@@ -15,6 +15,56 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, '../..');
 const replicasDir = join(here, 'replicas');
 
+// GitHub Pages serves this repo's site under /gatorhack/ and can't send headers. STUDY_PAGES_BASE=/gatorhack/ builds
+// for that: everything lives under the base, the replicas' own /_r/ and /_study/ addresses point into it, and
+// vercel.json's headers become meta tags where HTML has one (content policy, referrer, robots). The original sites'
+// paths in links stay as they are: task targets are matched on them, and links never navigate.
+const pagesBase = ((b) => (b ? `/${b}/` : null))(process.env.STUDY_PAGES_BASE?.trim().replace(/^\/+|\/+$/g, ''));
+
+const LOCAL_REF = /(?<![\w.:/-])\/_(r|study)\//g;
+const TEXT_EXT = new Set(['.html', '.htm', '.css', '.js', '.mjs', '.json', '.svg']);
+
+/** vercel.json's headers for every path, as meta tags. frame-ancestors only works as a header, so it's left out. */
+function headerMetas(): string[] {
+  const v = JSON.parse(readFileSync(join(here, 'vercel.json'), 'utf8')) as {
+    headers: { source: string; headers: { key: string; value: string }[] }[];
+  };
+  const h = new Map(v.headers.find((x) => x.source === '/(.*)')?.headers.map((x) => [x.key.toLowerCase(), x.value]));
+  const attr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  const csp = h
+    .get('content-security-policy')
+    ?.split(';')
+    .map((d) => d.trim())
+    .filter((d) => d && !d.startsWith('frame-ancestors'))
+    .join('; ');
+  const out: string[] = [];
+  if (csp) out.push(`<meta http-equiv="Content-Security-Policy" content="${attr(csp)}">`);
+  if (h.has('referrer-policy')) out.push(`<meta name="referrer" content="${attr(h.get('referrer-policy')!)}">`);
+  if (h.has('x-robots-tag')) out.push(`<meta name="robots" content="${attr(h.get('x-robots-tag')!)}">`);
+  return out;
+}
+
+/** Rewrites the built site for Pages, in place. Files are read as latin1 so bytes outside the edits stay exact. */
+function pagesify(dir: string, base: string, metas: string[]): void {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) {
+      pagesify(p, base, metas);
+      continue;
+    }
+    const ext = extname(e.name).toLowerCase();
+    if (!TEXT_EXT.has(ext)) continue;
+    const before = readFileSync(p, 'latin1');
+    let after = before.replace(LOCAL_REF, `${base}_$1/`);
+    if (ext === '.html' || ext === '.htm') {
+      // Compared without the closing '>', so the shell's own `<meta … />` counts as present.
+      const missing = metas.filter((m) => !after.includes(m.slice(0, -1))).join('');
+      if (missing) after = after.replace(/<head\b[^>]*>/i, (m) => m + missing);
+    }
+    if (after !== before) writeFileSync(p, after, 'latin1');
+  }
+}
+
 /** The engine code every session runs is pinned to this commit, stored with each session and delivery record. */
 function engineCommit(): string {
   try {
@@ -155,11 +205,13 @@ function studyReplicas(): Plugin {
       }
       const shared = join(replicasDir, '_shared');
       if (existsSync(shared)) cpSync(shared, join(outDir, '_r', '_shared'), { recursive: true });
+      if (pagesBase) pagesify(outDir, pagesBase, headerMetas());
     },
   };
 }
 
 export default defineConfig({
+  base: pagesBase ?? '/',
   plugins: [preact(), studyReplicas()],
   resolve: { dedupe: ['preact'] },
   define: { 'import.meta.env.VITE_ENGINE_COMMIT': JSON.stringify(engineCommit()) },

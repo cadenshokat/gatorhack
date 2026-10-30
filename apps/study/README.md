@@ -49,6 +49,10 @@ simplified page can be measured.
    engine commit is stamped from git: `vite build --mode e2e --outDir <dir>`, copy `cleanUrls`, `trailingSlash` and
    `headers` from `vercel.json` into `<dir>/vercel.json`, then `vercel deploy --prod --yes` from a folder named
    `webable-gatorhack-study`.
+   **Or GitHub Pages** (https://cadenshokat.github.io/gatorhack/): `.github/workflows/study-pages.yml` builds and
+   publishes on every push to `study/mobile-sandbox` (allowed under Settings → Environments → github-pages). It builds with `STUDY_PAGES_BASE=/gatorhack/`, which puts the site under that
+   path and turns `vercel.json`'s headers into meta tags (Pages can't send headers). Collection needs the `.env.local`
+   names set as the repo's Actions variables; without them the Pages site is a preview.
 4. **Invitations:** `node scripts/invites.mjs --count 4 --cohort pilot --base https://<host> --out <private dir>/pilot.csv`.
 5. **Export:** `STUDY_SUPABASE_URL=… STUDY_SUPABASE_SERVICE_KEY=… node scripts/export.mjs --cohort pilot --out <dir>`.
    Never commit the service key or an export.

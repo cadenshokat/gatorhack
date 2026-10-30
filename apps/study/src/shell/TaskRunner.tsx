@@ -156,7 +156,7 @@ export function TaskRunner(props: Props): JSX.Element {
       condition,
       fit: props.fit ?? defaultFit(),
       frame: box,
-      fixturesUrl: `/_r/${task.replicaId}/fixtures.json`,
+      fixturesUrl: `${import.meta.env.BASE_URL}_r/${task.replicaId}/fixtures.json`,
       mode: props.mode,
     }),
     [task.id, condition, round],

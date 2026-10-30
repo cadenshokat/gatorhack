@@ -74,8 +74,8 @@ export function planFor(sequence: 0 | 1 | 2 | 3, seed: number): StudyPlan {
   };
 }
 
-/** Where the trial's page lives on the study site. */
+/** Where the trial's page lives on the study site (under the build's base path: /gatorhack/ on GitHub Pages). */
 export function pageUrl(task: TaskSpec): string {
   const m = REPLICAS[task.replicaId];
-  return m ? m.servePath : '/';
+  return import.meta.env.BASE_URL + (m ? m.servePath.replace(/^\//, '') : '');
 }
