@@ -1,0 +1,59 @@
+# Builds the mobile study site from apps/study and publishes only that build to GitHub Pages, at
+# https://<owner>.github.io/<repo>/. Nothing else in the repo is served.
+# Collection settings come from the repo's Actions variables (Settings → Secrets and variables → Actions → Variables),
+# named as in apps/study/.env.example. Without all of them the site runs as a preview that keeps answers on the phone.
+
+name: Study site on GitHub Pages
+
+# The study lives on study/mobile-sandbox, so that branch must be allowed under Settings → Environments → github-pages.
+on:
+  push:
+    branches: [study/mobile-sandbox]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/study
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        env:
+          STUDY_PAGES_BASE: /${{ github.event.repository.name }}/
+          VITE_STUDY_SUPABASE_URL: ${{ vars.VITE_STUDY_SUPABASE_URL }}
+          VITE_STUDY_SUPABASE_KEY: ${{ vars.VITE_STUDY_SUPABASE_KEY }}
+          VITE_STUDY_CONTACT: ${{ vars.VITE_STUDY_CONTACT }}
+          VITE_STUDY_TEAM: ${{ vars.VITE_STUDY_TEAM }}
+          VITE_STUDY_APPROVAL: ${{ vars.VITE_STUDY_APPROVAL }}
+          VITE_STUDY_RETENTION: ${{ vars.VITE_STUDY_RETENTION }}
+          VITE_STUDY_WITHDRAW_BY: ${{ vars.VITE_STUDY_WITHDRAW_BY }}
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: apps/study/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
