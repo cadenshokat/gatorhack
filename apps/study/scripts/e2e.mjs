@@ -1,13 +1,23 @@
 #!/usr/bin/env node
-// Walks the whole participant flow on emulated phones and checks what gets saved. Run with the dev server up:
+// Walks the whole participant flow (protocol 4.0.0) on emulated phones and checks what gets saved. Run with the dev
+// server up:
 //
-//   node scripts/e2e.mjs [--base http://127.0.0.1:5190] [--browsers webkit,chromium] [--seq 0..3] [--fit rosa]
-//                        [--out <dir for screenshots>]
+//   node scripts/e2e.mjs [--base http://127.0.0.1:5190] [--browsers webkit,chromium] [--seq 0,1,2,3]
+//                        [--ai https://webable-gatorhack-ai.vercel.app] [--out <dir for screenshots>]
 //
-// WebKit (Safari's engine, as an iPhone 15) and Chromium (as a Pixel 7). First the way in, twice: someone the study
-// is for (up to the warm-up) and someone it is not for (stopped right after the agreement, nothing kept). Then the rest,
-// with the warm-up skipped by a demo fit (?fit=…, which previews allow). On every website the task's answer must be in
-// the layer the person sees (the page, or WebAble's simplified page). Taps are real touch taps.
+// WebKit (Safari's engine, as an iPhone 15) and Chromium (as a Pixel 7), real touch taps throughout. For each sequence
+// (?seq=0..3) and browser: first someone the study is not for (stopped right after the age and trouble questions, nothing
+// kept), then one whole run as someone it is for: welcome, agreement, who the study is for, about you, Set up WebAble
+// (what gets in the way, text size, light or dark, and, only when live AI is configured, how they like information and
+// words), the practice website, round 1 (2 websites, then 2 statements), the break, round 2, the 3 last questions.
+//
+// Every website is a 'find' task. Each one ends a different way on purpose: the practice and most websites with the right
+// answer, one after detours (a Pause, "Go back to the website", "No, keep looking"), one with "I cannot find it" and
+// "Yes, stop looking". The task's answer must be in the layer the person sees (the page, or WebAble's simplified page).
+//
+// Live AI: with VITE_STUDY_AI_ORIGIN set, adapted websites call the hosted server (up to ~25 s behind the card). A call
+// that fails (the server has no keys) falls back to recorded answers; that is reported, never a failure. The 2-minute cap
+// on a website is not exercised (it would add 2 minutes per run).
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -18,21 +28,41 @@ function arg(name, fallback) {
   return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
+const PROTOCOL = 'mobile-replica-4.0.0';
 const base = arg('base', 'http://127.0.0.1:5190');
 const browsers = arg('browsers', 'webkit,chromium').split(',');
-const seq = Number(arg('seq', '1'));
-const fit = arg('fit', 'rosa');
+const seqs = arg('seq', '1').split(',').map(Number);
+const aiOrigin = arg('ai', 'https://webable-gatorhack-ai.vercel.app');
 const out = arg('out', join(process.env.TMPDIR ?? '/tmp', 'webable-study-e2e'));
 mkdirSync(out, { recursive: true });
 
+/** Live AI can take ~25 s behind a website's card; wait this long for "Open the website". */
+const CARD_MS = 45000;
+/** Per round: how many websites there are (protocol 4.0.0: news and sports). */
+const PER_ROUND = 2;
+/** The ease and statements answers the run gives, as the buttons say them and as saved (1 = Very easy). */
+const EASE = { name: 'Somewhat easy', value: 3 };
+const UMUX = {
+  1: { words: ['Agree', 'Somewhat agree'], items: [6, 5], score: 75 },
+  2: { words: ['Strongly agree', 'Agree'], items: [7, 6], score: 91.7 },
+};
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const failures = [];
+const notes = [];
+/** Where the run is (a website's name, or the questions), to say where a request to another site came from. */
+let where = 'questions';
+const fail = (m) => failures.push(m);
+const note = (m) => notes.push(m);
 
 async function tapText(page, text, { exact = true, timeout = 20000 } = {}) {
   const loc = page.getByRole('button', { name: text, exact });
   await loc.first().waitFor({ state: 'visible', timeout });
   await loc.first().tap();
 }
+
+/** Waits for a heading (the screen has opened). */
+const heading = (page, name, timeout = 20000) => page.getByRole('heading', { name }).first().waitFor({ state: 'visible', timeout });
 
 /** Chooses an answer (a radio) and taps Continue: nothing moves on until Continue. */
 async function choose(page, name, { cont = 'Continue' } = {}) {
@@ -44,14 +74,6 @@ async function choose(page, name, { cont = 'Continue' } = {}) {
   await sleep(350);
 }
 
-/** Waits for the next screen after a website: another task's card, or the 10 statements' intro. */
-async function nextIs(page) {
-  const open = page.getByRole('button', { name: 'Open the website', exact: true });
-  const intro = page.getByRole('heading', { name: /^10 statements about round/ });
-  await open.or(intro).first().waitFor({ state: 'visible', timeout: 30000 });
-  return (await intro.isVisible()) ? 'sus' : 'task';
-}
-
 /** Ticks a box (role checkbox) by its words. */
 async function tick(page, name) {
   const c = page.getByRole('checkbox', { name, exact: true });
@@ -60,60 +82,47 @@ async function tick(page, name) {
   await sleep(150);
 }
 
+/** Continue with nothing chosen must say so, plainly, in an alert, and stay on the screen. */
+async function nudgeCheck(page, where, words) {
+  await tapText(page, 'Continue');
+  const alert = page.getByRole('alert').filter({ hasText: words });
+  await alert.first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => fail(`${where}: Continue with nothing chosen did not say so ("${words}")`));
+}
+
 const saved = (page) =>
   page.evaluate(() => {
     const k = Object.keys(localStorage).find((x) => x.startsWith('webable.study.session.'));
     return k ? JSON.parse(localStorage.getItem(k)) : null;
   });
 
-/** The way in (protocol 3.0.0): the agreement, then the 2 questions on who the study is for, or the stop page. */
-async function wayIn(browser, device, which, shots) {
+/** Someone the study is not for: nothing kept, and Back leads to the questions again. */
+async function notEligible(browser, device, seq, which, shots) {
   const ctx = await browser.newContext({ ...device });
   const page = await ctx.newPage();
   await page.goto(`${base}/?seq=${seq}`);
   await tapText(page, 'Start now');
-  await page.getByRole('heading', { name: 'Before you agree to take part' }).waitFor({ timeout: 10000 });
+  await heading(page, 'Before you agree to take part', 10000);
   await tapText(page, 'I agree to take part');
+  await heading(page, 'How old are you?', 10000);
+  await nudgeCheck(page, `${which}: age`, 'Choose your age group');
+  await choose(page, 'Under 50');
+  await heading(page, 'Which of these often happen to you when you use websites?', 10000);
+  await tick(page, 'I find it hard to get around a website');
+  await tapText(page, 'Continue');
+  await heading(page, 'You cannot take part in this study', 10000);
+  await page.screenshot({ path: join(shots, 'not-eligible.png') });
+  let rec = await saved(page);
+  if (rec?.eligible || rec?.about?.ageBand || rec?.about?.troubles?.length) fail(`${which}: kept answers from someone the study is not for (under 50)`);
+  // Back, in case of a slip: the questions again. Then old enough but no trouble with websites: the same stop.
+  await tapText(page, 'Back');
+  await heading(page, 'How old are you?', 10000);
   await choose(page, '65 to 74');
-  await tick(page, 'I find it hard to find the information I need');
-  await page.screenshot({ path: join(shots, 'eligibility.png') });
+  await tick(page, 'None of these');
   await tapText(page, 'Continue');
-  await page.getByRole('textbox', { name: 'What is your first name?' }).fill('Rosa');
-  await tapText(page, 'Continue');
-  await choose(page, 'Woman');
-  await tick(page, 'Hispanic or Latino');
-  await tapText(page, 'Continue');
-  await choose(page, 'Comfortable');
-  await choose(page, 'Sometimes');
-  await choose(page, 'Never');
-  await choose(page, 'In both hands');
-  await page.getByRole('heading', { name: 'Get ready' }).waitFor({ timeout: 10000 });
-  await tapText(page, 'Continue');
-  await page.getByRole('heading', { name: 'Warm-up' }).waitFor({ timeout: 10000 });
-  const yes = await saved(page);
-  if (yes?.consent?.version !== '3.0.0' || yes?.eligible !== true) failures.push(`${which}: consent not saved as 3.0.0 with eligibility`);
-  if (yes?.about?.ageBand !== '65-74' || yes?.about?.troubles?.join() !== 'finding')
-    failures.push(`${which}: who-the-study-is-for answers not kept (${JSON.stringify(yes?.about)})`);
-  if (yes?.about?.firstName !== 'Rosa' || yes?.about?.gender !== 'woman' || yes?.about?.race?.join() !== 'hispanic' || yes?.about?.techComfort !== 5)
-    failures.push(`${which}: about-you answers not kept (${JSON.stringify(yes?.about)})`);
+  await heading(page, 'You cannot take part in this study', 10000);
+  rec = await saved(page);
+  if (rec?.eligible || rec?.about?.ageBand || rec?.about?.troubles?.length) fail(`${which}: kept answers from someone the study is not for (no trouble)`);
   await ctx.close();
-
-  const ctx2 = await browser.newContext({ ...device });
-  const no = await ctx2.newPage();
-  await no.goto(`${base}/?seq=${seq}`);
-  await tapText(no, 'Start now');
-  await tapText(no, 'I agree to take part');
-  await choose(no, 'Under 50');
-  await tick(no, 'I find it hard to get around a website');
-  await tapText(no, 'Continue');
-  await no.getByRole('heading', { name: 'You cannot take part in this study' }).waitFor({ timeout: 10000 });
-  await no.screenshot({ path: join(shots, 'not-eligible.png') });
-  const rec = await saved(no);
-  if (rec?.eligible || rec?.about?.ageBand || rec?.about?.troubles?.length) failures.push(`${which}: kept answers from someone the study is not for`);
-  // Back, in case of a slip: the questions again.
-  await tapText(no, 'Back');
-  await no.getByRole('heading', { name: 'How old are you?' }).waitFor({ timeout: 10000 });
-  await ctx2.close();
 }
 
 /**
@@ -125,9 +134,10 @@ async function answerShown(page) {
   if (!frame) return null;
   const look = (expand) =>
     frame.evaluate((expand) => {
-      const norm = (x) => x.replace(/[\u2010-\u2015\u2212]/g, '-').replace(/\s+/g, ' ').toLowerCase();
+      const norm = (x) => x.replace(/[‐-―−]/g, '-').replace(/\s+/g, ' ').toLowerCase();
       const task = window.parent.__studyHost.trial().task;
-      const open = window.__studyFrame?.delivery?.()?.simplified?.open === true;
+      const d = window.__studyFrame?.delivery?.() ?? null;
+      const open = d?.simplified?.open === true;
       const want = norm(open ? (task.answerTextSimplified ?? task.answerText) : task.answerText);
       const textOf = (root) => {
         let t = '';
@@ -146,7 +156,12 @@ async function answerShown(page) {
       const layer = open && calm ? calm : document.body;
       const more = open && calm ? [...calm.querySelectorAll('button')].filter((b) => /^Show all/.test(b.textContent.trim())) : [];
       if (expand) for (const b of more) b.click();
-      return { layer: open ? 'simplified page' : 'page', found: textOf(layer).includes(want), more: more.length };
+      return {
+        layer: open ? 'simplified page' : 'page',
+        found: textOf(layer).includes(want),
+        more: more.length,
+        aiOk: !!d?.ai?.calls?.some((c) => c.ok),
+      };
     }, expand);
   const first = await look(false);
   if (first.found || !first.more) return { ...first, route: 'shown' };
@@ -155,16 +170,48 @@ async function answerShown(page) {
   return { ...(await look(false)), route: 'after Show all' };
 }
 
-async function runTask(page, name, shots) {
-  const start = page.getByRole('button', { name: 'Open the website', exact: true });
-  await start.waitFor({ state: 'visible', timeout: 30000 });
+/** The task as the shell holds it (the host is set while a website's screen is open). */
+const hostTask = (page) =>
+  page.evaluate(() => {
+    const t = window.__studyHost?.trial().task;
+    return t ? { id: t.id, kind: t.kind, question: t.question ?? t.prompt, choices: t.choices ?? [], correct: t.correct } : null;
+  });
+
+/**
+ * One website, from its card to the ease question. `mode`:
+ *   'answer'  the right answer, straight away;
+ *   'detours' a Pause, an empty Continue, "Go back to the website" and "No, keep looking" first, then the right answer;
+ *   'cannot'  "I cannot find it", then "Yes, stop looking".
+ * Returns what the run meant to do, to compare with what was saved.
+ */
+async function runTask(page, name, shots, mode) {
+  where = name;
+  const open = page.getByRole('button', { name: 'Open the website', exact: true });
+  const retry = page.getByRole('button', { name: 'Try again', exact: true });
+  const t0 = Date.now();
+  await open.or(retry).first().waitFor({ state: 'visible', timeout: CARD_MS });
+  if (await retry.isVisible()) {
+    note(`${name}: the website took over 35 s to open ("Try again" showed); tapped it`);
+    await retry.tap();
+    await open.waitFor({ state: 'visible', timeout: CARD_MS });
+  }
+  const cardMs = Date.now() - t0;
+  const task = await hostTask(page);
+  if (!task) throw new Error(`${name}: no task on screen`);
+  if (task.kind !== 'find') fail(`${name}: ${task.id} is a '${task.kind}' task, not 'find'`);
   await page.screenshot({ path: join(shots, `${name}-card.png`) });
-  await start.tap();
+  await open.tap();
   await sleep(1200);
   await page.screenshot({ path: join(shots, `${name}-page.png`) });
+
   const shown = await answerShown(page);
-  if (!shown?.found) failures.push(`${name}: the answer is not in the ${shown?.layer ?? 'website'} the person sees`);
-  else if (shown.route !== 'shown') console.log(`${name}: the answer is in the ${shown.layer} ${shown.route}`);
+  if (!shown?.found) {
+    const m = `${name}: the answer is not in the ${shown?.layer ?? 'website'} the person sees`;
+    // A live AI that answered may have worded the page its own way: a note, not a failure.
+    if (shown?.aiOk) note(`${m} (a live AI call succeeded, so the wording may differ from the recorded one)`);
+    else fail(m);
+  } else if (shown.route !== 'shown') note(`${name}: the answer is in the ${shown.layer} ${shown.route}`);
+
   // Scroll the page inside the frame by a few screens, the way a thumb would.
   const box = await page.locator('.st-frame-box').boundingBox();
   if (box) {
@@ -175,199 +222,342 @@ async function runTask(page, name, shots) {
     }
   }
   await page.screenshot({ path: join(shots, `${name}-scrolled.png`) });
-  // On the original page, first a wrong link, taken back with "No, keep looking".
-  const wrong = await linkSpot(page, false);
-  if (wrong) {
-    await page.touchscreen.tap(wrong.x, wrong.y);
-    await sleep(500);
-    if (await page.getByRole('button', { name: 'No, keep looking', exact: true }).count()) await tapText(page, 'No, keep looking');
+
+  const found = page.getByRole('button', { name: 'I found it', exact: true });
+  const cannot = page.getByRole('button', { name: 'I cannot find it', exact: true });
+  const sheet = page.getByRole('heading', { name: task.question, exact: true });
+
+  if (mode === 'cannot') {
+    await cannot.tap();
+    await heading(page, 'Do you want to stop looking?', 10000);
+    await page.screenshot({ path: join(shots, `${name}-stop.png`) });
+    await tapText(page, 'Yes, stop looking');
+  } else {
+    if (mode === 'detours') {
+      // Pause, then back to the website.
+      await tapText(page, 'Pause');
+      await heading(page, 'You have paused this website', 10000);
+      await tapText(page, 'Go back to the website');
+      await found.waitFor({ state: 'visible', timeout: 10000 });
+      // "I cannot find it", then "No, keep looking": back on the website.
+      await cannot.tap();
+      await heading(page, 'Do you want to stop looking?', 10000);
+      await tapText(page, 'No, keep looking');
+      await found.waitFor({ state: 'visible', timeout: 10000 });
+      // "I found it", Continue with nothing chosen, then "Go back to the website".
+      await found.tap();
+      await sheet.waitFor({ state: 'visible', timeout: 10000 });
+      await nudgeCheck(page, name, 'Choose an answer, or choose I could not find it');
+      await tapText(page, 'Go back to the website');
+      await found.waitFor({ state: 'visible', timeout: 10000 });
+    }
+    await found.tap();
+    await sheet.waitFor({ state: 'visible', timeout: 10000 });
+    await page.screenshot({ path: join(shots, `${name}-answer.png`) });
+    const right = task.choices[task.correct];
+    const r = page.getByRole('radio', { name: right, exact: true });
+    await r.first().waitFor({ state: 'visible', timeout: 10000 });
+    await r.first().tap();
+    await sleep(150);
+    await tapText(page, 'Continue');
   }
-  // Then the destination, by its own link on whatever version is showing; a box over it (a cookie notice) is closed
-  // first, as a person would.
-  let right = await linkSpot(page, true);
-  for (let i = 0; right?.close && i < 2; i++) {
-    await page.touchscreen.tap(right.close.x, right.close.y);
-    await sleep(600);
-    right = await linkSpot(page, true);
-  }
-  if (!right || right.covered) failures.push(`${name}: no way to the destination on screen (${JSON.stringify(right)})`);
-  else await page.touchscreen.tap(right.x, right.y);
-  await page.getByRole('heading', { name: 'Is this what you were looking for?' }).waitFor({ timeout: 10000 });
-  await page.screenshot({ path: join(shots, `${name}-confirm.png`) });
-  await tapText(page, 'Yes, this is it');
-  await page.getByRole('heading', { name: 'How easy or hard was this task?' }).waitFor({ timeout: 10000 });
-  await choose(page, 'Somewhat easy');
+  await heading(page, 'How easy or hard was it to find the answer?', 10000);
+  await page.screenshot({ path: join(shots, `${name}-ease.png`) });
+  await choose(page, EASE.name);
+  where = 'questions';
+  return { taskId: task.id, mode, cardMs, question: task.question };
 }
 
-/**
- * Where to tap, in the shell's coordinates, for a link to the task's destination (`target`) or any other real link
- * (not a target, original page only). Scrolls it into view first; null when there is none.
- */
-async function linkSpot(page, target) {
-  const frame = page.frames().find((f) => f !== page.mainFrame());
-  const box = await page.locator('iframe.st-frame').boundingBox();
-  if (!frame || !box) return null;
-  const at = await frame.evaluate(async (target) => {
-    const task = window.parent.__studyHost.trial().task;
-    const open = window.__studyFrame?.delivery?.()?.simplified?.open === true;
-    const calm = document.querySelector('webable-ui')?.shadowRoot?.querySelector('.wa-calm-host')?.shadowRoot;
-    const shown = (el) => {
-      const r = el.getBoundingClientRect();
-      return r.width > 4 && r.height > 4 && getComputedStyle(el).visibility !== 'hidden' && el.getClientRects().length > 0;
-    };
-    let el = null;
-    if (open && calm) {
-      if (!target) return null;
-      const want = task.answerText.toLowerCase();
-      el = [...calm.querySelectorAll('button, a')].find((b) => shown(b) && b.textContent.toLowerCase().includes(want));
-    } else if (target) {
-      el = [...document.querySelectorAll(task.answerSelector)].find(shown);
-    } else {
-      const here = new URL(location.href);
-      el = [...document.querySelectorAll('a[href]')].find((a) => {
-        if (!shown(a) || a.closest('nav, header, footer, [role=navigation]')) return false;
-        const u = new URL(a.getAttribute('href'), here);
-        return u.pathname !== here.pathname && !(task.targets ?? []).includes(u.pathname + u.search) && (a.textContent ?? '').trim().length > 2;
-      });
-    }
-    if (!el) return null;
-    el.scrollIntoView({ block: 'center' });
-    await new Promise((r) => setTimeout(r, 400));
-    const r = el.getBoundingClientRect();
-    const x = r.left + r.width / 2;
-    const y = r.top + r.height / 2;
-    // Something over it? Then where its close button is.
-    const root = open && calm ? calm : document;
-    const hit = root.elementFromPoint(x, y);
-    if (!hit || hit === el || el.contains(hit)) return { x, y };
-    const isClose = (b) =>
-      shown(b) && (/close|dismiss/i.test(b.getAttribute('aria-label') ?? '') || /^(×|✕|x|close)$/i.test((b.textContent ?? '').trim()));
-    for (let a = hit; a && a !== document.body; a = a.parentElement) {
-      // The notice may draw itself inside its own shadow root (the Gators consent manager does).
-      const inside = [a, ...(a.shadowRoot ? [a.shadowRoot] : [])].flatMap((r) => [...r.querySelectorAll('button, [role=button]')]);
-      const b = inside.find(isClose);
-      if (b) {
-        const c = b.getBoundingClientRect();
-        return { x, y, covered: true, close: { x: c.left + c.width / 2, y: c.top + c.height / 2 } };
-      }
-    }
-    return { x, y, covered: true };
-  }, target);
-  if (!at) return null;
-  const shift = (p) => ({ x: box.x + p.x, y: box.y + p.y });
-  return { ...at, ...shift(at), ...(at.close ? { close: shift(at.close) } : {}) };
+/** The 2 statements after a round: an empty Continue says so; then both answers. */
+async function umux(page, r) {
+  const u = UMUX[r];
+  await heading(page, 'These websites let me do what I needed to do.', 30000);
+  await nudgeCheck(page, `round ${r} statement 1`, 'Choose an answer');
+  await choose(page, u.words[0]);
+  await heading(page, 'These websites were easy to use.', 10000);
+  await choose(page, u.words[1]);
 }
 
-for (const which of browsers) {
-  const type = which === 'webkit' ? webkit : chromium;
-  const device = which === 'webkit' ? devices['iPhone 15'] : devices['Pixel 7'];
-  let browser;
-  try {
-    browser = await type.launch();
-  } catch (err) {
-    console.log(`${which}: not installed (${String(err).split('\n')[0]}); skipped`);
-    continue;
-  }
-  const ctx = await browser.newContext({ ...device });
-  const page = await ctx.newPage();
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(`page: ${e.message}`));
-  page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
-  const outside = [];
-  page.on('request', (r) => {
-    const u = new URL(r.url());
-    if (u.origin !== new URL(base).origin && !u.protocol.startsWith('data') && !u.protocol.startsWith('blob')) outside.push(r.url());
-  });
-  const shots = join(out, which);
-  mkdirSync(shots, { recursive: true });
-  const t0 = Date.now();
-  try {
-    await wayIn(browser, device, which, shots);
-    await page.goto(`${base}/?seq=${seq}&fit=${fit}`);
-    await runTask(page, 'practice', shots);
-    for (const r of [1, 2]) {
-      await tapText(page, `Start round ${r}`);
-      // However many websites this build's round has: tasks until the statements' intro shows.
-      for (let i = 1; i <= 6; i++) {
-        if ((await nextIs(page)) === 'sus') break;
-        await runTask(page, `r${r}-${i}`, shots);
-      }
-      await tapText(page, 'Continue');
-      for (let k = 0; k < 10; k++) await choose(page, k % 2 === 0 ? 'Agree' : 'Disagree');
-      // What it was like (optional): a few words in round 1, nothing in round 2.
-      await page.getByRole('heading', { name: /^What was it like to use these/ }).waitFor({ timeout: 10000 });
-      if (r === 1) await page.locator('textarea').fill('The text was small.');
-      await tapText(page, 'Continue');
-      // The break's "Start round 2" goes straight into round 2.
-      if (r === 1) {
-        await page.getByRole('heading', { name: 'Round 1 is finished' }).waitFor({ timeout: 10000 });
-        continue;
-      }
-    }
-    // Last questions (3.0.0): blind first, then a 1 to 10 rating of each round, then the changed websites' realism.
-    await choose(page, 'Yes');
-    await tapText(page, 'Continue'); // what was different (optional)
-    await choose(page, '7');
-    await choose(page, '9');
-    await choose(page, 'Mostly like them');
-    await tick(page, 'None of these');
-    await tapText(page, 'Send my answers');
-    await page.getByText('You have finished the study').waitFor({ timeout: 10000 });
-    await page.screenshot({ path: join(shots, 'done.png'), fullPage: true });
+/** The whole way through, as someone the study is for. Returns what was saved, and whether live AI was configured. */
+async function fullRun(page, seq, which, shots) {
+  const intended = [];
+  const dark = seq % 2 === 1;
+  await page.goto(`${base}/?seq=${seq}`);
 
-    const rec = await saved(page);
-    writeFileSync(join(shots, 'session.json'), JSON.stringify(rec, null, 2));
-    const rows = rec.trials.map((t) => ({
-      task: t.taskId,
-      cond: t.condition,
-      s: Math.round(t.activeMs / 100) / 10,
-      ready: t.readyMs,
-      taps: t.metrics?.taps,
-      misses: t.metrics?.misses,
-      scroll: t.metrics?.scrollScreens,
-      seen: t.metrics?.answerSeen,
-      picks: t.picks?.map((x) => `${x.meets ? 'Y' : 'n'}${x.confirmed ? '!' : ''}`).join(' '),
-      chose: t.chosen?.text ?? '',
-      simplified: t.delivery?.simplified?.open ?? '',
-      zoom: t.delivery?.pageZoom ?? '',
-      text: t.delivery?.textScale ?? '',
-      seq: t.seq,
-      ops: t.delivery ? t.delivery.ops.filter((o) => o.status === 'applied').length : '',
-      warmup: t.delivery ? t.delivery.ops.filter((o) => o.status === 'applied' && o.source === 'fit').map((o) => o.kind).join(' ') : '',
-      ai: t.delivery ? t.delivery.ops.filter((o) => o.status === 'applied' && o.source === 'jev').map((o) => o.kind).join(' ') : '',
-      delivered: t.delivery?.delivered ?? '',
-      misses_replay: t.delivery?.replayMisses?.length ?? '',
-    }));
-    console.log(`\n${which} (${device.viewport.width}x${device.viewport.height}) finished in ${Math.round((Date.now() - t0) / 1000)} s`);
-    console.table(rows);
-    console.log('SUS:', rec.sus[1]?.score, rec.sus[2]?.score, 'comments:', JSON.stringify(rec.comments), 'final:', JSON.stringify(rec.final?.liking), rec.final?.adaptedRealism);
-    if (rec.comments?.[1] !== 'The text was small.' || rec.comments?.[2] !== null) failures.push(`${which}: round comments not saved`);
-    if (rec.final?.liking?.[1] !== 7 || rec.final?.liking?.[2] !== 9 || rec.final?.adaptedRealism !== 5)
-      failures.push(`${which}: last answers not saved (${JSON.stringify(rec.final)})`);
-    // A change the engine logged without its ledger line has no source; the export counts these apart.
-    for (const t of rec.trials) {
-      const n = t.delivery?.ops.filter((o) => o.status === 'applied' && !o.source).length ?? 0;
-      if (n) console.log(`${which}: ${t.taskId} has ${n} change(s) with no logged source`);
-    }
-    const expected = 1 + rec.trials.filter((t) => t.round > 0).length;
-    if (rec.trials.length !== expected || rec.trials.length < 3) failures.push(`${which}: ${rec.trials.length} trials saved`);
-    for (const r of [1, 2]) if (!rec.sus[r] || rec.sus[r].score === null) failures.push(`${which}: no SUS score for round ${r}`);
-    for (const t of rec.trials) {
-      if (t.kind !== 'go' || !t.correct || !t.chosen?.meets) failures.push(`${which}: ${t.taskId} did not end on its destination (${JSON.stringify(t.chosen)})`);
-      if (t.condition !== 'adapted' && !t.picks?.some((x) => !x.confirmed)) console.log(`${which}: ${t.taskId} had no wrong link to take back`);
-      if (!t.metrics) failures.push(`${which}: no metrics for ${t.taskId}`);
-      if (t.condition === 'adapted' && !t.delivery) failures.push(`${which}: no delivery record for ${t.taskId}`);
-      if (t.seq != null && t.seqScale !== 'easy-1') failures.push(`${which}: ${t.taskId} ease answer saved without its direction`);
-      if (t.delivery && t.delivery.pageZoom > 1.001) failures.push(`${which}: ${t.taskId} narrowed the page (zoom ${t.delivery.pageZoom})`);
-    }
-  } catch (err) {
-    failures.push(`${which}: ${String(err).split('\n')[0]}`);
-    await page.screenshot({ path: join(shots, 'failure.png') }).catch(() => {});
+  // Welcome, agreement.
+  await tapText(page, 'Start now');
+  await heading(page, 'Before you agree to take part', 10000);
+  await tapText(page, 'I agree to take part');
+
+  // Who the study is for: age, then which of three troubles often happen.
+  await heading(page, 'How old are you?', 10000);
+  await choose(page, '65 to 74');
+  await heading(page, 'Which of these often happen to you when you use websites?', 10000);
+  await tick(page, 'I find it hard to find the information I need');
+  await page.screenshot({ path: join(shots, 'eligibility.png') });
+  await tapText(page, 'Continue');
+
+  // About you: first name, gender, race (ticks), comfort with technology.
+  await heading(page, 'What is your first name?', 10000);
+  await nudgeCheck(page, `${which}: first name`, 'Type your first name');
+  await page.getByRole('textbox', { name: 'What is your first name?' }).fill('Rosa');
+  await tapText(page, 'Continue');
+  await heading(page, 'What is your gender?', 10000);
+  await choose(page, 'Woman');
+  await heading(page, 'What is your race or ethnicity?', 10000);
+  await tick(page, 'Hispanic or Latino');
+  await tapText(page, 'Continue');
+  await heading(page, 'How comfortable are you using phones, computers and websites?', 10000);
+  await choose(page, 'Comfortable');
+
+  // Set up WebAble: what gets in the way, text size, light or dark, [how they like information, how it is written].
+  await heading(page, 'What gets in your way on websites?', 10000);
+  await nudgeCheck(page, `${which}: set-up needs`, 'Tap at least one answer');
+  await tick(page, 'Text that is too small');
+  await tick(page, 'Tapping the wrong thing');
+  await page.screenshot({ path: join(shots, 'setup-needs.png') });
+  await tapText(page, 'Continue');
+  const bigger = page.getByRole('button', { name: 'Make text bigger', exact: true });
+  const smaller = page.getByRole('button', { name: 'Make text smaller', exact: true });
+  await bigger.waitFor({ state: 'visible', timeout: 15000 });
+  if (await bigger.isEnabled()) await bigger.tap();
+  await sleep(200);
+  if (await smaller.isEnabled()) await smaller.tap();
+  await sleep(200);
+  await page.screenshot({ path: join(shots, 'setup-size.png') });
+  await tapText(page, 'This size is comfortable');
+  await heading(page, 'Which is easier for you to read?', 10000);
+  await nudgeCheck(page, `${which}: light or dark`, 'Tap the one that is easier to read');
+  await page.locator(`button.st-theme.is-${dark ? 'dark' : 'light'}`).tap();
+  await sleep(150);
+  await page.screenshot({ path: join(shots, 'setup-theme.png') });
+  await tapText(page, 'Continue');
+  // Live AI adds two questions; without it the summary follows at once. That is how this run knows which build it has.
+  const shape = page.getByRole('heading', { name: 'How do you like information?' });
+  const summary = page.getByRole('heading', { name: 'WebAble is set up for you' });
+  await shape.or(summary).first().waitFor({ state: 'visible', timeout: 10000 });
+  const live = await shape.isVisible();
+  if (live) {
+    await choose(page, 'As short points');
+    await heading(page, 'How should websites be written for you?', 10000);
+    await choose(page, 'Plain and short');
   }
-  if (errors.length) console.log(`${which} errors:\n  ${[...new Set(errors)].slice(0, 15).join('\n  ')}`);
-  if (outside.length) failures.push(`${which}: ${outside.length} requests to other sites, e.g. ${outside[0]}`);
-  await browser.close();
+  await heading(page, 'WebAble is set up for you', 10000);
+  await page.screenshot({ path: join(shots, 'setup-summary.png') });
+  await tapText(page, 'Go to the practice website');
+
+  // Practice, then round 1 (2 websites, 2 statements), the break, round 2, the last questions.
+  intended.push({ ...(await runTask(page, 'practice', shots, 'answer')), round: 0 });
+  await heading(page, 'Round 1', 15000);
+  const modes = { 1: ['detours', 'answer'], 2: ['cannot', 'answer'] };
+  for (const r of [1, 2]) {
+    const text = await page.locator('main').innerText();
+    const n = Number(/(?:There are|Round 2 has) (\d+)/.exec(text)?.[1] ?? 0);
+    if (n !== PER_ROUND) fail(`${which}: round ${r} says it has ${n} websites, not ${PER_ROUND}`);
+    await tapText(page, `Start round ${r}`);
+    for (let i = 1; i <= PER_ROUND; i++) intended.push({ ...(await runTask(page, `r${r}-${i}`, shots, modes[r][i - 1])), round: r });
+    await umux(page, r);
+    if (r === 1) await heading(page, 'Round 1 is finished', 10000);
+  }
+  // Last questions (4.0.0): blind first (Yes adds a text screen), then a 1 to 10 rating of each round.
+  await heading(page, 'Did the 2 rounds feel different?', 10000);
+  await choose(page, 'Yes');
+  await heading(page, 'What was different? (optional)', 10000);
+  await page.locator('textarea').fill('The text was bigger.');
+  await tapText(page, 'Continue');
+  await heading(page, /^How much did you like using the websites in round 1\?/, 10000);
+  await choose(page, '7');
+  await heading(page, /^How much did you like using the websites in round 2\?/, 10000);
+  await choose(page, '9', { cont: 'Send my answers' });
+  await heading(page, 'You have finished the study', 15000);
+  await page.screenshot({ path: join(shots, 'done.png'), fullPage: true });
+  const doneText = await page.locator('main').innerText();
+  return { live, dark, intended, doneText, rec: await saved(page) };
 }
 
+/** Everything saved, against everything the run did. */
+function check(which, run, seq) {
+  const { rec, live, dark, intended, doneText } = run;
+  if (!rec) return fail(`${which}: nothing saved`);
+  if (rec.protocol !== PROTOCOL) fail(`${which}: protocol ${rec.protocol}, not ${PROTOCOL}`);
+  if (rec.consent?.version !== '4.0.0' || rec.eligible !== true) fail(`${which}: consent not saved as 4.0.0 with eligibility (${JSON.stringify(rec.consent)})`);
+  if (rec.sequence !== seq) fail(`${which}: sequence ${rec.sequence}, not ${seq}`);
+  if (rec.stage !== 'done' || !rec.finishedAt) fail(`${which}: study not saved as finished (stage ${rec.stage})`);
+
+  const a = rec.about ?? {};
+  if (a.ageBand !== '65-74' || a.troubles?.join() !== 'finding') fail(`${which}: who-the-study-is-for answers not kept (${JSON.stringify(a)})`);
+  if (a.firstName !== 'Rosa' || a.gender !== 'woman' || a.race?.join() !== 'hispanic' || a.techComfort !== 5)
+    fail(`${which}: about-you answers not kept (${JSON.stringify(a)})`);
+
+  const s = rec.setup;
+  if (!s) fail(`${which}: no set-up answers saved`);
+  else {
+    if ([...s.needs].sort().join() !== 'small_text,tap_wrong') fail(`${which}: set-up needs not kept (${JSON.stringify(s.needs)})`);
+    if (s.polarity !== (dark ? 'dark' : 'light')) fail(`${which}: light or dark not kept (${s.polarity})`);
+    if (live) {
+      if (s.shape !== 'points' || s.words !== 'plain') fail(`${which}: live AI questions not kept (${s.shape}, ${s.words})`);
+      if (!s.reader) fail(`${which}: live AI is on but no reader was saved`);
+    } else if (s.reader) fail(`${which}: a reader was saved without live AI`);
+  }
+  const fit = rec.calibration?.fit;
+  if (!fit) fail(`${which}: no fit saved`);
+  else {
+    if (fit.polarity?.value !== (dark ? 'dark' : 'light')) fail(`${which}: fit's polarity is ${fit.polarity?.value}`);
+    if ((fit.targets?.minPx ?? 0) < 56) fail(`${which}: "Tapping the wrong thing" did not make buttons bigger (targets ${JSON.stringify(fit.targets)})`);
+  }
+
+  const b = rec.baseline;
+  if (!b) fail(`${which}: no tap baseline saved`);
+  else {
+    if (!(b.taps > 0)) fail(`${which}: baseline.taps is ${b.taps}, expected > 0`);
+    if (!(b.screens > 0)) fail(`${which}: baseline.screens is ${b.screens}`);
+  }
+
+  for (const r of [1, 2]) {
+    const u = rec.umux?.[r];
+    if (!u || u.score === null) fail(`${which}: no UMUX score for round ${r} (${JSON.stringify(u)})`);
+    else if (u.items.join() !== UMUX[r].items.join() || u.score !== UMUX[r].score)
+      fail(`${which}: round ${r} UMUX saved as ${u.items.join('/')} = ${u.score}, expected ${UMUX[r].items.join('/')} = ${UMUX[r].score}`);
+  }
+  if (rec.sus?.[1] || rec.sus?.[2]) fail(`${which}: SUS answers saved in a UMUX protocol`);
+
+  const f = rec.final;
+  if (f?.different !== 'yes' || f?.noticed !== 'The text was bigger.' || f?.liking?.[1] !== 7 || f?.liking?.[2] !== 9)
+    fail(`${which}: last answers not saved (${JSON.stringify(f)})`);
+
+  // Trials: the practice and 2 websites in each round, every one a 'find' task that ended the way the run meant.
+  if (rec.trials.length !== 1 + 2 * PER_ROUND) fail(`${which}: ${rec.trials.length} trials saved, expected ${1 + 2 * PER_ROUND}`);
+  const adaptedRound = rec.trials.find((t) => t.condition === 'adapted')?.round;
+  for (const m of intended) {
+    const t = rec.trials.find((x) => x.taskId === m.taskId && x.round === m.round);
+    if (!t) {
+      fail(`${which}: no trial saved for ${m.taskId} (round ${m.round})`);
+      continue;
+    }
+    const cannot = m.mode === 'cannot';
+    if (t.kind !== 'find') fail(`${which}: ${t.taskId} saved with kind '${t.kind}', not 'find'`);
+    if (cannot ? t.endAction !== 'cant_find' || t.answer !== -1 || t.correct : t.endAction !== 'answered' || !t.correct)
+      fail(`${which}: ${t.taskId} (${m.mode}) saved as ${t.endAction}, answer ${t.answer}, correct ${t.correct}`);
+    if (t.timedOut) fail(`${which}: ${t.taskId} timed out`);
+    if (t.seq !== EASE.value || t.seqScale !== 'easy-1') fail(`${which}: ${t.taskId} ease saved as ${t.seq}/${t.seqScale}`);
+    if (!t.metrics) fail(`${which}: no metrics for ${t.taskId}`);
+    else if (!(t.metrics.taps > 0)) fail(`${which}: ${t.taskId} has no taps on the website`);
+    if (!(t.activeMs > 0)) fail(`${which}: ${t.taskId} has no active time`);
+    if (t.condition === 'adapted') {
+      const d = t.delivery;
+      if (!d) fail(`${which}: no delivery record for ${t.taskId}`);
+      else {
+        if (d.replayMisses?.length) fail(`${which}: ${t.taskId} had ${d.replayMisses.length} replay misses (${d.replayMisses.map((x) => x.what).join(', ')})`);
+        if (d.pageZoom > 1.001) fail(`${which}: ${t.taskId} narrowed the page (zoom ${d.pageZoom})`);
+        // A change the engine logged without its ledger line has no source; the export counts these apart.
+        const n = d.ops.filter((o) => o.status === 'applied' && !o.source).length;
+        if (n) note(`${which}: ${t.taskId} has ${n} change(s) with no logged source`);
+        if (live) {
+          if (!d.ai || d.ai.live !== true) fail(`${which}: ${t.taskId} has no delivery.ai with live AI on (${JSON.stringify(d.ai)})`);
+          else if (!Array.isArray(d.ai.calls) || !Array.isArray(d.ai.accepted)) fail(`${which}: ${t.taskId} delivery.ai is missing calls or accepted`);
+        } else if (d.ai?.live) fail(`${which}: ${t.taskId} says live AI answered, but it is not configured`);
+      }
+    } else if (t.delivery?.ai) fail(`${which}: ${t.taskId} (${t.condition}) has delivery.ai`);
+  }
+  const expectAdapted = seq === 1 || seq === 3 ? 1 : 2;
+  if (adaptedRound !== expectAdapted) fail(`${which}: sequence ${seq} adapted round ${adaptedRound}, expected ${expectAdapted}`);
+  if (!doneText.includes(`Round ${expectAdapted} used WebAble`)) fail(`${which}: the thank-you page does not name round ${expectAdapted} as the adapted one`);
+
+  // Notes the app kept: only the ones this run does not cause are a problem.
+  const kinds = [...new Set((rec.notes ?? []).map((n) => n.kind))];
+  for (const bad of ['time_cap', 'frame_end_failed', 'reload', 'no_touch', 'resumed']) if (kinds.includes(bad)) fail(`${which}: the app noted '${bad}'`);
+  const other = (rec.notes ?? []).filter((n) => !['time_cap', 'frame_end_failed', 'reload', 'no_touch', 'resumed'].includes(n.kind));
+  if (other.length) note(`${which}: app notes: ${[...new Set(other.map((n) => `${n.kind}${n.detail ? ` (${n.detail})` : ''}`))].join('; ')}`);
+
+  // The thank-you page on a live-AI build: what it says WebAble's AI did must still be true.
+  if (live && /looked at each website once, before the study/.test(doneText))
+    note(`${which}: APP: the thank-you page says the AI "looked at each website once, before the study" and was "the same for everyone", but live AI answered`);
+  if (/From your warm-up/.test(doneText)) note(`${which}: APP: the thank-you page still says "From your warm-up" (the step is now "Set up WebAble")`);
+}
+
+for (const seq of seqs) {
+  for (const which of browsers) {
+    const label = `seq ${seq} ${which}`;
+    const type = which === 'webkit' ? webkit : chromium;
+    const device = which === 'webkit' ? devices['iPhone 15'] : devices['Pixel 7'];
+    let browser;
+    try {
+      browser = await type.launch();
+    } catch (err) {
+      console.log(`${label}: not installed (${String(err).split('\n')[0]}); skipped`);
+      continue;
+    }
+    const shots = join(out, `seq${seq}`, which);
+    mkdirSync(shots, { recursive: true });
+    const ctx = await browser.newContext({ ...device });
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(`page: ${e.message}`));
+    page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
+    const outside = [];
+    const outsideImages = [];
+    const ai = { requests: 0, failed: 0 };
+    page.on('request', (r) => {
+      const u = new URL(r.url());
+      if (u.origin === new URL(base).origin || u.protocol.startsWith('data') || u.protocol.startsWith('blob')) return;
+      if (u.origin === aiOrigin) ai.requests++;
+      else if (r.resourceType() === 'image') outsideImages.push(`${where}: ${u.host}`);
+      else outside.push(`${where}: ${r.url().slice(0, 140)}`);
+    });
+    page.on('requestfailed', (r) => new URL(r.url()).origin === aiOrigin && ai.failed++);
+    page.on('response', (r) => new URL(r.url()).origin === aiOrigin && r.status() >= 400 && ai.failed++);
+    const t0 = Date.now();
+    try {
+      await notEligible(browser, device, seq, label, shots);
+      const run = await fullRun(page, seq, label, shots);
+      const rec = run.rec;
+      writeFileSync(join(shots, 'session.json'), JSON.stringify(rec, null, 2));
+      const secs = Math.round((Date.now() - t0) / 1000);
+      console.log(`\n${label} (${device.viewport.width}x${device.viewport.height}) finished in ${secs} s; live AI ${run.live ? 'on' : 'off'}; ${run.dark ? 'dark' : 'light'} page chosen`);
+      console.table(
+        rec.trials.map((t) => ({
+          task: t.taskId,
+          cond: t.condition,
+          end: `${t.endAction}${t.correct ? ' (right)' : ''}`,
+          s: Math.round(t.activeMs / 100) / 10,
+          ready: t.readyMs,
+          taps: t.metrics?.taps,
+          misses: t.metrics?.misses,
+          scroll: t.metrics?.scrollScreens,
+          seen: t.metrics?.answerSeen,
+          ease: t.seq,
+          simplified: t.delivery?.simplified?.open ?? '',
+          text: t.delivery?.textScale ?? '',
+          ops: t.delivery ? t.delivery.ops.filter((o) => o.status === 'applied').length : '',
+          fit_ops: t.delivery ? t.delivery.ops.filter((o) => o.status === 'applied' && o.source === 'fit').length : '',
+          ai_ops: t.delivery ? t.delivery.ops.filter((o) => o.status === 'applied' && o.source === 'jev').length : '',
+          ai_layout: t.delivery?.ai?.layout ?? '',
+          ai_calls: t.delivery?.ai ? `${t.delivery.ai.calls.filter((c) => c.ok).length}/${t.delivery.ai.calls.length} ok` : '',
+          accepted: t.delivery?.ai?.accepted?.join(' ') ?? '',
+          replay_miss: t.delivery?.replayMisses?.length ?? '',
+        })),
+      );
+      console.log('baseline:', JSON.stringify(rec.baseline));
+      console.log('umux:', JSON.stringify(rec.umux));
+      console.log('setup:', JSON.stringify({ ...rec.setup, reader: rec.setup?.reader ? 'saved' : null }));
+      const calls = rec.trials.flatMap((t) => t.delivery?.ai?.calls ?? []);
+      if (run.live) {
+        const bad = calls.filter((c) => !c.ok);
+        note(`${label}: live AI: ${calls.length} calls in the record, ${bad.length} failed${bad.length ? ` (${[...new Set(bad.map((c) => c.what))].join(', ')})` : ''}; ${ai.requests} requests to the AI server, ${ai.failed} failed or answered with an error`);
+      }
+      check(label, run, seq);
+    } catch (err) {
+      fail(`${label}: ${String(err).split('\n')[0]}`);
+      await page.screenshot({ path: join(shots, 'failure.png') }).catch(() => {});
+    }
+    if (errors.length) console.log(`${label} errors (info):\n  ${[...new Set(errors)].slice(0, 12).join('\n  ')}`);
+    // Pictures drawn from another site (the simplified page's lead picture) are reported, not failed: see the notes.
+    if (outsideImages.length) note(`${label}: ${outsideImages.length} image request(s) to other sites: ${[...new Set(outsideImages)].join('; ')}`);
+    if (outside.length) fail(`${label}: ${outside.length} requests to other sites, e.g. ${outside[0]}`);
+    await browser.close();
+  }
+}
+
+if (notes.length) console.log(`\nNotes\n- ${notes.join('\n- ')}`);
 console.log(failures.length ? `\nFAILED\n- ${failures.join('\n- ')}` : '\nOK');
 process.exit(failures.length ? 1 : 0);

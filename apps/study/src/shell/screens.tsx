@@ -1096,7 +1096,7 @@ export function DoneScreen(props: {
           <p>Round {props.adaptedRound} used WebAble, the program we are testing.</p>
           {props.debrief.warmup.length ? (
             <>
-              <p>From your warm-up, WebAble:</p>
+              <p>From your set-up answers, WebAble:</p>
               <ul class="st-list">
                 {props.debrief.warmup.map((c) => (
                   <li key={c}>{c}</li>
@@ -1107,8 +1107,9 @@ export function DoneScreen(props: {
           {props.debrief.ai.length ? (
             <>
               <p>
-                WebAble’s AI looked at each website once, before the study. Its decisions were the same for everyone. On
-                your websites, it:
+                {CONFIG.aiOrigin
+                  ? 'WebAble’s AI read each website, and fitted it to what you told us and to how you used it. On your websites, it:'
+                  : 'WebAble’s AI looked at each website once, before the study. Its decisions were the same for everyone. On your websites, it:'}
               </p>
               <ul class="st-list">
                 {props.debrief.ai.map((c) => (
