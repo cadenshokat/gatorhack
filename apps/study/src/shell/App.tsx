@@ -1,8 +1,9 @@
-// The participant flow (protocol 3.0.0, the committee's order): study information → agreement → who the study is for
-// (age, trouble with websites; nothing is sent until these pass, and someone it is not for stops here) → about you →
-// setup → warm-up → practice → round 1 (three websites, then the ten statements and a comment) → break → round 2 → last
-// questions → thank-you with the code. Each step is saved as it ends, so a reload picks up at the same step (a website
-// in progress starts again, and that is noted).
+// The participant flow (protocol 4.0.0, about 15 minutes): study information → agreement → who the study is for (age,
+// trouble with websites; nothing is sent until these pass, and someone it is not for stops here) → about you → set up
+// WebAble → practice → round 1 (two websites, then two statements) → break → round 2 → three last questions →
+// thank-you with the code. Taps on the question screens before the practice are the person's baseline. Help the person
+// accepts on an adapted website is kept for the next ones. Each step is saved as it ends, so a reload picks up at the
+// same step (a website in progress starts again, and that is noted).
 
 import { DEMO_FITS, type FitProfile } from '@webable/core';
 import type { JSX } from 'preact';
@@ -11,10 +12,13 @@ import { CONSENT_VERSION, type AboutYou, type FinalAnswers, type Likert7, type S
 import { debriefFor } from '../experiment/debrief';
 import { eligible, screened } from '../experiment/eligibility';
 import { planFor, REPLICAS, type PlannedTask } from '../experiment/plan';
-import { susResponse } from '../experiment/sus';
+import { learnFromOffers } from '../experiment/tuning';
+import { umuxResponse } from '../experiment/umux';
 import { openInvite, parseInvite, previewInvite, wantsOpenSession, type Invite } from '../store/invite';
 import { collecting, loadSession, newSession, SessionStore } from '../store/session';
+import { CONFIG } from '../store/config';
 import { onPending, pending } from '../store/remote';
+import { startBaseline, stopBaseline } from './baseline';
 import { inputsSeen, readDevice, watchInputs } from './device';
 import {
   AboutScreens,
@@ -26,8 +30,7 @@ import {
   FinalScreens,
   NotEligibleScreen,
   RoundIntro,
-  SetupScreen,
-  SusScreens,
+  UmuxScreens,
   WelcomeScreen,
 } from './screens';
 import { TaskRunner } from './TaskRunner';
@@ -146,6 +149,9 @@ function previewShortcut(store: SessionStore): void {
 const blankAbout: AboutYou = { ageBand: null, zoomToRead: null, tapWrong: null };
 
 const RECORD_MODE = /[?&]record=1/.test(location.search) && location.hostname === '127.0.0.1';
+/** Live AI on the adapted websites (protocol 4.0.0): the hosted server is set, and this is not a recording run. */
+const LIVE_AI = !RECORD_MODE && !!CONFIG.aiOrigin;
+const BEFORE_WEBSITES = new Set<string>(['welcome', 'agree', 'eligible', 'about', 'setup', 'warmup']);
 
 /**
  * The progress bar's place for each step (parts in ui.tsx PARTS): `fill` is how much of the part is done when the step
@@ -165,9 +171,8 @@ function progressFor(
     case 'eligible':
       return { part: 0, fill: 0.15, to: 0.3 };
     case 'about':
-      return { part: 0, fill: 0.3, to: 0.85 };
+      return { part: 0, fill: 0.3, to: 1 };
     case 'setup':
-      return { part: 0, fill: 0.85 };
     case 'warmup':
       return { part: 1, fill: 0, to: 1 };
     case 'practice':
@@ -210,6 +215,7 @@ export function App(): JSX.Element {
   useEffect(() => {
     watchInputs();
     if (resumed && /^(round|practice)/.test(stage)) store.note('resumed', stage);
+    if (BEFORE_WEBSITES.has(stage)) startBaseline();
   }, []);
 
   const go = (next: Stage, patch: Partial<SessionRecord> = {}) => setRec(store.update({ ...patch, stage: next }));
@@ -278,6 +284,14 @@ export function App(): JSX.Element {
   const onTrial = (t: TrialRecord) => {
     setRestarted(false);
     store.addTrial(t);
+    // Help accepted on this website (bigger buttons, larger text…) stays on for the next ones.
+    const accepted = t.delivery?.ai?.accepted ?? [];
+    const fitNow = store.record.calibration?.fit;
+    const learned = fitNow && accepted.length ? learnFromOffers(fitNow, accepted) : null;
+    if (learned && store.record.calibration) {
+      store.update({ calibration: { ...store.record.calibration, fit: learned.fit } });
+      store.note('fit_learned', learned.learned.join(','));
+    }
     const r = t.round;
     if (r === 0) return go('round1-intro');
     const total = roundTasks(r).length;
@@ -330,27 +344,18 @@ export function App(): JSX.Element {
       body = <NotEligibleScreen onBack={() => go('eligible')} />;
       break;
     case 'about':
-      body = <AboutScreens about={rec.about} onLeave={leave} onDone={(about: AboutYou) => go('setup', { about })} />;
+      body = <AboutScreens about={rec.about} onLeave={leave} onDone={(about: AboutYou) => go('warmup', { about })} />;
       break;
     case 'setup':
-      body = (
-        <SetupScreen
-          landscape={innerWidth > innerHeight}
-          onLeave={leave}
-          onBack={() => go('about')}
-          onDone={() => {
-            store.setDevice(readDevice());
-            go('warmup');
-          }}
-        />
-      );
-      break;
     case 'warmup':
       body = (
         <Warmup
           seed={rec.seed}
+          live={LIVE_AI}
           onLeave={leave}
-          onDone={(w) =>
+          onDone={(w) => {
+            store.setDevice(readDevice());
+            stopBaseline();
             go(plan.practice ? 'practice' : 'round1-intro', {
               calibration: {
                 raw: w.raw,
@@ -358,8 +363,10 @@ export function App(): JSX.Element {
                 durationSec: w.durationSec,
                 skipped: w.skipped,
               },
-            })
-          }
+              setup: { ...w.answers, reader: w.reader },
+              baseline: w.baseline,
+            });
+          }}
         />
       );
       break;
@@ -408,7 +415,8 @@ export function App(): JSX.Element {
           restarted={restarted}
           fit={fit}
           sessionId={rec.sessionId}
-          mode={RECORD_MODE ? 'record' : 'replay'}
+          mode={RECORD_MODE ? 'record' : LIVE_AI ? 'live' : 'replay'}
+          ai={LIVE_AI && CONFIG.aiOrigin ? { origin: CONFIG.aiOrigin, reader: rec.setup?.reader ?? null } : undefined}
           note={(k, d) => store.note(k, d)}
           onDone={onTrial}
           onLeave={leave}
@@ -425,20 +433,19 @@ export function App(): JSX.Element {
     case 'sus2': {
       const r = stage === 'sus1' ? 1 : 2;
       body = (
-        <SusScreens
+        <UmuxScreens
           key={stage}
           round={r}
           sites={roundTasks(r)
-            .map((t) => t.task.label ?? REPLICAS[t.task.replicaId]?.siteName ?? '')
+            .map((t) => t.task.tag ?? REPLICAS[t.task.replicaId]?.siteName ?? '')
             .filter(Boolean)}
           onLeave={leave}
-          onDone={(items: Array<Likert7 | null>, comment: string | null) => {
-            const sus = {
-              ...rec.sus,
-              [r]: susResponse(items, new Date().toISOString()),
+          onDone={(items: [Likert7 | null, Likert7 | null]) => {
+            const umux = {
+              ...(rec.umux ?? { 1: null, 2: null }),
+              [r]: umuxResponse(items, new Date().toISOString()),
             };
-            const comments = { ...(rec.comments ?? { 1: null, 2: null }), [r]: comment };
-            go(r === 1 ? 'break' : 'final', { sus, comments });
+            go(r === 1 ? 'break' : 'final', { umux });
           }}
         />
       );

@@ -7,7 +7,8 @@
 // looking for, by any route (the page's own, or WebAble's simplified page, which passes the tap to the page's link).
 // Links never open; the frame reports the tap, and a sheet asks "Is this what you were looking for?". Yes ends the
 // task; its success is whether that link reaches one of the task's destinations. "I cannot find it" is the way out.
-// A 'find' task (protocol 1.0.0 to 2.0.0) ends with Answer and four choices.
+// A 'find' task (protocol 1.0.0 to 2.0.0, and again from 4.0.0) ends with "I found it" and four choices, or "I cannot
+// find it". From 4.0.0 each website has 2 minutes of active time; then the answer sheet opens by itself.
 //
 // The shell is the frame's host (FrameHost in contracts.ts). On a phone the engine never zooms (it scales the page's
 // text sizes and keeps the page at full width). On a wider screen its zoom is imitated as tab zoom: the iframe is laid
@@ -17,11 +18,11 @@
 // left above it, so a browser toolbar that appears or hides never pushes the bar off screen, and while the person
 // pinch-zooms, the bar and everything over the website follow what is on screen at their normal size.
 
-import { defaultFit, type FitProfile } from '@webable/core';
+import { defaultFit, type FitProfile, type ReaderProfile } from '@webable/core';
 import type { JSX } from 'preact';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { EndAction, FrameApi, FrameHost, Likert7, LinkPick, TrialConfig, TrialRecord } from '../contracts';
-import { pageUrl, type PlannedTask } from '../experiment/plan';
+import { pageUrl, REPLICAS, type PlannedTask } from '../experiment/plan';
 import {
   Choices,
   Dialog,
@@ -47,6 +48,10 @@ function clearLinkNotes(): void {
 const MIN_CARD_MS = 2500;
 /** After this, the page counts as slow and the person can retry or skip. */
 const SLOW_MS = 15000;
+/** Live AI: an AI-designed layout can take up to 22 s, and the frame waits up to 25 s for it behind the card. */
+const SLOW_LIVE_MS = 35000;
+/** Active time on one website before the answer sheet opens by itself (protocol 4.0.0). */
+const TIME_CAP_MS = 120_000;
 /** The bar under the website: the task (up to 3 lines), then Pause and "I cannot find it" (or Answer). */
 const BAR_H = 140;
 /** Pinch zoom counts from this much zoom (see zoomedBy). */
@@ -75,7 +80,9 @@ interface Props {
   restarted?: boolean;
   fit: FitProfile | null;
   sessionId: string;
-  mode: 'replay' | 'record';
+  mode: 'replay' | 'record' | 'live';
+  /** Live AI (adapted websites): the hosted server and the person's reader. */
+  ai?: { origin: string; reader: ReaderProfile | null };
   note: (kind: string, detail?: string) => void;
   onDone: (t: TrialRecord) => void;
   onLeave: () => void;
@@ -133,6 +140,7 @@ export function TaskRunner(props: Props): JSX.Element {
     delivery: TrialRecord['delivery'];
   }>({ metrics: null, delivery: null });
   const phaseRef = useRef<Phase>('card');
+  const timedOut = useRef(false);
   const skippedFromCard = useRef(false);
   phaseRef.current = phase;
   const barRef = useRef<HTMLDivElement>(null);
@@ -157,7 +165,9 @@ export function TaskRunner(props: Props): JSX.Element {
       fit: props.fit ?? defaultFit(),
       frame: box,
       fixturesUrl: `${import.meta.env.BASE_URL}_r/${task.replicaId}/fixtures.json`,
-      mode: props.mode,
+      mode: props.mode === 'live' && !(condition === 'adapted' && props.ai) ? 'replay' : props.mode,
+      ...(condition === 'adapted' && props.ai && props.mode === 'live' ? { ai: props.ai } : {}),
+      originalHost: REPLICAS[task.replicaId]?.originalHost ?? '',
     }),
     [task.id, condition, round],
   );
@@ -202,7 +212,7 @@ export function TaskRunner(props: Props): JSX.Element {
     const f = frame.current;
     if (f) f.src = `${pageUrl(task)}${loadKey ? `?reload=${loadKey}` : ''}`;
     const t1 = window.setTimeout(() => setMinDone(true), MIN_CARD_MS);
-    const t2 = window.setTimeout(() => setSlow(true), SLOW_MS);
+    const t2 = window.setTimeout(() => setSlow(true), trial.mode === 'live' ? SLOW_LIVE_MS : SLOW_MS);
     return () => {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
@@ -327,6 +337,19 @@ export function TaskRunner(props: Props): JSX.Element {
     run();
   };
 
+  // Two minutes of active time on the website: the answer sheet opens by itself (a 'go' task ends as not found).
+  useEffect(() => {
+    if (phase !== 'running') return;
+    const t = window.setInterval(() => {
+      if (phaseRef.current !== 'running' || activeNow() < TIME_CAP_MS) return;
+      timedOut.current = true;
+      props.note('time_cap', task.id);
+      if (go) end('cant_find', null);
+      else openAnswer();
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [phase]);
+
   /** Active time so far, in ms (the clock may be running). */
   const activeNow = () => {
     const c = clock.current;
@@ -397,6 +420,7 @@ export function TaskRunner(props: Props): JSX.Element {
       endAction: action,
       kind: go ? 'go' : 'find',
       answer: go ? null : action === 'answered' ? answer : action === 'cant_find' ? -1 : null,
+      ...(timedOut.current ? { timedOut: true } : {}),
       correct: go ? action === 'chose' && chosen.current?.meets === true : action === 'answered' && answer === task.correct,
       ...(go ? { picks: picks.current, chosen: chosen.current ?? null } : {}),
       seq,
@@ -484,16 +508,26 @@ export function TaskRunner(props: Props): JSX.Element {
         <iframe ref={frame} class="st-frame" style={iframeStyle} title="The website" key={loadKey} />
       </div>
 
-      <div class="st-bar" ref={barRef} inert={phase !== 'running'}>
-        <p class="st-bar-q">{task.prompt}</p>
-        <div class="st-bar-row">
-          <button type="button" class="btn-text st-bar-pause" onClick={() => (stop(), setPhase('paused'))}>
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-              <rect x="6.5" y="5" width="3.5" height="14" rx="1.2" fill="currentColor" />
-              <rect x="14" y="5" width="3.5" height="14" rx="1.2" fill="currentColor" />
-            </svg>
-            Pause
-          </button>
+      <div class={`st-bar ${go ? '' : 'is-find'}`} ref={barRef} inert={phase !== 'running'}>
+        {go ? <p class="st-bar-q">{task.prompt}</p> : null}
+        {go ? null : (
+          <div class="st-bar-top">
+            <p class="st-bar-q">{task.question ?? task.prompt}</p>
+            <button type="button" class="btn-text st-bar-pause" onClick={() => (stop(), setPhase('paused'))}>
+              Pause
+            </button>
+          </div>
+        )}
+        <div class={`st-bar-row ${go ? '' : 'is-two'}`}>
+          {go ? (
+            <button type="button" class="btn-text st-bar-pause" onClick={() => (stop(), setPhase('paused'))}>
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <rect x="6.5" y="5" width="3.5" height="14" rx="1.2" fill="currentColor" />
+                <rect x="14" y="5" width="3.5" height="14" rx="1.2" fill="currentColor" />
+              </svg>
+              Pause
+            </button>
+          ) : null}
           {go ? (
             <button
               type="button"
@@ -503,9 +537,14 @@ export function TaskRunner(props: Props): JSX.Element {
               I cannot find it
             </button>
           ) : (
-            <button type="button" class="btn btn-primary st-bar-answer" onClick={openAnswer}>
-              Answer
-            </button>
+            <>
+              <button type="button" class="btn btn-secondary st-bar-answer" onClick={() => (stop(), setPhase('giveup'))}>
+                I cannot find it
+              </button>
+              <button type="button" class="btn btn-primary st-bar-answer" onClick={openAnswer}>
+                I found it
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -518,14 +557,15 @@ export function TaskRunner(props: Props): JSX.Element {
             <div class="fl-modal st-card" role="dialog" aria-modal="true" aria-labelledby="st-card-title">
               <p class="fl-eyebrow">{props.eyebrow}</p>
               <h2 id="st-card-title" class="fl-modal-title" tabIndex={-1}>
-                {task.title ?? task.prompt}
+                {go ? task.title ?? task.prompt : task.question ?? task.prompt}
               </h2>
               <div class="fl-modal-text st-card-text">
                 {props.restarted ? (
                   <p>The study closed while you were on this website. It starts again from the beginning.</p>
                 ) : null}
                 {condition === 'practice' ? <p>This website is for practice.</p> : null}
-                {task.context
+                {!go && task.context ? <p>{task.context}</p> : null}
+                {go && task.context
                   ? task.context.split('\n').map((line) => (
                       <p key={line} class={line.startsWith('Your task:') ? 'st-card-goal' : undefined}>
                         {line}
@@ -547,24 +587,33 @@ export function TaskRunner(props: Props): JSX.Element {
                     </ol>
                     <p>In this study, links do not take you to a new page. That is normal.</p>
                   </>
-                ) : (
+                ) : condition === 'practice' ? (
                   <>
+                    <h3 class="st-card-how">How to do it</h3>
                     <ol class="st-steps st-card-steps">
-                      <li>Look for the answer on the website, the way you usually would.</li>
                       <li>
-                        When you find it, tap <strong>Answer</strong>.
+                        Tap <strong>Open the website</strong>.
+                      </li>
+                      <li>Look for the answer. Scroll and tap the way you usually would.</li>
+                      <li>
+                        When you see it, tap <strong>I found it</strong> at the bottom, and choose the answer.
                       </li>
                       <li>
-                        If you cannot find it, tap <strong>Answer</strong> and choose{' '}
-                        <strong>I could not find it</strong>.
+                        If you cannot find it, tap <strong>I cannot find it</strong>.
                       </li>
                     </ol>
-                    <p>Links on this website are turned off. You can find the answer without them.</p>
+                    <p>The answer is on the page. Links do not open, and you do not need them.</p>
                   </>
+                ) : (
+                  <p>
+                    Find the answer on the website, then tap <strong>I found it</strong>.
+                  </p>
                 )}
-                <p>
-                  To take a break, tap <strong>Pause</strong>.
-                </p>
+                {go ? (
+                  <p>
+                    To take a break, tap <strong>Pause</strong>.
+                  </p>
+                ) : null}
               </div>
               <div class="st-card-actions">
                 {slow && !ready ? (
@@ -619,7 +668,7 @@ export function TaskRunner(props: Props): JSX.Element {
               <h2 id="st-sheet-title" class="st-sheet-title" tabIndex={-1}>
                 Do you want to stop looking?
               </h2>
-              <p class="st-sheet-text">That is fine. We will move on to the next question.</p>
+              <p class="st-sheet-text">That is fine. We will move on.</p>
               <div class="st-sheet-actions">
                 <Primary onClick={() => end('cant_find', null)}>Yes, stop looking</Primary>
                 <TextButton onClick={resume}>No, keep looking</TextButton>
@@ -634,6 +683,7 @@ export function TaskRunner(props: Props): JSX.Element {
               <h2 id="st-sheet-title" class="st-sheet-title" tabIndex={-1}>
                 {task.question ?? task.prompt}
               </h2>
+              {timedOut.current ? <p class="st-sheet-text">Your 2 minutes on this website are up. Choose your answer.</p> : null}
               {nudge ? <ErrorLine>Choose an answer, or choose I could not find it</ErrorLine> : null}
               <Choices
                 options={choices}
@@ -651,7 +701,9 @@ export function TaskRunner(props: Props): JSX.Element {
                 >
                   Continue
                 </Primary>
-                <TextButton onClick={() => (setNudge(false), resume())}>Go back to the website</TextButton>
+                {timedOut.current ? null : (
+                  <TextButton onClick={() => (setNudge(false), resume())}>Go back to the website</TextButton>
+                )}
               </div>
             </div>
           </div>

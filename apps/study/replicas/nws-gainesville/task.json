@@ -3,17 +3,22 @@
   "replicaId": "nws-gainesville",
   "family": "practice",
   "set": "practice",
-  "kind": "go",
-  "title": "Find the hourly weather forecast",
-  "context": "You will see the weather forecast for Gainesville, Florida, on the National Weather Service website. It was saved on Tuesday, October 27.\nImagine you want to see what the weather will be like at each hour of the day.\nYour task: find the link that opens the hourly forecast, and tap it.",
-  "prompt": "Find the link that opens the hourly forecast, and tap it.",
-  "short": "Hourly forecast",
+  "kind": "find",
+  "title": "Find out how warm it will get in Gainesville on Friday",
+  "context": "The weather forecast for Gainesville on the National Weather Service website. It was saved on Tuesday, October 27.",
+  "prompt": "Find out how warm it will get in Gainesville on Friday",
+  "question": "How warm will it get in Gainesville on Friday?",
+  "short": "Friday's high temperature",
   "label": "National Weather Service, the forecast for Gainesville",
   "tag": "the Gainesville forecast",
-  "targets": [
-    "/MapClick.php?lat=29.6742&lon=-82.3363&unit=0&lg=english&FcstType=graphical",
-    "/MapClick.php?lat=29.6742&lon=-82.3363&unit=0&lg=english&FcstType=digital"
+  "choices": [
+    "79°F",
+    "81°F",
+    "83°F",
+    "85°F"
   ],
-  "answerText": "Hourly Weather Forecast",
-  "answerSelector": "a[href*=\"FcstType=graphical\"], a[href*=\"FcstType=digital\"]"
+  "correct": 2,
+  "answerText": "Partly sunny, with a high near 83",
+  "answerSelector": "#detailed-forecast-body div:nth-of-type(6) > div:nth-of-type(2)",
+  "answerDepthScreens": 1.86
 }

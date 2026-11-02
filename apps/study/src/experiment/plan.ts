@@ -14,7 +14,11 @@ export const REPLICAS: Record<string, ReplicaManifest> = Object.fromEntries(
 );
 export const TASKS: TaskSpec[] = Object.values(taskFiles);
 
-export const FAMILIES: FamilyId[] = ['news', 'sports', 'gov'];
+/**
+ * The families in each round. Protocol 4.0.0 dropped 'gov' (the park pages: WebAble barely changed them, and their
+ * many look-alike sections confused people) to keep the study near 15 minutes; its copies stay in replicas/.
+ */
+export const FAMILIES: FamilyId[] = ['news', 'sports'];
 
 export interface RoundPlan {
   condition: Condition;

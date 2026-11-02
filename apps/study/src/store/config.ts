@@ -13,6 +13,11 @@ export interface StudyConfig {
   retention: string | null;
   /** Last day a participant can ask for deletion by code, or "any time" for no last day. */
   withdrawBy: string | null;
+  /**
+   * The hosted WebAble server (protocol 4.0.0): with it, the AI answers live on the adapted websites (AI layouts,
+   * rewrites for the person, help when they have trouble). Without it, recorded answers only.
+   */
+  aiOrigin: string | null;
   engineCommit: string;
 }
 
@@ -30,6 +35,7 @@ export const CONFIG: StudyConfig = {
   approval: val('VITE_STUDY_APPROVAL'),
   retention: val('VITE_STUDY_RETENTION'),
   withdrawBy: val('VITE_STUDY_WITHDRAW_BY'),
+  aiOrigin: val('VITE_STUDY_AI_ORIGIN'),
   engineCommit: val('VITE_ENGINE_COMMIT') ?? 'dev',
 };
 

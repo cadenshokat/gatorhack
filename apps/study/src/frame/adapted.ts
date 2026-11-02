@@ -6,6 +6,7 @@
 import type { EngineApi, EngineState } from '../../../extension/src/contracts';
 import type { DeliveryRecord, FrameHost } from '../contracts';
 import { loadFixtures } from '../replay/load';
+import { createLiveAnswers, type LiveAnswers } from '../replay/live';
 import { createRecorder, type Recorder } from '../replay/record';
 import { createReplayAnswers } from '../replay/replay';
 import type { RecordedAnswers, ReplayMiss } from '../replay/types';
@@ -28,6 +29,8 @@ const HIDE_CSS =
   '.wa-fab, .wa-strip__orig, .wa-foot .wa-btn, .wa-peek, [aria-label="Chat with the site"] { display: none !important; }';
 const SETTLE_QUIET_MS = 600;
 const SETTLE_CAP_MS = 8000;
+/** Live mode: the AI-designed layout (up to 22 s) is worth waiting for while the person reads the task card. */
+const LIVE_SETTLE_CAP_MS = 25000;
 const SETTLED_PHASES = new Set<EngineState['phase']>(['understood', 'calm', 'idle', 'error']);
 
 export interface AdaptedRun {
@@ -83,6 +86,11 @@ export function startAdapted(o: Options): AdaptedRun {
   let error: string | undefined;
   const toasts = new Set<string>();
   const offers = new Set<string>();
+  /** Live mode: the person's yes to an offer, and what happened to the AI-designed layout. */
+  const accepted: string[] = [];
+  let layout: NonNullable<DeliveryRecord['ai']>['layout'] = 'none';
+  let liveRun: LiveAnswers | null = null;
+  const live = trial.mode === 'live' && !!trial.ai;
 
   // Model answers: recorded from the real server (dev machine only) or replayed from the replica's fixtures.
   let answers: ModelAnswers;
@@ -112,6 +120,16 @@ export function startAdapted(o: Options): AdaptedRun {
       overlayClose: (a, b) => need().overlayClose(a, b),
       compose: (r) => need().compose(r),
     };
+    if (live && trial.ai) {
+      liveRun = createLiveAnswers({
+        origin: trial.ai.origin,
+        recorded: need,
+        reader: trial.ai.reader,
+        originalHost: trial.originalHost ?? '',
+        note: (k, d) => host.note(k, d),
+      });
+      answers = liveRun.answers;
+    }
   }
 
   const bg = createStudyBackground({
@@ -119,6 +137,8 @@ export function startAdapted(o: Options): AdaptedRun {
     answers,
     zoom,
     note: (k, d) => host.note(k, d),
+    reader: live ? trial.ai?.reader ?? null : null,
+    aiLayouts: live,
   });
   installChromeShim(bg.handle);
 
@@ -154,8 +174,15 @@ export function startAdapted(o: Options): AdaptedRun {
     api = engine.api;
     if (import.meta.env.DEV) (window as { __studyEngine?: EngineApi }).__studyEngine = engine.api;
     try {
-      // content.ts: mountUi(engine.api), then engine.start().
-      mountUi(engine.api);
+      // content.ts: mountUi(engine.api), then engine.start(). The study notes each offer the person says yes to.
+      const base = engine.api;
+      mountUi({
+        ...base,
+        acceptOffer: (kind) => {
+          accepted.push(kind);
+          base.acceptOffer(kind);
+        },
+      });
       const ui = document.querySelector('webable-ui');
       const outer = ui?.shadowRoot ?? null;
       if (outer) {
@@ -174,6 +201,7 @@ export function startAdapted(o: Options): AdaptedRun {
 
     let lastUpdate = performance.now();
     let wasOpen = false;
+    let swapAsked = false;
     engine.api.subscribe((s) => {
       lastUpdate = performance.now();
       // The simplified page closing once the page is shown means the person left it some way the study missed.
@@ -181,6 +209,19 @@ export function startAdapted(o: Options): AdaptedRun {
       wasOpen = !!s.calm.open;
       for (const t of s.toasts ?? []) toasts.add(t.id);
       for (const f of s.struggle?.offers ?? []) offers.add(f.kind);
+      // The AI-designed layout: before Start the person cannot see the page, so it goes straight on; after Start the
+      // engine offers it on the page and never swaps it on its own.
+      if (s.calm.source === 'ai') layout = layout === 'chip' ? 'chip' : 'used';
+      else if (s.calm.aiReady) {
+        if (!meter.isMeasuring() && layout !== 'chip') {
+          if (!swapAsked) {
+            swapAsked = true;
+            engine.api.useAiLayout();
+          }
+        } else layout = 'chip';
+      } else if (s.calm.open && !s.calm.loading && s.calm.redesign && layout === 'none') {
+        layout = s.calm.redesign.chosen === 'heuristic' ? 'kept' : layout;
+      }
     });
     let started = false;
     void engine.start().then(
@@ -214,7 +255,7 @@ export function startAdapted(o: Options): AdaptedRun {
           });
           return;
         }
-        if (!ready && performance.now() >= SETTLE_CAP_MS) finishReady(true);
+        if (!ready && performance.now() >= (live ? LIVE_SETTLE_CAP_MS : SETTLE_CAP_MS)) finishReady(true);
       }, 100);
     });
   })().catch((err: unknown) => {
@@ -234,13 +275,19 @@ export function startAdapted(o: Options): AdaptedRun {
         out.composeStatus = s.compose?.status ?? 'idle';
       }
       if (recorder) out.inFlight = recorder.inFlight();
+      else if (liveRun) out.inFlight = liveRun.inFlight();
       if (error) out.error = error;
       return out;
     },
     delivery() {
       if (!api) return null;
       const s = api.getState();
-      return buildDelivery({
+      const calls = liveRun?.calls() ?? [];
+      if (layout === 'none' && s.calm.open && calls.some((c) => c.what === 'redesign' && !c.ok)) layout = 'failed';
+      const ai: DeliveryRecord['ai'] = live
+        ? { live: true, reader: trial.ai?.reader?.headline ?? null, layout, accepted: accepted.slice(), calls }
+        : undefined;
+      const d = buildDelivery({
         state: s,
         report: bg.lastReport(),
         engineCommit: engineCommit(),
@@ -252,6 +299,7 @@ export function startAdapted(o: Options): AdaptedRun {
         toastsSeen: toasts.size,
         offersSeen: offers.size,
       });
+      return ai ? { ...d, ai } : d;
     },
     recorded: () => recorder?.recorded() ?? null,
   };

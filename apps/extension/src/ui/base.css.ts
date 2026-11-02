@@ -99,7 +99,7 @@ ${C} .wa-btn{background:var(--wa-tonal);color:var(--wa-ink);font-weight:var(--wa
 ${C} .wa-btn:hover{background:var(--wa-hover)}
 ${C} .wa-btn--quiet{background:transparent;box-shadow:none}
 ${C} .wa-btn--quiet:hover{background:var(--wa-tonal)}
-${C} .wa-btn--link{background:transparent;box-shadow:none;color:var(--wa-ink);font-weight:var(--wa-w-body);padding-inline:0;min-width:0;gap:.35em;
+${C} .wa-btn--link{background:transparent;box-shadow:none;color:var(--wa-link);font-weight:var(--wa-w-body);padding-inline:0;min-width:0;gap:.35em;
   text-decoration:underline;text-decoration-thickness:max(1px,.06em);text-underline-offset:.2em}
 ${C} .wa-btn--link.wa-btn--block{width:auto;align-self:flex-start}
 ${C} .wa-btn--link:hover{background:transparent;text-decoration-thickness:max(2px,.1em)}
@@ -529,8 +529,8 @@ ${C} .wa-chips{display:flex;flex-wrap:wrap;gap:10px}
 ${C} .wa-chip{min-height:max(40px,var(--wa-chip-h))}
 ${C} .wa-chip[data-selected]{background:var(--wa-ink);color:var(--wa-canvas)}
 ${C} .wa-linkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,max(11em,190px)),1fr));gap:0 24px}
-${C} .wa-linkgrid .wa-btn--link{color:var(--wa-ink-2);text-decoration:none;min-height:max(44px,var(--wa-t))}
-${C} .wa-linkgrid .wa-btn--link:hover{color:var(--wa-ink);text-decoration:underline}
+${C} .wa-linkgrid .wa-btn--link{color:var(--wa-link);text-decoration:none;min-height:max(44px,var(--wa-t))}
+${C} .wa-linkgrid .wa-btn--link:hover{color:var(--wa-link);text-decoration:underline}
 
 /* ---------- product: picture well with thumbnails, then the buy box ---------- */
 ${C} .wa-buy{display:grid;gap:var(--wa-card-gap) calc(var(--wa-card-gap)*2);align-items:start}

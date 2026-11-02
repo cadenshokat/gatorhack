@@ -1,12 +1,65 @@
-# WebAble mobile study: protocol `mobile-replica-3.0.0`
+# WebAble mobile study: protocol `mobile-replica-4.0.0`
 
-*Revised 30 Oct 2026: 3.0.0 (the committee's review of 28 Oct: agreement first, demographics, round ratings) on
-2.1.0 (outcome tasks, every scale point labelled, 28 Oct 2026), on 2.0.0, itself on 1.0.0 (27 Oct 2026). The code is in `apps/study`; this file is the protocol, the measures
+*Revised 2 Nov 2026: 4.0.0 (Caden's first in-person pilot: shorter, find-the-answer tasks, live AI fitted to the
+person) on 3.0.0 (the committee's review of 28 Oct), on 2.1.0 (outcome tasks, every scale point labelled, 28 Oct 2026),
+on 2.0.0, itself on 1.0.0 (27 Oct 2026). The code is in `apps/study`; this file is the protocol, the measures
 and the analysis plan. When the code and this file disagree, fix one of them before collecting data. Change the
 protocol version for any change to pages, tasks, wording, scoring or engine. Choices still open for Caden and
-Dr. Rani are in `docs/STUDY-DECISIONS.md`.*
+Dr. Rani are in `docs/STUDY-DECISIONS.md`. Sections below 0 still describe 3.0.0 where 4.0.0 does not say otherwise.*
 
 ## 0. What changed
+
+### In 4.0.0
+
+From the first in-person pilot (2 Nov 2026): it took 40 minutes, the participant stopped engaging after about 25, the
+"find the link" tasks were ambiguous (on the park pages, look-alike sections such as park hours read as places the
+closures might be, and tapping them did nothing), and WebAble's AI never responded to the person. Exclude that
+pilot session from analysis (Caden finished it for the participant).
+
+- **About 15 minutes.** The warm-up (5 activities, about 29 screens) becomes "Set up WebAble" (4–6 screens); the 10
+  SUS statements after each round become UMUX-Lite's 2; each round has 2 websites (news and sports; the park pages
+  are dropped: WebAble barely changed them and their tasks confused people); the comment after each round, the
+  realism and "what happened" questions, the "Get ready" page, and the zoom, tap-the-wrong-thing and phone-holding
+  questions are gone. About 40 screens in all.
+- **Find-the-answer tasks** (the 1.0.0 tasks again, matched across sets): a question whose answer is on the page
+  (a score in a results table, a number or year in a story, the practice's Friday high). The person taps
+  **I found it** and picks from 4 answers, or **I cannot find it**. Success is unambiguous on either version of a
+  page. Link taps do nothing, as before. Each website has **2 minutes** of active time; then the answer sheet opens
+  by itself (`TrialRecord.timedOut`).
+- **Shorter cards.** The card before a website is the question, which website it is in one line, and "Find the
+  answer on the website, then tap I found it". The numbered how-to steps appear only on the practice.
+- **Set up WebAble** (`src/shell/Warmup.tsx`, `src/experiment/tuning.ts`): "What gets in your way on websites?"
+  (small text, tapping the wrong thing, busy pages, things that move, long pages full of words), the onboarding's own
+  text size step, light or dark (two samples), and with live AI "How do you like information?" (steps, short points,
+  paragraphs) and "How should websites be written for you?" (plain and short, as the website wrote it). Then a list
+  of what WebAble will do, in the person's terms. The answers tune the fit (bigger buttons and steady taps, the
+  simplified page sooner, motion stopped, light or dark) and become the AI's reader description (`ReaderProfile`,
+  the same thing the extension builds from what a person's AI assistant knows about them).
+- **A tap baseline** (`SessionRecord.baseline`, `src/shell/baseline.ts`): taps on the question screens before the first
+  website (misses, near misses, repeats, changed answers, time to answer, distance from an answer's middle). It is a
+  covariate for speed and accuracy, it sets how much bigger buttons get, and it is the "usual" miss rate WebAble's AI
+  compares tapping on the websites with (`fit.baselines`).
+- **Live AI on the adapted websites** (`src/replay/live.ts`, `VITE_STUDY_AI_ORIGIN`, the server at
+  https://webable-gatorhack-ai.vercel.app). The AI's read of each page is still recorded and replayed (instant, the
+  same for everyone). What depends on the person is asked live: AI-designed layouts (started while the card is up and
+  put on before Start; after Start the engine offers them on the page and never swaps by itself), rewrites of the
+  simplified page and paragraphs for this person's reader description, and struggle help (Jev judges tapping against
+  the baseline; WebAble offers a fix on the page). If the server cannot answer, the recorded answers (written for a
+  general reader) are used, and the session notes it. Each adapted trial's `delivery.ai` records the live calls, the
+  layout outcome and any offers accepted.
+- **Learning between websites.** Help the person accepts on one adapted website (bigger buttons, larger text, steady
+  taps, the simplified page) stays on for the next adapted websites (`fit_learned` note).
+- **Blue.** Primary buttons are blue (#0A5FD1, 5.9:1 with white); a chosen answer is light blue with a blue edge.
+  Links on WebAble's simplified page are blue (#0040DD, 7.6:1) instead of ink, in the extension too.
+- **Steps in words.** The header says "Step 2 of 6 · Set up WebAble" instead of the wordmark.
+- **Agreement.** With live AI it says what is sent to the AI (the website's text and layout, how the person likes to
+  read, numbers about tapping and scrolling; never their name, age or anything else about them) and who runs it
+  (TypeSafe and OpenAI). Without `VITE_STUDY_AI_ORIGIN` it keeps the 3.0.0 wording ("Nothing you do is sent to an AI").
+- **Approval.** Sending participants' tapping and reading preferences to outside AI companies is a change to what
+  the exempt determination covers. Check with Dr. Rani whether it needs an amendment before running participants.
+- **Analysis.** UMUX-Lite replaces the SUS as the usability measure (`umux_*` in the export; the SUS stays for
+  earlier sessions). The tap baseline and the set-up answers are in `participants.csv`; `timed_out`, `ai_layout`,
+  `ai_accepted` and `ai_calls_failed` in `trials.csv`.
 
 ### In 3.0.0
 

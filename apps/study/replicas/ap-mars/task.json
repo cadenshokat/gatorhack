@@ -3,16 +3,23 @@
   "replicaId": "ap-mars",
   "family": "news",
   "set": "B",
-  "kind": "go",
-  "title": "Find more stories by the same reporter",
-  "context": "You will see a news story on the AP News website.\nImagine you liked this story and want to read more stories by the person who wrote it.\nYour task: find the link that opens a list of their stories, and tap it.",
-  "prompt": "Find the link that opens more stories by the reporter who wrote this story, and tap it.",
-  "short": "Reporter's stories",
+  "kind": "find",
+  "title": "Find out how many days the rover Idefix will spend driving on Phobos",
+  "context": "A news story on the AP News website, about a spacecraft going to Mars.",
+  "prompt": "Find out how many days the rover Idefix will spend driving on Phobos",
+  "question": "How many days will the rover Idefix spend driving on Phobos?",
+  "short": "Days Idefix drives on Phobos",
   "label": "AP News, the story about a spacecraft going to Mars",
   "tag": "the Mars story",
-  "targets": [
-    "/author/marcia-dunn"
+  "choices": [
+    "2",
+    "10",
+    "50",
+    "100"
   ],
-  "answerText": "MARCIA DUNN",
-  "answerSelector": "a[href=\"/author/marcia-dunn\"]"
+  "correct": 3,
+  "answerText": "around Phobos for 100 days",
+  "answerTextSimplified": "100 days",
+  "answerSelector": ".RichTextStoryBody > p:nth-of-type(12)",
+  "answerDepthScreens": 4.11
 }

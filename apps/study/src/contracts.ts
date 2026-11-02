@@ -4,9 +4,9 @@
 // (apps/extension/src/engine + src/ui, unchanged) behind a chrome.* stand-in (src/shim) that replays model answers
 // recorded once per replica (src/replay). Only the lead changes this file; others add optional fields and say so.
 
-import type { FitProfile, FittingRaw } from '@webable/core';
+import type { FitProfile, FittingRaw, ReaderProfile } from '@webable/core';
 
-export const PROTOCOL = 'mobile-replica-3.0.0';
+export const PROTOCOL = 'mobile-replica-4.0.0';
 
 /** The agreement's version, saved with "I agree to take part": the protocol's own number. */
 export const CONSENT_VERSION = PROTOCOL.replace(/^mobile-replica-/, '');
@@ -129,8 +129,15 @@ export interface TrialConfig {
   frame: { w: number; h: number };
   /** /_r/<replicaId>/fixtures.json */
   fixturesUrl: string;
-  /** 'record' only on the dev machine (scripts/record.mjs), with the server on 127.0.0.1:41741. */
-  mode: 'replay' | 'record';
+  /**
+   * 'record' only on the dev machine (scripts/record.mjs), with the server on 127.0.0.1:41741. 'live' (protocol 4.0.0,
+   * adapted only): recorded page reads first, and the hosted server for what depends on the person (`ai`).
+   */
+  mode: 'replay' | 'record' | 'live';
+  /** Live mode: the hosted WebAble server, and how this person likes to read (from the set-up questions). */
+  ai?: { origin: string; reader: ReaderProfile | null };
+  /** ReplicaManifest.originalHost: compose's page.host in record and live mode. */
+  originalHost?: string;
 }
 
 /** The shell's side, set on the parent window as `__studyHost` before the iframe loads. */
@@ -237,6 +244,19 @@ export interface DeliveryRecord {
   replayMisses: Array<{ what: string; id?: string }>;
   /** At least one op stuck and something measurable changed. */
   delivered: boolean;
+  /**
+   * From protocol 4.0.0: the AI that answered live on this page. `layout`: 'used' = the AI-designed layout was on screen
+   * from Start; 'chip' = it arrived after Start and was offered on the page; 'kept' = Jev kept the simple layout;
+   * 'failed' = no AI layout came; 'none' = no simplified page or AI layouts off. `accepted`: offers the person said yes
+   * to (bigger buttons, larger text…), which the next websites keep.
+   */
+  ai?: {
+    live: boolean;
+    reader: string | null;
+    layout: 'used' | 'chip' | 'kept' | 'failed' | 'none';
+    accepted: string[];
+    calls: Array<{ what: string; ok: boolean; ms: number }>;
+  };
 }
 
 /**
@@ -271,8 +291,40 @@ export interface SusResponse {
   submittedAt: string | null;
 }
 
+/**
+ * UMUX-Lite (Lewis, Utesch & Maher 2013): two statements, 1–7, every answer in words. Plain wording for this study:
+ * "These websites let me do what I needed to do" (capabilities meet my requirements) and "These websites were easy
+ * to use". Score = (item1 − 1 + item2 − 1) × 100 / 12, null unless both are answered.
+ */
+export interface UmuxResponse {
+  instrument: 'umux-lite-lewis-2013-en-7pt-plain@1.0.0';
+  items: [Likert7 | null, Likert7 | null];
+  score: number | null;
+  submittedAt: string | null;
+}
+
 /** 'chose': a 'go' task ended on "Yes, this is it" (see TrialRecord.chosen). */
 export type EndAction = 'answered' | 'chose' | 'cant_find' | 'skipped' | 'technical';
+
+/**
+ * From protocol 4.0.0: how the person taps on the study's own question screens, before any website. The same simple
+ * screens for everyone, so it is a baseline of their speed and accuracy (a covariate), and WebAble's AI compares their
+ * tapping on the websites with it. A miss is a tap that lands on no button; `nearMisses` within 24 px of one.
+ */
+export interface TapBaseline {
+  screens: number;
+  taps: number;
+  misses: number;
+  nearMisses: number;
+  /** A second tap within 500 ms and 30 px of the one before. */
+  repeats: number;
+  /** A tapped answer changed before Continue. */
+  changes: number;
+  /** Median ms from a question screen opening to its first answer tap. */
+  medianAnswerMs: number | null;
+  /** Median distance in px from a tap on an answer button to that button's centre. */
+  medianOffCentrePx: number | null;
+}
 
 export interface TrialRecord {
   taskId: string;
@@ -294,6 +346,8 @@ export interface TrialRecord {
   kind?: 'find' | 'go';
   /** 'find': index into task.choices, -1 for "I couldn't find it", null when skipped. Always null for 'go'. */
   answer: number | null;
+  /** From protocol 4.0.0: the 2 minutes on the website ran out, and the answer sheet opened by itself. */
+  timedOut?: boolean;
   /** 'find': the right answer was picked. 'go': the confirmed link goes to a destination (chosen.meets). */
   correct: boolean;
   /**
@@ -414,6 +468,18 @@ export interface SessionRecord {
   about: AboutYou;
   device: DeviceInfo | null;
   calibration: { raw: FittingRaw | null; fit: FitProfile | null; durationSec: number; skipped: string[] } | null;
+  /** From protocol 4.0.0: the set-up answers, and the reader the AI writes for (null without live AI). */
+  setup?: {
+    needs: Array<'small_text' | 'tap_wrong' | 'busy' | 'motion' | 'long_text'>;
+    polarity: 'light' | 'dark';
+    shape: 'steps' | 'points' | 'paragraphs';
+    words: 'plain' | 'as_is';
+    reader: ReaderProfile | null;
+  };
+  /** From protocol 4.0.0: tapping on the question screens before the first website. */
+  baseline?: TapBaseline | null;
+  /** From protocol 4.0.0: UMUX-Lite after each round, in place of the 10 SUS statements. */
+  umux?: { 1: UmuxResponse | null; 2: UmuxResponse | null };
   trials: TrialRecord[];
   sus: { 1: SusResponse | null; 2: SusResponse | null };
   /** "What was it like to use these 3 websites?" after each round's statements (optional, from protocol 2.0.0). */

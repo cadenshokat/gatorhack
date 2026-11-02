@@ -1,12 +1,15 @@
 // The study's "background worker": what apps/extension/entrypoints/background.ts does for each request, with the
-// study treatment from engine-seams §1.2. Model answers come from `answers` (replayed fixtures, or the real server in
-// record mode); zoom is virtual (zoom.ts); nothing is learned about the person; the sheet's controls are hidden, so
-// their requests only leave a note. A request type added upstream breaks this switch at compile time.
+// study treatment from engine-seams §1.2. Model answers come from `answers` (replayed fixtures, the real server in
+// record mode, or from protocol 4.0.0 live mode: recorded page reads first, the hosted server for everything that
+// depends on the person). Zoom is virtual (zoom.ts); learning while browsing stays off; the sheet's controls are hidden,
+// so their requests only leave a note. A request type added upstream breaks this switch at compile time.
 
 import { DEFAULT_SETTINGS } from '@webable/core';
 import type {
-  ComposeRequest, ComposeResponse, FitProfile, MeaningCheckRequest, MeaningVerdict, OverlayButtonEvidence,
-  OverlayCloseResult, OverlayEvidence, PageDigest, PageUnderstanding, Settings, TabReport,
+  ComposeRequest, ComposeResponse, FitProfile, FitSummaryForModel, MeaningCheckRequest, MeaningVerdict,
+  OverlayButtonEvidence, OverlayCloseResult, OverlayEvidence, PageDigest, PageOutline, PageUnderstanding, ReaderProfile,
+  RedesignResult, RewordScoreRequest, RewordScoreResult, RewordWriteRequest, RewordWriteResult, Role, Settings,
+  StruggleJudgment, StruggleSignals, TabReport,
 } from '@webable/core';
 import type { ExtRequest, HealthInfo } from '../../../extension/src/engine/bus';
 import { StudyBgError } from './errors';
@@ -18,6 +21,11 @@ export interface ModelAnswers {
   meaning(req: MeaningCheckRequest): Promise<MeaningVerdict>;
   overlayClose(overlay: OverlayEvidence, candidates: OverlayButtonEvidence[]): Promise<OverlayCloseResult>;
   compose(req: Omit<ComposeRequest, 'reader'>): Promise<ComposeResponse>;
+  /** Live mode only (protocol 4.0.0): the answers that depend on the person, asked of the hosted server. */
+  struggle?(signals: StruggleSignals): Promise<StruggleJudgment>;
+  redesign?(outline: PageOutline, fit: FitSummaryForModel, roles: Record<string, Role>): Promise<RedesignResult>;
+  rewordScore?(req: Omit<RewordScoreRequest, 'reader'>): Promise<RewordScoreResult>;
+  rewordWrite?(req: Omit<RewordWriteRequest, 'reader'>): Promise<RewordWriteResult>;
 }
 
 export interface StudyBackgroundOptions {
@@ -26,9 +34,13 @@ export interface StudyBackgroundOptions {
   zoom: VirtualZoom;
   note(kind: string, detail?: string): void;
   onReport?(report: TabReport): void;
+  /** Live mode: how this person likes to read (from the set-up questions), for the AI's rewrites. */
+  reader?: ReaderProfile | null;
+  /** Live mode: AI-designed layouts on (they need the hosted server). */
+  aiLayouts?: boolean;
 }
 
-/** What the study's engine runs with: no AI layouts (so no screenshots), no Jev view. */
+/** What the study's engine runs with without live AI: no AI layouts, no Jev view. */
 export const STUDY_SETTINGS: Settings = { ...DEFAULT_SETTINGS, aiLayouts: false, lens: false };
 
 const HEALTH: HealthInfo = { ok: true, ai: 'on', ms: 0 };
@@ -40,6 +52,7 @@ export interface StudyBackground {
 
 export function createStudyBackground(opts: StudyBackgroundOptions): StudyBackground {
   const { answers, zoom, note } = opts;
+  const settings: Settings = { ...STUDY_SETTINGS, aiLayouts: opts.aiLayouts === true && !!answers.redesign };
   let report: TabReport | null = null;
   const off = (what: string): never => {
     throw new StudyBgError('refused', `${what} is off in the study`);
@@ -58,9 +71,10 @@ export function createStudyBackground(opts: StudyBackgroundOptions): StudyBackgr
       case 'compose':
         return answers.compose(req.req);
 
-      // Behaviour-dependent: learning and struggle offers are not part of the study.
+      // Struggle offers are live (4.0.0): they depend on what the person does. Learning while browsing stays off.
       case 'struggle':
-        return off('Struggle reading');
+        if (!answers.struggle) return off('Struggle reading');
+        return answers.struggle(req.signals);
       case 'attribute':
         return off('Attribution');
       case 'passiveEvidence':
@@ -70,17 +84,20 @@ export function createStudyBackground(opts: StudyBackgroundOptions): StudyBackgr
       case 'getPassive':
         return null;
 
-      // AI layouts are off (settings.aiLayouts false), so these should never come; say so if they do.
+      // AI layouts: live only. The screenshot check cannot run in a phone's browser; the engine swaps without it.
       case 'redesign':
-        note('request_off', 'redesign');
-        return off('AI layouts');
+        if (!settings.aiLayouts || !answers.redesign) {
+          note('request_off', 'redesign');
+          return off('AI layouts');
+        }
+        return answers.redesign(req.outline, req.fit, req.roles);
       case 'visualVerify':
-        note('request_off', 'visualVerify');
         return off('The screenshot check');
 
-      // No AI answer imported: paragraph rewrites stay off (reword.ts turns itself off on a null reader).
+      // The reader comes from the set-up questions (live mode); without one, paragraph rewrites stay off (reword.ts
+      // turns itself off on a null reader) and the simplified page is written for a general reader.
       case 'getReader':
-        return null;
+        return opts.reader ? structuredClone(opts.reader) : null;
       case 'readerImport':
         note('request_off', 'readerImport');
         return off('Importing an AI answer');
@@ -88,14 +105,17 @@ export function createStudyBackground(opts: StudyBackgroundOptions): StudyBackgr
         note('request_noop', 'setReader');
         return null;
       case 'rewordScore':
+        if (!opts.reader || !answers.rewordScore) throw new StudyBgError('refused', 'No answer from an AI assistant has been added yet');
+        return answers.rewordScore(req.req);
       case 'rewordWrite':
-        throw new StudyBgError('refused', 'No answer from an AI assistant has been added yet');
+        if (!opts.reader || !answers.rewordWrite) throw new StudyBgError('refused', 'No answer from an AI assistant has been added yet');
+        return answers.rewordWrite(req.req);
 
       // Local requests.
       case 'getFit':
         return structuredClone(opts.fit);
       case 'getSettings':
-        return { ...STUDY_SETTINGS, pausedOrigins: [] };
+        return { ...settings, pausedOrigins: [] };
       case 'health':
         return { ...HEALTH };
       case 'setZoom':
@@ -120,7 +140,7 @@ export function createStudyBackground(opts: StudyBackgroundOptions): StudyBackgr
         return { ok: true };
       case 'setSettings':
         note('request_noop', 'setSettings');
-        return { ...STUDY_SETTINGS, pausedOrigins: [] };
+        return { ...settings, pausedOrigins: [] };
       case 'setFit':
         note('request_noop', 'setFit');
         return structuredClone(opts.fit);

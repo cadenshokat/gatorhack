@@ -45,6 +45,9 @@ jobs:
           VITE_STUDY_APPROVAL: "The University of Florida's ethics board, the IRB, has reviewed this study. It decided the study is exempt from full review. The reference is ET00056117, from 14 September 2026. The lead researcher is Neha Rani, neharani@ufl.edu. For questions about your rights in this study, email the UF IRB at irb@ufl.edu."
           VITE_STUDY_RETENTION: "Only the study team can see your answers. We store them under a code. We keep your first name apart from your results and use it only to check that nobody takes part twice. We keep your answers with no end date, unless you ask us to delete them."
           VITE_STUDY_WITHDRAW_BY: "any time"
+          # The hosted AI server (apps/server on Vercel): live AI on the adapted websites. Remove it to fall back to the
+          # recorded AI answers only (then the agreement says nothing is sent to an AI).
+          VITE_STUDY_AI_ORIGIN: "https://webable-gatorhack-ai.vercel.app"
       - uses: actions/upload-pages-artifact@v4
         with:
           path: apps/study/dist

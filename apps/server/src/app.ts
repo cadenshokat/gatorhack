@@ -6,7 +6,7 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { BODY_LIMIT_BYTES } from './config';
-import { corsMiddleware, hostGuard, originGuard } from './guard';
+import { corsMiddleware, hostGuard, originGuard, rateLimit } from './guard';
 import { JevError } from './jev';
 import { registerHealth } from './routes/health';
 import { registerOverlay } from './routes/overlay';
@@ -54,6 +54,8 @@ export function createApp(): Hono {
   app.use('*', hostGuard);
   app.use('*', corsMiddleware);
   app.use('*', originGuard);
+  // Public deployment only (WEBABLE_PUBLIC=1): a per-IP POST limit. A no-op locally.
+  app.use('*', rateLimit);
   app.use(
     '/v1/*',
     bodyLimit({

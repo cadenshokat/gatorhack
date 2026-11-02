@@ -165,13 +165,14 @@ const MAX_DARK: Palette = {
 /**
  * Calm view v3, light (design.md §2): a white page; ink #121317 (18.6:1) and meta #45474D (9.3:1, where the
  * references' 5.7:1 greys fail WCAG 1.4.6); hairlines #E0E0E3; field borders #8A8A8F (3.4:1, 1.4.11); #F6F6F7 for
- * picture wells and secondary pills; the primary action is an ink pill; links are ink and underlined; no shadows on
+ * picture wells and secondary pills; the primary action is an ink pill; links are blue #0040DD (7.6:1; ink links read as
+ * plain text to people, Caden's study, 2 Nov 2026); no shadows on
  * content (only on things that float: popovers and the page's popups).
  */
 const CALM_LIGHT: Palette = {
   canvas: '#FFFFFF', raised: '#FFFFFF', tonal: '#F6F6F7', hover: '#EDEDEF', press: '#E3E3E6', well: '#F6F6F7',
   ink: '#121317', ink2: '#45474D', line: '#E0E0E3', lineStrong: '#8A8A8F',
-  action: '#121317', onAction: '#FFFFFF', actionHover: '#2D2E34', link: '#121317', badge: '#45474D',
+  action: '#121317', onAction: '#FFFFFF', actionHover: '#2D2E34', link: '#0040DD', badge: '#45474D',
   accent: '#2D6A3E', onAccent: '#FFFFFF', accentHover: '#22552F', accentTint: '#EBF2EC',
   warning: '#7A4800', warningTint: '#FBF4E6', success: '#1E6B36', successTint: '#ECF5EE', focus: '#121317', selection: '#CFE0FC',
   glass: 'rgba(255,255,255,.9)',
@@ -182,7 +183,7 @@ const CALM_LIGHT: Palette = {
 const CALM_DARK: Palette = {
   canvas: '#121317', raised: '#121317', tonal: '#222328', hover: '#2C2D33', press: '#36373D', well: '#222328',
   ink: '#F3F3F5', ink2: '#B6B7BD', line: '#33343A', lineStrong: '#8A8A8F',
-  action: '#F3F3F5', onAction: '#121317', actionHover: '#FFFFFF', link: '#F3F3F5', badge: '#B6B7BD',
+  action: '#F3F3F5', onAction: '#121317', actionHover: '#FFFFFF', link: '#6CB4FF', badge: '#B6B7BD',
   accent: '#8FCB9B', onAccent: '#0F1A12', accentHover: '#A9D9B2', accentTint: '#1B2B1F',
   warning: '#F2B75E', warningTint: '#2B2316', success: '#6FD08C', successTint: '#13301D', focus: '#F3F3F5', selection: '#1F4E85',
   glass: 'rgba(18,19,23,.88)',
@@ -206,7 +207,7 @@ function paletteFor(fit: FitProfile | null, mode: ThemeMode, surface: 'chrome' |
   const dark = mode === 'dark' || (mode === 'max' && fit?.polarity.value === 'dark');
   if (surface === 'calm') {
     // Maximum contrast keeps its 2 px edges; its one action stays an ink pill like every other Calm v3 action.
-    if (mode === 'max') return dark ? { ...MAX_DARK, action: '#FFFFFF', onAction: '#000000', actionHover: '#E6E6E6', link: '#FFFFFF' } : { ...MAX_LIGHT, action: '#000000', onAction: '#FFFFFF', actionHover: '#1A1A1A', link: '#000000' };
+    if (mode === 'max') return dark ? { ...MAX_DARK, action: '#FFFFFF', onAction: '#000000', actionHover: '#E6E6E6', link: '#8AC4FF' } : { ...MAX_LIGHT, action: '#000000', onAction: '#FFFFFF', actionHover: '#1A1A1A', link: '#0033CC' };
     const base = dark ? CALM_DARK : CALM_LIGHT;
     return fit?.contrast.band === 'M' ? calmMoreContrast(base) : base;
   }

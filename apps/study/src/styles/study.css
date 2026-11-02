@@ -806,3 +806,147 @@ html:has(.st-task) {
   font: 600 18px/24px var(--font);
   color: var(--c-ink);
 }
+
+/* ------------------------------------------------------------------ */
+/* Protocol 4.0.0                                                      */
+/* ------------------------------------------------------------------ */
+
+/* Blue is what people read as "tap here" on a phone (iOS and Android apps). Primary actions are solid blue: #0A5FD1
+   with white text is 5.9:1. A chosen answer is light blue with a blue edge and tick, so it never looks like the
+   button that moves on. */
+:root {
+  --st-blue: #0a5fd1;
+  --st-blue-press: #084ba6;
+  --st-blue-wash: #e8f0fd;
+}
+.btn-primary {
+  background: var(--st-blue);
+  border-color: var(--st-blue);
+  color: #fff;
+}
+.btn-primary:active {
+  background: var(--st-blue-press);
+}
+.btn-primary:disabled {
+  background: var(--c-line-strong);
+  border-color: var(--c-line-strong);
+}
+.st-choice.is-on,
+.answer.is-on {
+  background: var(--st-blue-wash);
+  border-color: var(--st-blue);
+  color: var(--c-ink);
+  box-shadow: inset 0 0 0 1px var(--st-blue);
+}
+.st-choice.is-on .st-tick {
+  color: var(--st-blue);
+}
+@media (hover: none) {
+  .answer.is-on:hover {
+    background: var(--st-blue-wash);
+  }
+}
+
+/* The step's name in the header: where the person is, in words. */
+.st-step {
+  margin: 0;
+  font: 600 16px/20px var(--font);
+  color: var(--c-ink-2);
+}
+
+/* Light or dark: the two pages side by side, each showing the same sentence. */
+.st-themes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+.st-theme {
+  display: grid;
+  gap: 16px;
+  padding: 20px 16px 16px;
+  border-radius: 20px;
+  border: 2px solid var(--c-line-strong);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.st-theme.is-light {
+  background: #fff;
+  color: #16150f;
+}
+.st-theme.is-dark {
+  background: #1c1c1e;
+  color: #f2f2f2;
+}
+.st-theme-sample {
+  font: 500 20px/28px var(--font);
+  min-height: 112px;
+}
+.st-theme-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: 600 17px/22px var(--font);
+}
+.st-theme-name svg {
+  visibility: hidden;
+}
+.st-theme.is-on {
+  border-color: var(--st-blue);
+  box-shadow: 0 0 0 2px var(--st-blue);
+}
+.st-theme.is-on .st-theme-name svg {
+  visibility: visible;
+}
+
+/* "WebAble is set up for you": one line per change, each with a tick. */
+.st-setlist {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.st-setlist li {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid var(--c-line);
+  border-radius: 16px;
+  font: 500 18px/26px var(--font);
+}
+.st-setlist li svg {
+  margin-top: 3px;
+  color: var(--c-accent, #17694a);
+}
+
+/* The find task's bar (4.0.0): the question with a small Pause beside it, then "I cannot find it" and "I found it"
+   side by side. The bar keeps its 140 px (the recorded AI answers depend on the website's height above it). */
+.st-bar.is-find {
+  grid-template-rows: 1fr auto;
+}
+.st-bar-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+}
+.st-bar-top .st-bar-q {
+  flex: 1;
+  min-width: 0;
+}
+.st-bar-top .st-bar-pause {
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 16px;
+}
+.st-bar-row.is-two .st-bar-answer {
+  flex: 1;
+  min-width: 0;
+  padding: 0 10px;
+  font-size: 17px;
+}

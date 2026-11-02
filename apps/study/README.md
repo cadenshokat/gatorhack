@@ -1,12 +1,13 @@
 # WebAble mobile study (`apps/study`)
 
-A website people open on their own phone. It runs the study in `docs/STUDY.md` (protocol 3.0.0, for people aged 50 or
-over who say websites often give them trouble): the study information, the agreement, two questions on who the study
-is for, seven about the person, a warm-up (the onboarding's Reading and Pointing steps), a practice website, then two
-rounds of three websites, one as the sites made them and one adapted by WebAble's real engine (the person's warm-up
-settings plus the AI's page decisions, recorded once and replayed), with the SEQ after each website and the SUS (1–7)
-and an optional comment after each round, then a 1–10 rating of each round. Open decisions:
-`docs/STUDY-DECISIONS.md`.
+A website people open on their own phone. It runs the study in `docs/STUDY.md` (protocol 4.0.0, about 15 minutes, for
+people aged 50 or over who say websites often give them trouble): the study information, the agreement, two questions
+on who the study is for, four about the person, "Set up WebAble" (what gets in their way, a text size, light or dark,
+how they like to read), a practice website, then two rounds of two websites, one as the sites made them and one
+adapted by WebAble's real engine, each a find-the-answer task with 2 minutes, with the SEQ after each website and
+UMUX-Lite after each round, then three last questions. On the adapted websites the AI's page read is recorded and
+replayed; what depends on the person (AI layouts, rewrites for how they like to read, help when they struggle) is asked
+live of the hosted server (`VITE_STUDY_AI_ORIGIN`). Open decisions: `docs/STUDY-DECISIONS.md`.
 
 **To run the study, send people the site's address** (https://cadenshokat.github.io/gatorhack/). Each person who opens
 it gets their own code and a random round order, and their answers are saved. Opening it again on the same phone carries
@@ -60,5 +61,9 @@ simplified page can be measured.
    path and turns `vercel.json`'s headers into meta tags (Pages can't send headers). Collection needs the `.env.local`
    names set as the repo's Actions variables; without them the Pages site is a preview.
 4. **Invitations:** `node scripts/invites.mjs --count 4 --cohort pilot --base https://<host> --out <private dir>/pilot.csv`.
-5. **Export:** `STUDY_SUPABASE_URL=… STUDY_SUPABASE_SERVICE_KEY=… node scripts/export.mjs --cohort pilot --out <dir>`.
+5. **Live AI:** the server is the Vercel project `webable-gatorhack-ai` (https://webable-gatorhack-ai.vercel.app, built
+   from `apps/server` with `pnpm build:vercel`, deployed with `vercel deploy --prebuilt --prod`). It needs
+   TYPESAFE_API_KEY and OPENAI_API_KEY as Vercel env vars; without them the study uses the recorded answers.
+   The study's CSP (`vercel.json` connect-src) must list it.
+6. **Export:** `STUDY_SUPABASE_URL=… STUDY_SUPABASE_SERVICE_KEY=… node scripts/export.mjs --cohort pilot --out <dir>`.
    Never commit the service key or an export.

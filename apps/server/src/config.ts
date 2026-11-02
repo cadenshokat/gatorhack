@@ -10,6 +10,30 @@ function num(name: string, fallback: number): number {
 export const HOST = '127.0.0.1';
 export const PORT = num('PORT', 41741);
 
+/*
+ * Public deployment (the study's hosted server on Vercel). All of this is off unless WEBABLE_PUBLIC=1, so a local
+ * run behaves exactly as before. Read at call time so tests can switch it.
+ *   WEBABLE_PUBLIC=1      answer on the deployment's own host names, refuse POSTs with no Origin, limit each IP.
+ *   WEBABLE_HOSTS         extra host names to answer on (comma-separated, e.g. the production alias).
+ *   STUDY_ORIGINS         extra browser origins allowed to call (comma-separated exact origins); honoured locally too.
+ *   RATE_LIMIT_PER_MIN    POSTs per IP per minute when public (default 120; 0 turns it off).
+ *   RATE_LIMIT_PER_HOUR   POSTs per IP per hour when public (default 1500; 0 turns it off).
+ */
+export function publicMode(): boolean {
+  return process.env.WEBABLE_PUBLIC === '1';
+}
+
+export function envList(name: string): string[] {
+  return (process.env[name] ?? '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase().replace(/\/+$/, ''))
+    .filter(Boolean);
+}
+
+export function rateLimits(): { perMin: number; perHour: number } {
+  return { perMin: num('RATE_LIMIT_PER_MIN', 120), perHour: num('RATE_LIMIT_PER_HOUR', 1500) };
+}
+
 export const JEV_URL = process.env.JEV_URL ?? 'https://api.typesafe.ai/v1/systemone';
 export const JEV_MODELS_URL = process.env.JEV_MODELS_URL ?? 'https://api.typesafe.ai/v1/models';
 /** Per-attempt timeout for one Jev request. */

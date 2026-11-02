@@ -10,6 +10,7 @@ import type { AboutYou, FinalAnswers, Likert7, RaceEthnicity, Rating10, WebTroub
 import type { Debrief } from '../experiment/debrief';
 import { TROUBLES, type AgeAnswer } from '../experiment/eligibility';
 import { SUS_ITEMS } from '../experiment/sus';
+import { UMUX_ITEMS } from '../experiment/umux';
 import { CONFIG, collectionReady, withdrawAnyTime } from '../store/config';
 import {
   AGREE_7,
@@ -67,18 +68,16 @@ export function WelcomeScreen(props: { onStart: () => void; preview: boolean }):
           use on a phone.
         </p>
         <p>This study is for people aged 50 or over who often have trouble using websites.</p>
-        <p>This takes about 20 to 25 minutes. There is no time limit.</p>
+        <p>This takes about 15 minutes.</p>
         <h2>What you will do</h2>
         <ol class="st-steps">
           <li>Read about the study and choose if you want to take part.</li>
           <li>Answer {ABOUT.length + 2} questions about you.</li>
-          <li>Warm-up. Read some text and tap some dots.</li>
+          <li>Set up WebAble. Tell it what gets in your way on websites, and pick a text size.</li>
           <li>Try one website for practice.</li>
-          <li>
-            Round 1. Do one task on each of 3 websites, such as finding a page. Then answer some questions about them.
-          </li>
-          <li>Round 2. The same again on 3 different websites.</li>
-          <li>Answer 5 last questions.</li>
+          <li>Round 1. Find one answer on each of 2 websites. Then answer 2 questions.</li>
+          <li>Round 2. The same again on 2 different websites.</li>
+          <li>Answer 3 last questions.</li>
         </ol>
         <h2>You need</h2>
         <ul class="st-list">
@@ -196,6 +195,7 @@ export function NotEligibleScreen(props: { onBack: () => void }): JSX.Element {
 
 export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void; preview: boolean }): JSX.Element {
   const c = CONFIG;
+  const live = !!c.aiOrigin;
   const ready = collectionReady();
   return (
     <Screen
@@ -223,26 +223,49 @@ export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void;
         <h2>What you will do</h2>
         <p>You will:</p>
         <ul class="st-list">
-          <li>do a warm-up, where you read some text and tap some dots</li>
-          <li>do one task on each of 7 websites, including one for practice, such as finding a page</li>
+          <li>set up WebAble: say what gets in your way on websites, and pick a text size</li>
+          <li>find one answer on each of 5 websites, including one for practice</li>
           <li>answer questions about you and about the websites</li>
         </ul>
-        <p>It takes about 20 to 25 minutes.</p>
+        <p>It takes about 15 minutes.</p>
         <p>
           In one round, WebAble changes the websites. In the other round, they look as they normally do. We will tell
           you which round was which at the end.
         </p>
 
         <h2>What WebAble changes</h2>
-        <p>WebAble changes the websites in 2 ways:</p>
-        <ul class="st-list">
-          <li>It uses your warm-up to set things like the text size and the size of buttons.</li>
-          <li>
-            Its AI looked at each website once, before the study. It decided things like what to move out of the way,
-            whether to show a simpler version and how to lay it out. These decisions are the same for everyone.
-          </li>
-        </ul>
-        <p>WebAble does not learn about you during the study. Nothing you do is sent to an AI.</p>
+        {live ? (
+          <>
+            <ul class="st-list">
+              <li>It uses your set-up answers to set things like the text size and the size of buttons.</li>
+              <li>
+                Its AI reads each website. It decides things like what to move out of the way, whether to show a simpler
+                version and how to lay it out.
+              </li>
+              <li>Its AI can rewrite long text the way you said you like it. It keeps every fact and number.</li>
+              <li>
+                While you use a website, its AI looks at how you tap and scroll. If you seem to have trouble, WebAble
+                may offer help, such as bigger buttons.
+              </li>
+            </ul>
+            <p>
+              To do this, WebAble sends its AI the website’s text and layout, how you like to read, and numbers about
+              your tapping and scrolling. It never sends your name, your age or anything else about you. The AI is run
+              by 2 companies, TypeSafe and OpenAI.
+            </p>
+          </>
+        ) : (
+          <>
+            <ul class="st-list">
+              <li>It uses your set-up answers to set things like the text size and the size of buttons.</li>
+              <li>
+                Its AI looked at each website once, before the study. It decided things like what to move out of the
+                way, whether to show a simpler version and how to lay it out. These decisions are the same for everyone.
+              </li>
+            </ul>
+            <p>Nothing you do is sent to an AI.</p>
+          </>
+        )}
 
         <h2>The websites are copies</h2>
         <p>
@@ -254,8 +277,9 @@ export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void;
         <ul class="st-list">
           <li>your answers</li>
           <li>how long each website takes you</li>
-          <li>where you tap, scroll and zoom on the websites and in the warm-up</li>
-          <li>what you do in the warm-up, such as the text size you choose</li>
+          <li>where you tap, scroll and zoom on the websites and on the study’s own screens</li>
+          <li>what you choose when you set up WebAble, such as the text size</li>
+          <li>what WebAble and its AI changed on each website</li>
           <li>your phone’s screen size and display settings</li>
           <li>the app you use to view this page, such as Safari or Chrome</li>
           <li>when you leave this page to use another app, and for how long</li>
@@ -338,7 +362,7 @@ export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void;
 
 /* ---------------- about you ---------------- */
 
-type AboutKey = 'firstName' | 'gender' | 'race' | 'techComfort' | 'zoomToRead' | 'tapWrong' | 'held';
+type AboutKey = 'firstName' | 'gender' | 'race' | 'techComfort';
 
 const NO_SAY: ChoiceOption<string> = {
   value: 'no_say',
@@ -356,14 +380,6 @@ const RACES: Array<{ value: RaceEthnicity; label: string }> = [
   { value: 'nhpi', label: 'Native Hawaiian or Other Pacific Islander' },
   { value: 'white', label: 'White' },
 ];
-const HOW_OFTEN: Array<ChoiceOption<string>> = [
-  { value: 'never', label: 'Never' },
-  { value: 'sometimes', label: 'Sometimes' },
-  { value: 'often', label: 'Often' },
-  { value: 'always', label: 'Almost always' },
-  NO_SAY,
-];
-
 /**
  * The questions about the person, one per page: a choice unless `kind` says otherwise. First name, gender, race and
  * ethnicity, and comfort with technology were added in protocol 3.0.0 at the committee's request.
@@ -410,32 +426,6 @@ const ABOUT: Array<{
     hint: 'We ask this because people who use them a lot may get different results',
     error: 'Choose how comfortable you are',
     options: ([1, 2, 3, 4, 5, 6, 7] as const).map((n) => scaleOption(n, TECH_7)),
-  },
-  {
-    key: 'zoomToRead',
-    title: 'How often do you zoom in to read on your phone?',
-    hint: 'We ask this because people who zoom in may get different results',
-    error: 'Choose how often you zoom in, or choose Prefer not to say',
-    options: HOW_OFTEN,
-  },
-  {
-    key: 'tapWrong',
-    title: 'How often do you tap the wrong thing on your phone?',
-    hint: 'We ask this because people who often tap the wrong thing may get different results',
-    error: 'Choose how often you tap the wrong thing, or choose Prefer not to say',
-    options: HOW_OFTEN,
-  },
-  {
-    key: 'held',
-    title: 'How will you hold your phone during the study?',
-    hint: 'Hold it the same way until the end',
-    error: 'Choose how you will hold your phone, or choose Another way',
-    options: [
-      { value: 'one_hand', label: 'In one hand, using my thumb' },
-      { value: 'two_hands', label: 'In both hands' },
-      { value: 'on_table', label: 'Flat on a table, using one finger' },
-      { value: 'other', label: 'Another way', quiet: true },
-    ],
   },
 ];
 
@@ -559,10 +549,14 @@ export function RoundIntro(props: {
     >
       <Title eyebrow={props.afterPractice ? 'The practice is finished.' : undefined}>Round {props.round}</Title>
       <div class="st-prose">
-        <p>You will see {props.count} websites, one at a time.</p>
-        <p>Before each website, we tell you what to find on it. You find it on the website and tap it.</p>
-        <p>After each website, tell us how easy or hard it was.</p>
-        <p>Then you answer some questions about the {props.count} websites.</p>
+        <ol class="st-steps">
+          <li>We ask you a question. The answer is on the website.</li>
+          <li>Find the answer on the website. Then tap <strong>I found it</strong> and choose it.</li>
+          <li>Tell us how easy or hard it was.</li>
+        </ol>
+        <p>
+          There are {props.count} websites in this round. Then 2 questions about them.
+        </p>
       </div>
     </Screen>
   );
@@ -699,12 +693,69 @@ export function SusScreens(props: {
   );
 }
 
+/* ---------------- 2 statements after each round (UMUX-Lite, 7 points), protocol 4.0.0 ---------------- */
+
+export function UmuxScreens(props: {
+  round: 1 | 2;
+  /** The round's websites, short ("the Mars story"), named on the first statement so nobody has to remember them. */
+  sites: string[];
+  onDone: (items: [Likert7 | null, Likert7 | null]) => void;
+  onLeave: () => void;
+}): JSX.Element {
+  const [i, setI] = useState(0);
+  const [items, setItems] = useState<[Likert7 | null, Likert7 | null]>([null, null]);
+  const [nudge, setNudge] = useState(false);
+  const sites = joinWords(props.sites);
+  const next = (got: [Likert7 | null, Likert7 | null]) => {
+    setNudge(false);
+    if (i === 0) setI(1);
+    else props.onDone(got);
+  };
+  return (
+    <Screen
+      key={i}
+      onLeave={props.onLeave}
+      sub={[i, 2]}
+      focusKey={`umux${props.round}-${i}`}
+      actions={
+        <>
+          <Primary onClick={() => (items[i] != null ? next(items) : setNudge(true))}>Continue</Primary>
+          <TextButton onClick={() => next(items)}>Skip this question</TextButton>
+        </>
+      }
+    >
+      {i > 0 ? <BackLink onClick={() => (setNudge(false), setI(0))} /> : null}
+      <Title
+        eyebrow={`Round ${props.round}, statement ${i + 1} of 2`}
+        question
+        deck={i === 0 && sites ? `About the websites you just used: ${sites}.` : 'How much do you agree?'}
+      >
+        {UMUX_ITEMS[i]}
+      </Title>
+      {nudge ? <ErrorLine>Choose an answer, or tap Skip this question</ErrorLine> : null}
+      <Scale7
+        key={i}
+        words={AGREE_7}
+        value={items[i] ?? null}
+        onPick={(v) => {
+          const got: [Likert7 | null, Likert7 | null] = [...items];
+          got[i] = v;
+          setItems(got);
+          setNudge(false);
+        }}
+        label={UMUX_ITEMS[i]!}
+      />
+    </Screen>
+  );
+}
+
 /* ---------------- last questions ---------------- */
 
-type FinalStep = 'different' | 'noticed' | 'like1' | 'like2' | 'adaptedRealism' | 'deviations';
+type FinalStep = 'different' | 'noticed' | 'like1' | 'like2';
 
 /**
- * The numbers people see: always "of 5"; "What was different?" (asked only after Yes) shares number 1. Protocol 3.0.0
+ * The numbers people see: always "of 3" (protocol 4.0.0 dropped the realism and "what happened" questions: the study
+ * runs in person); "What was different?" (asked only after Yes) shares number 1. Protocol 3.0.0
  * (the committee's review): "Did the 2 rounds feel different?" comes first, while people still do not know which round
  * used WebAble; the two ratings then say which round was which. "Which round would you choose?" became the two ratings,
  * and "Should we use your answers?" was dropped (the agreement covers it).
@@ -714,8 +765,6 @@ const FINAL_NUMBER: Record<FinalStep, number> = {
   noticed: 1,
   like1: 2,
   like2: 3,
-  adaptedRealism: 4,
-  deviations: 5,
 };
 
 /** The 1 to 10 rating of each round: numbers, with words at the two ends. */
@@ -779,8 +828,6 @@ export function FinalScreens(props: {
     ...(f.different === 'yes' ? (['noticed'] as const) : []),
     'like1',
     'like2',
-    'adaptedRealism',
-    'deviations',
   ];
   const step = order[Math.min(i, order.length - 1)]!;
   const sub: [number, number] = [i, order.length];
@@ -794,7 +841,7 @@ export function FinalScreens(props: {
     setNudge(false);
   };
   const back = i > 0 ? <BackLink onClick={() => go(i - 1)} /> : null;
-  const eyebrow = `Question ${FINAL_NUMBER[step]} of 5`;
+  const eyebrow = `Question ${FINAL_NUMBER[step]} of 3`;
   const skipLink = <TextButton onClick={next}>Skip this question</TextButton>;
 
   if (step === 'like1' || step === 'like2') {
@@ -803,7 +850,7 @@ export function FinalScreens(props: {
     const sites = joinWords(props.rounds[r - 1] ?? []);
     const what =
       r === props.adaptedRound
-        ? `In round ${r}, WebAble changed the websites for you, using your warm-up.`
+        ? `In round ${r}, WebAble and its AI changed the websites for you.`
         : `In round ${r}, the websites looked as they normally do.`;
     const title = `How much did you like using the websites in round ${r}?`;
     return (
@@ -814,8 +861,10 @@ export function FinalScreens(props: {
         focusKey={step}
         actions={
           <>
-            <Primary onClick={() => (liking[r] != null ? next() : setNudge(true))}>Continue</Primary>
-            {skipLink}
+            <Primary onClick={() => (liking[r] != null ? (step === 'like2' ? props.onDone(f) : next()) : setNudge(true))}>
+              {step === 'like2' ? 'Send my answers' : 'Continue'}
+            </Primary>
+            {step === 'like2' ? <TextButton onClick={() => props.onDone(f)}>Skip this question</TextButton> : skipLink}
           </>
         }
       >

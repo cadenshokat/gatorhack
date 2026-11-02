@@ -1,8 +1,8 @@
 // Pure server helpers and request guards. No network: Jev and OpenAI are never called here.
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FitSpec, LayoutCandidate, PageOutline } from '@webable/core';
 import { createApp } from '../src/app';
-import { originAllowed } from '../src/guard';
+import { hostAllowed, originAllowed, rateCheck, resetRateLimits } from '../src/guard';
 import { TtlLru } from '../src/lru';
 import { fitToText, limitsFor, outlineToText, trimOutline } from '../src/prompts';
 import { unfoldAll } from '../src/routes/redesign';
@@ -184,5 +184,65 @@ describe('guards and validation (no model calls)', () => {
       'chrome-extension://abcdefghijklmnopabcdefghijklmnop',
     );
     expect((await pre('https://evil.example')).headers.get('access-control-allow-origin')).toBeNull();
+  });
+});
+
+describe('public deployment guards (WEBABLE_PUBLIC=1)', () => {
+  const STUDY = 'https://cadenshokat.github.io';
+  const HOST = 'webable-gatorhack-ai.vercel.app';
+  const app = createApp();
+  const post = (headers: Record<string, string>) =>
+    app.request('/v1/understand', { method: 'POST', headers: { 'Content-Type': 'application/json', Host: HOST, ...headers }, body: JSON.stringify({}) });
+  const pre = (origin: string) =>
+    app.request('/v1/understand', { method: 'OPTIONS', headers: { Host: HOST, Origin: origin, 'Access-Control-Request-Method': 'POST' } });
+
+  beforeEach(() => {
+    vi.stubEnv('WEBABLE_PUBLIC', '1');
+    vi.stubEnv('WEBABLE_HOSTS', HOST);
+    vi.stubEnv('STUDY_ORIGINS', `${STUDY}/`);
+    vi.stubEnv('RATE_LIMIT_PER_MIN', '3');
+    resetRateLimits();
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    resetRateLimits();
+  });
+
+  it('answers on the deployed host and still on loopback, not elsewhere', async () => {
+    expect(hostAllowed(HOST)).toBe(true);
+    expect(hostAllowed('127.0.0.1:41741')).toBe(true);
+    expect(hostAllowed('evil.example')).toBe(false);
+    expect((await app.request('/health', { headers: { Host: HOST } })).status).toBe(200);
+    expect((await app.request('/health', { headers: { Host: 'evil.example' } })).status).toBe(403);
+  });
+  it('grants the study origin its preflight and refuses other sites', async () => {
+    expect((await pre(STUDY)).headers.get('access-control-allow-origin')).toBe(STUDY);
+    expect((await pre('https://example.com')).headers.get('access-control-allow-origin')).toBeNull();
+    expect((await post({ Origin: 'https://example.com' })).status).toBe(403);
+  });
+  it('refuses a POST with no Origin', async () => {
+    const r = await post({});
+    expect(r.status).toBe(403);
+    expect(((await r.json()) as { error: string }).error).toBe('bad_origin');
+  });
+  it('limits each IP and leaves other IPs alone', async () => {
+    for (let i = 0; i < 3; i++) expect((await post({ Origin: STUDY, 'x-real-ip': '1.2.3.4' })).status).toBe(400);
+    const limited = await post({ Origin: STUDY, 'x-real-ip': '1.2.3.4' });
+    expect(limited.status).toBe(429);
+    expect(Number(limited.headers.get('retry-after'))).toBeGreaterThan(0);
+    expect(limited.headers.get('access-control-allow-origin')).toBe(STUDY);
+    expect((await post({ Origin: STUDY, 'x-real-ip': '5.6.7.8' })).status).toBe(400);
+  });
+  it('opens a new minute window', () => {
+    const t = Date.UTC(2026, 10, 2, 12, 0, 30);
+    for (let i = 0; i < 3; i++) expect(rateCheck('9.9.9.9', t)).toBe(0);
+    expect(rateCheck('9.9.9.9', t)).toBe(30);
+    expect(rateCheck('9.9.9.9', t + 30_000)).toBe(0);
+  });
+  it('changes nothing locally', () => {
+    vi.unstubAllEnvs();
+    expect(originAllowed(undefined)).toBe(true);
+    expect(hostAllowed(HOST)).toBe(false);
+    expect(originAllowed(STUDY)).toBe(false);
   });
 });

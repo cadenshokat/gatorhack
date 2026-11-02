@@ -166,7 +166,7 @@ const opsFrom = (d, source) => (d.ops ? d.ops.filter((o) => o.status === 'applie
 
 const participants = [];
 const trials = [];
-const pairs = { sus: [], susPro: [], seq: [], liking: [], logTime: [] };
+const pairs = { sus: [], susPro: [], umux: [], seq: [], liking: [], logTime: [] };
 
 /** Sessions sharing a first name (any case and spacing): possible repeats, numbered, for a check by hand. */
 const nameKey = (s) => s.about?.firstName?.trim().toLowerCase().replace(/\s+/g, ' ') || null;
@@ -207,6 +207,11 @@ for (const s of sessions.values()) {
   // 1 to 10 ratings of each round (3.0.0), by condition.
   const likeA = adaptedRound ? s.final?.liking?.[adaptedRound] ?? null : null;
   const likeO = originalRound ? s.final?.liking?.[originalRound] ?? null : null;
+  // UMUX-Lite (4.0.0, in place of the SUS), and the tap baseline from the question screens.
+  const umuxA = adaptedRound ? s.umux?.[adaptedRound]?.score ?? null : null;
+  const umuxO = originalRound ? s.umux?.[originalRound]?.score ?? null : null;
+  const b = s.baseline ?? null;
+  const liveAi = mine.some((t) => t.delivery?.ai?.live === true);
 
   participants.push({
     code: s.code, cohort: s.cohort, protocol: s.protocol, sequence: s.sequence, adapted_round: adaptedRound,
@@ -214,10 +219,17 @@ for (const s of sessions.values()) {
     age_band: s.about?.ageBand, troubles: (s.about?.troubles ?? []).join('|'),
     gender: s.about?.gender ?? null, race: (s.about?.race ?? []).join('|'), tech_comfort: s.about?.techComfort ?? null,
     zoom_to_read: s.about?.zoomToRead, tap_wrong: s.about?.tapWrong, held: s.about?.held,
+    setup_needs: (s.setup?.needs ?? []).join('|'), setup_polarity: s.setup?.polarity ?? null,
+    setup_shape: s.setup?.shape ?? null, setup_words: s.setup?.words ?? null, live_ai: liveAi,
+    base_screens: b?.screens ?? null, base_taps: b?.taps ?? null,
+    base_miss_rate: b && b.taps ? Math.round((b.misses / b.taps) * 1000) / 1000 : null,
+    base_near_misses: b?.nearMisses ?? null, base_repeats: b?.repeats ?? null, base_changes: b?.changes ?? null,
+    base_answer_ms: b?.medianAnswerMs ?? null, base_off_centre_px: b?.medianOffCentrePx ?? null,
     fit_body_px: s.calibration?.fit?.text?.bodyPx ?? null, fit_target_px: s.calibration?.fit?.targets?.minPx ?? null,
     warmup_sec: s.calibration?.durationSec ?? null, warmup_skipped: (s.calibration?.skipped ?? []).join('|'),
     sus_original: scoreO, sus_adapted: scoreA, sus_diff: scoreA != null && scoreO != null ? Math.round((scoreA - scoreO) * 100) / 100 : null,
     sus_original_flag: susO?.flagged ?? null, sus_adapted_flag: susA?.flagged ?? null,
+    umux_original: umuxO, umux_adapted: umuxA, umux_diff: umuxA != null && umuxO != null ? Math.round((umuxA - umuxO) * 10) / 10 : null,
     seq_original: seqMean('original'), seq_adapted: seqMean('adapted'),
     liking_original: likeO, liking_adapted: likeA, liking_diff: likeA != null && likeO != null ? likeA - likeO : null,
     adapted_realism: s.final?.adaptedRealism ?? null,
@@ -235,6 +247,7 @@ for (const s of sessions.values()) {
   if (!excluded && proA != null && proO != null) pairs.susPro.push(proA - proO);
   if (!excluded && Number.isFinite(seqMean('adapted')) && Number.isFinite(seqMean('original'))) pairs.seq.push(seqMean('adapted') - seqMean('original'));
   if (!excluded && likeA != null && likeO != null) pairs.liking.push(likeA - likeO);
+  if (!excluded && umuxA != null && umuxO != null) pairs.umux.push(umuxA - umuxO);
 
   for (const t of mine) {
     const m = t.metrics ?? {}, d = t.delivery ?? {};
@@ -261,7 +274,11 @@ for (const s of sessions.values()) {
       ops_applied: d.ops ? d.ops.filter((o) => o.status === 'applied').length : null,
       ops_reversed: d.ops ? d.ops.filter((o) => o.status === 'reversed').length : null,
       ops_from_warmup: opsFrom(d, 'fit'), ops_from_ai: opsFrom(d, 'jev'), ops_no_source: opsFrom(d, undefined),
-      replay_misses: d.replayMisses ? d.replayMisses.length : null, excluded,
+      replay_misses: d.replayMisses ? d.replayMisses.length : null,
+      timed_out: t.timedOut === true, ops_from_struggle: opsFrom(d, 'signals'),
+      ai_live: d.ai?.live ?? null, ai_layout: d.ai?.layout ?? null, ai_accepted: d.ai ? d.ai.accepted.join('|') : null,
+      ai_calls: d.ai ? d.ai.calls.length : null, ai_calls_failed: d.ai ? d.ai.calls.filter((c) => !c.ok).length : null,
+      excluded,
     });
   }
 }
@@ -273,6 +290,7 @@ const ci = pairedCI(pairs.sus);
 const ciPro = pairedCI(pairs.susPro);
 const ciSeq = pairedCI(pairs.seq);
 const ciLike = pairedCI(pairs.liking);
+const ciUmux = pairedCI(pairs.umux);
 const ok = trials.filter((t) => !t.excluded && t.round > 0);
 const succ = (c) => ok.filter((t) => t.condition === c);
 const rate = (c) => `${succ(c).filter((t) => t.correct).length} of ${succ(c).length}`;
@@ -286,7 +304,11 @@ Sequences: ${[0, 1, 2, 3].map((q) => `${q}: ${participants.filter((p) => p.seque
 
 Possible repeats (same first name): ${repeatGroup.size} sessions in ${new Set(repeatGroup.values()).size} groups. Check repeats.csv by hand before analysis.
 
-## SUS (7-point, 0–100), adapted minus original
+## UMUX-Lite (from 4.0.0; 2 items, 7-point, 0–100), adapted minus original
+
+Complete cases: n = ${ciUmux?.n ?? 0}. Mean difference ${fmt(ciUmux?.mean)} points, 95% CI ${fmt(ciUmux?.lo)} to ${fmt(ciUmux?.hi)}, dz ${fmt(ciUmux?.dz, 2)}.
+
+## SUS (before 4.0.0; 7-point, 0–100), adapted minus original
 
 Complete cases: n = ${ci?.n ?? 0}. Mean difference ${fmt(ci?.mean)} points, 95% CI ${fmt(ci?.lo)} to ${fmt(ci?.hi)}, dz ${fmt(ci?.dz, 2)}.
 ${pairs.sus.length ? `Rated the adapted round higher: ${pairs.sus.filter((d) => d > 0).length} of ${pairs.sus.length} (ties ${pairs.sus.filter((d) => d === 0).length}).` : ''}

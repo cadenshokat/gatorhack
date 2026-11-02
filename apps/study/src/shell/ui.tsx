@@ -6,9 +6,10 @@ import { useContext, useEffect, useRef } from 'preact/hooks';
 import { Wordmark } from '../../../extension/entrypoints/fitting/ui/Chrome';
 import type { Likert7 } from '../contracts';
 import { CONFIG } from '../store/config';
+import { baselineScreen } from './baseline';
 
 /** The study's parts, in order: each an equal share of the progress line. */
-export const PARTS = ['Getting started', 'Warm-up', 'Practice', 'Round 1', 'Round 2', 'Last questions'] as const;
+export const PARTS = ['About you', 'Set up WebAble', 'Practice', 'Round 1', 'Round 2', 'Last questions'] as const;
 
 /** Where the person is: the part (index into PARTS) and how much of it is done, 0 to 1. */
 export interface Progress {
@@ -31,8 +32,8 @@ export function within(at: Progress & { to?: number }, sub: [number, number] | n
 }
 
 /**
- * One thin line across the top of the screen, filled in ink as the study goes (each part an equal share). Nothing
- * visible says it in words; a screen reader hears "Part 4 of 6: Round 1" (or "Finished").
+ * One thin line across the top of the screen, filled as the study goes (each part an equal share). The header names
+ * the part beside it (stepWords).
  */
 export function ProgressBar(props: { at: Progress }): JSX.Element {
   const { part, fill } = props.at;
@@ -53,7 +54,12 @@ export function ProgressBar(props: { at: Progress }): JSX.Element {
   );
 }
 
-/** The progress line, then the wordmark and one quiet button on the right (Leave). */
+/** "Step 2 of 6 · Set up WebAble" (protocol 4.0.0): people see where they are without reading a paragraph. */
+function stepWords(at: Progress): string {
+  return at.part >= PARTS.length ? 'Finished' : `Step ${at.part + 1} of ${PARTS.length} · ${PARTS[at.part]}`;
+}
+
+/** The progress line, then the step's name (the wordmark before the study starts) and one quiet button (Leave). */
 export function Header(props: {
   onLeave: (() => void) | null;
   sub?: [number, number] | null;
@@ -66,7 +72,7 @@ export function Header(props: {
     <div class="st-header">
       {at ? <ProgressBar at={within(at, props.sub)} /> : null}
       <header class="fl-top st-top">
-        <Wordmark />
+        {at ? <p class="st-step">{stepWords(at)}</p> : <Wordmark />}
         <div class="fl-top-end">
           {end ? (
             <button type="button" class="btn-text fl-skip" onClick={end.onClick}>
@@ -103,6 +109,7 @@ export function Screen(props: {
   const main = useRef<HTMLElement>(null);
   useEffect(() => {
     window.scrollTo(0, 0);
+    baselineScreen();
     const h = main.current?.querySelector<HTMLElement>('h1, h2');
     h?.focus({ preventScroll: true });
     // The tab's title copies the heading ("How old are you? – WebAble study").

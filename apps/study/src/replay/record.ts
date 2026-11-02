@@ -9,10 +9,10 @@ import { SERVER_ORIGIN } from '@webable/core';
 import type {
   ComposeResponse, MeaningVerdict, OverlayCloseResult, PageDigest, PageUnderstanding,
 } from '@webable/core';
-import { stripLocalData } from '../../../extension/src/engine/extract/strip';
 import type { ModelAnswers } from '../shim/background';
 import { StudyBgError } from '../shim/errors';
 import { fingerprintTable, nthOfFp } from './keys';
+import { createPoster } from './post';
 import { meaningKey, overlayKey } from './replay';
 import { RECORDED_V, type RecordedAnswers } from './types';
 
@@ -36,57 +36,18 @@ export interface Recorder {
 
 export function createRecorder(opts: RecordOptions): Recorder {
   const origin = (opts.origin ?? SERVER_ORIGIN).replace(/\/+$/, '');
-  let inFlight = 0;
   const rec: RecordedAnswers = {
     v: RECORDED_V, replicaId: opts.replicaId, fit: opts.fit, h: opts.h, fresh: opts.fresh,
     understand: { page: null, elements: [] },
     meaning: {}, overlayClose: {}, compose: {}, composeMeta: null, errors: [], posted: {},
   };
 
-  /** background.ts post(): the same body transform, headers and error mapping. */
-  async function post<T>(path: string, body: unknown, timeoutMs: number): Promise<T> {
+  /** background.ts post(): the same body transform, headers and error mapping (post.ts). */
+  const poster = createPoster(origin, { fresh: opts.fresh });
+  const post = <T,>(path: string, body: unknown, timeoutMs: number): Promise<T> => {
     rec.posted[path] = (rec.posted[path] ?? 0) + 1;
-    inFlight++;
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-    try {
-      let res: Response;
-      try {
-        res = await fetch(`${origin}${path}`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json', 'x-webable': '1', ...(opts.fresh ? { 'X-WebAble-Fresh': '1' } : {}) },
-          body: JSON.stringify(stripLocalData(body)),
-          signal: ctrl.signal,
-        });
-      } catch {
-        if (ctrl.signal.aborted) throw new StudyBgError('timeout', `The WebAble server did not answer ${path} within ${timeoutMs / 1000} s`);
-        throw new StudyBgError('network', `The WebAble server at ${origin} could not be reached`);
-      }
-      let text = '';
-      try {
-        text = await res.text();
-      } catch {
-        if (ctrl.signal.aborted) throw new StudyBgError('timeout', `The WebAble server did not finish ${path} within ${timeoutMs / 1000} s`);
-        throw new StudyBgError('network', 'The answer from the WebAble server was cut off');
-      }
-      let json: unknown = null;
-      try {
-        json = text ? JSON.parse(text) : null;
-      } catch {
-        json = null;
-      }
-      if (!res.ok) {
-        const j = (json ?? {}) as { error?: unknown; message?: unknown };
-        const msg = typeof j.message === 'string' ? j.message : typeof j.error === 'string' ? j.error : `HTTP ${res.status}`;
-        throw new StudyBgError(res.status === 422 ? 'refused' : 'server', msg, res.status);
-      }
-      if (json === null) throw new StudyBgError('bad_response', `Empty answer from ${path}`);
-      return json as T;
-    } finally {
-      clearTimeout(timer);
-      inFlight--;
-    }
-  }
+    return poster.post<T>(path, body, timeoutMs);
+  };
 
   const failed = (what: string) => (err: unknown): never => {
     const e = err instanceof StudyBgError ? err : new StudyBgError('network', err instanceof Error ? err.message : String(err));
@@ -157,5 +118,5 @@ export function createRecorder(opts: RecordOptions): Recorder {
     },
   };
 
-  return { answers, recorded: () => structuredClone(rec), inFlight: () => inFlight };
+  return { answers, recorded: () => structuredClone(rec), inFlight: () => poster.inFlight() };
 }

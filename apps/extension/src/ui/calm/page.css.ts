@@ -74,6 +74,8 @@ ${C} .wa-sitelinks>li{min-width:0}
 ${C} .wa-sitelink{display:flex;align-items:center;min-height:max(44px,var(--wa-t));padding-block:8px;color:var(--wa-ink);text-decoration:none;overflow-wrap:break-word}
 ${C} .wa-sitelink:is(:hover,:focus-visible){text-decoration:underline;text-decoration-thickness:max(1px,.06em);text-underline-offset:.2em}
 ${C} .wa-sitelink:focus-visible{outline-offset:2px}
+/* Link titles are blue, like every link on the page: people read ink titles as plain text and do not tap them. */
+${C} :is(a.wa-row .wa-row__title,a.wa-story .wa-story__title,a.wa-card2 .wa-card2__title,.wa-sitelink){color:var(--wa-link)}
 /* Round 9: a paragraph rewritten for the person: its words in the page's type, a thin green mark in the gutter on its
    left (hollow grey while it shows the page's own words). The mark's press area is wider than the line it draws. */
 ${C}{--wa-rw:#17694A}
