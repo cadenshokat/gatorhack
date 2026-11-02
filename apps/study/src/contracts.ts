@@ -6,7 +6,10 @@
 
 import type { FitProfile, FittingRaw } from '@webable/core';
 
-export const PROTOCOL = 'mobile-replica-2.1.0';
+export const PROTOCOL = 'mobile-replica-3.0.0';
+
+/** The agreement's version, saved with "I agree to take part": the protocol's own number. */
+export const CONSENT_VERSION = PROTOCOL.replace(/^mobile-replica-/, '');
 
 /** The layout width every phone gets (shell viewport meta), so the fit, the replicas and the model answers agree. */
 export const LAYOUT_WIDTH = 390;
@@ -249,6 +252,9 @@ export type ChangeSource = 'fit' | 'jev' | 'check' | 'signals' | 'layout' | 'per
 
 export type Likert7 = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
+/** A 1 to 10 rating; only the two ends carry words (protocol 3.0.0, the committee's request). */
+export type Rating10 = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+
 export interface SusResponse {
   /** 1.2.0 (protocol 2.1.0): every one of the 7 answers carries words, not only the two ends. */
   instrument:
@@ -321,14 +327,25 @@ export interface TrialRecord {
 /** The kinds of trouble with websites a person can say often happen to them (who the study is for, protocol 2.0.0). */
 export type WebTrouble = 'getting_around' | 'finding' | 'understanding';
 
+/** Race and ethnicity, the 2024 US federal categories (OMB SPD 15), any number of them. */
+export type RaceEthnicity = 'aian' | 'asian' | 'black' | 'hispanic' | 'mena' | 'nhpi' | 'white';
+
 export interface AboutYou {
   /**
-   * From protocol 2.0.0 asked before the agreement, to check the person is 50 or over ('under_50' ends the study and
-   * nothing is saved). Earlier builds asked any adult, with 'no_say'.
+   * Checks the person is 50 or over ('under_50' ends the study and nothing is saved). Asked before the agreement in
+   * protocol 2.x, right after it from 3.0.0. Earlier builds asked any adult, with 'no_say'.
    */
   ageBand: '50-64' | '65-74' | '75-84' | '85+' | '18-29' | '30-49' | '75+' | 'no_say' | null;
-  /** Asked with the age, before the agreement: what often happens to them on websites (at least one to take part). */
+  /** Asked with the age: what often happens to them on websites (at least one to take part). */
   troubles?: WebTrouble[];
+  /** From 3.0.0, only to find anyone who took part twice. Never part of the results. */
+  firstName?: string | null;
+  /** From 3.0.0. */
+  gender?: 'woman' | 'man' | 'another' | 'no_say' | null;
+  /** From 3.0.0: ['no_say'] when they prefer not to say. */
+  race?: Array<RaceEthnicity | 'no_say'> | null;
+  /** From 3.0.0: comfort with phones, computers and websites, 1 = I rarely use them … 7 = Expert user. */
+  techComfort?: Likert7 | null;
   zoomToRead: 'never' | 'sometimes' | 'often' | 'always' | null;
   tapWrong: 'never' | 'sometimes' | 'often' | 'always' | null;
   /** How they will hold the phone; they are asked to keep holding it that way. */
@@ -336,20 +353,27 @@ export interface AboutYou {
 }
 
 export interface FinalAnswers {
-  /** Which round they'd choose for browsing. */
-  preferred: 'round1' | 'round2' | 'same' | 'unsure' | null;
-  /** "Did the 2 rounds feel different?" (from 27 Oct 2026; `noticed` is asked only after a yes). */
+  /** Which round they'd choose for browsing (before protocol 3.0.0; replaced by `liking`). */
+  preferred?: 'round1' | 'round2' | 'same' | 'unsure' | null;
+  /** "Did the 2 rounds feel different?" (from 27 Oct 2026; `noticed` is asked only after a yes). Asked blind. */
   different?: 'yes' | 'no' | 'unsure' | null;
   noticed: string;
+  /**
+   * From 3.0.0: how much they liked using each round's websites, 1 = Did not like it at all … 10 = Liked it a great
+   * deal. Asked after "different", on screens that say which round used WebAble.
+   */
+  liking?: { 1: Rating10 | null; 2: Rating10 | null };
   /** "Anything that was hard to do", asked once at the end before protocol 2.0.0; now asked per round (`comments`). */
   difficulty?: string;
   /** F4 chips: 'helped', 'changed_setting', 'interrupted', 'broken', 'nothing'. */
   deviations: string[];
   other: string;
-  /** How real the pages felt, 1 = Not at all like the real websites … 7 = Exactly like them. */
-  realism: Likert7 | null;
-  /** "Should we use your answers?" (honesty check, Aust et al. 2013) */
-  useMyData: 'yes' | 'no' | null;
+  /** Before 3.0.0: how much the copies looked and worked like the real websites, 1 = Not at all … 7 = Exactly. */
+  realism?: Likert7 | null;
+  /** From 3.0.0: how much the websites WebAble changed still looked and worked like the real ones (same words). */
+  adaptedRealism?: Likert7 | null;
+  /** "Should we use your answers?" (honesty check, Aust et al. 2013). Dropped in 3.0.0: the agreement covers it. */
+  useMyData?: 'yes' | 'no' | null;
 }
 
 export interface DeviceInfo {
@@ -382,6 +406,11 @@ export interface SessionRecord {
   finishedAt: string | null;
   stage: string;
   consent: { version: string; agreedAt: string } | null;
+  /**
+   * From 3.0.0 the agreement comes before the age questions: true once they show the person can take part. Nothing is
+   * sent before this, so someone the study is not for still leaves with nothing recorded.
+   */
+  eligible?: boolean;
   about: AboutYou;
   device: DeviceInfo | null;
   calibration: { raw: FittingRaw | null; fit: FitProfile | null; durationSec: number; skipped: string[] } | null;

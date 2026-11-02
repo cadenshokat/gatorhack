@@ -1,11 +1,17 @@
 # WebAble mobile study (`apps/study`)
 
-A website people open on their own phone. It runs the study in `docs/STUDY.md` (protocol 2.0.0, for people aged 50 or
-over who say websites often give them trouble): two questions on who the study is for, the agreement, a warm-up (the
-onboarding's Reading and Pointing steps), a practice website, then two rounds of three websites, one as the sites made
-them and one adapted by WebAble's real engine (the person's warm-up settings plus the AI's page decisions, recorded once
-and replayed), with the SEQ after each website and the SUS (1–7) and an optional comment after each round. Open
-decisions: `docs/STUDY-DECISIONS.md`.
+A website people open on their own phone. It runs the study in `docs/STUDY.md` (protocol 3.0.0, for people aged 50 or
+over who say websites often give them trouble): the study information, the agreement, two questions on who the study
+is for, seven about the person, a warm-up (the onboarding's Reading and Pointing steps), a practice website, then two
+rounds of three websites, one as the sites made them and one adapted by WebAble's real engine (the person's warm-up
+settings plus the AI's page decisions, recorded once and replayed), with the SEQ after each website and the SUS (1–7)
+and an optional comment after each round, then a 1–10 rating of each round. Open decisions:
+`docs/STUDY-DECISIONS.md`.
+
+**To run the study, send people the site's address** (https://cadenshokat.github.io/gatorhack/). Each person who opens
+it gets their own code and a random round order, and their answers are saved. Opening it again on the same phone carries
+on where they left off, until they finish. Add `?preview` (or `?seq=0`…`3`) to try it without saving anything; the dev
+server is always a preview. Invitation links (`scripts/invites.mjs`) still work if you want exactly balanced orders.
 
 ## Run it
 

@@ -367,6 +367,12 @@ body,
   min-height: 96px;
   margin-top: 16px;
 }
+/* One line (first name): a 64 px field, like the other controls. */
+.st-text.st-input {
+  min-height: 64px;
+  height: 64px;
+  font-size: 20px;
+}
 .st-text:focus {
   outline: none;
   box-shadow: var(--focus);
@@ -479,18 +485,19 @@ html:has(.st-task) {
   height: 140px;
   display: grid;
   grid-template-rows: 1fr auto;
-  gap: 8px;
-  padding: 10px 16px;
-  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  gap: 6px;
+  padding: 8px 16px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--c-line);
   background: #fff;
   box-shadow: 0 -8px 24px rgba(22, 21, 15, 0.06);
 }
-/* The task stays in view the whole time, in the same words as on the card. */
+/* The task stays in view the whole time, in the same words as on the card. 18 px (the committee asked for larger
+   text, 3.0.0) inside the same 140 px bar: BAR_H sets the website's height, which the recorded AI answers depend on. */
 .st-bar-q {
   margin: 0;
   align-self: center;
-  font: 600 16px/20px var(--font);
+  font: 600 18px/22px var(--font);
   color: var(--c-ink);
   overflow: hidden;
   display: -webkit-box;
@@ -662,13 +669,20 @@ html:has(.st-task) {
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 14px);
 }
 /* Each step fits one phone screen: the heading, the stage and every answer button. No line under the heading (the
-   owner's decision, 28 Oct 2026); the page before the step says what to do. */
+   owner's decision, 28 Oct 2026); the page before the step says what to do. The sentence steps keep one: "Sentence:",
+   right above the sentence (protocol 3.0.0). */
 .st-warmup .fl-task-title {
   min-height: 0;
   margin: 4px 0 18px;
   font: 600 26px/32px var(--font);
 }
 .st-warmup .fl-task-sub {
+  min-height: 0;
+  margin: -8px 0 8px;
+  font: 600 18px/24px var(--font);
+  color: var(--c-ink-2);
+}
+.st-warmup .fl-task-sub:empty {
   display: none;
 }
 .st-warmup .fl-stage.is-faint {

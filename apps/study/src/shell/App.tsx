@@ -1,17 +1,18 @@
-// The participant flow: welcome → who the study is for (age, trouble with websites; nothing saved, and someone it is
-// not for stops here) → agreement → about you → setup → warm-up → practice → round 1 (three websites, then the ten
-// statements and a comment) → break → round 2 → last questions → thank-you with the code. Each step is saved as it
-// ends, so a reload picks up at the same step (a website in progress starts again, and that is noted).
+// The participant flow (protocol 3.0.0, the committee's order): study information → agreement → who the study is for
+// (age, trouble with websites; nothing is sent until these pass, and someone it is not for stops here) → about you →
+// setup → warm-up → practice → round 1 (three websites, then the ten statements and a comment) → break → round 2 → last
+// questions → thank-you with the code. Each step is saved as it ends, so a reload picks up at the same step (a website
+// in progress starts again, and that is noted).
 
 import { DEMO_FITS, type FitProfile } from '@webable/core';
 import type { JSX } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import type { AboutYou, FinalAnswers, Likert7, SessionRecord, TrialRecord } from '../contracts';
+import { CONSENT_VERSION, type AboutYou, type FinalAnswers, type Likert7, type SessionRecord, type TrialRecord } from '../contracts';
 import { debriefFor } from '../experiment/debrief';
 import { eligible, screened } from '../experiment/eligibility';
 import { planFor, REPLICAS, type PlannedTask } from '../experiment/plan';
 import { susResponse } from '../experiment/sus';
-import { parseInvite, previewInvite, type Invite } from '../store/invite';
+import { openInvite, parseInvite, previewInvite, wantsOpenSession, type Invite } from '../store/invite';
 import { collecting, loadSession, newSession, SessionStore } from '../store/session';
 import { onPending, pending } from '../store/remote';
 import { inputsSeen, readDevice, watchInputs } from './device';
@@ -54,6 +55,35 @@ type Stage =
   | 'declined'
   | 'withdrawn';
 
+/** The plain link's session on this phone: opening the link again carries on, until the study ends for that person. */
+const OPEN_KEY = 'webable.study.open';
+const ENDED = new Set<string>(['done', 'withdrawn', 'declined', 'not_eligible']);
+
+const cryptoRandom = (): number => {
+  try {
+    return crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32;
+  } catch {
+    return Math.random();
+  }
+};
+
+function openSession(): Invite {
+  try {
+    const kept = JSON.parse(localStorage.getItem(OPEN_KEY) ?? 'null') as Invite | null;
+    const s = kept ? loadSession(kept.code) : null;
+    if (kept && (!s || !ENDED.has(s.stage))) return kept;
+  } catch {
+    /* start a new one */
+  }
+  const invite = openInvite(cryptoRandom);
+  try {
+    localStorage.setItem(OPEN_KEY, JSON.stringify(invite));
+  } catch {
+    /* fine: a reload in this tab still resumes from sessionStorage */
+  }
+  return invite;
+}
+
 function boot(): { store: SessionStore; resumed: boolean } {
   const fromLink = parseInvite(location.hash);
   if (fromLink) {
@@ -76,8 +106,11 @@ function boot(): { store: SessionStore; resumed: boolean } {
       invite = null;
     }
   }
-  invite ??= previewInvite(location.search, Math.random);
-  if (invite.cohort === 'preview') {
+  invite ??= wantsOpenSession(location.search, import.meta.env.PROD)
+    ? openSession()
+    : previewInvite(location.search, Math.random);
+  // A reload in this tab keeps the same session, even on the thank-you page.
+  if (!fromLink) {
     try {
       sessionStorage.setItem('webable.study.code', JSON.stringify(invite));
     } catch {
@@ -109,7 +142,7 @@ function previewShortcut(store: SessionStore): void {
   });
 }
 
-/** Answers to the questions on who the study is for are not kept for someone who stops before agreeing. */
+/** Answers to the questions on who the study is for are not kept for someone the study is not for. */
 const blankAbout: AboutYou = { ageBand: null, zoomToRead: null, tapWrong: null };
 
 const RECORD_MODE = /[?&]record=1/.test(location.search) && location.hostname === '127.0.0.1';
@@ -127,10 +160,10 @@ function progressFor(
   switch (stage) {
     case 'welcome':
       return { part: 0, fill: 0 };
-    case 'eligible':
-      return { part: 0, fill: 0.05, to: 0.2 };
     case 'agree':
-      return { part: 0, fill: 0.2 };
+      return { part: 0, fill: 0.05 };
+    case 'eligible':
+      return { part: 0, fill: 0.15, to: 0.3 };
     case 'about':
       return { part: 0, fill: 0.3, to: 0.85 };
     case 'setup':
@@ -266,35 +299,35 @@ export function App(): JSX.Element {
   let body: JSX.Element;
   switch (stage) {
     case 'welcome':
-      body = <WelcomeScreen preview={preview} onStart={() => go('eligible')} />;
-      break;
-    case 'eligible':
-      body = (
-        <EligibilityScreens
-          onBack={() => go('welcome')}
-          onDone={(age, troubles) =>
-            eligible(age, troubles)
-              ? go('agree', { about: screened(rec.about, age, troubles) })
-              : go('not_eligible', { about: blankAbout })
-          }
-        />
-      );
-      break;
-    case 'not_eligible':
-      body = <NotEligibleScreen onBack={() => go('eligible')} />;
+      body = <WelcomeScreen preview={preview} onStart={() => go('agree')} />;
       break;
     case 'agree':
       body = (
         <AgreeScreen
           preview={preview}
           onAgree={() =>
-            go('about', {
-              consent: { version: '2.0.0', agreedAt: new Date().toISOString() },
+            go('eligible', {
+              consent: { version: CONSENT_VERSION, agreedAt: new Date().toISOString() },
             })
           }
-          onDecline={() => go('declined', { about: blankAbout })}
+          onDecline={() => go('declined', { consent: null, about: blankAbout })}
         />
       );
+      break;
+    case 'eligible':
+      body = (
+        <EligibilityScreens
+          onBack={() => go('agree')}
+          onDone={(age, troubles) =>
+            eligible(age, troubles)
+              ? go('about', { about: screened(rec.about, age, troubles), eligible: true })
+              : go('not_eligible', { about: blankAbout, eligible: false })
+          }
+        />
+      );
+      break;
+    case 'not_eligible':
+      body = <NotEligibleScreen onBack={() => go('eligible')} />;
       break;
     case 'about':
       body = <AboutScreens about={rec.about} onLeave={leave} onDone={(about: AboutYou) => go('setup', { about })} />;
@@ -417,6 +450,7 @@ export function App(): JSX.Element {
     case 'final':
       body = (
         <FinalScreens
+          adaptedRound={adaptedRound}
           rounds={
             [1, 2].map((r) =>
               roundTasks(r as 1 | 2)

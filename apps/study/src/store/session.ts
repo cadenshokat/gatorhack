@@ -94,8 +94,9 @@ export class SessionStore {
   }
 
   private send(kind: 'session' | 'trial', payload: unknown): void {
-    // Nothing leaves the phone before the person agrees, or after they ask for their answers to be deleted.
-    if (!this.record.consent || !collecting(this.record) || this.record.withdrawn) return;
+    // Nothing leaves the phone before the person agrees and the age questions show they can take part, or after they
+    // ask for their answers to be deleted.
+    if (!this.record.consent || !this.record.eligible || !collecting(this.record) || this.record.withdrawn) return;
     enqueue({
       rowId: uuid(),
       session_id: this.record.sessionId,

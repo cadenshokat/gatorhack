@@ -147,7 +147,7 @@ The rules are ranked by how much they matter for older, less confident people us
 
 ### 18. Use the active voice and the present tense. The study is "we", the reader is "you", and answers the reader picks say "I".
 - **Why.** The active voice shows who does what. Passive sentences hide it and are harder to trust.
-- **Good.** "We do not record your name." Option: "I could not find it".
+- **Good.** "We store your answers under a code." Option: "I could not find it".
 - **Bad.** "No personally identifiable information will be collected."
 - **Sources.** https://www.w3.org/WAI/WCAG2/supplemental/patterns/o3p02-simple-tense/ ; https://www.gov.uk/service-manual/design/writing-for-user-interfaces ; https://digital.gov/guides/plain-language/writing
 
@@ -240,7 +240,7 @@ The rules are ranked by how much they matter for older, less confident people us
 | withdraw | stop taking part, leave the study |
 | request deletion of your data | ask us to delete your answers |
 | data | your answers, what we record |
-| de-identified, anonymised | We do not record your name. |
+| de-identified, anonymised | We store your answers under a code. |
 | retention | how long we keep your answers |
 | voluntary | your choice |
 | consent, informed consent | agree to take part |
@@ -324,7 +324,7 @@ The last few ("simply", "just", "quick", "easy") are our inference from the advi
 - Listing things in threes for rhythm ("quick, easy and stress-free"). Give the real number of things, or a fact.
 - Opening lines that warm up to the point ("Before we begin, here's a quick overview…") and closing lines that sum up ("In short, just tap the dots!"). Start with the instruction.
 - Praise after a step ("Great choice!"). End a part with a plain fact: "Round 1 is finished."
-- Reassurance repeated on several pages, or promises in place of facts ("Your privacy is our top priority"). State the fact once: "We do not record your name."
+- Reassurance repeated on several pages, or promises in place of facts ("Your privacy is our top priority"). State the fact once: "We store your answers under a code."
 - Vague benefit statements ("WebAble makes the web work better for you"). Say what changed: "It made the text bigger."
 - Talking about the software as if it were a person ("WebAble wants to help").
 - Phrases that look meaningful but say nothing (current: "Nothing counts while you're paused", "Nothing happens to you either way"). Say the concrete fact: "The time you spend paused is not counted."
@@ -367,17 +367,21 @@ This study is for people aged 50 or over who often have trouble using websites.
 This takes about [25] minutes. There is no time limit.
 
 What you will do
-1. Answer 5 questions about you.
-2. Warm-up. Read some text and tap some dots.
-3. Try one website for practice.
-4. Round 1. Do one task on each of 3 websites, such as finding a page.
-5. Round 2. The same again with 3 different websites.
-6. Answer a few last questions.
+1. Read about the study and choose if you want to take part.
+2. Answer 9 questions about you.
+3. Warm-up. Read some text and tap some dots.
+4. Try one website for practice.
+5. Round 1. Do one task on each of 3 websites, such as finding a page. Then answer some questions about them.
+6. Round 2. The same again with 3 different websites.
+7. Answer 5 last questions.
 
 You need
 • your phone, held upright
 • your glasses, if you use them to read
-• a quiet place where nobody will interrupt you
+• if you can, a quiet place where you will not be disturbed
+
+Ethics review
+[The ethics board's decision and its reference number.]
 
 [Start now]
 
@@ -387,6 +391,10 @@ Questions? Email [address]
 Do not mention WebAble here; the agreement page explains it. Do not say "quick" or "easy". Keep the welcome page free of the reasons for the study beyond one sentence.
 
 ### 3.2 Agreement page (consent)
+
+From protocol 3.0.0 (the committee's review, 28 Oct 2026) this is the second page, before any question: information,
+then agreement, then the questions on who the study is for. The start page also gives the ethics review and its
+reference, and a quiet place is a suggestion, not a requirement.
 
 Structure: heading → short sections in this order → declaration → button "I agree to take part" → link "I do not want to take part". Each section is 3 short sentences or a short bulleted list. Everything GOV.UK requires is included.
 
@@ -411,16 +419,18 @@ What we record
 • where you tap, scroll and zoom on our pages
 • the text size you choose in the warm-up
 • your phone's screen size and display settings
-• your age group
+• your age group, gender, race and ethnicity
+• how comfortable you are using phones, computers and websites
+• your first name, only to check that nobody takes part twice. It is never part of our results.
 
 What we do not record
-• your name
+• your full name
 • anything you type on the websites
 • pictures or recordings of your screen
 • where you are
 
 Who sees your answers
-Only the study team. We store your answers under a code, not your name. We keep them for [time].
+Only the study team. We store your answers under a code. We keep your first name apart from your results and use it only to check that nobody takes part twice. We keep them for [time].
 
 Risks
 Some websites may be tiring to read. You can take a break at any time.
@@ -435,10 +445,11 @@ At the end you get a code. Email us that code [before 30 November] and we will d
 Questions or complaints
 Email [address]. To complain, contact [ethics office and address].
 
-By tapping I agree to take part, you confirm that:
+By tapping I agree to take part, you agree to take part in this study. You also confirm that:
 • you are 50 or over
 • you have read this page
-• you want to take part
+
+If you do not want to take part, you can stop now. Tap I do not want to take part, or close this page.
 
 [I agree to take part]
 I do not want to take part
@@ -491,7 +502,7 @@ Get ready
 
 1. Hold your phone upright, the way you usually do.
 2. Put on your glasses if you use them to read.
-3. Sit somewhere quiet.
+3. If you can, sit somewhere quiet.
 
 Keep this page open until the end. You can pause on any website.
 

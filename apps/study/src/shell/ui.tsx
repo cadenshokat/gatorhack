@@ -277,7 +277,18 @@ export const EASE_7: Scale7Words = [
   'Very hard',
 ];
 
-/** How much the copies looked and worked like the real websites. */
+/** Comfort with phones, computers and websites (protocol 3.0.0, the committee's ends: rarely use them, expert). */
+export const TECH_7: Scale7Words = [
+  'I rarely use them',
+  'Not comfortable',
+  'A little comfortable',
+  'Somewhat comfortable',
+  'Comfortable',
+  'Very comfortable',
+  'Expert user',
+];
+
+/** How much the websites looked and worked like the real ones (from 3.0.0, asked about the ones WebAble changed). */
 export const LIKE_7: Scale7Words = [
   'Not at all like them',
   'Very little like them',

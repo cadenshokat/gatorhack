@@ -2,6 +2,8 @@
 // Pulls the study's rows with the service key and writes the analysis files. Withdrawn sessions are left out, pilot
 // and main cohorts are kept apart, and nothing is imputed. The summary is descriptive (paired intervals, outcome counts);
 // which outcome is primary, and the models, are set in docs/STUDY.md ("Analysis") and run on trials.csv.
+// First names (protocol 3.0.0) are only for finding anyone who took part twice: they go to repeats.csv, for the team to
+// check by hand, and nowhere else.
 //
 //   STUDY_SUPABASE_URL=https://<ref>.supabase.co STUDY_SUPABASE_SERVICE_KEY=... \
 //     node scripts/export.mjs --cohort main --out ~/study-private/main-export
@@ -164,7 +166,30 @@ const opsFrom = (d, source) => (d.ops ? d.ops.filter((o) => o.status === 'applie
 
 const participants = [];
 const trials = [];
-const pairs = { sus: [], susPro: [], seq: [], logTime: [] };
+const pairs = { sus: [], susPro: [], seq: [], liking: [], logTime: [] };
+
+/** Sessions sharing a first name (any case and spacing): possible repeats, numbered, for a check by hand. */
+const nameKey = (s) => s.about?.firstName?.trim().toLowerCase().replace(/\s+/g, ' ') || null;
+const byName = new Map();
+for (const s of sessions.values()) {
+  const k = nameKey(s);
+  if (k) byName.set(k, [...(byName.get(k) ?? []), s]);
+}
+const repeatGroup = new Map();
+const repeats = [];
+for (const group of byName.values()) {
+  if (group.length < 2) continue;
+  const n = repeatGroup.size ? Math.max(...repeatGroup.values()) + 1 : 1;
+  for (const s of group) {
+    repeatGroup.set(s.sessionId, n);
+    repeats.push({
+      group: n, code: s.code, first_name: s.about.firstName, age_band: s.about?.ageBand, gender: s.about?.gender ?? null,
+      started: s.startedAt, finished: !!s.finishedAt && s.stage === 'done',
+      screen: s.device ? `${s.device.screen.w}x${s.device.screen.h}@${s.device.screen.dpr}` : null,
+      user_agent: s.device?.userAgent ?? null,
+    });
+  }
+}
 
 for (const s of sessions.values()) {
   const adaptedRound = s.trials?.find((t) => t.condition === 'adapted')?.round ?? null;
@@ -179,17 +204,23 @@ for (const s of sessions.values()) {
   const prefCond = pref === 'round1' || pref === 'round2' ? (Number(pref.slice(-1)) === adaptedRound ? 'adapted' : 'original') : pref ?? null;
   const touch = (s.device?.inputsSeen ?? []).includes('touch');
   const excluded = s.final?.useMyData === 'no' ? 'said_not_to_use' : !touch ? 'no_touch' : null;
+  // 1 to 10 ratings of each round (3.0.0), by condition.
+  const likeA = adaptedRound ? s.final?.liking?.[adaptedRound] ?? null : null;
+  const likeO = originalRound ? s.final?.liking?.[originalRound] ?? null : null;
 
   participants.push({
     code: s.code, cohort: s.cohort, protocol: s.protocol, sequence: s.sequence, adapted_round: adaptedRound,
-    finished: !!s.finishedAt && s.stage === 'done', excluded,
+    finished: !!s.finishedAt && s.stage === 'done', excluded, possible_repeat: repeatGroup.get(s.sessionId) ?? null,
     age_band: s.about?.ageBand, troubles: (s.about?.troubles ?? []).join('|'),
+    gender: s.about?.gender ?? null, race: (s.about?.race ?? []).join('|'), tech_comfort: s.about?.techComfort ?? null,
     zoom_to_read: s.about?.zoomToRead, tap_wrong: s.about?.tapWrong, held: s.about?.held,
     fit_body_px: s.calibration?.fit?.text?.bodyPx ?? null, fit_target_px: s.calibration?.fit?.targets?.minPx ?? null,
     warmup_sec: s.calibration?.durationSec ?? null, warmup_skipped: (s.calibration?.skipped ?? []).join('|'),
     sus_original: scoreO, sus_adapted: scoreA, sus_diff: scoreA != null && scoreO != null ? Math.round((scoreA - scoreO) * 100) / 100 : null,
     sus_original_flag: susO?.flagged ?? null, sus_adapted_flag: susA?.flagged ?? null,
     seq_original: seqMean('original'), seq_adapted: seqMean('adapted'),
+    liking_original: likeO, liking_adapted: likeA, liking_diff: likeA != null && likeO != null ? likeA - likeO : null,
+    adapted_realism: s.final?.adaptedRealism ?? null,
     preferred: prefCond, realism: s.final?.realism ?? null, use_my_data: s.final?.useMyData ?? null,
     comment_original: originalRound ? s.comments?.[originalRound] ?? null : null,
     comment_adapted: adaptedRound ? s.comments?.[adaptedRound] ?? null : null,
@@ -203,6 +234,7 @@ for (const s of sessions.values()) {
   const proA = susProrated(susA?.items), proO = susProrated(susO?.items);
   if (!excluded && proA != null && proO != null) pairs.susPro.push(proA - proO);
   if (!excluded && Number.isFinite(seqMean('adapted')) && Number.isFinite(seqMean('original'))) pairs.seq.push(seqMean('adapted') - seqMean('original'));
+  if (!excluded && likeA != null && likeO != null) pairs.liking.push(likeA - likeO);
 
   for (const t of mine) {
     const m = t.metrics ?? {}, d = t.delivery ?? {};
@@ -240,6 +272,7 @@ const fmt = (x, k = 1) => (x == null || Number.isNaN(x) ? '–' : x.toFixed(k));
 const ci = pairedCI(pairs.sus);
 const ciPro = pairedCI(pairs.susPro);
 const ciSeq = pairedCI(pairs.seq);
+const ciLike = pairedCI(pairs.liking);
 const ok = trials.filter((t) => !t.excluded && t.round > 0);
 const succ = (c) => ok.filter((t) => t.condition === c);
 const rate = (c) => `${succ(c).filter((t) => t.correct).length} of ${succ(c).length}`;
@@ -250,6 +283,8 @@ const summary = `# WebAble mobile study export (${cohort})
 Generated ${new Date().toISOString()}. Participants: ${participants.length} (finished ${participants.filter((p) => p.finished).length}, withdrawn ${withdrawn.size}, excluded ${participants.filter((p) => p.excluded).length}).
 
 Sequences: ${[0, 1, 2, 3].map((q) => `${q}: ${participants.filter((p) => p.sequence === q).length}`).join(', ')}.
+
+Possible repeats (same first name): ${repeatGroup.size} sessions in ${new Set(repeatGroup.values()).size} groups. Check repeats.csv by hand before analysis.
 
 ## SUS (7-point, 0–100), adapted minus original
 
@@ -271,6 +306,8 @@ Sensitivity (one missing item prorated): n = ${ciPro?.n ?? 0}, mean ${fmt(ciPro?
 
 SEQ paired (person means): n = ${ciSeq?.n ?? 0}, mean difference ${fmt(ciSeq?.mean, 2)}, 95% CI ${fmt(ciSeq?.lo, 2)} to ${fmt(ciSeq?.hi, 2)}.
 
+Liking each round (1–10, from protocol 3.0.0, asked after the round was revealed), adapted minus original: n = ${ciLike?.n ?? 0}, mean difference ${fmt(ciLike?.mean, 2)}, 95% CI ${fmt(ciLike?.lo, 2)} to ${fmt(ciLike?.hi, 2)}.
+
 ## How each website ended
 
 | Outcome | Original | Adapted |
@@ -287,7 +324,9 @@ about an effect. Never name a condition, and never say "people with" anything.
 mkdirSync(outDir, { recursive: true, mode: 0o700 });
 writeFileSync(join(outDir, 'participants.csv'), toCsv(participants), { mode: 0o600 });
 writeFileSync(join(outDir, 'trials.csv'), toCsv(trials), { mode: 0o600 });
-writeFileSync(join(outDir, 'responses.json'), JSON.stringify([...sessions.values()], null, 2), { mode: 0o600 });
+writeFileSync(join(outDir, 'repeats.csv'), toCsv(repeats), { mode: 0o600 });
+const nameless = (s) => ({ ...s, about: { ...s.about, firstName: undefined } });
+writeFileSync(join(outDir, 'responses.json'), JSON.stringify([...sessions.values()].map(nameless), null, 2), { mode: 0o600 });
 writeFileSync(join(outDir, 'summary.md'), summary, { mode: 0o600 });
 console.log(summary);
 console.log(`Files in ${outDir}`);

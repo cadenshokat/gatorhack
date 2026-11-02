@@ -1,11 +1,46 @@
-# WebAble mobile study: protocol `mobile-replica-2.1.0`
+# WebAble mobile study: protocol `mobile-replica-3.0.0`
 
-*Revised 28 Oct 2026: 2.1.0 (outcome tasks, every scale point labelled) on 2.0.0, itself on 1.0.0 (27 Oct 2026). The code is in `apps/study`; this file is the protocol, the measures
+*Revised 30 Oct 2026: 3.0.0 (the committee's review of 28 Oct: agreement first, demographics, round ratings) on
+2.1.0 (outcome tasks, every scale point labelled, 28 Oct 2026), on 2.0.0, itself on 1.0.0 (27 Oct 2026). The code is in `apps/study`; this file is the protocol, the measures
 and the analysis plan. When the code and this file disagree, fix one of them before collecting data. Change the
 protocol version for any change to pages, tasks, wording, scoring or engine. Choices still open for Caden and
 Dr. Rani are in `docs/STUDY-DECISIONS.md`.*
 
 ## 0. What changed
+
+### In 3.0.0
+
+From Caden's methodology review with Dr. Rani on 28 Oct 2026.
+
+- **Order: information, agreement, then questions.** The start page now gives the ethics review and its reference
+  (`VITE_STUDY_APPROVAL`). The agreement is the second page, before any question; it ends "By tapping I agree to take
+  part, you agree to take part in this study … If you do not want to take part, you can stop now." The two questions
+  on who the study is for come right after it. Nothing is sent until they show the person can take part
+  (`SessionRecord.eligible`), so someone who cannot take part still leaves with nothing recorded.
+- **Demographics and an identifier.** About you adds first name (only to find anyone who took part twice; never part
+  of the results; the export puts names in `repeats.csv` alone), gender, race and ethnicity (the 2024 US federal
+  categories, OMB SPD 15, choose all that apply), and comfort with phones, computers and websites (1 I rarely use
+  them … 7 Expert user, every point in words). The agreement lists them under "What we record".
+- **Round ratings replace "Which round would you choose?".** After both rounds, each round is rated 1 to 10 ("How
+  much did you like using the websites in round N?", 1 Did not like it at all … 10 Liked it a great deal), on screens
+  that say which round used WebAble, in the person's own order. "Did the 2 rounds feel different?" (and what was
+  different) now comes first, while people still do not know which round was which.
+- **Realism is asked about the websites WebAble changed**: "How much did the websites WebAble changed still look and
+  work like the real ones?" (same 7 answers and way out). Before 3.0.0 it asked about all the copies.
+- **"Should we use your answers?" is dropped**: the agreement covers it. Its exclusion applies to earlier sessions only.
+- **Wording:** a quiet place is a suggestion ("If you can, a quiet place where you will not be disturbed"); the
+  practice task says "hourly forecast" (the page's own word, for the practice only); "Sentence:" sits above each
+  true-or-false sentence in the warm-up; the round intro says "Then you answer some questions about the 3 websites";
+  the task kept in view on a website is 18 px instead of 16 (inside the same 140 px bar, so the website's height,
+  and the recorded AI answers, do not change).
+- **Not changed, and why.** Round order was already counterbalanced (four sequences: original or adapted first,
+  crossed with page set A or B first; invitations in shuffled blocks of four), as the committee asked. The two pages
+  of a family still share one task (§3), so people do the same task twice on different pages of the same website;
+  counterbalancing spreads that learning evenly over both conditions but does not remove it. Caden's decision,
+  30 Oct 2026.
+- **One link for everyone.** The plain study link now starts a real session (a new code, a random order of the four)
+  instead of a preview; `?preview` or `?seq=` keeps a preview. Invitation links still work.
+- **Approval:** first name and the demographic questions are new data; they belong in the amendment (§9).
 
 ### In 2.1.0
 
@@ -145,7 +180,7 @@ of its pair (28 Oct 2026, demo settings `rosa`).
 | news (AP van Gogh / Mars) | You liked this story and want to read more by the reporter who wrote it. Open the page that lists their stories. | `/author/marcia-dunn` | The byline "By MARCIA DUNN" under the headline | Simplified page: the same byline |
 | sports (Gators Kentucky / LSU) | You want to see how Florida has done against other teams too. Open the page that lists every team Florida has played. | `/sports/football/opponent-history` | "Back To History" at the top (under the cookie notice until it is closed) | Simplified page: "Back To History", near the end |
 | gov (NPS Everglades / Biscayne) | Before you visit, you want to check if any part of the park is closed or has a warning. Open the page that would tell you. | `/ever/…` or `/bisc/planyourvisit/conditions.htm` | "Alerts 3/5" in the park's bar, "See 3/5 park alerts", the park menu | The same page with the person's settings (no simplified page) |
-| practice (NWS) | You want to see the weather in Gainesville hour by hour. Open the page that shows it. | Hourly or tabular forecast | "Hourly Weather Forecast", "Tabular Forecast" | Original only |
+| practice (NWS) | You want to see what the weather in Gainesville will be like at each hour of the day. Open the hourly forecast. | Hourly or tabular forecast | "Hourly Weather Forecast", "Tabular Forecast" | Original only |
 
 Known differences to watch in the pilot: on the sports pages the destination moves from the top (original) to near
 the end (simplified page), and on the original the cookie notice covers it until closed. These are what the study
@@ -158,30 +193,35 @@ the destination's own link on whatever version is showing.
 
 **Who can take part:** adults aged 50 or over who say at least one of these often happens to them when they use
 websites: "I find it hard to get around a website", "…to find the information I need", "…to understand what a
-website says". No diagnosis, no health questions, no names. The threshold ("often") and whether trouble reading or
+website says". No diagnosis and no health questions. A first name is asked only to find repeats (§9). The threshold ("often") and whether trouble reading or
 tapping alone should qualify are open (`docs/STUDY-DECISIONS.md` §3).
 
-**How it is checked:** two questions after the start page and before the agreement: age group (Under 50, 50–64,
-65–74, 75–84, 85 or over) and the three kinds of trouble (tick all that apply, or "None of these"). Someone who
+**How it is checked:** two questions right after the agreement (from 3.0.0; before it in 2.x): age group (Under 50,
+50–64, 65–74, 75–84, 85 or over) and the three kinds of trouble (tick all that apply, or "None of these"). Someone who
 cannot take part sees "You cannot take part in this study", is told nothing was recorded, and can go **Back** in case
-of a slip. Nothing is sent before the agreement; for someone who can take part, the two answers are saved with the
-rest of the session after "I agree to take part". There is no payment, so there is little reason to answer falsely.
+of a slip. Nothing is sent until these answers pass. There is no payment, so there is little reason to answer falsely.
 
-**About you (after the agreement):** how often they zoom in to read on their phone, how often they tap the wrong
-thing, and how they will hold the phone. These describe the sample; they are not eligibility questions.
+**About you (after the age questions):** first name (only to find repeats), gender (Woman, Man, Another gender, Prefer
+not to say), race and ethnicity (American Indian or Alaska Native; Asian; Black or African American; Hispanic or
+Latino; Middle Eastern or North African; Native Hawaiian or Other Pacific Islander; White; any number, or Prefer not to
+say), comfort with phones, computers and websites (1 I rarely use them, 2 Not comfortable, 3 A little comfortable, 4
+Somewhat comfortable, 5 Comfortable, 6 Very comfortable, 7 Expert user), how often they zoom in to read on their
+phone, how often they tap the wrong thing, and how they will hold the phone. These describe the sample; they are not
+eligibility questions.
 
 **Sample size:** open (`docs/STUDY-DECISIONS.md` §2). 4–6 pilots first, excluded from the analysis.
 
 ## 5. Procedure (about 20–25 minutes; measure it in the pilot before advertising a length)
 
-1. Start page (who the study is for, what happens, how long, what you need).
-2. Who the study is for: 2 questions (§4).
-3. Agreement: who is doing it and why; what you will do; **what WebAble changes** (your warm-up sets sizes; its AI
+1. Start page (who the study is for, what happens, how long, what you need, the ethics review and its reference).
+2. Agreement: who is doing it and why; what you will do; **what WebAble changes** (your warm-up sets sizes; its AI
    looked at each website once before the study and its decisions are the same for everyone; it does not learn about
    you; nothing you do is sent to an AI); the copies; what we record and do not; risks; "not a test of your health,
-   eyesight, hands or memory"; deleting answers; contact. "I agree" confirms 50 or over.
-4. About you: 3 questions, each with a short reason and a way out.
-5. Get ready: upright, usual glasses, quiet place; "we are testing the websites, not you".
+   eyesight, hands or memory"; deleting answers; contact. "By tapping I agree to take part, you agree to take part in
+   this study", confirming 50 or over; "If you do not want to take part, you can stop now."
+3. Who the study is for: 2 questions (§4).
+4. About you: 7 questions (§4), each with a short reason and, where it fits, a way out.
+5. Get ready: upright, usual glasses, a quiet place if they can; "we are testing the websites, not you".
 6. **Warm-up (calibration):** the onboarding's Reading and Pointing steps, unchanged in what they measure
    (comfortable size, the true/false ladder, faint words, light or dark, the ring of dots), with the study's own
    wording (`apps/study/src/shell/warmupWords.ts`). `deriveFit` turns them into the person's settings, fixed for the
@@ -194,10 +234,12 @@ thing, and how they will hold the phone. These describe the sample; they are not
    stays at least 2.5 s in every condition while the page loads and WebAble prepares behind it) → Open the website →
    use it, with the task kept in view above Pause and "I cannot find it" → each tapped link: "Is this what you were
    looking for?" with the link's own words (Yes, this is it / No, keep looking) → the ease question. Then the 10
-   statements, then "What was it like to use these 3 websites? (optional)".
+   statements, then "What was it like to use these 3 websites? (optional)". The round's start page says "Then you
+   answer some questions about the 3 websites".
 9. Break.
 10. Round 2, the same way.
-11. Last questions (5), then the thank-you page: the code, which round used WebAble and what it did for this person,
+11. Last questions (5: whether the rounds felt different, a 1–10 rating of each round, realism of the websites
+    WebAble changed, what else happened), then the thank-you page: the code, which round used WebAble and what it did for this person,
     in two lists: "From your warm-up, WebAble: …" and "WebAble's AI looked at each website once, before the study.
     Its decisions were the same for everyone. On your websites, it: …" (only changes the delivery records show and
     the person could see; changes under an open simplified page are left out).
@@ -240,14 +282,15 @@ cognitive, visual or motor impairment**, in the data, the analysis or any report
 | Measure | Definition |
 |---|---|
 | Round comment | "What was it like to use these 3 websites? (optional)" after each round's statements, so comments can be told apart by condition (`comments`). Replaces the single end-of-study "anything that was hard" question of 1.0.0. |
-| Last questions | Preferred round; "Did the 2 rounds feel different?" and, after yes, what was different (asked after both SUS, as a check that the difference was noticed); what else affected them; how real the copies felt (1 Not at all like them, 2 Very little like them, 3 A little like them, 4 Somewhat like them, 5 Mostly like them, 6 Very much like them, 7 Exactly like them, or "I have not used the real websites before"); "Should we use your answers?" |
+| Last questions (3.0.0) | In this order: "Did the 2 rounds feel different?" and, after yes, what was different (asked after both SUS and before anything says which round used WebAble, as a check that the difference was noticed); then each round rated 1 to 10, "How much did you like using the websites in round N?" (1 Did not like it at all … 10 Liked it a great deal; only the ends have words), each screen saying what that round was ("WebAble changed the websites for you, using your warm-up" or "the websites looked as they normally do") and which websites it had (`final.liking`); then how much the websites WebAble changed still looked and worked like the real ones (1 Not at all like them, 2 Very little like them, 3 A little like them, 4 Somewhat like them, 5 Mostly like them, 6 Very much like them, 7 Exactly like them, or "I have not used the real websites before"; `final.adaptedRealism`); then what else affected them. The ratings are given knowing which round used WebAble, so they are reported apart from the SUS and SEQ, which are blind. |
+| Last questions (before 3.0.0) | Preferred round; the same "different" check; what else affected them; how real all the copies felt; "Should we use your answers?" |
 
 **Delivery (manipulation check), each adapted page:** each change with its status and source (person's settings, AI
 page decision, safety check), body text size before and after, text factor, simplified page open, how its parts were
 laid out, replay misses, settle time. "Delivered" = at least one change stuck and something measurable changed.
 
-**Not measured:** comprehension (`docs/STUDY-DECISIONS.md` §4). **Not recorded:** names, typed text on websites,
-screenshots, pointer paths, other tabs or apps, location.
+**Not measured:** comprehension (`docs/STUDY-DECISIONS.md` §4). **Not recorded:** full names (a first name only, for
+repeats), typed text on websites, screenshots, pointer paths, other tabs or apps, location.
 
 **Device:** screen, pixel ratio, viewport, a 16 px reference line (catches phone-level text scaling), reduced motion,
 dark mode, input types seen; noted again at each round to catch a change of phone.
@@ -267,15 +310,19 @@ dark mode, input types seen; noted again at each round to catch a change of phon
   - Time: `lmer(log(active_s) ~ condition + period + set + family + (1 + condition | pid))`. Whether this uses
     correct answers only or all ended tasks is open (`docs/STUDY-DECISIONS.md` §7).
   - SEQ: `clmm`. Misses per tap and pinch zoom: binomial GLMMs.
+  - Round ratings (1–10, 3.0.0): paired difference, adapted minus original, with a 95% CI and Wilcoxon signed-rank;
+    reported as a rating given after the reveal, not as a blind outcome.
   - Random effects start maximal and are simplified if they do not converge.
-- **Exploratory:** does the difference vary with the kind of trouble people reported, their age group, or the size
-  their warm-up set? Comments are coded by two people for what helped and what got in the way, by condition.
-- **Exclusions (decided now):** participant: answered "No" to "Should we use your answers?"; no touch input; changed
-  phone between rounds. Task: technical failure (reported, and also counted as a failure in a sensitivity analysis).
+- **Exploratory:** does the difference vary with the kind of trouble people reported, their age group, their comfort
+  with phones, computers and websites, or the size their warm-up set? Comments are coded by two people for what helped and what got in the way, by condition.
+- **Exclusions (decided now):** participant: a second session by the same person (found by hand from `repeats.csv`;
+  the later session is excluded); before 3.0.0, answered "No" to "Should we use your answers?"; no touch input;
+  changed phone between rounds. Task: technical failure (reported, and also counted as a failure in a sensitivity analysis).
   Never excluded for being slow, for a low SUS, for disliking WebAble, or for settings that changed nothing.
-- `apps/study/scripts/export.mjs` writes `participants.csv` (with `troubles` and the round comments by condition),
-  `trials.csv` (with `outcome`, `ops_from_warmup`, `ops_from_ai`, `ops_no_source`), `responses.json` and a
-  descriptive `summary.md`.
+- `apps/study/scripts/export.mjs` writes `participants.csv` (with `troubles`, the demographics, the round ratings
+  and comments by condition, and `possible_repeat`), `trials.csv` (with `outcome`, `ops_from_warmup`, `ops_from_ai`,
+  `ops_no_source`), `repeats.csv` (sessions sharing a first name, the only file with names), `responses.json`
+  (without names) and a descriptive `summary.md`.
 
 ## 8. What we may say afterwards
 
@@ -289,19 +336,24 @@ dark mode, input types seen; noted again at each round to catch a change of phon
 ## 9. Ethics and data
 
 - **Approval:** UF exempt protocol ET00056117 covers "adults with fine-motor disabilities". This study now recruits
-  adults aged 50 or over who report trouble with websites, with no fine-motor criterion, and asks two screening
-  questions before the agreement. File an amendment or a new exempt request before any invitation, and update
+  adults aged 50 or over who report trouble with websites, with no fine-motor criterion, asks two screening
+  questions right after the agreement, and (from 3.0.0) records a first name, gender, race and ethnicity, and comfort
+  with technology. File an amendment or a new exempt request before any invitation, and update
   `VITE_STUDY_APPROVAL` (shown on the agreement page) to the reference that covers it. Hold invitations until then.
 - Minimal risk; a candidate for exempt category 3 (45 CFR 46.104(d)(3)), which UF decides. Participants are told up
   front that the pages are copies (no deception) and, from 2.0.0, how WebAble's changes are decided.
-- Screening answers are not sent anywhere before the agreement; for someone who cannot take part they are cleared
-  and never sent.
+- Nothing is sent before the agreement and the screening answers; for someone who cannot take part the answers are
+  cleared and never sent.
+- First names: only to find anyone who took part twice. They travel with the coded session row (the study team
+  alone can read it), are written by the export only to `repeats.csv`, and never appear in results.
 - Storage: table `gatorhack_study_rows` in the existing WebAble Supabase project, insert-only for the public key
   (`apps/study/supabase/migrations`). Rows are coded; the researcher reads with the service key. "Leave and delete my
   answers" calls `gatorhack_study_withdraw`. Collection stays off (preview, nothing sent) until the contact, team,
   approval reference, retention and withdrawal date are set (`apps/study/.env.example`).
-- Hosting: noindex, no referrer, a self-only content policy (no outside requests), robots disallowed, links only by
-  invitation.
+- Hosting: noindex, no referrer, a self-only content policy (no outside requests), robots disallowed. From 3.0.0 the
+  plain study link works for anyone who has it (Caden's decision, 2 Nov 2026): each visit gets a new code and a random
+  order (the committee allowed random assignment; the export counts each order), so share it only with people it is
+  meant for. Invitation links still give exactly balanced orders.
 - Copies of real brands: Caden's decision (27 Oct 2026) is that exact copies are fine for this non-commercial study.
   Keep them behind invitations and take them down when the study ends.
 

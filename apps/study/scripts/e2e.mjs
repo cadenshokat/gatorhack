@@ -5,7 +5,7 @@
 //                        [--out <dir for screenshots>]
 //
 // WebKit (Safari's engine, as an iPhone 15) and Chromium (as a Pixel 7). First the way in, twice: someone the study
-// is for (up to the warm-up) and someone it is not for (stopped before the agreement, nothing kept). Then the rest,
+// is for (up to the warm-up) and someone it is not for (stopped right after the agreement, nothing kept). Then the rest,
 // with the warm-up skipped by a demo fit (?fit=…, which previews allow). On every website the task's answer must be in
 // the layer the person sees (the page, or WebAble's simplified page). Taps are real touch taps.
 
@@ -66,18 +66,24 @@ const saved = (page) =>
     return k ? JSON.parse(localStorage.getItem(k)) : null;
   });
 
-/** The way in: the 2 questions on who the study is for, then the agreement, or the stop page. */
+/** The way in (protocol 3.0.0): the agreement, then the 2 questions on who the study is for, or the stop page. */
 async function wayIn(browser, device, which, shots) {
   const ctx = await browser.newContext({ ...device });
   const page = await ctx.newPage();
   await page.goto(`${base}/?seq=${seq}`);
   await tapText(page, 'Start now');
+  await page.getByRole('heading', { name: 'Before you agree to take part' }).waitFor({ timeout: 10000 });
+  await tapText(page, 'I agree to take part');
   await choose(page, '65 to 74');
   await tick(page, 'I find it hard to find the information I need');
   await page.screenshot({ path: join(shots, 'eligibility.png') });
   await tapText(page, 'Continue');
-  await page.getByRole('heading', { name: 'Before you agree to take part' }).waitFor({ timeout: 10000 });
-  await tapText(page, 'I agree to take part');
+  await page.getByRole('textbox', { name: 'What is your first name?' }).fill('Rosa');
+  await tapText(page, 'Continue');
+  await choose(page, 'Woman');
+  await tick(page, 'Hispanic or Latino');
+  await tapText(page, 'Continue');
+  await choose(page, 'Comfortable');
   await choose(page, 'Sometimes');
   await choose(page, 'Never');
   await choose(page, 'In both hands');
@@ -85,22 +91,25 @@ async function wayIn(browser, device, which, shots) {
   await tapText(page, 'Continue');
   await page.getByRole('heading', { name: 'Warm-up' }).waitFor({ timeout: 10000 });
   const yes = await saved(page);
-  if (yes?.consent?.version !== '2.0.0') failures.push(`${which}: consent not saved as 2.0.0`);
+  if (yes?.consent?.version !== '3.0.0' || yes?.eligible !== true) failures.push(`${which}: consent not saved as 3.0.0 with eligibility`);
   if (yes?.about?.ageBand !== '65-74' || yes?.about?.troubles?.join() !== 'finding')
     failures.push(`${which}: who-the-study-is-for answers not kept (${JSON.stringify(yes?.about)})`);
+  if (yes?.about?.firstName !== 'Rosa' || yes?.about?.gender !== 'woman' || yes?.about?.race?.join() !== 'hispanic' || yes?.about?.techComfort !== 5)
+    failures.push(`${which}: about-you answers not kept (${JSON.stringify(yes?.about)})`);
   await ctx.close();
 
   const ctx2 = await browser.newContext({ ...device });
   const no = await ctx2.newPage();
   await no.goto(`${base}/?seq=${seq}`);
   await tapText(no, 'Start now');
+  await tapText(no, 'I agree to take part');
   await choose(no, 'Under 50');
   await tick(no, 'I find it hard to get around a website');
   await tapText(no, 'Continue');
   await no.getByRole('heading', { name: 'You cannot take part in this study' }).waitFor({ timeout: 10000 });
   await no.screenshot({ path: join(shots, 'not-eligible.png') });
   const rec = await saved(no);
-  if (rec?.consent || rec?.about?.ageBand || rec?.about?.troubles?.length) failures.push(`${which}: kept answers from someone the study is not for`);
+  if (rec?.eligible || rec?.about?.ageBand || rec?.about?.troubles?.length) failures.push(`${which}: kept answers from someone the study is not for`);
   // Back, in case of a slip: the questions again.
   await tapText(no, 'Back');
   await no.getByRole('heading', { name: 'How old are you?' }).waitFor({ timeout: 10000 });
@@ -295,13 +304,14 @@ for (const which of browsers) {
         continue;
       }
     }
-    await choose(page, /^Round 2/);
+    // Last questions (3.0.0): blind first, then a 1 to 10 rating of each round, then the changed websites' realism.
     await choose(page, 'Yes');
     await tapText(page, 'Continue'); // what was different (optional)
-    await tick(page, 'None of these');
-    await tapText(page, 'Continue');
+    await choose(page, '7');
+    await choose(page, '9');
     await choose(page, 'Mostly like them');
-    await choose(page, 'Yes, I took part carefully', { cont: 'Send my answers' });
+    await tick(page, 'None of these');
+    await tapText(page, 'Send my answers');
     await page.getByText('You have finished the study').waitFor({ timeout: 10000 });
     await page.screenshot({ path: join(shots, 'done.png'), fullPage: true });
 
@@ -330,8 +340,10 @@ for (const which of browsers) {
     }));
     console.log(`\n${which} (${device.viewport.width}x${device.viewport.height}) finished in ${Math.round((Date.now() - t0) / 1000)} s`);
     console.table(rows);
-    console.log('SUS:', rec.sus[1]?.score, rec.sus[2]?.score, 'comments:', JSON.stringify(rec.comments), 'final:', rec.final?.preferred, rec.final?.useMyData);
+    console.log('SUS:', rec.sus[1]?.score, rec.sus[2]?.score, 'comments:', JSON.stringify(rec.comments), 'final:', JSON.stringify(rec.final?.liking), rec.final?.adaptedRealism);
     if (rec.comments?.[1] !== 'The text was small.' || rec.comments?.[2] !== null) failures.push(`${which}: round comments not saved`);
+    if (rec.final?.liking?.[1] !== 7 || rec.final?.liking?.[2] !== 9 || rec.final?.adaptedRealism !== 5)
+      failures.push(`${which}: last answers not saved (${JSON.stringify(rec.final)})`);
     // A change the engine logged without its ledger line has no source; the export counts these apart.
     for (const t of rec.trials) {
       const n = t.delivery?.ops.filter((o) => o.status === 'applied' && !o.source).length ?? 0;

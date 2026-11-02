@@ -5,7 +5,8 @@
 //   node scripts/invites.mjs --count 32 --cohort main --base https://<study host> --out ~/study-private/main-invites.csv
 
 import { randomInt } from 'node:crypto';
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 
@@ -50,6 +51,7 @@ for (let b = 0; b < count / 4; b++) {
 
 const csv = rows.map((r) => r.join(',')).join('\n') + '\n';
 if (out) {
+  mkdirSync(dirname(out), { recursive: true, mode: 0o700 });
   writeFileSync(out, csv, { mode: 0o600 });
   console.log(`Wrote ${count} ${cohort} invitations to ${out}`);
 } else {

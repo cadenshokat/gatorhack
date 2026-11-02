@@ -1,4 +1,4 @@
-// The study's screens around the tasks: start page, the 2 questions on who the study is for, agreement, 3 questions
+// The study's screens around the tasks: start page, agreement, the 2 questions on who the study is for, 7 questions
 // about you, get ready, round starts, the break, the 10 statements and a comment after each round, the last questions
 // and the thank-you page. Wording follows the study's writing guide
 // (GOV.UK question pages, W3C COGA, NN/g): one question per page, the question as the heading, everyday words,
@@ -6,7 +6,7 @@
 
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
-import type { AboutYou, FinalAnswers, Likert7, WebTrouble } from '../contracts';
+import type { AboutYou, FinalAnswers, Likert7, RaceEthnicity, Rating10, WebTrouble } from '../contracts';
 import type { Debrief } from '../experiment/debrief';
 import { TROUBLES, type AgeAnswer } from '../experiment/eligibility';
 import { SUS_ITEMS } from '../experiment/sus';
@@ -21,6 +21,7 @@ import {
   Scale7,
   scaleOption,
   Screen,
+  TECH_7,
   TextButton,
   Title,
   type ChoiceOption,
@@ -69,12 +70,12 @@ export function WelcomeScreen(props: { onStart: () => void; preview: boolean }):
         <p>This takes about 20 to 25 minutes. There is no time limit.</p>
         <h2>What you will do</h2>
         <ol class="st-steps">
-          <li>Answer 5 questions about you.</li>
+          <li>Read about the study and choose if you want to take part.</li>
+          <li>Answer {ABOUT.length + 2} questions about you.</li>
           <li>Warm-up. Read some text and tap some dots.</li>
           <li>Try one website for practice.</li>
           <li>
-            Round 1. Do one task on each of 3 websites, such as finding a page. Then choose how much you agree with 10
-            statements.
+            Round 1. Do one task on each of 3 websites, such as finding a page. Then answer some questions about them.
           </li>
           <li>Round 2. The same again on 3 different websites.</li>
           <li>Answer 5 last questions.</li>
@@ -83,15 +84,21 @@ export function WelcomeScreen(props: { onStart: () => void; preview: boolean }):
         <ul class="st-list">
           <li>your phone, held upright</li>
           <li>your glasses, if you use them to read</li>
-          <li>a quiet place where nobody will interrupt you</li>
+          <li>if you can, a quiet place where you will not be disturbed</li>
         </ul>
+        {CONFIG.approval ? (
+          <>
+            <h2>Ethics review</h2>
+            <p>{CONFIG.approval}</p>
+          </>
+        ) : null}
       </div>
       {props.preview ? <p class="st-preview">This is a preview. Your answers stay on this phone.</p> : null}
     </Screen>
   );
 }
 
-/* ---------------- who the study is for (before the agreement) ---------------- */
+/* ---------------- who the study is for (right after the agreement) ---------------- */
 
 const AGES: Array<ChoiceOption<AgeAnswer>> = [
   { value: 'under_50', label: 'Under 50' },
@@ -110,8 +117,8 @@ const TROUBLE_WORDS: Record<WebTrouble, string> = {
 const NO_TROUBLE = 'none' as const;
 
 /**
- * Age, then the kinds of trouble with websites that often happen to the person. Nothing is saved here: the answers go
- * to the app, which keeps them only for someone who can take part and agrees.
+ * Age, then the kinds of trouble with websites that often happen to the person. Nothing is sent until these answers
+ * show the person can take part; someone who cannot leaves with nothing recorded.
  */
 export function EligibilityScreens(props: {
   onDone: (age: AgeAnswer, troubles: WebTrouble[]) => void;
@@ -135,7 +142,7 @@ export function EligibilityScreens(props: {
         actions={<Primary onClick={() => (age ? go(1) : setNudge(true))}>Continue</Primary>}
       >
         <BackLink onClick={props.onBack} />
-        <Title eyebrow="Question 1 of 5" question deck="This study is for people aged 50 or over">
+        <Title eyebrow={`Question 1 of ${ABOUT.length + 2}`} question deck="This study is for people aged 50 or over">
           {title}
         </Title>
         {nudge ? <ErrorLine>Choose your age group</ErrorLine> : null}
@@ -153,7 +160,7 @@ export function EligibilityScreens(props: {
       actions={<Primary onClick={() => (ticked.length && age ? props.onDone(age, troubles) : setNudge(true))}>Continue</Primary>}
     >
       <BackLink onClick={() => go(0)} />
-      <Title eyebrow="Question 2 of 5" question deck="Choose all that apply">
+      <Title eyebrow={`Question 2 of ${ABOUT.length + 2}`} question deck="Choose all that apply">
         {title}
       </Title>
       {nudge ? <ErrorLine>Choose what often happens to you, or choose None of these</ErrorLine> : null}
@@ -252,12 +259,14 @@ export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void;
           <li>your phone’s screen size and display settings</li>
           <li>the app you use to view this page, such as Safari or Chrome</li>
           <li>when you leave this page to use another app, and for how long</li>
-          <li>your age group</li>
+          <li>your age group, gender, race and ethnicity</li>
+          <li>how comfortable you are using phones, computers and websites</li>
+          <li>your first name, only to check that nobody takes part twice. It is never part of our results.</li>
         </ul>
 
         <h2>What we do not record</h2>
         <ul class="st-list">
-          <li>your name</li>
+          <li>your full name</li>
           <li>anything you type on the websites</li>
           <li>pictures or recordings of your screen</li>
           <li>what you do in other apps or on other websites</li>
@@ -265,7 +274,10 @@ export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void;
         </ul>
 
         <h2>How we store your answers</h2>
-        <p>{c.retention ?? 'Only the study team can see your answers. We store them under a code, not your name.'}</p>
+        <p>
+          {c.retention ??
+            'Only the study team can see your answers. We store them under a code. We keep your first name apart from your results.'}
+        </p>
 
         <h2>Risks and benefits</h2>
         <p>Some websites may be tiring or annoying to use. You can take a break at any time.</p>
@@ -309,13 +321,16 @@ export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void;
 
         <h2>If you agree</h2>
         <p>
-          By tapping <strong>I agree to take part</strong>, you confirm that:
+          By tapping <strong>I agree to take part</strong>, you agree to take part in this study. You also confirm that:
         </p>
         <ul class="st-list">
           <li>you are 50 or over</li>
           <li>you have read this page</li>
-          <li>you want to take part</li>
         </ul>
+        <p>
+          If you do not want to take part, you can stop now. Tap <strong>I do not want to take part</strong>, or close
+          this page.
+        </p>
       </div>
     </Screen>
   );
@@ -323,13 +338,24 @@ export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void;
 
 /* ---------------- about you ---------------- */
 
-type AboutKey = 'zoomToRead' | 'tapWrong' | 'held';
+type AboutKey = 'firstName' | 'gender' | 'race' | 'techComfort' | 'zoomToRead' | 'tapWrong' | 'held';
 
 const NO_SAY: ChoiceOption<string> = {
   value: 'no_say',
   label: 'Prefer not to say',
   quiet: true,
 };
+
+/** The 2024 US federal race and ethnicity categories (OMB SPD 15), in their order. */
+const RACES: Array<{ value: RaceEthnicity; label: string }> = [
+  { value: 'aian', label: 'American Indian or Alaska Native' },
+  { value: 'asian', label: 'Asian' },
+  { value: 'black', label: 'Black or African American' },
+  { value: 'hispanic', label: 'Hispanic or Latino' },
+  { value: 'mena', label: 'Middle Eastern or North African' },
+  { value: 'nhpi', label: 'Native Hawaiian or Other Pacific Islander' },
+  { value: 'white', label: 'White' },
+];
 const HOW_OFTEN: Array<ChoiceOption<string>> = [
   { value: 'never', label: 'Never' },
   { value: 'sometimes', label: 'Sometimes' },
@@ -338,13 +364,53 @@ const HOW_OFTEN: Array<ChoiceOption<string>> = [
   NO_SAY,
 ];
 
+/**
+ * The questions about the person, one per page: a choice unless `kind` says otherwise. First name, gender, race and
+ * ethnicity, and comfort with technology were added in protocol 3.0.0 at the committee's request.
+ */
 const ABOUT: Array<{
   key: AboutKey;
+  kind?: 'text' | 'checks';
   title: string;
   hint: string;
   error: string;
-  options: Array<ChoiceOption<string>>;
+  options: Array<ChoiceOption<string | number>>;
 }> = [
+  {
+    key: 'firstName',
+    kind: 'text',
+    title: 'What is your first name?',
+    hint: 'We use it only to check that nobody takes part twice. It is never part of our results',
+    error: 'Type your first name',
+    options: [],
+  },
+  {
+    key: 'gender',
+    title: 'What is your gender?',
+    hint: 'We ask this to describe who took part',
+    error: 'Choose your gender, or choose Prefer not to say',
+    options: [
+      { value: 'woman', label: 'Woman' },
+      { value: 'man', label: 'Man' },
+      { value: 'another', label: 'Another gender' },
+      NO_SAY,
+    ],
+  },
+  {
+    key: 'race',
+    kind: 'checks',
+    title: 'What is your race or ethnicity?',
+    hint: 'Choose all that apply',
+    error: 'Choose at least one, or choose Prefer not to say',
+    options: RACES,
+  },
+  {
+    key: 'techComfort',
+    title: 'How comfortable are you using phones, computers and websites?',
+    hint: 'We ask this because people who use them a lot may get different results',
+    error: 'Choose how comfortable you are',
+    options: ([1, 2, 3, 4, 5, 6, 7] as const).map((n) => scaleOption(n, TECH_7)),
+  },
   {
     key: 'zoomToRead',
     title: 'How often do you zoom in to read on your phone?',
@@ -382,15 +448,20 @@ export function AboutScreens(props: {
   const [about, setAbout] = useState<AboutYou>(props.about);
   const [nudge, setNudge] = useState(false);
   const q = ABOUT[i]!;
-  const value = (about[q.key] as string | null | undefined) ?? null;
+  const value = about[q.key] ?? null;
+  const answered = q.kind === 'text' ? !!about.firstName?.trim() : q.kind === 'checks' ? !!about.race?.length : value != null;
+  const set = (v: unknown) => {
+    setAbout({ ...about, [q.key]: v } as AboutYou);
+    setNudge(false);
+  };
   const go = (to: number) => {
     setNudge(false);
     setI(to);
   };
   const next = () => {
-    if (value == null) return setNudge(true);
+    if (!answered) return setNudge(true);
     if (i + 1 < ABOUT.length) go(i + 1);
-    else props.onDone(about);
+    else props.onDone({ ...about, firstName: about.firstName?.trim() || null });
   };
   return (
     <Screen
@@ -404,16 +475,37 @@ export function AboutScreens(props: {
         {q.title}
       </Title>
       {nudge ? <ErrorLine>{q.error}</ErrorLine> : null}
-      <Choices
-        key={q.key}
-        options={q.options}
-        value={value}
-        onPick={(v) => {
-          setAbout({ ...about, [q.key]: v } as AboutYou);
-          setNudge(false);
-        }}
-        label={q.title}
-      />
+      {q.kind === 'text' ? (
+        <input
+          type="text"
+          class="st-text st-input"
+          autocomplete="given-name"
+          autocapitalize="words"
+          spellcheck={false}
+          maxLength={60}
+          value={about.firstName ?? ''}
+          onInput={(e) => set((e.currentTarget as HTMLInputElement).value)}
+          onKeyDown={(e) => e.key === 'Enter' && next()}
+          aria-label={q.title}
+        />
+      ) : q.kind === 'checks' ? (
+        <Checks<RaceEthnicity | 'no_say'>
+          options={RACES}
+          none={{ value: 'no_say', label: 'Prefer not to say' }}
+          value={about.race ?? []}
+          onChange={set}
+          label={q.title}
+        />
+      ) : (
+        <Choices
+          key={q.key}
+          options={q.options}
+          value={value as string | number | null}
+          onPick={set}
+          label={q.title}
+          compact={q.key === 'techComfort'}
+        />
+      )}
     </Screen>
   );
 }
@@ -433,7 +525,7 @@ export function SetupScreen(props: {
       <ol class="st-steps">
         <li>Hold your phone upright, the way you usually do.</li>
         <li>Put on your glasses if you use them to read.</li>
-        <li>Sit somewhere quiet.</li>
+        <li>If you can, sit somewhere quiet.</li>
       </ol>
       <div class="st-prose st-gap">
         <p>Keep this page open until the end. You can pause on any website.</p>
@@ -470,7 +562,7 @@ export function RoundIntro(props: {
         <p>You will see {props.count} websites, one at a time.</p>
         <p>Before each website, we tell you what to find on it. You find it on the website and tap it.</p>
         <p>After each website, tell us how easy or hard it was.</p>
-        <p>Then you choose how much you agree with 10 statements about the {props.count} websites.</p>
+        <p>Then you answer some questions about the {props.count} websites.</p>
       </div>
     </Screen>
   );
@@ -609,20 +701,35 @@ export function SusScreens(props: {
 
 /* ---------------- last questions ---------------- */
 
-type FinalStep = 'preferred' | 'different' | 'noticed' | 'deviations' | 'realism' | 'useMyData';
+type FinalStep = 'different' | 'noticed' | 'like1' | 'like2' | 'adaptedRealism' | 'deviations';
 
 /**
- * The numbers people see: always "of 5"; "What was different?" (asked only after Yes) shares number 2. "Anything that
- * was hard" is asked after each round instead (protocol 2.0.0), so it can be told apart by round.
+ * The numbers people see: always "of 5"; "What was different?" (asked only after Yes) shares number 1. Protocol 3.0.0
+ * (the committee's review): "Did the 2 rounds feel different?" comes first, while people still do not know which round
+ * used WebAble; the two ratings then say which round was which. "Which round would you choose?" became the two ratings,
+ * and "Should we use your answers?" was dropped (the agreement covers it).
  */
 const FINAL_NUMBER: Record<FinalStep, number> = {
-  preferred: 1,
-  different: 2,
-  noticed: 2,
-  deviations: 3,
-  realism: 4,
-  useMyData: 5,
+  different: 1,
+  noticed: 1,
+  like1: 2,
+  like2: 3,
+  adaptedRealism: 4,
+  deviations: 5,
 };
+
+/** The 1 to 10 rating of each round: numbers, with words at the two ends. */
+const LIKE_ENDS = ['Did not like it at all', 'Liked it a great deal'] as const;
+
+const RATING_OPTIONS: Array<ChoiceOption<Rating10>> = ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((n) => ({
+  value: n,
+  label: (
+    <>
+      <span class="st-num">{n}</span>
+      {n === 1 || n === 10 ? <> <span class="st-num-label">{LIKE_ENDS[n === 1 ? 0 : 1]}</span></> : null}
+    </>
+  ),
+}));
 
 const DEVIATIONS: Array<{ id: string; label: string }> = [
   { id: 'helped', label: 'Someone helped me' },
@@ -634,14 +741,21 @@ const DEVIATIONS: Array<{ id: string; label: string }> = [
 /** The realism question's way out ("I have not used the real websites before"), kept apart from the 1 to 7 answers. */
 const NOT_USED = 0;
 
-/** "The Mars story, the LSU football results and the Biscayne park information". */
+/** "the Mars story, the LSU football results and the Biscayne park information". */
+function joinWords(xs: string[]): string {
+  return xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : (xs[0] ?? '');
+}
+
+/** The same, starting with a capital letter. */
 function listWords(xs: string[]): string {
-  const t = xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : (xs[0] ?? '');
+  const t = joinWords(xs);
   return t ? t[0]!.toUpperCase() + t.slice(1) : '';
 }
 
 export function FinalScreens(props: {
-  /** Each round's websites, short ("the Mars story"), so the round choices say what was in them. */
+  /** Which round used WebAble: the ratings say which round was which, in this person's own order. */
+  adaptedRound: 1 | 2;
+  /** Each round's websites, short ("the Mars story"), so the ratings say what was in each round. */
   rounds: [string[], string[]];
   /** The real websites the copies came from ("AP News", "Florida Gators", …). */
   sources: string[];
@@ -652,22 +766,21 @@ export function FinalScreens(props: {
   const [nudge, setNudge] = useState(false);
   const [notUsed, setNotUsed] = useState(false);
   const [f, setF] = useState<FinalAnswers>({
-    preferred: null,
     different: null,
     noticed: '',
+    liking: { 1: null, 2: null },
     deviations: [],
     other: '',
-    realism: null,
-    useMyData: null,
+    adaptedRealism: null,
   });
   // "What was different?" is asked only after "Yes".
   const order: FinalStep[] = [
-    'preferred',
     'different',
     ...(f.different === 'yes' ? (['noticed'] as const) : []),
+    'like1',
+    'like2',
+    'adaptedRealism',
     'deviations',
-    'realism',
-    'useMyData',
   ];
   const step = order[Math.min(i, order.length - 1)]!;
   const sub: [number, number] = [i, order.length];
@@ -684,40 +797,40 @@ export function FinalScreens(props: {
   const eyebrow = `Question ${FINAL_NUMBER[step]} of 5`;
   const skipLink = <TextButton onClick={next}>Skip this question</TextButton>;
 
-  if (step === 'preferred') {
-    const title = 'Which round would you choose for using websites every day?';
-    const round = (n: 1 | 2) => (
-      <span class="st-choice-two">
-        <span>Round {n}</span>
-        {props.rounds[n - 1]?.length ? <span class="st-choice-sub">{listWords(props.rounds[n - 1] ?? [])}</span> : null}
-      </span>
-    );
+  if (step === 'like1' || step === 'like2') {
+    const r = step === 'like1' ? 1 : 2;
+    const liking = f.liking ?? { 1: null, 2: null };
+    const sites = joinWords(props.rounds[r - 1] ?? []);
+    const what =
+      r === props.adaptedRound
+        ? `In round ${r}, WebAble changed the websites for you, using your warm-up.`
+        : `In round ${r}, the websites looked as they normally do.`;
+    const title = `How much did you like using the websites in round ${r}?`;
     return (
       <Screen
+        key={step}
         onLeave={props.onLeave}
         sub={sub}
         focusKey={step}
         actions={
           <>
-            <Primary onClick={() => (f.preferred ? next() : setNudge(true))}>Continue</Primary>
+            <Primary onClick={() => (liking[r] != null ? next() : setNudge(true))}>Continue</Primary>
             {skipLink}
           </>
         }
       >
-        <Title eyebrow={eyebrow} question>
+        {back}
+        <Title eyebrow={eyebrow} question deck={sites ? `${what} They were ${sites}.` : what}>
           {title}
         </Title>
-        {nudge ? <ErrorLine>Choose a round, or choose I am not sure</ErrorLine> : null}
-        <Choices<NonNullable<FinalAnswers['preferred']>>
-          options={[
-            { value: 'round1', label: round(1) },
-            { value: 'round2', label: round(2) },
-            { value: 'same', label: 'No difference' },
-            { value: 'unsure', label: 'I am not sure', quiet: true },
-          ]}
-          value={f.preferred}
-          onPick={(v) => set({ preferred: v })}
+        {nudge ? <ErrorLine>Choose a number from 1 to 10, or tap Skip this question</ErrorLine> : null}
+        <Choices<Rating10>
+          key={step}
+          options={RATING_OPTIONS}
+          value={liking[r]}
+          onPick={(v) => set({ liking: { ...liking, [r]: v } })}
           label={title}
+          compact
         />
       </Screen>
     );
@@ -786,8 +899,8 @@ export function FinalScreens(props: {
         focusKey={step}
         actions={
           <>
-            <Primary onClick={() => (f.deviations.length ? next() : setNudge(true))}>Continue</Primary>
-            {skipLink}
+            <Primary onClick={() => (f.deviations.length ? props.onDone(f) : setNudge(true))}>Send my answers</Primary>
+            <TextButton onClick={() => props.onDone(f)}>Skip this question</TextButton>
           </>
         }
       >
@@ -826,69 +939,40 @@ export function FinalScreens(props: {
     );
   }
 
-  if (step === 'realism') {
-    const title = 'How much did these websites look and work like the real ones?';
-    const options: Array<ChoiceOption<number>> = [
-      ...([1, 2, 3, 4, 5, 6, 7] as const).map((n): ChoiceOption<number> => scaleOption(n, LIKE_7)),
-      { value: NOT_USED, label: 'I have not used the real websites before', quiet: true },
-    ];
-    const value = notUsed ? NOT_USED : f.realism;
-    return (
-      <Screen
-        onLeave={props.onLeave}
-        sub={sub}
-        focusKey={step}
-        actions={
-          <>
-            <Primary onClick={() => (value != null ? next() : setNudge(true))}>Continue</Primary>
-            {skipLink}
-          </>
-        }
-      >
-        {back}
-        <Title
-          eyebrow={eyebrow}
-          question
-          deck={props.sources.length ? `The websites came from ${listWords(props.sources)}.` : undefined}
-        >
-          {title}
-        </Title>
-        {nudge ? <ErrorLine>Choose an answer, or tap Skip this question</ErrorLine> : null}
-        <Choices
-          options={options}
-          value={value}
-          onPick={(v) => {
-            setNotUsed(v === NOT_USED);
-            set({ realism: v === NOT_USED ? null : (v as Likert7) });
-          }}
-          label={title}
-          compact
-        />
-      </Screen>
-    );
-  }
-
-  const title = 'Should we use your answers in our study?';
+  // The websites WebAble changed: did they still look and work like the real ones (the committee's wording)?
+  const title = 'How much did the websites WebAble changed still look and work like the real ones?';
+  const options: Array<ChoiceOption<number>> = [
+    ...([1, 2, 3, 4, 5, 6, 7] as const).map((n): ChoiceOption<number> => scaleOption(n, LIKE_7)),
+    { value: NOT_USED, label: 'I have not used the real websites before', quiet: true },
+  ];
+  const value = notUsed ? NOT_USED : (f.adaptedRealism ?? null);
+  const from = props.sources.length ? ` The websites came from ${listWords(props.sources)}.` : '';
   return (
     <Screen
       onLeave={props.onLeave}
       sub={sub}
       focusKey={step}
-      actions={<Primary onClick={() => (f.useMyData ? props.onDone(f) : setNudge(true))}>Send my answers</Primary>}
+      actions={
+        <>
+          <Primary onClick={() => (value != null ? next() : setNudge(true))}>Continue</Primary>
+          {skipLink}
+        </>
+      }
     >
       {back}
-      <Title eyebrow={eyebrow} question deck="If you choose No, we leave your answers out of our results">
+      <Title eyebrow={eyebrow} question deck={`WebAble changed the websites in round ${props.adaptedRound}.${from}`}>
         {title}
       </Title>
-      {nudge ? <ErrorLine>Choose Yes or No</ErrorLine> : null}
-      <Choices<'yes' | 'no'>
-        options={[
-          { value: 'yes', label: 'Yes, I took part carefully' },
-          { value: 'no', label: 'No, I rushed or was not paying attention' },
-        ]}
-        value={f.useMyData}
-        onPick={(v) => set({ useMyData: v })}
+      {nudge ? <ErrorLine>Choose an answer, or tap Skip this question</ErrorLine> : null}
+      <Choices
+        options={options}
+        value={value}
+        onPick={(v) => {
+          setNotUsed(v === NOT_USED);
+          set({ adaptedRealism: v === NOT_USED ? null : (v as Likert7) });
+        }}
         label={title}
+        compact
       />
     </Screen>
   );

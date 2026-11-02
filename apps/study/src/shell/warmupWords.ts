@@ -9,7 +9,9 @@ import type { StepLabels } from '../../../extension/entrypoints/fitting/ui/words
 
 /**
  * The onboarding's labels in the study's words. The activities show no line under their heading (the owner's decision,
- * 28 Oct 2026): the instruction page before each one says what to do, so the "…Line" labels are empty.
+ * 28 Oct 2026): the instruction page before each one says what to do, so the "…Line" labels are empty. The two
+ * sentence activities are the exception (protocol 3.0.0, the committee's review): "Sentence:" sits right above the
+ * sentence, so it is clear what is true or false.
  */
 export const WARMUP_LABELS: StepLabels = {
   sizeTitle: 'Make the text a comfortable size',
@@ -25,7 +27,7 @@ export const WARMUP_LABELS: StepLabels = {
   yes: 'True',
   no: 'False',
   cantRead: 'I cannot read it',
-  tfLine: '',
+  tfLine: 'Sentence:',
   faintTitle: 'Which word can you see?',
   cantSee: 'I cannot see a word',
   faintLine: '',
@@ -33,7 +35,7 @@ export const WARMUP_LABELS: StepLabels = {
   light: 'The light page',
   dark: 'The dark page',
   same: 'No difference',
-  ldLine: '',
+  ldLine: 'Sentence:',
   dotsTitle: () => 'Tap the dots',
   dotsLine: '',
   skipStep: 'Skip this activity',

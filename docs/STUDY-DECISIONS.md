@@ -136,7 +136,8 @@ goal and the information may not.
 
 The exempt determination ET00056117 covers adults with fine-motor disabilities. What changed for the amendment:
 - the population (50 or over, self-reported trouble with websites, no disability criterion);
-- two screening questions before the agreement, whose answers are kept only for people who take part;
+- two screening questions right after the agreement (before it until protocol 3.0.0), whose answers are kept only
+  for people who take part;
 - the agreement text: who it is for, "What WebAble changes", and "not a test of your health, eyesight, hands or
   memory";
 - the end-of-round comment.

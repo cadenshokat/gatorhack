@@ -1,7 +1,8 @@
 # Builds the mobile study site from apps/study and publishes only that build to GitHub Pages, at
 # https://<owner>.github.io/<repo>/. Nothing else in the repo is served.
-# Collection settings come from the repo's Actions variables (Settings → Secrets and variables → Actions → Variables),
-# named as in apps/study/.env.example. Without all of them the site runs as a preview that keeps answers on the phone.
+# The study settings below are the same as apps/study/.env.local: change both together. None is secret: they all end
+# up in the site's code, and the key is Supabase's public (anon) key, which can only add rows. With all of them set,
+# anyone who opens the link takes part for real and their answers are saved.
 
 name: Study site on GitHub Pages
 
@@ -37,13 +38,13 @@ jobs:
       - run: pnpm build
         env:
           STUDY_PAGES_BASE: /${{ github.event.repository.name }}/
-          VITE_STUDY_SUPABASE_URL: ${{ vars.VITE_STUDY_SUPABASE_URL }}
-          VITE_STUDY_SUPABASE_KEY: ${{ vars.VITE_STUDY_SUPABASE_KEY }}
-          VITE_STUDY_CONTACT: ${{ vars.VITE_STUDY_CONTACT }}
-          VITE_STUDY_TEAM: ${{ vars.VITE_STUDY_TEAM }}
-          VITE_STUDY_APPROVAL: ${{ vars.VITE_STUDY_APPROVAL }}
-          VITE_STUDY_RETENTION: ${{ vars.VITE_STUDY_RETENTION }}
-          VITE_STUDY_WITHDRAW_BY: ${{ vars.VITE_STUDY_WITHDRAW_BY }}
+          VITE_STUDY_SUPABASE_URL: "https://qzkcrqqcgpwqxuvospsp.supabase.co"
+          VITE_STUDY_SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6a2NycXFjZ3B3cXh1dm9zcHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODU2MjMsImV4cCI6MjEwNjI2MTYyM30.7QsJwV3Rpim2NSETwPNw5jGZUxiS1u1zMsKhPaP9B0U"
+          VITE_STUDY_CONTACT: "cadenshokat@ufl.edu"
+          VITE_STUDY_TEAM: "The WebAble team at the University of Florida"
+          VITE_STUDY_APPROVAL: "The University of Florida's ethics board, the IRB, has reviewed this study. It decided the study is exempt from full review. The reference is ET00056117, from 14 September 2026. The lead researcher is Neha Rani, neharani@ufl.edu. For questions about your rights in this study, email the UF IRB at irb@ufl.edu."
+          VITE_STUDY_RETENTION: "Only the study team can see your answers. We store them under a code. We keep your first name apart from your results and use it only to check that nobody takes part twice. We keep your answers with no end date, unless you ask us to delete them."
+          VITE_STUDY_WITHDRAW_BY: "any time"
       - uses: actions/upload-pages-artifact@v4
         with:
           path: apps/study/dist
