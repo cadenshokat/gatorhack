@@ -64,11 +64,17 @@ describe('learning between websites', () => {
   });
 });
 
-describe('UMUX-Lite', () => {
-  it('scores 0 to 100 only when both statements are answered', () => {
-    expect(umuxResponse([7, 7], 'x').score).toBe(100);
-    expect(umuxResponse([1, 1], 'x').score).toBe(0);
-    expect(umuxResponse([4, 5], 'x').score).toBe(58.3);
-    expect(umuxResponse([4, null], 'x').score).toBeNull();
+describe('UMUX', () => {
+  it('keeps the UMUX-Lite score from statements 1 and 3', () => {
+    expect(umuxResponse([7, 1, 7, 1], 'x').score).toBe(100);
+    expect(umuxResponse([1, 7, 1, 7], 'x').score).toBe(0);
+    expect(umuxResponse([4, null, 5, null], 'x').score).toBe(58.3);
+    expect(umuxResponse([4, 4, null, 4], 'x').score).toBeNull();
+  });
+  it('scores the full UMUX with statements 2 and 4 reversed, only when all 4 are answered', () => {
+    expect(umuxResponse([7, 1, 7, 1], 'x').umux).toBe(100);
+    expect(umuxResponse([1, 7, 1, 7], 'x').umux).toBe(0);
+    expect(umuxResponse([6, 3, 5, 2], 'x').umux).toBe(75);
+    expect(umuxResponse([6, null, 5, 2], 'x').umux).toBeNull();
   });
 });

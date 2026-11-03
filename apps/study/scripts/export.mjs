@@ -217,6 +217,9 @@ for (const s of sessions.values()) {
   // UMUX-Lite (4.0.0, in place of the SUS), and the tap baseline from the question screens.
   const umuxA = adaptedRound ? s.umux?.[adaptedRound]?.score ?? null : null;
   const umuxO = originalRound ? s.umux?.[originalRound]?.score ?? null : null;
+  // From 4.3.0 the full UMUX too (score above stays UMUX-Lite).
+  const umuxFullA = adaptedRound ? s.umux?.[adaptedRound]?.umux ?? null : null;
+  const umuxFullO = originalRound ? s.umux?.[originalRound]?.umux ?? null : null;
   const b = s.baseline ?? null;
   const liveAi = mine.some((t) => t.delivery?.ai?.live === true);
 
@@ -237,6 +240,8 @@ for (const s of sessions.values()) {
     sus_original: scoreO, sus_adapted: scoreA, sus_diff: scoreA != null && scoreO != null ? Math.round((scoreA - scoreO) * 100) / 100 : null,
     sus_original_flag: susO?.flagged ?? null, sus_adapted_flag: susA?.flagged ?? null,
     umux_original: umuxO, umux_adapted: umuxA, umux_diff: umuxA != null && umuxO != null ? Math.round((umuxA - umuxO) * 10) / 10 : null,
+    umux_full_original: umuxFullO, umux_full_adapted: umuxFullA,
+    umux_full_diff: umuxFullA != null && umuxFullO != null ? Math.round((umuxFullA - umuxFullO) * 10) / 10 : null,
     seq_original: seqMean('original'), seq_adapted: seqMean('adapted'),
     liking_scale: likeA != null || likeO != null ? likeScale : null,
     liking_original: likeO, liking_adapted: likeA, liking_diff: likeA != null && likeO != null ? likeA - likeO : null,

@@ -6,7 +6,7 @@
 
 import type { FitProfile, FittingRaw, ReaderProfile } from '@webable/core';
 
-export const PROTOCOL = 'mobile-replica-4.2.0';
+export const PROTOCOL = 'mobile-replica-4.3.0';
 
 /** The agreement's version, saved with "I agree to take part": the protocol's own number. */
 export const CONSENT_VERSION = PROTOCOL.replace(/^mobile-replica-/, '');
@@ -299,14 +299,18 @@ export interface SusResponse {
 }
 
 /**
- * UMUX-Lite (Lewis, Utesch & Maher 2013): two statements, 1–7, every answer in words. Plain wording for this study:
- * "These websites let me do what I needed to do" (capabilities meet my requirements) and "These websites were easy
- * to use". Score = (item1 − 1 + item2 − 1) × 100 / 12, null unless both are answered.
+ * After each round: UMUX-Lite (Lewis, Utesch & Maher 2013) in 4.0.0 to 4.2.0, the full UMUX (Finstad 2010) from 4.3.0,
+ * 1–7 with every answer in words. Wording and scoring in src/experiment/umux.ts.
  */
 export interface UmuxResponse {
-  instrument: 'umux-lite-lewis-2013-en-7pt-plain@1.0.0';
-  items: [Likert7 | null, Likert7 | null];
+  /** 4.0.0 to 4.2.0: UMUX-Lite's 2 statements. From 4.3.0: all 4 of UMUX (src/experiment/umux.ts). */
+  instrument: 'umux-lite-lewis-2013-en-7pt-plain@1.0.0' | 'umux-finstad-2010-en-7pt-plain@1.0.0';
+  /** In the order asked: UMUX-Lite's 2, or UMUX's 4 (Lite's are the 1st and 3rd). */
+  items: Array<Likert7 | null>;
+  /** The UMUX-Lite score, 0 to 100, in every version. */
   score: number | null;
+  /** From 4.3.0: the full UMUX score, 0 to 100. */
+  umux?: number | null;
   submittedAt: string | null;
 }
 
@@ -403,7 +407,7 @@ export interface AboutYou {
    * Checks the person is 50 or over ('under_50' ends the study and nothing is saved). Asked before the agreement in
    * protocol 2.x, right after it from 3.0.0. Earlier builds asked any adult, with 'no_say'.
    */
-  ageBand: '50-64' | '65-74' | '75-84' | '85+' | '18-29' | '30-49' | '75+' | 'no_say' | null;
+  ageBand: '50-64' | '65-74' | '75-84' | '85+' | 'under_50' | '18-29' | '30-49' | '75+' | 'no_say' | null;
   /** Asked with the age: what often happens to them on websites (at least one to take part). */
   troubles?: WebTrouble[];
   /** From 3.0.0, only to find anyone who took part twice. Never part of the results. */

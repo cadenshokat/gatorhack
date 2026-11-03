@@ -1,6 +1,7 @@
-# WebAble mobile study: protocol `mobile-replica-4.2.0`
+# WebAble mobile study: protocol `mobile-replica-4.3.0`
 
-*Revised 3 Nov 2026 (night): 4.2.0 (three busy websites a round, each task's answer at the same depth in both
+*Revised 3 Nov 2026 (morning): 4.3.0 (pictures of each round on the last questions, the full UMUX after each round,
+only under 50 with no trouble stops someone) on 4.2.0 (three busy websites a round, each task's answer at the same depth in both
 versions, the answer's depth recorded per website) on 4.1.0 (recipes in place of the football pages, the round ratings
 in words, captions and comments kept small on the simplified page) on 4.0.0 (Caden's first in-person pilot: shorter,
 find-the-answer tasks, live AI fitted to the person), on 3.0.0 (the committee's review of 28 Oct), on 2.1.0 (outcome
@@ -11,6 +12,25 @@ engine. Choices still open for Caden and Dr. Rani are in `docs/STUDY-DECISIONS.m
 3.0.0 where 4.0.0 to 4.2.0 do not say otherwise.*
 
 ## 0. What changed
+
+### In 4.3.0
+
+Changes made before the first participants (3 Nov):
+
+- **Pictures on the last questions.** People mixed up "round 1" and "round 2". "Did the 2 rounds feel different?" now
+  shows one website from each round, as it looked in that round (the round's first website, without or with
+  WebAble), and each liking question shows that round's picture. The pictures are fixed screenshots at the typical
+  text size in light mode (`public/shots`, made by `scripts/shots.mjs`), so for someone who chose large text or dark
+  mode they are close to, not exactly, what they saw. Showing both pictures on the first question makes the difference
+  visible before people say whether they felt one; read its answers with that in mind.
+- **The full UMUX after each round** (Finstad 2010), 4 statements in place of UMUX-Lite's 2. Statements 1 and 3 are
+  UMUX-Lite's, worded as before, so `umux_*` (UMUX-Lite) stays comparable with earlier sessions; the full score is
+  `umux_full_*`. Statements 2 and 4 are negative: "Using these websites was frustrating" and "I had to spend too much
+  time fixing mistakes on these websites". There is no validated 5-statement version.
+- **Who can take part.** Only "Under 50" together with "None of these" stops someone; under 50 with a trouble, and 50
+  or over with none, go on. "Under 50" is saved as `age_band = under_50`. The age question's line now reads "This
+  study is for people aged 50 and over who often have trouble using websites". The agreement still asks people to
+  confirm they are 50 or over: check this with the ethics approval.
 
 ### In 4.2.0
 

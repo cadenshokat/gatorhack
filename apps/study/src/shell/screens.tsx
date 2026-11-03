@@ -76,7 +76,7 @@ export function WelcomeScreen(props: { onStart: () => void; preview: boolean }):
           <li>Answer {ABOUT.length + 2} questions about you.</li>
           <li>Set up WebAble. Tell it what gets in your way on websites, and pick a text size.</li>
           <li>Try one website for practice.</li>
-          <li>Round 1. Find one answer on each of 3 websites. Then answer 2 questions.</li>
+          <li>Round 1. Find one answer on each of 3 websites. Then answer 4 questions.</li>
           <li>Round 2. The same again on 3 different websites.</li>
           <li>Answer 3 last questions.</li>
         </ol>
@@ -142,7 +142,7 @@ export function EligibilityScreens(props: {
         actions={<Primary onClick={() => (age ? go(1) : setNudge(true))}>Continue</Primary>}
       >
         <BackLink onClick={props.onBack} />
-        <Title eyebrow={`Question 1 of ${ABOUT.length + 2}`} question deck="This study is for people aged 50 or over">
+        <Title eyebrow={`Question 1 of ${ABOUT.length + 2}`} question deck="This study is for people aged 50 and over who often have trouble using websites">
           {title}
         </Title>
         {nudge ? <ErrorLine>Choose your age group</ErrorLine> : null}
@@ -556,7 +556,7 @@ export function RoundIntro(props: {
           <li>Tell us how easy or hard it was.</li>
         </ol>
         <p>
-          There are {props.count} websites in this round. Then 2 questions about them.
+          There are {props.count} websites in this round. Then 4 questions about them.
         </p>
       </div>
     </Screen>
@@ -694,29 +694,30 @@ export function SusScreens(props: {
   );
 }
 
-/* ---------------- 2 statements after each round (UMUX-Lite, 7 points), protocol 4.0.0 ---------------- */
+/* ---------------- 4 statements after each round (UMUX, 7 points), protocol 4.3.0 ---------------- */
 
 export function UmuxScreens(props: {
   round: 1 | 2;
   /** The round's websites, short ("the Mars story"), named on the first statement so nobody has to remember them. */
   sites: string[];
-  onDone: (items: [Likert7 | null, Likert7 | null]) => void;
+  onDone: (items: Array<Likert7 | null>) => void;
   onLeave: () => void;
 }): JSX.Element {
+  const n = UMUX_ITEMS.length;
   const [i, setI] = useState(0);
-  const [items, setItems] = useState<[Likert7 | null, Likert7 | null]>([null, null]);
+  const [items, setItems] = useState<Array<Likert7 | null>>(() => UMUX_ITEMS.map(() => null));
   const [nudge, setNudge] = useState(false);
   const sites = joinWords(props.sites);
-  const next = (got: [Likert7 | null, Likert7 | null]) => {
+  const next = (got: Array<Likert7 | null>) => {
     setNudge(false);
-    if (i === 0) setI(1);
+    if (i + 1 < n) setI(i + 1);
     else props.onDone(got);
   };
   return (
     <Screen
       key={i}
       onLeave={props.onLeave}
-      sub={[i, 2]}
+      sub={[i, n]}
       focusKey={`umux${props.round}-${i}`}
       actions={
         <>
@@ -725,9 +726,9 @@ export function UmuxScreens(props: {
         </>
       }
     >
-      {i > 0 ? <BackLink onClick={() => (setNudge(false), setI(0))} /> : null}
+      {i > 0 ? <BackLink onClick={() => (setNudge(false), setI(i - 1))} /> : null}
       <Title
-        eyebrow={`Round ${props.round}, statement ${i + 1} of 2`}
+        eyebrow={`Round ${props.round}, statement ${i + 1} of ${n}`}
         question
         deck={i === 0 && sites ? `About the websites you just used: ${sites}.` : 'How much do you agree?'}
       >
@@ -739,7 +740,7 @@ export function UmuxScreens(props: {
         words={AGREE_7}
         value={items[i] ?? null}
         onPick={(v) => {
-          const got: [Likert7 | null, Likert7 | null] = [...items];
+          const got = [...items];
           got[i] = v;
           setItems(got);
           setNudge(false);
@@ -789,6 +790,29 @@ function listWords(xs: string[]): string {
   return t ? t[0]!.toUpperCase() + t.slice(1) : '';
 }
 
+/**
+ * A website from each round as it looked (public/shots, from scripts/shots.mjs), protocol 4.3.0: people kept mixing up
+ * "round 1" and "round 2", so the last questions show them.
+ */
+function RoundPictures(props: { rounds: Array<1 | 2>; pictures: [string, string]; names: [string[], string[]] }): JSX.Element {
+  return (
+    <div class={`st-shots${props.rounds.length === 1 ? ' is-one' : ''}`}>
+      {props.rounds.map((r) => {
+        const name = props.names[r - 1]?.[0];
+        return (
+          <figure key={r} class="st-shot">
+            <img src={props.pictures[r - 1]} alt={`Round ${r}${name ? `: ${name}` : ''}, as you saw it`} />
+            <figcaption>
+              <strong>Round {r}</strong>
+              {name ? <span>{name[0]!.toUpperCase() + name.slice(1)}</span> : null}
+            </figcaption>
+          </figure>
+        );
+      })}
+    </div>
+  );
+}
+
 export function FinalScreens(props: {
   /** Which round used WebAble: the ratings say which round was which, in this person's own order. */
   adaptedRound: 1 | 2;
@@ -796,6 +820,8 @@ export function FinalScreens(props: {
   rounds: [string[], string[]];
   /** The real websites the copies came from ("AP News", "People", …). */
   sources: string[];
+  /** A picture of each round's first website as it looked in that round (with WebAble or not). */
+  pictures: [string, string];
   onDone: (f: FinalAnswers) => void;
   onLeave: () => void;
 }): JSX.Element {
@@ -860,6 +886,7 @@ export function FinalScreens(props: {
         <Title eyebrow={eyebrow} question deck={sites ? `${what} They were ${sites}.` : what}>
           {title}
         </Title>
+        <RoundPictures rounds={[r]} pictures={props.pictures} names={props.rounds} />
         {nudge ? <ErrorLine>Choose an answer, or tap Skip this question</ErrorLine> : null}
         <Scale7
           key={step}
@@ -887,9 +914,10 @@ export function FinalScreens(props: {
         }
       >
         {back}
-        <Title eyebrow={eyebrow} question>
+        <Title eyebrow={eyebrow} question deck="Here is one website from each round, as you saw it.">
           {title}
         </Title>
+        <RoundPictures rounds={[1, 2]} pictures={props.pictures} names={props.rounds} />
         {nudge ? <ErrorLine>Choose Yes or No, or choose I am not sure</ErrorLine> : null}
         <Choices<'yes' | 'no' | 'unsure'>
           options={[

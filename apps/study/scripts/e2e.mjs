@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Walks the whole participant flow (protocol 4.2.0) on emulated phones and checks what gets saved. Run with the dev
+// Walks the whole participant flow (protocol 4.3.0) on emulated phones and checks what gets saved. Run with the dev
 // server up:
 //
 //   node scripts/e2e.mjs [--base http://127.0.0.1:5190] [--browsers webkit,chromium] [--seq 0,1,2,3]
@@ -32,7 +32,7 @@ function arg(name, fallback) {
   return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
-const PROTOCOL = 'mobile-replica-4.2.0';
+const PROTOCOL = 'mobile-replica-4.3.0';
 const base = arg('base', 'http://127.0.0.1:5190');
 const browsers = arg('browsers', 'webkit,chromium').split(',');
 const seqs = arg('seq', '1').split(',').map(Number);
@@ -49,10 +49,17 @@ const CARD_MS = 45000;
 const PER_ROUND = 3;
 /** The ease and statements answers the run gives, as the buttons say them and as saved (1 = Very easy). */
 const EASE = { name: 'Somewhat easy', value: 3 };
+/** The 4 UMUX statements after each round (2 and 4 are negative): score is UMUX-Lite (1 and 3), umux the full one. */
 const UMUX = {
-  1: { words: ['Agree', 'Somewhat agree'], items: [6, 5], score: 75 },
-  2: { words: ['Strongly agree', 'Agree'], items: [7, 6], score: 91.7 },
+  1: { words: ['Agree', 'Disagree', 'Somewhat agree', 'Strongly disagree'], items: [6, 2, 5, 1], score: 75, umux: 83.3 },
+  2: { words: ['Strongly agree', 'Strongly disagree', 'Agree', 'Disagree'], items: [7, 1, 6, 2], score: 91.7, umux: 91.7 },
 };
+const UMUX_ITEMS = [
+  'These websites let me do what I needed to do.',
+  'Using these websites was frustrating.',
+  'These websites were easy to use.',
+  'I had to spend too much time fixing mistakes on these websites.',
+];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const failures = [];
@@ -112,23 +119,25 @@ async function notEligible(browser, device, seq, which, shots) {
   await tapText(page, 'I agree to take part');
   await heading(page, 'How old are you?', 10000);
   await nudgeCheck(page, `${which}: age`, 'Choose your age group');
+  // From 4.3.0 only under 50 with no trouble stops someone.
   await choose(page, 'Under 50');
   await heading(page, 'Which of these often happen to you when you use websites?', 10000);
-  await tick(page, 'I find it hard to get around a website');
+  await tick(page, 'None of these');
   await tapText(page, 'Continue');
   await heading(page, 'You cannot take part in this study', 10000);
   await page.screenshot({ path: join(shots, 'not-eligible.png') });
   let rec = await saved(page);
-  if (rec?.eligible || rec?.about?.ageBand || rec?.about?.troubles?.length) fail(`${which}: kept answers from someone the study is not for (under 50)`);
-  // Back, in case of a slip: the questions again. Then old enough but no trouble with websites: the same stop.
+  if (rec?.eligible || rec?.about?.ageBand || rec?.about?.troubles?.length) fail(`${which}: kept answers from someone the study is not for (under 50, no trouble)`);
+  // Back, in case of a slip: the questions again. Under 50 with a trouble goes on.
   await tapText(page, 'Back');
   await heading(page, 'How old are you?', 10000);
-  await choose(page, '65 to 74');
-  await tick(page, 'None of these');
+  await choose(page, 'Under 50');
+  await tick(page, 'I find it hard to get around a website');
   await tapText(page, 'Continue');
-  await heading(page, 'You cannot take part in this study', 10000);
+  await heading(page, 'What is your first name?', 10000);
   rec = await saved(page);
-  if (rec?.eligible || rec?.about?.ageBand || rec?.about?.troubles?.length) fail(`${which}: kept answers from someone the study is not for (no trouble)`);
+  if (!rec?.eligible || rec?.about?.ageBand !== 'under_50' || rec?.about?.troubles?.join() !== 'getting_around')
+    fail(`${which}: under 50 with a trouble did not go on (${JSON.stringify(rec?.about)})`);
   await ctx.close();
 }
 
@@ -280,14 +289,14 @@ async function runTask(page, name, shots, mode) {
   return { taskId: task.id, mode, cardMs, question: task.question };
 }
 
-/** The 2 statements after a round: an empty Continue says so; then both answers. */
+/** The 4 statements after a round: an empty Continue says so; then each answer. */
 async function umux(page, r) {
   const u = UMUX[r];
-  await heading(page, 'These websites let me do what I needed to do.', 30000);
-  await nudgeCheck(page, `round ${r} statement 1`, 'Choose an answer');
-  await choose(page, u.words[0]);
-  await heading(page, 'These websites were easy to use.', 10000);
-  await choose(page, u.words[1]);
+  for (const [i, statement] of UMUX_ITEMS.entries()) {
+    await heading(page, statement, i ? 10000 : 30000);
+    if (!i) await nudgeCheck(page, `round ${r} statement 1`, 'Choose an answer');
+    await choose(page, u.words[i]);
+  }
 }
 
 /** The whole way through, as someone the study is for. Returns what was saved, and whether live AI was configured. */
@@ -375,6 +384,12 @@ async function fullRun(page, seq, which, shots) {
   }
   // Last questions (4.1.0 on): blind first (Yes adds a text screen), then how much they liked each round, in words.
   await heading(page, 'Did the 2 rounds feel different?', 10000);
+  const pics = await page.locator('.st-shot img').evaluateAll((xs) => xs.map((x) => ({ src: x.getAttribute('src'), ok: x.complete && x.naturalWidth > 0 })));
+  if (pics.length !== 2 || pics.some((p) => !p.ok)) fail(`${which}: round pictures not shown (${JSON.stringify(pics)})`);
+  // One round without WebAble and one with it, each picture from that round's first website.
+  const kinds = pics.map((p) => /shots\/[a-z-]+-(original|adapted)\.jpg$/.exec(p.src ?? '')?.[1]).sort().join();
+  if (kinds !== 'adapted,original') fail(`${which}: round pictures are ${pics.map((p) => p.src).join(' and ')}`);
+  await page.screenshot({ path: join(shots, 'final-pictures.png'), fullPage: true });
   await choose(page, 'Yes');
   await heading(page, 'What was different? (optional)', 10000);
   await page.locator('textarea').fill('The text was bigger.');
@@ -395,7 +410,7 @@ function check(which, run, seq) {
   const { rec, live, dark, intended, doneText } = run;
   if (!rec) return fail(`${which}: nothing saved`);
   if (rec.protocol !== PROTOCOL) fail(`${which}: protocol ${rec.protocol}, not ${PROTOCOL}`);
-  if (rec.consent?.version !== '4.2.0' || rec.eligible !== true) fail(`${which}: consent not saved as 4.2.0 with eligibility (${JSON.stringify(rec.consent)})`);
+  if (rec.consent?.version !== '4.3.0' || rec.eligible !== true) fail(`${which}: consent not saved as 4.3.0 with eligibility (${JSON.stringify(rec.consent)})`);
   if (rec.sequence !== seq) fail(`${which}: sequence ${rec.sequence}, not ${seq}`);
   if (rec.stage !== 'done' || !rec.finishedAt) fail(`${which}: study not saved as finished (stage ${rec.stage})`);
 
@@ -431,8 +446,8 @@ function check(which, run, seq) {
   for (const r of [1, 2]) {
     const u = rec.umux?.[r];
     if (!u || u.score === null) fail(`${which}: no UMUX score for round ${r} (${JSON.stringify(u)})`);
-    else if (u.items.join() !== UMUX[r].items.join() || u.score !== UMUX[r].score)
-      fail(`${which}: round ${r} UMUX saved as ${u.items.join('/')} = ${u.score}, expected ${UMUX[r].items.join('/')} = ${UMUX[r].score}`);
+    else if (u.items.join() !== UMUX[r].items.join() || u.score !== UMUX[r].score || u.umux !== UMUX[r].umux)
+      fail(`${which}: round ${r} UMUX saved as ${u.items.join('/')} = ${u.score}/${u.umux}, expected ${UMUX[r].items.join('/')} = ${UMUX[r].score}/${UMUX[r].umux}`);
   }
   if (rec.sus?.[1] || rec.sus?.[2]) fail(`${which}: SUS answers saved in a UMUX protocol`);
 

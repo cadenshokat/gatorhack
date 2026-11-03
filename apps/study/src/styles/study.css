@@ -957,3 +957,40 @@ html:has(.st-task:not(.is-warm)) {
   padding: 0 10px;
   font-size: 17px;
 }
+
+/* The last questions: a website from each round as it looked (protocol 4.3.0). */
+.st-shots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 4px 0 20px;
+}
+.st-shots.is-one {
+  grid-template-columns: minmax(0, 200px);
+  justify-content: center;
+}
+.st-shot {
+  margin: 0;
+}
+.st-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* The top of the website is enough to recognise it, and keeps the answers close. */
+  aspect-ratio: 390 / 520;
+  object-fit: cover;
+  object-position: top;
+  border: 1px solid var(--c-line-strong);
+  border-radius: 14px;
+  background: var(--c-canvas-2);
+}
+.st-shot figcaption {
+  display: grid;
+  margin-top: 8px;
+  font: var(--f-small);
+  color: var(--c-ink-2);
+}
+.st-shot figcaption strong {
+  color: var(--c-ink);
+  font-size: 17px;
+}

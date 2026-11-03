@@ -4,14 +4,15 @@ import { debriefFor } from '../src/experiment/debrief';
 import { eligible, screened } from '../src/experiment/eligibility';
 
 describe('who the study is for', () => {
-  it('takes people aged 50 or over with at least one kind of trouble', () => {
+  it('takes everyone but under 50 with no trouble (4.3.0)', () => {
     expect(eligible('50-64', ['finding'])).toBe(true);
     expect(eligible('85+', ['getting_around', 'understanding'])).toBe(true);
+    expect(eligible('under_50', ['finding'])).toBe(true);
+    expect(eligible('65-74', [])).toBe(true);
   });
 
-  it('stops people under 50, people with no trouble, and unanswered questions', () => {
-    expect(eligible('under_50', ['finding'])).toBe(false);
-    expect(eligible('65-74', [])).toBe(false);
+  it('stops under 50 with no trouble, and unanswered questions', () => {
+    expect(eligible('under_50', [])).toBe(false);
     expect(eligible(null, ['finding'])).toBe(false);
     expect(eligible('65-74', null)).toBe(false);
   });

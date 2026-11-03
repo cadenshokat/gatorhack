@@ -1,6 +1,6 @@
 // The participant flow (protocol 4.2.0, about 20 minutes): study information → agreement → who the study is for (age,
 // trouble with websites; nothing is sent until these pass, and someone it is not for stops here) → about you → set up
-// WebAble → practice → round 1 (three websites, then two statements) → break → round 2 → three last questions →
+// WebAble → practice → round 1 (three websites, then four statements) → break → round 2 → three last questions →
 // thank-you with the code. Taps on the question screens before the practice are the person's baseline. Help the person
 // accepts on an adapted website is kept for the next ones. Each step is saved as it ends, so a reload picks up at the
 // same step (a website in progress starts again, and that is noted).
@@ -487,7 +487,7 @@ export function App(): JSX.Element {
             .map((t) => t.task.tag ?? REPLICAS[t.task.replicaId]?.siteName ?? '')
             .filter(Boolean)}
           onLeave={leave}
-          onDone={(items: [Likert7 | null, Likert7 | null]) => {
+          onDone={(items: Array<Likert7 | null>) => {
             const umux = {
               ...(rec.umux ?? { 1: null, 2: null }),
               [r]: umuxResponse(items, new Date().toISOString()),
@@ -505,6 +505,12 @@ export function App(): JSX.Element {
       body = (
         <FinalScreens
           adaptedRound={adaptedRound}
+          pictures={
+            ([1, 2] as const).map((r) => {
+              const first = roundTasks(r)[0];
+              return first ? `${import.meta.env.BASE_URL}shots/${first.task.replicaId}-${plan.conditions[r - 1]}.jpg` : '';
+            }) as [string, string]
+          }
           rounds={
             [1, 2].map((r) =>
               roundTasks(r as 1 | 2)
