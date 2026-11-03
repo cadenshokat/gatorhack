@@ -1,16 +1,16 @@
 {
  "v": "study-fixtures.1",
  "replicaId": "ap-vangogh",
- "version": "5",
+ "version": "7",
  "servePath": "/article/van-gogh-starry-night-space-6385c8e37f748bddc4137cdda5c76887",
  "originalHost": "apnews.com",
- "engineCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
- "serverCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "engineCommit": "0c4e8f9a65dab31cbe88b486508d66c432a57da5+dirty",
+ "serverCommit": "0c4e8f9a65dab31cbe88b486508d66c432a57da5",
  "models": {
   "jev": "jev-1.14.0",
   "compose": "gpt-5.4-mini"
  },
- "recordedAt": "2026-10-27T22:27:15.180Z",
+ "recordedAt": "2026-11-03T02:40:00.229Z",
  "matrix": {
   "fits": [
    "typical",
@@ -20,14 +20,13 @@
    "calm"
   ],
   "heights": [
-   456,
-   520,
-   600,
+   568,
    664,
    760
   ],
   "engines": [
-   "chromium"
+   "chromium",
+   "webkit"
   ],
   "canonical": {
    "fit": "typical",
@@ -76,11 +75,11 @@
    },
    "mainRegion": {
     "id": "n219",
-    "p": 0.46,
+    "p": 0.38,
     "probs": {
      "n16": 0.045,
-     "n219": 0.585,
-     "n220": 0.36,
+     "n219": 0.535,
+     "n220": 0.41,
      "n92": 0,
      "n221": 0.005,
      "n222": 0,
@@ -89,11 +88,11 @@
    },
    "mainPick": {
     "id": "none",
-    "p": 0.87,
+    "p": 0.88,
     "probs": {
      "n4": 0,
      "n27": 0.02,
-     "n34": 0.05,
+     "n34": 0.04,
      "n37": 0.01,
      "n41": 0.02,
      "n42": 0.02,
@@ -111,7 +110,7 @@
      "n118": 0,
      "n119": 0,
      "n158": 0,
-     "none": 0.87
+     "none": 0.88
     }
    },
    "metrics": {
@@ -120,7 +119,7 @@
     "questions": 217,
     "inputTokens": 108178,
     "wallMs": 307,
-    "serverMs": 222,
+    "serverMs": 220,
     "costUsd": 0.004543476
    },
    "ids": {
@@ -318,15 +317,17 @@
     "j": {
      "id": "n2",
      "role": "navigation",
-     "roleP": 0.94,
+     "roleP": 0.92,
      "roleProbs": {
-      "navigation": 0.94
+      "navigation": 0.92,
+      "popup_overlay": 0.03,
+      "account_utility": 0.03
      },
-     "task": 0.1,
+     "task": 0.12,
      "main": 0,
      "help": 0.03,
      "fine": "site_nav",
-     "fineP": 0.9400000000000001,
+     "fineP": 0.92,
      "importance": 0.99
     },
     "from": "canonical"
@@ -338,16 +339,16 @@
     "j": {
      "id": "n4",
      "role": "navigation",
-     "roleP": 0.96,
+     "roleP": 0.95,
      "roleProbs": {
-      "navigation": 0.96
+      "navigation": 0.95
      },
-     "task": 0.1,
+     "task": 0.11,
      "main": 0.03,
-     "help": 0.03,
+     "help": 0.02,
      "fine": "site_logo",
      "fineP": 0.89,
-     "importance": 1.01
+     "importance": 1
     },
     "from": "canonical"
    },
@@ -366,8 +367,8 @@
      "main": 0,
      "help": 0.01,
      "fine": "headline",
-     "fineP": 0.9,
-     "importance": 3.95
+     "fineP": 0.93,
+     "importance": 3.94
     },
     "from": "canonical"
    },
@@ -381,16 +382,16 @@
      "roleP": 0.82,
      "roleProbs": {
       "action_button": 0.82,
-      "advertising": 0.06,
-      "recommendations": 0.04,
-      "other": 0.03
+      "advertising": 0.05,
+      "recommendations": 0.07,
+      "other": 0.04
      },
      "task": 0.66,
-     "main": 0.2,
+     "main": 0.17,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.8200000000000001,
-     "importance": 2.09
+     "fineP": 0.79,
+     "importance": 2.13
     },
     "from": "canonical"
    },
@@ -401,20 +402,19 @@
     "j": {
      "id": "n34",
      "role": "action_button",
-     "roleP": 0.82,
+     "roleP": 0.84,
      "roleProbs": {
-      "action_button": 0.82,
-      "navigation": 0.03,
-      "advertising": 0.05,
-      "recommendations": 0.04,
+      "action_button": 0.84,
+      "advertising": 0.04,
+      "recommendations": 0.03,
       "other": 0.04
      },
-     "task": 0.6,
-     "main": 0.19,
+     "task": 0.66,
+     "main": 0.15,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.79,
-     "importance": 2.09
+     "fineP": 0.84,
+     "importance": 2.21
     },
     "from": "canonical"
    },
@@ -425,18 +425,18 @@
     "j": {
      "id": "n37",
      "role": "recommendations",
-     "roleP": 0.86,
+     "roleP": 0.81,
      "roleProbs": {
-      "action_button": 0.07,
-      "navigation": 0.05,
-      "recommendations": 0.86
+      "action_button": 0.11,
+      "navigation": 0.06,
+      "recommendations": 0.81
      },
-     "task": 0.85,
+     "task": 0.82,
      "main": 0.11,
      "help": 0.02,
      "fine": "carousel",
-     "fineP": 0.86,
-     "importance": 1.96
+     "fineP": 0.81,
+     "importance": 1.82
     },
     "from": "canonical"
    },
@@ -447,19 +447,21 @@
     "j": {
      "id": "n41",
      "role": "action_button",
-     "roleP": 0.36,
+     "roleP": 0.33,
      "roleProbs": {
-      "action_button": 0.36,
-      "advertising": 0.22,
-      "account_utility": 0.22,
-      "other": 0.07
+      "action_button": 0.33,
+      "consent_notice": 0.03,
+      "popup_overlay": 0.03,
+      "advertising": 0.19,
+      "account_utility": 0.24,
+      "other": 0.08
      },
-     "task": 0.17,
-     "main": 0.08,
-     "help": 0.02,
+     "task": 0.18,
+     "main": 0.09,
+     "help": 0.03,
      "fine": "secondary_action",
-     "fineP": 0.31,
-     "importance": 0.29
+     "fineP": 0.28,
+     "importance": 0.28
     },
     "from": "canonical"
    },
@@ -470,17 +472,17 @@
     "j": {
      "id": "n42",
      "role": "other",
-     "roleP": 0.89,
+     "roleP": 0.88,
      "roleProbs": {
-      "action_button": 0.11,
-      "other": 0.89
+      "action_button": 0.12,
+      "other": 0.88
      },
-     "task": 0.09,
-     "main": 0.05,
+     "task": 0.1,
+     "main": 0.06,
      "help": 0.02,
      "fine": "social_share",
-     "fineP": 0.89,
-     "importance": 1.08
+     "fineP": 0.88,
+     "importance": 1.09
     },
     "from": "canonical"
    },
@@ -495,9 +497,9 @@
      "roleProbs": {
       "advertising": 0.98
      },
-     "task": 0.06,
+     "task": 0.07,
      "main": 0,
-     "help": 0.22,
+     "help": 0.25,
      "fine": "advertising",
      "fineP": 0.98,
      "importance": 0.08
@@ -517,10 +519,10 @@
      },
      "task": 0.06,
      "main": 0,
-     "help": 0.21,
+     "help": 0.22,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.06
+     "importance": 0.07
     },
     "from": "canonical"
    },
@@ -531,17 +533,17 @@
     "j": {
      "id": "n46",
      "role": "advertising",
-     "roleP": 0.96,
+     "roleP": 0.98,
      "roleProbs": {
-      "advertising": 0.96
+      "advertising": 0.98
      },
-     "task": 0.06,
+     "task": 0.08,
      "main": 0,
-     "help": 0.2,
+     "help": 0.19,
      "fine": "advertising",
-     "fineP": 0.91,
-     "importance": 0.13,
-     "paidAsStoryP": 0.13
+     "fineP": 0.95,
+     "importance": 0.15,
+     "paidAsStoryP": 0.15
     },
     "from": "canonical"
    },
@@ -552,19 +554,19 @@
     "j": {
      "id": "n48",
      "role": "action_button",
-     "roleP": 0.8,
+     "roleP": 0.78,
      "roleProbs": {
-      "action_button": 0.8,
+      "action_button": 0.78,
       "advertising": 0.11,
       "account_utility": 0.03,
-      "other": 0.03
+      "other": 0.04
      },
-     "task": 0.15,
-     "main": 0.02,
+     "task": 0.14,
+     "main": 0.03,
      "help": 0.21,
      "fine": "secondary_action",
-     "fineP": 0.8,
-     "importance": 0.83
+     "fineP": 0.78,
+     "importance": 0.92
     },
     "from": "canonical"
    },
@@ -575,16 +577,16 @@
     "j": {
      "id": "n218",
      "role": "main_content",
-     "roleP": 0.97,
+     "roleP": 0.96,
      "roleProbs": {
-      "main_content": 0.97
+      "main_content": 0.96
      },
      "task": 0.96,
      "main": 0,
-     "help": 0.01,
+     "help": 0.02,
      "fine": "body_text",
-     "fineP": 0.97,
-     "importance": 3.95
+     "fineP": 0.96,
+     "importance": 3.94
     },
     "from": "canonical"
    },
@@ -599,9 +601,9 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.05,
+     "task": 0.06,
      "main": 0,
-     "help": 0.18,
+     "help": 0.22,
      "fine": "advertising",
      "fineP": 1,
      "importance": 0.05,
@@ -616,17 +618,16 @@
     "j": {
      "id": "n59",
      "role": "advertising",
-     "roleP": 0.87,
+     "roleP": 0.93,
      "roleProbs": {
-      "help_contact": 0.03,
-      "advertising": 0.87
+      "advertising": 0.93
      },
-     "task": 0.1,
+     "task": 0.12,
      "main": 0,
-     "help": 0.27,
+     "help": 0.23,
      "fine": "advertising",
-     "fineP": 0.8200000000000001,
-     "importance": 0.19
+     "fineP": 0.89,
+     "importance": 0.2
     },
     "from": "canonical"
    },
@@ -646,8 +647,8 @@
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.06,
-     "paidAsStoryP": 0.11
+     "importance": 0.07,
+     "paidAsStoryP": 0.13
     },
     "from": "canonical"
    },
@@ -658,19 +659,19 @@
     "j": {
      "id": "n61",
      "role": "action_button",
-     "roleP": 0.8,
+     "roleP": 0.83,
      "roleProbs": {
-      "action_button": 0.8,
-      "advertising": 0.12,
+      "action_button": 0.83,
+      "advertising": 0.11,
       "account_utility": 0.03,
       "other": 0.03
      },
      "task": 0.15,
      "main": 0.02,
-     "help": 0.21,
+     "help": 0.2,
      "fine": "secondary_action",
-     "fineP": 0.8,
-     "importance": 0.98
+     "fineP": 0.83,
+     "importance": 0.86
     },
     "from": "canonical"
    },
@@ -685,12 +686,12 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.05,
+     "task": 0.06,
      "main": 0,
-     "help": 0.22,
+     "help": 0.21,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.06,
+     "importance": 0.07,
      "paidAsStoryP": 0.26
     },
     "from": "canonical"
@@ -711,8 +712,8 @@
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.08,
-     "paidAsStoryP": 0.16
+     "importance": 0.06,
+     "paidAsStoryP": 0.17
     },
     "from": "canonical"
    },
@@ -723,18 +724,19 @@
     "j": {
      "id": "n71",
      "role": "action_button",
-     "roleP": 0.73,
+     "roleP": 0.76,
      "roleProbs": {
-      "action_button": 0.73,
-      "advertising": 0.19,
-      "other": 0.04
+      "action_button": 0.76,
+      "advertising": 0.17,
+      "account_utility": 0.03,
+      "other": 0.03
      },
-     "task": 0.12,
+     "task": 0.15,
      "main": 0.02,
-     "help": 0.19,
+     "help": 0.24,
      "fine": "secondary_action",
-     "fineP": 0.73,
-     "importance": 0.87
+     "fineP": 0.76,
+     "importance": 0.83
     },
     "from": "canonical"
    },
@@ -754,8 +756,8 @@
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.06,
-     "paidAsStoryP": 0.12
+     "importance": 0.05,
+     "paidAsStoryP": 0.11
     },
     "from": "canonical"
    },
@@ -766,18 +768,17 @@
     "j": {
      "id": "n89",
      "role": "advertising",
-     "roleP": 0.93,
+     "roleP": 0.95,
      "roleProbs": {
-      "popup_overlay": 0.03,
-      "advertising": 0.93
+      "advertising": 0.95
      },
      "task": 0.06,
      "main": 0,
      "help": 0.01,
      "fine": "advertising",
-     "fineP": 0.93,
-     "importance": 0.06,
-     "paidAsStoryP": 0.09
+     "fineP": 0.95,
+     "importance": 0.05,
+     "paidAsStoryP": 0.08
     },
     "from": "canonical"
    },
@@ -792,13 +793,13 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.04,
+     "task": 0.05,
      "main": 0,
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.06,
-     "paidAsStoryP": 0.18
+     "importance": 0.05,
+     "paidAsStoryP": 0.17
     },
     "from": "canonical"
    },
@@ -809,16 +810,16 @@
     "j": {
      "id": "n96",
      "role": "other",
-     "roleP": 0.9,
+     "roleP": 0.92,
      "roleProbs": {
-      "navigation": 0.08,
-      "other": 0.9
+      "navigation": 0.07,
+      "other": 0.92
      },
      "task": 0.09,
      "main": 0,
      "help": 0.03,
      "fine": "comments",
-     "fineP": 0.9,
+     "fineP": 0.92,
      "importance": 2.65
     },
     "from": "canonical"
@@ -830,18 +831,18 @@
     "j": {
      "id": "n98",
      "role": "account_utility",
-     "roleP": 0.8,
+     "roleP": 0.77,
      "roleProbs": {
       "action_button": 0.03,
-      "account_utility": 0.8,
-      "advertising": 0.1
+      "account_utility": 0.77,
+      "advertising": 0.14
      },
-     "task": 0.11,
-     "main": 0.07,
+     "task": 0.1,
+     "main": 0.06,
      "help": 0.02,
      "fine": "login_prompt",
-     "fineP": 0.5700000000000001,
-     "importance": 1.11
+     "fineP": 0.54,
+     "importance": 1.05
     },
     "from": "canonical"
    },
@@ -852,17 +853,17 @@
     "j": {
      "id": "n99",
      "role": "form_field",
-     "roleP": 0.91,
+     "roleP": 0.93,
      "roleProbs": {
-      "form_field": 0.91,
-      "other": 0.09
+      "form_field": 0.93,
+      "other": 0.07
      },
-     "task": 0.45,
+     "task": 0.46,
      "main": 0,
      "help": 0.03,
      "fine": "form_field",
-     "fineP": 0.91,
-     "importance": 2.92
+     "fineP": 0.93,
+     "importance": 2.88
     },
     "from": "canonical"
    },
@@ -873,18 +874,18 @@
     "j": {
      "id": "n101",
      "role": "navigation",
-     "roleP": 0.86,
+     "roleP": 0.85,
      "roleProbs": {
       "action_button": 0.03,
-      "navigation": 0.86,
-      "other": 0.11
+      "navigation": 0.85,
+      "other": 0.12
      },
-     "task": 0.18,
+     "task": 0.17,
      "main": 0,
      "help": 0.02,
      "fine": "tabs",
-     "fineP": 0.83,
-     "importance": 2.15
+     "fineP": 0.81,
+     "importance": 2.17
     },
     "from": "canonical"
    },
@@ -899,15 +900,14 @@
      "roleProbs": {
       "action_button": 0.44,
       "navigation": 0.04,
-      "other": 0.42,
-      "account_utility": 0.03
+      "other": 0.37
      },
-     "task": 0.39,
+     "task": 0.37,
      "main": 0.09,
      "help": 0.07,
      "fine": "secondary_action",
-     "fineP": 0.41000000000000003,
-     "importance": 1.68
+     "fineP": 0.44,
+     "importance": 1.66
     },
     "from": "canonical"
    },
@@ -917,20 +917,20 @@
     "uniq": true,
     "j": {
      "id": "n108",
-     "role": "other",
-     "roleP": 0.34,
+     "role": "action_button",
+     "roleP": 0.38,
      "roleProbs": {
-      "main_content": 0.15,
-      "action_button": 0.32,
+      "main_content": 0.1,
+      "action_button": 0.38,
       "other": 0.34,
-      "account_utility": 0.11
+      "account_utility": 0.08
      },
-     "task": 0.27,
-     "main": 0.07,
+     "task": 0.25,
+     "main": 0.06,
      "help": 0.04,
      "fine": "secondary_action",
-     "fineP": 0.32,
-     "importance": 1.86
+     "fineP": 0.38,
+     "importance": 1.91
     },
     "from": "canonical"
    },
@@ -941,17 +941,17 @@
     "j": {
      "id": "n110",
      "role": "other",
-     "roleP": 0.74,
+     "roleP": 0.76,
      "roleProbs": {
       "main_content": 0.23,
-      "other": 0.74
+      "other": 0.76
      },
-     "task": 0.29,
+     "task": 0.25,
      "main": 0,
      "help": 0.02,
      "fine": "comments",
-     "fineP": 0.74,
-     "importance": 2.61
+     "fineP": 0.72,
+     "importance": 2.49
     },
     "from": "canonical"
    },
@@ -962,17 +962,17 @@
     "j": {
      "id": "n112",
      "role": "action_button",
-     "roleP": 0.77,
+     "roleP": 0.83,
      "roleProbs": {
-      "action_button": 0.77,
-      "other": 0.23
+      "action_button": 0.83,
+      "other": 0.16
      },
      "task": 0.18,
-     "main": 0.07,
+     "main": 0.06,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.77,
-     "importance": 2.57
+     "fineP": 0.83,
+     "importance": 2.54
     },
     "from": "canonical"
    },
@@ -983,17 +983,17 @@
     "j": {
      "id": "n113",
      "role": "action_button",
-     "roleP": 0.54,
+     "roleP": 0.6,
      "roleProbs": {
-      "action_button": 0.54,
-      "other": 0.41
+      "action_button": 0.6,
+      "other": 0.36
      },
-     "task": 0.41,
-     "main": 0.06,
-     "help": 0.01,
+     "task": 0.42,
+     "main": 0.05,
+     "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.54,
-     "importance": 1.7
+     "fineP": 0.6,
+     "importance": 1.75
     },
     "from": "canonical"
    },
@@ -1004,18 +1004,18 @@
     "j": {
      "id": "n114",
      "role": "action_button",
-     "roleP": 0.76,
+     "roleP": 0.75,
      "roleProbs": {
       "main_content": 0.04,
-      "action_button": 0.76,
+      "action_button": 0.75,
       "other": 0.19
      },
-     "task": 0.37,
+     "task": 0.38,
      "main": 0.04,
-     "help": 0.01,
+     "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.76,
-     "importance": 2.03
+     "fineP": 0.75,
+     "importance": 2
     },
     "from": "canonical"
    },
@@ -1026,17 +1026,17 @@
     "j": {
      "id": "n115",
      "role": "other",
-     "roleP": 0.88,
+     "roleP": 0.91,
      "roleProbs": {
-      "action_button": 0.12,
-      "other": 0.88
+      "action_button": 0.09,
+      "other": 0.91
      },
-     "task": 0.09,
-     "main": 0.05,
+     "task": 0.08,
+     "main": 0.04,
      "help": 0.02,
      "fine": "social_share",
-     "fineP": 0.88,
-     "importance": 1.05
+     "fineP": 0.91,
+     "importance": 1.04
     },
     "from": "canonical"
    },
@@ -1047,16 +1047,16 @@
     "j": {
      "id": "n116",
      "role": "action_button",
-     "roleP": 0.83,
+     "roleP": 0.88,
      "roleProbs": {
-      "action_button": 0.83,
-      "other": 0.15
+      "action_button": 0.88,
+      "other": 0.09
      },
-     "task": 0.39,
-     "main": 0.06,
-     "help": 0.19,
+     "task": 0.34,
+     "main": 0.05,
+     "help": 0.17,
      "fine": "secondary_action",
-     "fineP": 0.83,
+     "fineP": 0.88,
      "importance": 1.8
     },
     "from": "canonical"
@@ -1068,18 +1068,18 @@
     "j": {
      "id": "n118",
      "role": "action_button",
-     "roleP": 0.43,
+     "roleP": 0.44,
      "roleProbs": {
-      "action_button": 0.43,
-      "navigation": 0.04,
-      "other": 0.42
+      "action_button": 0.44,
+      "navigation": 0.03,
+      "other": 0.43
      },
-     "task": 0.37,
+     "task": 0.36,
      "main": 0.09,
-     "help": 0.08,
+     "help": 0.07,
      "fine": "secondary_action",
-     "fineP": 0.4,
-     "importance": 1.69
+     "fineP": 0.41,
+     "importance": 1.7
     },
     "from": "canonical"
    },
@@ -1090,19 +1090,18 @@
     "j": {
      "id": "n119",
      "role": "action_button",
-     "roleP": 0.41,
+     "roleP": 0.44,
      "roleProbs": {
-      "main_content": 0.03,
-      "action_button": 0.41,
+      "action_button": 0.44,
       "navigation": 0.04,
-      "other": 0.37
+      "other": 0.33
      },
-     "task": 0.27,
+     "task": 0.26,
      "main": 0.06,
      "help": 0.05,
      "fine": "secondary_action",
-     "fineP": 0.41000000000000003,
-     "importance": 1.3
+     "fineP": 0.44,
+     "importance": 1.36
     },
     "from": "canonical"
    },
@@ -1113,17 +1112,17 @@
     "j": {
      "id": "n157",
      "role": "recommendations",
-     "roleP": 0.87,
+     "roleP": 0.86,
      "roleProbs": {
-      "main_content": 0.12,
-      "recommendations": 0.87
+      "main_content": 0.13,
+      "recommendations": 0.86
      },
-     "task": 0.13,
+     "task": 0.14,
      "main": 0,
      "help": 0.01,
      "fine": "teaser_other_content",
-     "fineP": 0.87,
-     "importance": 0.44
+     "fineP": 0.86,
+     "importance": 0.38
     },
     "from": "canonical"
    },
@@ -1134,17 +1133,17 @@
     "j": {
      "id": "n158",
      "role": "recommendations",
-     "roleP": 0.95,
+     "roleP": 0.92,
      "roleProbs": {
-      "main_content": 0.05,
-      "recommendations": 0.95
+      "main_content": 0.07,
+      "recommendations": 0.92
      },
      "task": 0.11,
      "main": 0.03,
      "help": 0.01,
      "fine": "teaser_other_content",
-     "fineP": 0.95,
-     "importance": 0.25
+     "fineP": 0.92,
+     "importance": 0.27
     },
     "from": "canonical"
    },
@@ -1155,17 +1154,17 @@
     "j": {
      "id": "n173",
      "role": "help_contact",
-     "roleP": 0.83,
+     "roleP": 0.79,
      "roleProbs": {
-      "navigation": 0.1,
-      "help_contact": 0.83,
-      "legal_footer": 0.04
+      "navigation": 0.14,
+      "help_contact": 0.79,
+      "legal_footer": 0.05
      },
-     "task": 0.08,
+     "task": 0.07,
      "main": 0,
-     "help": 0.89,
+     "help": 0.91,
      "fine": "contact_info",
-     "fineP": 0.8,
+     "fineP": 0.76,
      "importance": 1.01
     },
     "from": "canonical"
@@ -1177,17 +1176,17 @@
     "j": {
      "id": "n16",
      "role": "main_content",
-     "roleP": 0.83,
+     "roleP": 0.87,
      "roleProbs": {
-      "main_content": 0.83,
-      "recommendations": 0.06
+      "main_content": 0.87,
+      "recommendations": 0.05
      },
-     "task": 0.81,
+     "task": 0.82,
      "main": 0,
      "help": 0.02,
      "fine": "headline",
-     "fineP": 0.54,
-     "importance": 3.21
+     "fineP": 0.62,
+     "importance": 3.5
     },
     "from": "canonical"
    },
@@ -1201,15 +1200,16 @@
      "roleP": 0.82,
      "roleProbs": {
       "main_content": 0.82,
-      "recommendations": 0.03,
-      "other": 0.09
+      "navigation": 0.03,
+      "recommendations": 0.04,
+      "other": 0.06
      },
-     "task": 0.88,
+     "task": 0.87,
      "main": 0,
      "help": 0.02,
      "fine": "body_text",
-     "fineP": 0.8200000000000001,
-     "importance": 3.77
+     "fineP": 0.82,
+     "importance": 3.72
     },
     "from": "canonical"
    },
@@ -1220,17 +1220,17 @@
     "j": {
      "id": "n220",
      "role": "main_content",
-     "roleP": 0.73,
+     "roleP": 0.72,
      "roleProbs": {
-      "main_content": 0.73,
+      "main_content": 0.72,
       "other": 0.2
      },
      "task": 0.94,
      "main": 0,
-     "help": 0.03,
+     "help": 0.02,
      "fine": "body_text",
-     "fineP": 0.73,
-     "importance": 3.91
+     "fineP": 0.72,
+     "importance": 3.93
     },
     "from": "canonical"
    },
@@ -1250,8 +1250,8 @@
      "help": 0.14,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.06,
-     "paidAsStoryP": 0.19
+     "importance": 0.05,
+     "paidAsStoryP": 0.21
     },
     "from": "canonical"
    },
@@ -1271,7 +1271,7 @@
      "help": 0.03,
      "fine": "comments",
      "fineP": 0.99,
-     "importance": 2.84
+     "importance": 2.91
     },
     "from": "canonical"
    },
@@ -1282,18 +1282,18 @@
     "j": {
      "id": "n222",
      "role": "main_content",
-     "roleP": 0.58,
+     "roleP": 0.66,
      "roleProbs": {
-      "main_content": 0.58,
-      "advertising": 0.08,
-      "other": 0.29
+      "main_content": 0.66,
+      "advertising": 0.05,
+      "other": 0.23
      },
-     "task": 0.65,
+     "task": 0.63,
      "main": 0,
      "help": 0.03,
      "fine": "video_player",
-     "fineP": 0.46,
-     "importance": 2.47
+     "fineP": 0.6,
+     "importance": 2.49
     },
     "from": "canonical"
    },
@@ -1304,20 +1304,20 @@
     "j": {
      "id": "n1",
      "role": "account_utility",
-     "roleP": 0.47,
+     "roleP": 0.46,
      "roleProbs": {
-      "action_button": 0.11,
+      "action_button": 0.15,
       "help_contact": 0.09,
-      "popup_overlay": 0.12,
-      "account_utility": 0.47,
-      "other": 0.16
+      "popup_overlay": 0.04,
+      "account_utility": 0.46,
+      "other": 0.21
      },
-     "task": 0.22,
+     "task": 0.21,
      "main": 0,
-     "help": 0.15,
+     "help": 0.19,
      "fine": "account_utility",
-     "fineP": 0.47000000000000003,
-     "importance": 1.34
+     "fineP": 0.46,
+     "importance": 1.38
     },
     "from": "union"
    },
@@ -1328,15 +1328,16 @@
     "j": {
      "id": "n3",
      "role": "navigation",
-     "roleP": 0.93,
+     "roleP": 0.94,
      "roleProbs": {
-      "navigation": 0.93
+      "navigation": 0.94,
+      "popup_overlay": 0.03
      },
-     "task": 0.11,
+     "task": 0.1,
      "main": 0,
      "help": 0.03,
      "fine": "site_nav",
-     "fineP": 0.93,
+     "fineP": 0.94,
      "importance": 0.98
     },
     "from": "union"
@@ -1354,10 +1355,10 @@
      },
      "task": 0.11,
      "main": 0.03,
-     "help": 0.02,
+     "help": 0.03,
      "fine": "site_logo",
-     "fineP": 0.89,
-     "importance": 0.97
+     "fineP": 0.88,
+     "importance": 1.01
     },
     "from": "union"
    },
@@ -1388,19 +1389,19 @@
     "j": {
      "id": "n28",
      "role": "action_button",
-     "roleP": 0.83,
+     "roleP": 0.86,
      "roleProbs": {
-      "action_button": 0.83,
+      "action_button": 0.86,
       "advertising": 0.04,
-      "recommendations": 0.03,
-      "other": 0.04
+      "recommendations": 0.04,
+      "other": 0.03
      },
-     "task": 0.68,
-     "main": 0.21,
+     "task": 0.64,
+     "main": 0.18,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.83,
-     "importance": 2.21
+     "fineP": 0.82,
+     "importance": 2.07
     },
     "from": "union"
    },
@@ -1411,19 +1412,19 @@
     "j": {
      "id": "n35",
      "role": "action_button",
-     "roleP": 0.82,
+     "roleP": 0.85,
      "roleProbs": {
-      "action_button": 0.82,
+      "action_button": 0.85,
       "advertising": 0.04,
       "recommendations": 0.03,
-      "other": 0.05
+      "other": 0.03
      },
-     "task": 0.67,
-     "main": 0.21,
+     "task": 0.63,
+     "main": 0.17,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.8200000000000001,
-     "importance": 2.27
+     "fineP": 0.85,
+     "importance": 2.15
     },
     "from": "union"
    },
@@ -1434,17 +1435,18 @@
     "j": {
      "id": "n38",
      "role": "recommendations",
-     "roleP": 0.91,
+     "roleP": 0.9,
      "roleProbs": {
       "action_button": 0.05,
-      "recommendations": 0.91
+      "navigation": 0.04,
+      "recommendations": 0.9
      },
-     "task": 0.85,
-     "main": 0.1,
+     "task": 0.83,
+     "main": 0.11,
      "help": 0.02,
      "fine": "carousel",
-     "fineP": 0.91,
-     "importance": 1.88
+     "fineP": 0.9,
+     "importance": 1.96
     },
     "from": "union"
    },
@@ -1455,20 +1457,21 @@
     "j": {
      "id": "n42",
      "role": "action_button",
-     "roleP": 0.37,
+     "roleP": 0.42,
      "roleProbs": {
-      "action_button": 0.37,
+      "action_button": 0.42,
       "form_field": 0.03,
-      "advertising": 0.18,
-      "account_utility": 0.27,
+      "consent_notice": 0.03,
+      "advertising": 0.17,
+      "account_utility": 0.23,
       "other": 0.05
      },
      "task": 0.17,
      "main": 0.08,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.32,
-     "importance": 0.19
+     "fineP": 0.38,
+     "importance": 0.25
     },
     "from": "union"
    },
@@ -1479,16 +1482,16 @@
     "j": {
      "id": "n43",
      "role": "other",
-     "roleP": 0.9,
+     "roleP": 0.82,
      "roleProbs": {
-      "action_button": 0.1,
-      "other": 0.9
+      "action_button": 0.18,
+      "other": 0.82
      },
      "task": 0.09,
-     "main": 0.05,
+     "main": 0.06,
      "help": 0.02,
      "fine": "social_share",
-     "fineP": 0.9,
+     "fineP": 0.82,
      "importance": 1.07
     },
     "from": "union"
@@ -1506,10 +1509,10 @@
      },
      "task": 0.07,
      "main": 0,
-     "help": 0.25,
+     "help": 0.22,
      "fine": "advertising",
      "fineP": 0.98,
-     "importance": 0.09
+     "importance": 0.1
     },
     "from": "union"
    },
@@ -1520,16 +1523,16 @@
     "j": {
      "id": "n46",
      "role": "advertising",
-     "roleP": 1,
+     "roleP": 0.99,
      "roleProbs": {
-      "advertising": 1
+      "advertising": 0.99
      },
      "task": 0.06,
      "main": 0,
-     "help": 0.22,
+     "help": 0.2,
      "fine": "advertising",
-     "fineP": 1,
-     "importance": 0.08
+     "fineP": 0.99,
+     "importance": 0.07
     },
     "from": "union"
    },
@@ -1540,17 +1543,17 @@
     "j": {
      "id": "n47",
      "role": "advertising",
-     "roleP": 0.96,
+     "roleP": 0.99,
      "roleProbs": {
-      "advertising": 0.96
+      "advertising": 0.99
      },
-     "task": 0.08,
+     "task": 0.07,
      "main": 0,
-     "help": 0.16,
+     "help": 0.19,
      "fine": "advertising",
-     "fineP": 0.96,
-     "importance": 0.11,
-     "paidAsStoryP": 0.15
+     "fineP": 0.95,
+     "importance": 0.14,
+     "paidAsStoryP": 0.13
     },
     "from": "union"
    },
@@ -1561,19 +1564,18 @@
     "j": {
      "id": "n49",
      "role": "action_button",
-     "roleP": 0.81,
+     "roleP": 0.82,
      "roleProbs": {
-      "action_button": 0.81,
-      "advertising": 0.1,
-      "account_utility": 0.03,
-      "other": 0.03
+      "action_button": 0.82,
+      "advertising": 0.11,
+      "other": 0.04
      },
-     "task": 0.15,
+     "task": 0.13,
      "main": 0.02,
-     "help": 0.21,
+     "help": 0.24,
      "fine": "secondary_action",
-     "fineP": 0.81,
-     "importance": 0.93
+     "fineP": 0.82,
+     "importance": 0.98
     },
     "from": "union"
    },
@@ -1584,15 +1586,15 @@
     "j": {
      "id": "n219",
      "role": "main_content",
-     "roleP": 0.97,
+     "roleP": 0.98,
      "roleProbs": {
-      "main_content": 0.97
+      "main_content": 0.98
      },
      "task": 0.96,
      "main": 0,
      "help": 0.02,
      "fine": "body_text",
-     "fineP": 0.97,
+     "fineP": 0.98,
      "importance": 3.95
     },
     "from": "union"
@@ -1608,13 +1610,13 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.06,
+     "task": 0.04,
      "main": 0,
-     "help": 0.2,
+     "help": 0.22,
      "fine": "advertising",
      "fineP": 1,
      "importance": 0.06,
-     "paidAsStoryP": 0.26
+     "paidAsStoryP": 0.25
     },
     "from": "union"
    },
@@ -1625,16 +1627,16 @@
     "j": {
      "id": "n60",
      "role": "advertising",
-     "roleP": 0.91,
+     "roleP": 0.93,
      "roleProbs": {
-      "advertising": 0.91
+      "advertising": 0.93
      },
-     "task": 0.12,
+     "task": 0.1,
      "main": 0,
-     "help": 0.23,
+     "help": 0.22,
      "fine": "advertising",
-     "fineP": 0.87,
-     "importance": 0.22
+     "fineP": 0.9,
+     "importance": 0.17
     },
     "from": "union"
    },
@@ -1654,8 +1656,8 @@
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.08,
-     "paidAsStoryP": 0.13
+     "importance": 0.07,
+     "paidAsStoryP": 0.12
     },
     "from": "union"
    },
@@ -1669,16 +1671,15 @@
      "roleP": 0.81,
      "roleProbs": {
       "action_button": 0.81,
-      "advertising": 0.11,
-      "account_utility": 0.03,
+      "advertising": 0.13,
       "other": 0.03
      },
-     "task": 0.15,
+     "task": 0.14,
      "main": 0.02,
-     "help": 0.23,
+     "help": 0.24,
      "fine": "secondary_action",
      "fineP": 0.81,
-     "importance": 0.87
+     "importance": 0.96
     },
     "from": "union"
    },
@@ -1693,9 +1694,9 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.05,
+     "task": 0.06,
      "main": 0,
-     "help": 0.21,
+     "help": 0.23,
      "fine": "advertising",
      "fineP": 1,
      "importance": 0.05,
@@ -1719,8 +1720,8 @@
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.07,
-     "paidAsStoryP": 0.14
+     "importance": 0.06,
+     "paidAsStoryP": 0.15
     },
     "from": "union"
    },
@@ -1734,16 +1735,15 @@
      "roleP": 0.81,
      "roleProbs": {
       "action_button": 0.81,
-      "advertising": 0.11,
-      "account_utility": 0.03,
+      "advertising": 0.13,
       "other": 0.03
      },
-     "task": 0.12,
+     "task": 0.13,
      "main": 0.02,
-     "help": 0.23,
+     "help": 0.21,
      "fine": "secondary_action",
      "fineP": 0.81,
-     "importance": 0.83
+     "importance": 0.87
     },
     "from": "union"
    },
@@ -1764,7 +1764,7 @@
      "fine": "advertising",
      "fineP": 1,
      "importance": 0.06,
-     "paidAsStoryP": 0.1
+     "paidAsStoryP": 0.11
     },
     "from": "union"
    },
@@ -1775,18 +1775,18 @@
     "j": {
      "id": "n90",
      "role": "advertising",
-     "roleP": 0.93,
+     "roleP": 0.94,
      "roleProbs": {
-      "popup_overlay": 0.03,
-      "advertising": 0.93
+      "main_content": 0.03,
+      "advertising": 0.94
      },
      "task": 0.07,
      "main": 0,
      "help": 0.01,
      "fine": "advertising",
-     "fineP": 0.93,
+     "fineP": 0.94,
      "importance": 0.05,
-     "paidAsStoryP": 0.14
+     "paidAsStoryP": 0.11
     },
     "from": "union"
    },
@@ -1806,8 +1806,8 @@
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.05,
-     "paidAsStoryP": 0.18
+     "importance": 0.04,
+     "paidAsStoryP": 0.15
     },
     "from": "union"
    },
@@ -1818,17 +1818,17 @@
     "j": {
      "id": "n97",
      "role": "other",
-     "roleP": 0.89,
+     "roleP": 0.92,
      "roleProbs": {
-      "navigation": 0.09,
-      "other": 0.89
+      "navigation": 0.08,
+      "other": 0.92
      },
-     "task": 0.1,
+     "task": 0.09,
      "main": 0,
-     "help": 0.03,
+     "help": 0.02,
      "fine": "comments",
-     "fineP": 0.89,
-     "importance": 2.62
+     "fineP": 0.92,
+     "importance": 2.69
     },
     "from": "union"
    },
@@ -1839,17 +1839,18 @@
     "j": {
      "id": "n99",
      "role": "account_utility",
-     "roleP": 0.75,
+     "roleP": 0.73,
      "roleProbs": {
-      "account_utility": 0.75,
+      "action_button": 0.03,
+      "account_utility": 0.73,
       "advertising": 0.17
      },
      "task": 0.11,
      "main": 0.06,
      "help": 0.03,
      "fine": "login_prompt",
-     "fineP": 0.56,
-     "importance": 1.02
+     "fineP": 0.53,
+     "importance": 1
     },
     "from": "union"
    },
@@ -1860,17 +1861,17 @@
     "j": {
      "id": "n100",
      "role": "form_field",
-     "roleP": 0.92,
+     "roleP": 0.93,
      "roleProbs": {
-      "form_field": 0.92,
-      "other": 0.08
+      "form_field": 0.93,
+      "other": 0.07
      },
-     "task": 0.46,
+     "task": 0.5,
      "main": 0,
      "help": 0.03,
      "fine": "form_field",
-     "fineP": 0.92,
-     "importance": 2.91
+     "fineP": 0.93,
+     "importance": 2.9
     },
     "from": "union"
    },
@@ -1884,16 +1885,15 @@
      "roleP": 0.45,
      "roleProbs": {
       "action_button": 0.45,
-      "navigation": 0.03,
-      "other": 0.4,
-      "account_utility": 0.03
+      "navigation": 0.04,
+      "other": 0.41
      },
-     "task": 0.38,
-     "main": 0.1,
-     "help": 0.07,
+     "task": 0.37,
+     "main": 0.09,
+     "help": 0.08,
      "fine": "secondary_action",
      "fineP": 0.42,
-     "importance": 1.71
+     "importance": 1.63
     },
     "from": "union"
    },
@@ -1904,19 +1904,19 @@
     "j": {
      "id": "n109",
      "role": "action_button",
-     "roleP": 0.4,
+     "roleP": 0.37,
      "roleProbs": {
-      "main_content": 0.1,
-      "action_button": 0.4,
+      "main_content": 0.13,
+      "action_button": 0.37,
       "other": 0.33,
-      "account_utility": 0.12
+      "account_utility": 0.1
      },
      "task": 0.26,
      "main": 0.07,
-     "help": 0.05,
+     "help": 0.04,
      "fine": "secondary_action",
-     "fineP": 0.4,
-     "importance": 1.81
+     "fineP": 0.37,
+     "importance": 1.88
     },
     "from": "union"
    },
@@ -1927,17 +1927,17 @@
     "j": {
      "id": "n111",
      "role": "other",
-     "roleP": 0.72,
+     "roleP": 0.7,
      "roleProbs": {
-      "main_content": 0.26,
-      "other": 0.72
+      "main_content": 0.29,
+      "other": 0.7
      },
-     "task": 0.3,
+     "task": 0.28,
      "main": 0,
      "help": 0.02,
      "fine": "comments",
-     "fineP": 0.68,
-     "importance": 2.6
+     "fineP": 0.65,
+     "importance": 2.44
     },
     "from": "union"
    },
@@ -1948,17 +1948,17 @@
     "j": {
      "id": "n113",
      "role": "action_button",
-     "roleP": 0.81,
+     "roleP": 0.84,
      "roleProbs": {
-      "action_button": 0.81,
-      "other": 0.18
+      "action_button": 0.84,
+      "other": 0.15
      },
-     "task": 0.2,
+     "task": 0.19,
      "main": 0.08,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.81,
-     "importance": 2.61
+     "fineP": 0.84,
+     "importance": 2.56
     },
     "from": "union"
    },
@@ -1969,18 +1969,18 @@
     "j": {
      "id": "n114",
      "role": "action_button",
-     "roleP": 0.57,
+     "roleP": 0.49,
      "roleProbs": {
       "main_content": 0.03,
-      "action_button": 0.57,
-      "other": 0.37
+      "action_button": 0.49,
+      "other": 0.47
      },
-     "task": 0.37,
-     "main": 0.06,
+     "task": 0.42,
+     "main": 0.05,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.5700000000000001,
-     "importance": 1.74
+     "fineP": 0.49,
+     "importance": 1.68
     },
     "from": "union"
    },
@@ -1991,18 +1991,18 @@
     "j": {
      "id": "n115",
      "role": "action_button",
-     "roleP": 0.76,
+     "roleP": 0.77,
      "roleProbs": {
       "main_content": 0.03,
-      "action_button": 0.76,
+      "action_button": 0.77,
       "other": 0.19
      },
-     "task": 0.37,
-     "main": 0.05,
+     "task": 0.36,
+     "main": 0.04,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.76,
-     "importance": 2.01
+     "fineP": 0.77,
+     "importance": 2.03
     },
     "from": "union"
    },
@@ -2013,17 +2013,17 @@
     "j": {
      "id": "n116",
      "role": "other",
-     "roleP": 0.89,
+     "roleP": 0.9,
      "roleProbs": {
-      "action_button": 0.11,
-      "other": 0.89
+      "action_button": 0.1,
+      "other": 0.9
      },
-     "task": 0.09,
+     "task": 0.08,
      "main": 0.05,
      "help": 0.02,
      "fine": "social_share",
-     "fineP": 0.89,
-     "importance": 1.05
+     "fineP": 0.9,
+     "importance": 1.04
     },
     "from": "union"
    },
@@ -2034,16 +2034,16 @@
     "j": {
      "id": "n117",
      "role": "action_button",
-     "roleP": 0.86,
+     "roleP": 0.82,
      "roleProbs": {
-      "action_button": 0.86,
-      "other": 0.13
+      "action_button": 0.82,
+      "other": 0.15
      },
-     "task": 0.33,
+     "task": 0.35,
      "main": 0.06,
      "help": 0.16,
      "fine": "secondary_action",
-     "fineP": 0.86,
+     "fineP": 0.82,
      "importance": 1.83
     },
     "from": "union"
@@ -2054,20 +2054,19 @@
     "uniq": false,
     "j": {
      "id": "n119",
-     "role": "action_button",
-     "roleP": 0.44,
+     "role": "other",
+     "roleP": 0.43,
      "roleProbs": {
-      "action_button": 0.44,
+      "action_button": 0.41,
       "navigation": 0.04,
-      "other": 0.41,
-      "account_utility": 0.03
+      "other": 0.43
      },
      "task": 0.38,
-     "main": 0.1,
+     "main": 0.09,
      "help": 0.07,
      "fine": "secondary_action",
-     "fineP": 0.41000000000000003,
-     "importance": 1.67
+     "fineP": 0.38,
+     "importance": 1.63
     },
     "from": "union"
    },
@@ -2078,18 +2077,18 @@
     "j": {
      "id": "n120",
      "role": "action_button",
-     "roleP": 0.47,
+     "roleP": 0.5,
      "roleProbs": {
-      "action_button": 0.47,
+      "action_button": 0.5,
       "navigation": 0.04,
-      "other": 0.34
+      "other": 0.29
      },
-     "task": 0.28,
-     "main": 0.07,
+     "task": 0.27,
+     "main": 0.06,
      "help": 0.05,
      "fine": "secondary_action",
-     "fineP": 0.47000000000000003,
-     "importance": 1.31
+     "fineP": 0.5,
+     "importance": 1.25
     },
     "from": "union"
    },
@@ -2100,17 +2099,17 @@
     "j": {
      "id": "n158",
      "role": "recommendations",
-     "roleP": 0.87,
+     "roleP": 0.86,
      "roleProbs": {
-      "main_content": 0.12,
-      "recommendations": 0.87
+      "main_content": 0.13,
+      "recommendations": 0.86
      },
-     "task": 0.13,
+     "task": 0.12,
      "main": 0,
      "help": 0.01,
      "fine": "teaser_other_content",
-     "fineP": 0.87,
-     "importance": 0.47
+     "fineP": 0.86,
+     "importance": 0.49
     },
     "from": "union"
    },
@@ -2121,17 +2120,17 @@
     "j": {
      "id": "n159",
      "role": "recommendations",
-     "roleP": 0.89,
+     "roleP": 0.92,
      "roleProbs": {
-      "main_content": 0.09,
-      "recommendations": 0.89
+      "main_content": 0.07,
+      "recommendations": 0.92
      },
      "task": 0.12,
      "main": 0.03,
      "help": 0.01,
      "fine": "teaser_other_content",
-     "fineP": 0.89,
-     "importance": 0.26
+     "fineP": 0.92,
+     "importance": 0.16
     },
     "from": "union"
    },
@@ -2142,17 +2141,17 @@
     "j": {
      "id": "n174",
      "role": "help_contact",
-     "roleP": 0.81,
+     "roleP": 0.76,
      "roleProbs": {
-      "navigation": 0.13,
-      "help_contact": 0.81,
+      "navigation": 0.18,
+      "help_contact": 0.76,
       "legal_footer": 0.04
      },
      "task": 0.08,
      "main": 0,
-     "help": 0.9,
+     "help": 0.88,
      "fine": "contact_info",
-     "fineP": 0.77,
+     "fineP": 0.72,
      "importance": 1.01
     },
     "from": "union"
@@ -2164,17 +2163,17 @@
     "j": {
      "id": "n17",
      "role": "main_content",
-     "roleP": 0.82,
+     "roleP": 0.81,
      "roleProbs": {
-      "main_content": 0.82,
-      "recommendations": 0.07
+      "main_content": 0.81,
+      "recommendations": 0.08
      },
      "task": 0.8,
      "main": 0,
      "help": 0.02,
      "fine": "headline",
-     "fineP": 0.56,
-     "importance": 3.19
+     "fineP": 0.55,
+     "importance": 3.39
     },
     "from": "union"
    },
@@ -2185,18 +2184,18 @@
     "j": {
      "id": "n220",
      "role": "main_content",
-     "roleP": 0.84,
+     "roleP": 0.86,
      "roleProbs": {
-      "main_content": 0.84,
+      "main_content": 0.86,
       "recommendations": 0.03,
-      "other": 0.06
+      "other": 0.07
      },
-     "task": 0.89,
+     "task": 0.87,
      "main": 0,
      "help": 0.02,
      "fine": "body_text",
-     "fineP": 0.84,
-     "importance": 3.81
+     "fineP": 0.86,
+     "importance": 3.76
     },
     "from": "union"
    },
@@ -2210,15 +2209,14 @@
      "roleP": 0.74,
      "roleProbs": {
       "main_content": 0.74,
-      "recommendations": 0.03,
-      "other": 0.16
+      "other": 0.18
      },
      "task": 0.94,
      "main": 0,
      "help": 0.03,
      "fine": "body_text",
      "fineP": 0.74,
-     "importance": 3.91
+     "importance": 3.93
     },
     "from": "union"
    },
@@ -2233,13 +2231,13 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.07,
+     "task": 0.06,
      "main": 0,
-     "help": 0.13,
+     "help": 0.15,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.06,
-     "paidAsStoryP": 0.24
+     "importance": 0.05,
+     "paidAsStoryP": 0.23
     },
     "from": "union"
    },
@@ -2254,12 +2252,12 @@
      "roleProbs": {
       "other": 0.99
      },
-     "task": 0.1,
+     "task": 0.12,
      "main": 0,
      "help": 0.03,
      "fine": "comments",
      "fineP": 0.99,
-     "importance": 2.86
+     "importance": 2.92
     },
     "from": "union"
    },
@@ -2270,18 +2268,102 @@
     "j": {
      "id": "n223",
      "role": "main_content",
-     "roleP": 0.58,
+     "roleP": 0.64,
      "roleProbs": {
-      "main_content": 0.58,
-      "advertising": 0.08,
-      "other": 0.29
+      "main_content": 0.64,
+      "advertising": 0.07,
+      "other": 0.26
      },
-     "task": 0.63,
+     "task": 0.69,
+     "main": 0,
+     "help": 0.02,
+     "fine": "video_player",
+     "fineP": 0.53,
+     "importance": 2.51
+    },
+    "from": "union"
+   },
+   {
+    "id": "n221",
+    "fp": "div|region holding video or embed x2|Powered By [number]K 0 .clsx-1{isolation:isolate;}.clsx-2{fill:#ff3e5f;}.clsx-3{fill:#fff;} Skip Ad|main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n221",
+     "role": "advertising",
+     "roleP": 0.95,
+     "roleProbs": {
+      "main_content": 0.03,
+      "advertising": 0.95
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.01,
+     "fine": "advertising",
+     "fineP": 0.95,
+     "importance": 0.24
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n222",
+    "fp": "div|region holding video or embed x2|Powered By [number]K 0 .clsx-1{isolation:isolate;}.clsx-2{fill:#ff3e5f;}.clsx-3{fill:#fff;} Skip Ad|main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n222",
+     "role": "advertising",
+     "roleP": 0.96,
+     "roleProbs": {
+      "main_content": 0.03,
+      "advertising": 0.96
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.96,
+     "importance": 0.22
+    },
+    "from": "union"
+   },
+   {
+    "id": "n223",
+    "fp": "div|region holding headings x2, paragraphs x7, lists x2, form fields x1, buttons x34, links x3|Conversation · Jump to log in… / All Comments, 41 items / NEWEST|main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n223",
+     "role": "other",
+     "roleP": 0.98,
+     "roleProbs": {
+      "other": 0.98
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.03,
+     "fine": "comments",
+     "fineP": 0.98,
+     "importance": 2.87
+    },
+    "from": "union"
+   },
+   {
+    "id": "n224",
+    "fp": "div|region holding video or embed x1||main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n224",
+     "role": "main_content",
+     "roleP": 0.62,
+     "roleProbs": {
+      "main_content": 0.62,
+      "advertising": 0.1,
+      "other": 0.24
+     },
+     "task": 0.66,
      "main": 0,
      "help": 0.03,
      "fine": "video_player",
-     "fineP": 0.47000000000000003,
-     "importance": 2.27
+     "fineP": 0.51,
+     "importance": 2.43
     },
     "from": "union"
    }
@@ -2290,75 +2372,19 @@
  "meaning": {
   "f0f3dd9563c877d9ac0d9699b7e43857591679ea53197c8ad43cd25c72555f36": {
    "leadsWithMain": 0.95,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1124,
-    "wallMs": 117,
-    "serverMs": 53,
-    "costUsd": 0.000047208000000000006
-   }
-  },
-  "bbd0367dddbb3d92b051195e2f48f9d98fa9bce17f3e9be7e320cb2cd671b1ea": {
-   "leadsWithMain": 0.93,
    "missingMain": 0.03,
    "pass": true,
    "metrics": {
     "model": "jev-1.14.0",
     "calls": 1,
     "questions": 2,
-    "inputTokens": 1106,
-    "wallMs": 175,
-    "serverMs": 25,
-    "costUsd": 0.00004645200000000001
+    "inputTokens": 1124,
+    "wallMs": 102,
+    "serverMs": 40,
+    "costUsd": 0.000047208000000000006
    }
   },
-  "ccd2dfdf6bf1d0e2e37bd8ef476b90883649ec825c9fd50bf1be982d6fc88768": {
-   "leadsWithMain": 0.98,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1123,
-    "wallMs": 98,
-    "serverMs": 35,
-    "costUsd": 0.00004716600000000001
-   }
-  },
-  "7533de2ae57bfab0dfb200c25dee65b07c140cd777f1a0f07b57fa3c1459fe50": {
-   "leadsWithMain": 0.98,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1086,
-    "wallMs": 109,
-    "serverMs": 39,
-    "costUsd": 0.000045612
-   }
-  },
-  "a85bb77e95a3e670ab9f1d16fc1b79593c178150cf331de7c0ff5486cf7454a4": {
-   "leadsWithMain": 0.94,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1132,
-    "wallMs": 84,
-    "serverMs": 33,
-    "costUsd": 0.000047544000000000004
-   }
-  },
-  "069e0d979b2811d79e897128f62fa34aca61d7eb5eac4c7a3951b304476103d3": {
+  "bbd0367dddbb3d92b051195e2f48f9d98fa9bce17f3e9be7e320cb2cd671b1ea": {
    "leadsWithMain": 0.97,
    "missingMain": 0.02,
    "pass": true,
@@ -2366,10 +2392,24 @@
     "model": "jev-1.14.0",
     "calls": 1,
     "questions": 2,
-    "inputTokens": 1124,
+    "inputTokens": 1106,
+    "wallMs": 108,
+    "serverMs": 54,
+    "costUsd": 0.00004645200000000001
+   }
+  },
+  "a85bb77e95a3e670ab9f1d16fc1b79593c178150cf331de7c0ff5486cf7454a4": {
+   "leadsWithMain": 0.95,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1132,
     "wallMs": 90,
-    "serverMs": 33,
-    "costUsd": 0.000047208000000000006
+    "serverMs": 36,
+    "costUsd": 0.000047544000000000004
    }
   },
   "fde59416f26704bb901c01cd7268a443782d74d7907a28b9605fdbcc8853284b": {
@@ -2381,37 +2421,9 @@
     "calls": 1,
     "questions": 2,
     "inputTokens": 1106,
-    "wallMs": 111,
-    "serverMs": 54,
+    "wallMs": 148,
+    "serverMs": 45,
     "costUsd": 0.00004645200000000001
-   }
-  },
-  "439ec438a3956cad1265bc82d6521290c6dcbebbf954aed306eb7fccc77b7d9e": {
-   "leadsWithMain": 0.96,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1095,
-    "wallMs": 118,
-    "serverMs": 51,
-    "costUsd": 0.000045990000000000005
-   }
-  },
-  "4e142a768072c9eac77c4b0c4e6bdc321b291646c3b66afe3f6ba0919c905c69": {
-   "leadsWithMain": 0.98,
-   "missingMain": 0.03,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1115,
-    "wallMs": 84,
-    "serverMs": 31,
-    "costUsd": 0.000046830000000000004
    }
   },
   "ac69994feef8ac2ee02f8ec7f92260661d9e6e41f076cde342d6b162eef9ef40": {
@@ -2423,42 +2435,58 @@
     "calls": 1,
     "questions": 2,
     "inputTokens": 1087,
-    "wallMs": 102,
+    "wallMs": 104,
     "serverMs": 38,
     "costUsd": 0.00004565400000000001
    }
   },
-  "0e2cf207e7402b2b02c83541b098fc196f4bd1314b0447e87d261c81251ca8d7": {
-   "leadsWithMain": 0.93,
+  "069e0d979b2811d79e897128f62fa34aca61d7eb5eac4c7a3951b304476103d3": {
+   "leadsWithMain": 0.97,
    "missingMain": 0.02,
    "pass": true,
    "metrics": {
     "model": "jev-1.14.0",
     "calls": 1,
     "questions": 2,
-    "inputTokens": 1095,
-    "wallMs": 96,
-    "serverMs": 36,
-    "costUsd": 0.000045990000000000005
-   }
-  },
-  "2c16208e854e8107cca206952f85ac66d5703642b5d36ddcfafe3dcf1ceb1ed4": {
-   "leadsWithMain": 0.96,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1132,
-    "wallMs": 79,
-    "serverMs": 32,
-    "costUsd": 0.000047544000000000004
+    "inputTokens": 1124,
+    "wallMs": 95,
+    "serverMs": 41,
+    "costUsd": 0.000047208000000000006
    }
   }
  },
  "overlayClose": {},
  "compose": {
+  "g1vjl8mb": {
+   "id": "g1vjl8mb",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u5",
+      "u6",
+      "u7"
+     ],
+     "text": "CAPE CANAVERAL, Fla. (AP) — Scientists doubling as art detectives have traced Vincent van Gogh’s “⟦1⟧” to a celestial scene that suggests a new date for one of the world’s most famous paintings.\n\nTheir findings indicate that rather than being a product of ⟦2⟧ imagination, “The Starry Night” may have been inspired by what he saw as he gazed heavenward from his French asylum 137 years ago.\n\nA South Korean team reported Thursday that after years of forensic astronomy and research into the ⟦3⟧, they have matched his masterpiece to a predawn sky over France’s Saint-Remy de Provence right around July 22, 1889.\n\nThat’s a month later than the long-accepted time frame for the postimpressionist painting depicting a ⟦4⟧ and Venus surrounded by a sky of swirling stars with a village nestled below and cypress trees looming on one side.\n\nArt historians have long dated the painting to June 1889, soon after Van Gogh checked into the asylum. He’d cut off his left ear several months earlier during an argument with painter Paul Gauguin.\n\nA team led by Elijah Jeong-hyun Kim, the CEO of a Seoul telescope maker, is now disputing that date in a study appearing in the journal Scientific Reports.\n\nThe sky that is most similar to the painting occurred around July 22, 1889, said Kim, who is also a doctoral candidate at Kyung Hee University. He noted that the few days before and after could have inspired van Gogh as well."
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  },
   "g1egb363": {
    "id": "g1egb363",
    "ok": false,
@@ -2504,89 +2532,7 @@
       "u6",
       "u7"
      ],
-     "text": "The researchers tested and verified their methods on night skies in other paintings, making for what Aragon considers “a careful and genuinely interdisciplinary study.”\n\nSince van Gogh painted in a studio at the asylum from sketches and memory, “the sky is likely a composite of many nights as the authors themselves acknowledge,” Aragon said.\n\n“What I find most convincing is the broader message: The painting is not pure fantasy. Van Gogh watched the real sky very closely,” Aragon said.\n\nDespite all his research, Kim has never seen “The Starry Night” at the Museum of Modern Art in New York.\n\n“Now that the paper is out, I really have to go and see ‘The Starry Night’ in person, don’t I?” he said.\n\n___\n\nThe Associated Press’ health and science coverage receives financial support from the ⟦1⟧ and private foundations. AP is solely responsible for all content. Find AP’s ⟦2⟧ for working with philanthropies, a list of supporters and funded coverage areas at ⟦3⟧"
-    }
-   ],
-   "better": null,
-   "checks": {
-    "covered": true,
-    "numbersKept": true,
-    "noNewNumbers": true,
-    "linksKept": true,
-    "quotesKept": true,
-    "dropped": 1,
-    "added": 1
-   },
-   "reason": "plain_is_better"
-  },
-  "gtgskm5": {
-   "id": "gtgskm5",
-   "ok": false,
-   "blocks": [
-    {
-     "k": "prose",
-     "src": [
-      "u1",
-      "u2"
-     ],
-     "text": "1 of 2 |\n\n2 of 2 | Visitors to the Museum of Fine Arts, Houston view Vincent van Gogh’s painting, “The Starry Night,” on Oct. 17, 2003, in Houston. (AP Photo/David J. Phillip, File)"
-    }
-   ],
-   "better": null,
-   "checks": {
-    "covered": true,
-    "numbersKept": true,
-    "noNewNumbers": true,
-    "linksKept": true,
-    "quotesKept": true,
-    "dropped": 1,
-    "added": 1
-   },
-   "reason": "plain_is_better"
-  },
-  "g1lpxicu": {
-   "id": "g1lpxicu",
-   "ok": false,
-   "blocks": [
-    {
-     "k": "prose",
-     "src": [
-      "u1",
-      "u2",
-      "u3",
-      "u4",
-      "u5",
-      "u6",
-      "u7",
-      "u8"
-     ],
-     "text": "41\n\nCAPE CANAVERAL, Fla. (AP) — Scientists doubling as art detectives have traced Vincent van Gogh’s “⟦1⟧” to a celestial scene that suggests a new date for one of the world’s most famous paintings.\n\nTheir findings indicate that rather than being a product of ⟦2⟧ imagination, “The Starry Night” may have been inspired by what he saw as he gazed heavenward from his French asylum 137 years ago.\n\nA South Korean team reported Thursday that after years of forensic astronomy and research into the ⟦3⟧, they have matched his masterpiece to a predawn sky over France’s Saint-Remy de Provence right around July 22, 1889.\n\nThat’s a month later than the long-accepted time frame for the postimpressionist painting depicting a ⟦4⟧ and Venus surrounded by a sky of swirling stars with a village nestled below and cypress trees looming on one side.\n\nArt historians have long dated the painting to June 1889, soon after Van Gogh checked into the asylum. He’d cut off his left ear several months earlier during an argument with painter Paul Gauguin.\n\nA team led by Elijah Jeong-hyun Kim, the CEO of a Seoul telescope maker, is now disputing that date in a study appearing in the journal Scientific Reports.\n\nThe sky that is most similar to the painting occurred around July 22, 1889, said Kim, who is also a doctoral candidate at Kyung Hee University. He noted that the few days before and after could have inspired van Gogh as well."
-    }
-   ],
-   "better": null,
-   "checks": {
-    "covered": true,
-    "numbersKept": true,
-    "noNewNumbers": true,
-    "linksKept": true,
-    "quotesKept": true,
-    "dropped": 1,
-    "added": 1
-   },
-   "reason": "plain_is_better"
-  },
-  "ggoh6lo": {
-   "id": "ggoh6lo",
-   "ok": false,
-   "blocks": [
-    {
-     "k": "prose",
-     "src": [
-      "u1",
-      "u2",
-      "u3"
-     ],
-     "text": "1 day ago\n\nTwo questions. First is Why? Don’t they have Anything better to do? 🤷🏼😉\n\nSecond. This is not fact. Art is not so exact and measured and planned. It is feeling and emotion."
+     "text": "The researchers tested and verified their methods on night skies in other paintings, making for what Aragon considers “a careful and genuinely interdisciplinary study.”\n\nSince van Gogh painted in a studio at the asylum from sketches and memory, “the sky is likely a composite of many nights as the authors themselves acknowledge,” Aragon said.\n\n“What I find most convincing is the broader message: The painting is not pure fantasy. Van Gogh watched the real sky very closely,” Aragon said.\n\nDespite all his research, Kim has never seen “The Starry Night” at the Museum of Modern Art in New York.\n\n“Now that the paper is out, I really have to go and see ‘The Starry Night’ in person, don’t I?” he said.\n\n_\n\nThe Associated Press’ health and science coverage receives financial support from the ⟦1⟧ and private foundations. AP is solely responsible for all content. Find AP’s ⟦2⟧ for working with philanthropies, a list of supporters and funded coverage areas at ⟦3⟧"
     }
    ],
    "better": null,
@@ -2604,7 +2550,7 @@
  },
  "composeMeta": {
   "model": "gpt-5.4-mini",
-  "ms": 3242,
+  "ms": 2947,
   "jev": {
    "model": "jev-1.14.0",
    "calls": 0,
@@ -2620,19 +2566,19 @@
    "fit": "typical",
    "h": 664,
    "canonical": true,
-   "at": "2026-10-27T22:24:58.923Z",
+   "at": "2026-11-03T02:29:40.402Z",
    "added": {
     "elements": 46,
     "page": true,
     "meaning": 1,
     "overlayClose": 0,
-    "compose": 4
+    "compose": 3
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 5729,
+    "settleMs": 5528,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -2643,36 +2589,40 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 400"
+      "reason": "weight floor 400",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
       "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
      }
     ],
     "checksFailed": 0,
@@ -2690,9 +2640,9 @@
   },
   {
    "fit": "typical",
-   "h": 456,
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:25:04.403Z",
+   "at": "2026-11-03T02:29:45.883Z",
    "added": {
     "elements": 46,
     "page": false,
@@ -2702,9 +2652,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2189,
+    "settleMs": 2115,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -2715,186 +2665,46 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 400"
+      "reason": "weight floor 400",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
       "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 0,
     "decisions": {
      "folded": 5,
      "protected": 29,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "typical",
-   "h": 520,
-   "canonical": false,
-   "at": "2026-10-27T22:25:09.932Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2180,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 16,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 400"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     }
-    ],
-    "checksFailed": 0,
-    "decisions": {
-     "folded": 5,
-     "protected": 28,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "typical",
-   "h": 600,
-   "canonical": false,
-   "at": "2026-10-27T22:25:15.403Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 0,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2181,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 16,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 400"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     }
-    ],
-    "checksFailed": 0,
-    "decisions": {
-     "folded": 5,
-     "protected": 30,
      "promoted": 0
     },
     "overlays": 0,
@@ -2908,7 +2718,7 @@
    "fit": "typical",
    "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:25:20.885Z",
+   "at": "2026-11-03T02:29:51.310Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -2918,9 +2728,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2210,
+    "settleMs": 2194,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -2931,31 +2741,35 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 400"
+      "reason": "weight floor 400",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
@@ -2978,9 +2792,9 @@
   },
   {
    "fit": "rosa",
-   "h": 456,
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:25:26.647Z",
+   "at": "2026-11-03T02:29:57.181Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -2990,9 +2804,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2514,
+    "settleMs": 2523,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -3003,9 +2817,9 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -3022,37 +2836,44 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 56 px on 65 controls"
+      "reason": "hit area 56 px on 65 controls",
+      "source": "fit"
      },
      {
       "kind": "steady_clicks",
       "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
      },
      {
       "kind": "motion",
       "status": "applied",
-      "reason": "reduce motion"
+      "reason": "reduce motion",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -3062,152 +2883,35 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 25,
-    "decisions": {
-     "folded": 5,
-     "protected": 28,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "rosa",
-   "h": 520,
-   "canonical": false,
-   "at": "2026-10-27T22:25:32.532Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2519,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 22,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 56 px on 65 controls"
-     },
-     {
-      "kind": "steady_clicks",
-      "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
-     },
-     {
-      "kind": "motion",
-      "status": "applied",
-      "reason": "reduce motion"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 26,
     "decisions": {
      "folded": 5,
      "protected": 30,
@@ -3222,131 +2926,9 @@
   },
   {
    "fit": "rosa",
-   "h": 600,
-   "canonical": false,
-   "at": "2026-10-27T22:25:38.118Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2383,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 22,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 56 px on 65 controls"
-     },
-     {
-      "kind": "steady_clicks",
-      "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
-     },
-     {
-      "kind": "motion",
-      "status": "applied",
-      "reason": "reduce motion"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 25,
-    "decisions": {
-     "folded": 5,
-     "protected": 29,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "rosa",
    "h": 664,
    "canonical": false,
-   "at": "2026-10-27T22:25:43.904Z",
+   "at": "2026-11-03T02:30:03.013Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -3356,9 +2938,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2481,
+    "settleMs": 2586,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -3369,9 +2951,9 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -3388,37 +2970,44 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 56 px on 64 controls"
+      "reason": "hit area 56 px on 64 controls",
+      "source": "fit"
      },
      {
       "kind": "steady_clicks",
       "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
      },
      {
       "kind": "motion",
       "status": "applied",
-      "reason": "reduce motion"
+      "reason": "reduce motion",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -3428,27 +3017,32 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 26,
@@ -3468,7 +3062,7 @@
    "fit": "rosa",
    "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:25:49.702Z",
+   "at": "2026-11-03T02:30:08.812Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -3478,485 +3072,156 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2525,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 22,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.11 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 56 px on 65 controls"
-     },
-     {
-      "kind": "steady_clicks",
-      "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
-     },
-     {
-      "kind": "motion",
-      "status": "applied",
-      "reason": "reduce motion"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 21,
-    "decisions": {
-     "folded": 5,
-     "protected": 29,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "reader",
-   "h": 456,
-   "canonical": false,
-   "at": "2026-10-27T22:25:55.461Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2481,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 24,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 25,
-    "decisions": {
-     "folded": 5,
-     "protected": 29,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "reader",
-   "h": 520,
-   "canonical": false,
-   "at": "2026-10-27T22:26:01.228Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2383,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 24,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "reversed",
-      "reason": "recommendations 0.94; task 0.11; help 0.01; teaser for other pages 0.94"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 27,
-    "decisions": {
-     "folded": 6,
-     "protected": 28,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "reader",
-   "h": 600,
-   "canonical": false,
-   "at": "2026-10-27T22:26:07.044Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 1
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2381,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 24,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 5,
-     "laidOut": 0,
-     "kept": 5,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 25,
-    "decisions": {
-     "folded": 5,
-     "protected": 28,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "reader",
-   "h": 664,
-   "canonical": false,
-   "at": "2026-10-27T22:26:12.885Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 0,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
     "settleMs": 2513,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
     "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 65 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 21,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:30:14.587Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2427,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
     "bodyPxAfter": 24,
     "simplified": {
      "open": true,
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -3973,27 +3238,32 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 64 controls"
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4003,27 +3273,154 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 25,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:30:20.646Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2809,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 26,
@@ -4043,19 +3440,19 @@
    "fit": "reader",
    "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:26:18.634Z",
+   "at": "2026-11-03T02:30:26.464Z",
    "added": {
     "elements": 0,
     "page": false,
-    "meaning": 1,
+    "meaning": 0,
     "overlayClose": 0,
     "compose": 0
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2512,
+    "settleMs": 2412,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4066,9 +3463,9 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -4085,27 +3482,32 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4115,27 +3517,32 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.01; ad 1.00"
+      "reason": "advertising 1.00; task 0.04; help 0.01; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 21,
@@ -4153,101 +3560,9 @@
   },
   {
    "fit": "large",
-   "h": 456,
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:26:24.463Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2390,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 33.5,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 29,
-    "decisions": {
-     "folded": 5,
-     "protected": 29,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "large",
-   "h": 520,
-   "canonical": false,
-   "at": "2026-10-27T22:26:30.209Z",
+   "at": "2026-11-03T02:30:32.242Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -4257,9 +3572,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2481,
+    "settleMs": 2509,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4270,9 +3585,9 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -4284,32 +3599,37 @@
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×1.36 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4319,99 +3639,8 @@
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 29,
-    "decisions": {
-     "folded": 5,
-     "protected": 29,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "large",
-   "h": 600,
-   "canonical": false,
-   "at": "2026-10-27T22:26:35.997Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 0,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2496,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 33.5,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.27 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 30,
@@ -4431,7 +3660,7 @@
    "fit": "large",
    "h": 664,
    "canonical": false,
-   "at": "2026-10-27T22:26:41.810Z",
+   "at": "2026-11-03T02:30:38.011Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -4441,9 +3670,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2532,
+    "settleMs": 2408,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4454,9 +3683,9 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -4473,27 +3702,32 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 64 controls"
+      "reason": "hit area 44 px on 64 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4503,7 +3737,8 @@
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 29,
@@ -4523,7 +3758,7 @@
    "fit": "large",
    "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:26:47.567Z",
+   "at": "2026-11-03T02:30:43.784Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -4533,9 +3768,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2493,
+    "settleMs": 2510,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4546,9 +3781,9 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -4565,27 +3800,32 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4595,7 +3835,8 @@
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 25,
@@ -4613,111 +3854,9 @@
   },
   {
    "fit": "calm",
-   "h": 456,
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:26:53.115Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2295,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 16,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     }
-    ],
-    "checksFailed": 0,
-    "decisions": {
-     "folded": 5,
-     "protected": 29,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "calm",
-   "h": 520,
-   "canonical": false,
-   "at": "2026-10-27T22:26:58.636Z",
+   "at": "2026-11-03T02:30:49.243Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -4727,9 +3866,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2210,
+    "settleMs": 2217,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4740,163 +3879,71 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     }
-    ],
-    "checksFailed": 0,
-    "decisions": {
-     "folded": 5,
-     "protected": 29,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "calm",
-   "h": 600,
-   "canonical": false,
-   "at": "2026-10-27T22:27:04.149Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 0,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2190,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 16,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 4,
-     "laidOut": 0,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
@@ -4921,19 +3968,19 @@
    "fit": "calm",
    "h": 664,
    "canonical": false,
-   "at": "2026-10-27T22:27:09.660Z",
+   "at": "2026-11-03T02:30:54.567Z",
    "added": {
     "elements": 0,
     "page": false,
-    "meaning": 0,
+    "meaning": 1,
     "overlayClose": 0,
     "compose": 0
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2191,
+    "settleMs": 2120,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4944,61 +3991,183 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 64 controls"
+      "reason": "hit area 44 px on 64 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:31:00.087Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2189,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
@@ -5020,12 +4189,12 @@
    }
   },
   {
-   "fit": "calm",
-   "h": 760,
-   "canonical": false,
-   "at": "2026-10-27T22:27:15.126Z",
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T02:38:27.772Z",
    "added": {
-    "elements": 0,
+    "elements": 1,
     "page": false,
     "meaning": 0,
     "overlayClose": 0,
@@ -5033,9 +4202,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2179,
+    "settleMs": 6348,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -5046,66 +4215,1590 @@
      "auto": true
     },
     "compose": {
-     "groups": 4,
+     "groups": 3,
      "laidOut": 0,
-     "kept": 4,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 400",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
       "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:38:33.665Z",
+   "added": {
+    "elements": 3,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2529,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:38:39.593Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2529,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:38:46.640Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3657,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 67 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 20,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:38:53.618Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3621,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 66 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 21,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:39:00.626Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3706,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 67 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 16,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:39:07.606Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3584,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 67 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 20,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:39:14.507Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3544,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 66 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 21,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:39:21.464Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3574,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 67 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 16,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:39:28.399Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3644,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.36 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 67 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 25,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:39:35.392Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3671,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.41 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 66 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 27,
+    "decisions": {
+     "folded": 5,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:39:42.392Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3646,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 67 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 20,
+    "decisions": {
+     "folded": 6,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:39:48.250Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2553,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 67 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:39:54.139Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2589,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 66 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:40:00.176Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2618,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 67 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 0,

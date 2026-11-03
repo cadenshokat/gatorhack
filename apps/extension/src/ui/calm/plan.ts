@@ -19,7 +19,7 @@ import { contentRoot, coverContent } from './meaning';
 import { type EndPart, Seen, findListen, normText, scrubBlocks, sortEnd } from './tidy';
 import {
   type Block, type CardLinkBlock, type ControlBlock, type FlowBlock, type ImageBlock, type Inline, type LinkPart, TOOL_RE,
-  chatContainer, clean, controlFor, flatten, imageFor, isGone, isProgressRail, isRewritten, keepImage, keyOf, nameOf, newCtx,
+  CAPTION_SEL, chatContainer, clean, controlFor, flatten, imageFor, isGone, isProgressRail, isRewritten, keepImage, keyOf, nameOf, newCtx,
   pageLeadImage, readBlocks, recordsOf, safeHref, siteName, siteStepText, splitParts, splitSentences, storyFromLink, textOf,
 } from './model';
 
@@ -613,13 +613,21 @@ export function buildPlan(o: PlanInput): CalmPlan {
     }
   }
 
-  // Popups that affect the task (Jev keep_popup, e.g. a session-timeout warning) are shown first, like alerts.
-  const keepPopups = o.decisions.filter((d) => d.verdict === 'keep_popup').map((d) => el(d.id)).filter((x): x is Element => !!x);
+  // Popups that affect the task (Jev keep_popup, e.g. a session-timeout warning) are shown first, like alerts: only
+  // while they show (Allrecipes keeps its "Ingredients" panel closed until its button is tapped).
+  const keepPopups = o.decisions
+    .filter((d) => d.verdict === 'keep_popup')
+    .map((d) => el(d.id))
+    .filter((x): x is Element => !!x && !isGone(x));
+  // A part is the popup when it sits inside it, or holds little more than it: never a whole recipe or story that
+  // happens to contain one somewhere.
+  const isPopupPart = (r: Element, k: Element): boolean =>
+    within(k, r) || (within(r, k) && textOf(r).length <= 1.5 * textOf(k).length + 40);
 
   // Effective state.
   const eff = secs.map((s) => {
     const role = s.sec.role;
-    const popupAlert = s.roots.some((r) => keepPopups.some((k) => within(r, k) || within(k, r)));
+    const popupAlert = s.roots.some((r) => keepPopups.some((k) => isPopupPart(r, k)));
     const notice: 'alert' | 'consent' | null = role === 'alert' || popupAlert ? 'alert' : role === 'consent' ? 'consent' : null;
     const hoist = notice !== null;
     let state = s.sec.state;
@@ -1016,10 +1024,17 @@ export function buildPlan(o: PlanInput): CalmPlan {
       const p = main[i]!;
       const role = p.sec.role;
       if (p.isPrimary || p.lead || p.key === lead?.from || p.key === form?.sectionKey || p.cards) continue;
-      if (!CHROME_ROLES.has(role) && role !== 'related') continue;
+      // Readers' comments: their words in one closed "Comments" at the end, without the reply and report buttons.
+      const comments = isCommentThread(p);
+      if (!comments && !CHROME_ROLES.has(role) && role !== 'related') continue;
       main.splice(i, 1);
-      ends.splice(1, 0, { key: p.key, label: p.title ?? p.label, blocks: allBlocks(p), chrome: CHROME_ROLES.has(role) });
+      ends.splice(1, 0, {
+        key: p.key, label: comments ? 'Comments' : (p.title ?? p.label), blocks: allBlocks(p), chrome: !comments && CHROME_ROLES.has(role),
+      });
     }
+    // A comment widget inside the story's own part goes with them.
+    const thread = main.flatMap((p) => pluck(p, inComments));
+    if (thread.length) ends.splice(1, 0, { key: 'comments', label: 'Comments', blocks: thread, chrome: false });
     for (const d of drawer) {
       const role = d.section?.sec.role ?? '';
       const chrome = d.key === 'clouds' || d.key === 'tools' || ['Site links', 'Sponsored', 'Offers', 'Navigation', 'Legal', 'Account', 'Search'].includes(d.label) || CHROME_ROLES.has(role);
@@ -1096,6 +1111,23 @@ export function buildPlan(o: PlanInput): CalmPlan {
 /** Section roles that hold the site's own chrome (menus, the legal footer, ads, promos). */
 const CHROME_ROLES = new Set<string>(['navigation', 'legal', 'ads', 'promo']);
 
+const COMMENTS_TITLE = /^(comments?|conversation|join the conversation|discussion|reader comments)\b/i;
+/** A comment widget's box ("comments", not "commentary": an opinion column is not a comment thread). */
+const COMMENTS_SEL = '[class*="comments" i],[id*="comments" i],[class*="viafoura" i],[class*="disqus" i],[id*="disqus" i]';
+
+/** A block drawn from inside a comment widget (AP News: Viafoura's "Conversation" in the story's own part). */
+function inComments(b: Block): boolean {
+  const e = b.src instanceof Element ? b.src : b.src.parentElement;
+  return !!e?.closest(COMMENTS_SEL);
+}
+
+/** A readers' comment thread as a part of its own: by its title, else where its words come from. */
+function isCommentThread(p: PlanSection): boolean {
+  if (p.label === 'Comments' || (p.title && COMMENTS_TITLE.test(p.title.trim()))) return true;
+  const bs = flatten(allBlocks(p));
+  return bs.length >= 4 && bs.filter(inComments).length >= 0.6 * bs.length;
+}
+
 /** Rules 1–3 inside one placed part (SIMPLIFIED.md): see tidy.scrubBlocks. */
 function scrubSection(p: PlanSection, reading: boolean, chrome?: Block[], captions?: string[]): void {
   const seen = new Seen();
@@ -1123,11 +1155,17 @@ function scrubSection(p: PlanSection, reading: boolean, chrome?: Block[], captio
 
 const OUTSIDE_ARTICLE = 'nav,footer,aside,header nav,[role=navigation],[role=contentinfo],[role=complementary],webable-ui';
 
-/** Running text the page shows: paragraphs of at least 80 characters outside menus, footers and side rails. */
+/** A picture's caption or credit, or anything inside a figure: never the story's running text, dek or byline. */
+const PICTURE_TEXT = `figure,${CAPTION_SEL}`;
+
+/**
+ * Running text the page shows: paragraphs of at least 80 characters outside menus, footers, side rails and picture
+ * captions (AP News: a long caption in the lead gallery is not the story's first paragraph).
+ */
 function runningParagraphs(): Element[] {
   const out: Element[] = [];
   for (const p of Array.from(document.querySelectorAll('p')).slice(0, 600)) {
-    if (p.closest(OUTSIDE_ARTICLE)) continue;
+    if (p.closest(OUTSIDE_ARTICLE) || p.closest(PICTURE_TEXT)) continue;
     const t = clean(p.textContent);
     if (t.length < 80) continue;
     const r = p.getBoundingClientRect();
@@ -1149,10 +1187,15 @@ function articleLike(): boolean {
 
 interface ArticleDom { h1: Element | null; byline: Element | null; date: Element | null; dek: Element | null; kicker: string | null; skip: Element[] }
 
+const AUTHOR_SEL = '[class*="author" i],[rel="author"],[itemprop="author"]';
 const BYLINE_SEL = '[class*="byline" i],[rel="author"],[itemprop="author"],[class*="author" i],[data-testid*="byline" i],address';
 const DATE_SEL = 'time,[class*="timestamp" i],[class*="date" i],[itemprop="datePublished"],[itemprop="dateModified"]';
 const DEK_SEL = '[class*="dek" i],[class*="standfirst" i],[class*="subhead" i],[class*="sub-head" i],[class*="subtitle" i],[class*="sub-title" i],[class*="summary" i],[class*="description" i],[class*="lowertext" i],h2';
-const KICKER_SEL = '[class*="kicker" i],[class*="eyebrow" i],[class*="overline" i],[class*="rubric" i],[class*="category" i],[class*="section-name" i],[class*="label" i]';
+const GALLERY_TEXT_SEL =
+  '[class*="slide" i][class*="desc" i],[class*="slide" i][class*="count" i],[class*="carousel" i][class*="desc" i],' +
+  '[class*="gallery" i][class*="desc" i],[class*="gallery" i][class*="count" i]';
+const COMMENT_COUNT_SEL = '[class*="comment" i][class*="count" i]';
+const KICKER_SEL = '[class*="kicker" i],[class*="eyebrow" i],[class*="overline" i],[class*="rubric" i],[class*="category" i],[class*="section-name" i],[class*="label" i],[class*="breadcrumb" i]';
 
 /** Outermost matches only (a byline wrapper, not each name inside it). */
 function outermost(els: Element[]): Element[] {
@@ -1193,7 +1236,7 @@ function articleDom(): ArticleDom {
   const box = h1.parentElement?.parentElement?.parentElement ?? h1.parentElement;
   if (box) {
     const deks = Array.from(box.querySelectorAll(DEK_SEL)).filter((e) => {
-      if (e.contains(h1) || h1.contains(e) || !near(e, 420)) return false;
+      if (e.contains(h1) || h1.contains(e) || !near(e, 420) || e.closest(PICTURE_TEXT)) return false;
       if (!(h1.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING)) return false;
       if (out.byline && (out.byline.contains(e) || e.contains(out.byline))) return false;
       const t = clean(textOf(e));
@@ -1212,6 +1255,14 @@ function articleDom(): ArticleDom {
     }
   }
   for (const e of [out.byline, out.date, out.dek]) if (e) out.skip.push(e);
+  // A comment count by the byline (AP News: "15" beside Share) is not a line of the story.
+  for (const e of Array.from(document.querySelectorAll(COMMENT_COUNT_SEL))) {
+    if (near(e) && beforeBody(e) && /^\d{1,5}$/.test(clean(textOf(e)))) out.skip.push(e);
+  }
+  // The lead gallery's other captions and its "1 of 2" counters (AP News): the lead picture carries its own caption.
+  for (const e of Array.from(document.querySelectorAll(GALLERY_TEXT_SEL))) {
+    if (near(e) && beforeBody(e) && !e.contains(h1)) out.skip.push(e);
+  }
   return out;
 }
 
@@ -1240,7 +1291,9 @@ function articleHeadOf(dom: ArticleDom | null, lead: Lead | null, main: PlanSect
     const text = clean(textOf(dom.byline));
     const seen = new Set<string>();
     const names: LinkPart[] = [];
-    for (const a of Array.from(dom.byline.querySelectorAll('a[href]'))) {
+    // The names come from the authors' own part when the byline has one (AP News also puts "Leer en español" there).
+    const authors = dom.byline.matches(AUTHOR_SEL) ? dom.byline : (dom.byline.querySelector(AUTHOR_SEL) ?? dom.byline);
+    for (const a of Array.from(authors.querySelectorAll('a[href]'))) {
       const t = clean(textOf(a));
       if (!t || t.length > 60 || isTimeText(t) || seen.has(t.toLowerCase())) continue;
       seen.add(t.toLowerCase());

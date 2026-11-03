@@ -1,0 +1,24 @@
+{
+  "id": "recipe-B",
+  "replicaId": "ar-cookies",
+  "family": "recipe",
+  "set": "B",
+  "kind": "find",
+  "title": "Find out how many chocolate chips go into the cookies",
+  "context": "A recipe on the Allrecipes website, for chocolate chip cookies.",
+  "prompt": "Find out how many chocolate chips go into the cookies",
+  "question": "How many cups of chocolate chips go into the cookies?",
+  "short": "Chocolate chips in the cookies",
+  "label": "Allrecipes, the recipe for chocolate chip cookies",
+  "tag": "the chocolate chip cookie recipe",
+  "choices": [
+    "½ cup",
+    "1 cup",
+    "2 cups",
+    "3 cups"
+  ],
+  "correct": 1,
+  "answerText": "1 cup semisweet chocolate chips",
+  "answerSelector": "#mm-recipes-structured-ingredients_1-0 li:nth-of-type(10) > p",
+  "answerDepthScreens": 3.23
+}

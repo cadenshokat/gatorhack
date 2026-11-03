@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Walks the whole participant flow (protocol 4.0.0) on emulated phones and checks what gets saved. Run with the dev
+// Walks the whole participant flow (protocol 4.1.0) on emulated phones and checks what gets saved. Run with the dev
 // server up:
 //
 //   node scripts/e2e.mjs [--base http://127.0.0.1:5190] [--browsers webkit,chromium] [--seq 0,1,2,3]
@@ -28,7 +28,7 @@ function arg(name, fallback) {
   return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
-const PROTOCOL = 'mobile-replica-4.0.0';
+const PROTOCOL = 'mobile-replica-4.1.0';
 const base = arg('base', 'http://127.0.0.1:5190');
 const browsers = arg('browsers', 'webkit,chromium').split(',');
 const seqs = arg('seq', '1').split(',').map(Number);
@@ -38,7 +38,7 @@ mkdirSync(out, { recursive: true });
 
 /** Live AI can take ~25 s behind a website's card; wait this long for "Open the website". */
 const CARD_MS = 45000;
-/** Per round: how many websites there are (protocol 4.0.0: news and sports). */
+/** Per round: how many websites there are (protocol 4.1.0: news and recipe). */
 const PER_ROUND = 2;
 /** The ease and statements answers the run gives, as the buttons say them and as saved (1 = Very easy). */
 const EASE = { name: 'Somewhat easy', value: 3 };
@@ -359,16 +359,17 @@ async function fullRun(page, seq, which, shots) {
     await umux(page, r);
     if (r === 1) await heading(page, 'Round 1 is finished', 10000);
   }
-  // Last questions (4.0.0): blind first (Yes adds a text screen), then a 1 to 10 rating of each round.
+  // Last questions (4.1.0): blind first (Yes adds a text screen), then how much they liked each round, in words.
   await heading(page, 'Did the 2 rounds feel different?', 10000);
   await choose(page, 'Yes');
   await heading(page, 'What was different? (optional)', 10000);
   await page.locator('textarea').fill('The text was bigger.');
   await tapText(page, 'Continue');
   await heading(page, /^How much did you like using the websites in round 1\?/, 10000);
-  await choose(page, '7');
+  await page.screenshot({ path: join(shots, 'like1.png'), fullPage: true });
+  await choose(page, 'Liked it a little');
   await heading(page, /^How much did you like using the websites in round 2\?/, 10000);
-  await choose(page, '9', { cont: 'Send my answers' });
+  await choose(page, 'Liked it a lot', { cont: 'Send my answers' });
   await heading(page, 'You have finished the study', 15000);
   await page.screenshot({ path: join(shots, 'done.png'), fullPage: true });
   const doneText = await page.locator('main').innerText();
@@ -380,7 +381,7 @@ function check(which, run, seq) {
   const { rec, live, dark, intended, doneText } = run;
   if (!rec) return fail(`${which}: nothing saved`);
   if (rec.protocol !== PROTOCOL) fail(`${which}: protocol ${rec.protocol}, not ${PROTOCOL}`);
-  if (rec.consent?.version !== '4.0.0' || rec.eligible !== true) fail(`${which}: consent not saved as 4.0.0 with eligibility (${JSON.stringify(rec.consent)})`);
+  if (rec.consent?.version !== '4.1.0' || rec.eligible !== true) fail(`${which}: consent not saved as 4.1.0 with eligibility (${JSON.stringify(rec.consent)})`);
   if (rec.sequence !== seq) fail(`${which}: sequence ${rec.sequence}, not ${seq}`);
   if (rec.stage !== 'done' || !rec.finishedAt) fail(`${which}: study not saved as finished (stage ${rec.stage})`);
 
@@ -422,7 +423,7 @@ function check(which, run, seq) {
   if (rec.sus?.[1] || rec.sus?.[2]) fail(`${which}: SUS answers saved in a UMUX protocol`);
 
   const f = rec.final;
-  if (f?.different !== 'yes' || f?.noticed !== 'The text was bigger.' || f?.liking?.[1] !== 7 || f?.liking?.[2] !== 9)
+  if (f?.different !== 'yes' || f?.noticed !== 'The text was bigger.' || f?.liking?.[1] !== 5 || f?.liking?.[2] !== 7)
     fail(`${which}: last answers not saved (${JSON.stringify(f)})`);
 
   // Trials: the practice and 2 websites in each round, every one a 'find' task that ended the way the run meant.

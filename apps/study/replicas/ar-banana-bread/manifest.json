@@ -1,0 +1,558 @@
+{
+  "v": "replica.1",
+  "id": "ar-banana-bread",
+  "servePath": "/recipe/6757/simple-banana-bread/",
+  "file": "index.html",
+  "sourceUrl": "https://www.allrecipes.com/recipe/6757/simple-banana-bread/",
+  "originalHost": "www.allrecipes.com",
+  "siteName": "Allrecipes",
+  "capturedAt": "2026-11-03T02:28:08.039Z",
+  "capture": {
+    "tool": "scripts/capture/capture.mjs (playwright 1.64.1)",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+    "stateNotes": [
+      "The page after one scroll pass, back at the top: Allrecipes loads reviews, cards and in-content ads as you scroll. Live and copy are compared in this state.",
+      "As a first-time visitor in the US sees it: no consent or \"do not sell\" notice is shown (none appeared on any load from New York time and en-US). Header at the top; the recipe utility bar (Menu, Save, Rate) takes its place once you scroll down and gives way to it again when you scroll up; the floating \"Ingredients\" button shows while scrolling down past the ingredients list.",
+      "Ad creatives frozen as captured (screenshots in each ad iframe's srcdoc; the iframe src is kept); Google Publisher Tag refresh stopped once the slots had filled. Live ads refresh and rotate. The 320x50 adhesive ad stays fixed at the bottom, as live.",
+      "Removed because it appears on some visits only, after some time on the page: Digioh's full-screen pop-up. Outstream video players (Primis, Connatix, Teads) blocked at capture so both pages carry display ads in their slots.",
+      "Serving size 1x, \"Keep Screen Awake\" off, nutrition label collapsed, as the page loads."
+    ]
+  },
+  "licence": "Copyright Allrecipes (People Inc., formerly Dotdash Meredith); all rights reserved. Recipe text by its submitter as published by Allrecipes; photos and reviews belong to their authors. Copied for a closed, non-commercial research study (noindex, served only behind study links); not for redistribution. Ad creatives and third-party widgets belong to their owners.",
+  "attribution": "Allrecipes, https://www.allrecipes.com/recipe/6757/simple-banana-bread/. Changed: scripts removed; behaviours re-created as local scripts; ads frozen as captured; files stored locally; in the adapted condition WebAble changes the page.",
+  "behaviours": [
+    "page",
+    "header / utility bar on scroll",
+    "ad-slots (captured creatives in srcdoc)",
+    "menu (header and utility bar)",
+    "serving-size adjuster",
+    "ingredients overlay button",
+    "share row",
+    "nutrition label",
+    "jump to nutrition",
+    "keep screen awake toggle",
+    "tooltip"
+  ],
+  "removed": [
+    "site scripts (66)",
+    "third-party scripts and trackers from 29 hosts: aim-tag.hcn.health, ats-wrapper.privacymanager.io, b-code.liadm.com, btloader.com, c.amazon-adsystem.com, cdn.brandmetrics.com, cdn.id5-sync.com, cdn.p-n.io, config.aps.amazon-adsystem.com, connect.facebook.net, connectid.analytics.yahoo.com, d30qdagvt44524.cloudfront.net, dotdash-meredith.solutions.cdn.optable.co, forms.allrecipes.com, fundingchoicesmessages.google.com, g.3gl.net, launchpad-wrapper.privacymanager.io, launchpad.privacymanager.io, oa.openxcdn.net, openads-cdn.adsrvr.org, sb.scorecardresearch.com, secure.cdn.fastclick.net, securepubads.g.doubleclick.net, static.chartbeat.com, static.cloudflareinsights.com, static.criteo.net, tags.crwdcntrl.net, tru.am, www.googletagmanager.com",
+    "noscript (31)",
+    "preload/prefetch/preconnect hints (3)",
+    "http-equiv meta (7)",
+    "inline event handlers (1)",
+    "iframe contents (25; src kept, local srcdoc: 10 snapshots)",
+    "Digioh full-screen pop-up (appears late, on some visits only)",
+    "outstream video ad players (hosts blocked at capture)"
+  ],
+  "contentHash": "sha256:ea70ca1122d5ba5678ee03382400290d9fec239f47a38f712d289e4f311606d5",
+  "validation": {
+    "at": "2026-11-03T02:38:02.957Z",
+    "by": "scripts/capture/validate.mjs",
+    "served": "scripts/capture/lib/serve.mjs (frame.js stubbed)",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "liveCapturedAt": "2026-11-03T02:28:08.039Z",
+    "requests": {
+      "outside": 0,
+      "outsideHosts": {},
+      "missing": []
+    },
+    "frameTagFirst": true,
+    "pixels": {
+      "firstScreen": {
+        "pct": 0.51,
+        "target": 0.5,
+        "pass": false,
+        "size": [
+          1170,
+          2532
+        ],
+        "bandsCssPx": [
+          [
+            13,
+            40,
+            15006
+          ]
+        ]
+      },
+      "fullPage": {
+        "pct": 8.92,
+        "target": 2,
+        "pass": false,
+        "liveSize": [
+          390,
+          15299
+        ],
+        "copySize": [
+          390,
+          15299
+        ],
+        "bandsCssPx": [
+          [
+            3243,
+            3842,
+            175549
+          ],
+          [
+            11444,
+            11693,
+            74994
+          ],
+          [
+            5388,
+            5637,
+            73345
+          ],
+          [
+            1456,
+            1705,
+            72754
+          ],
+          [
+            9422,
+            9671,
+            72614
+          ],
+          [
+            12060,
+            12309,
+            55083
+          ],
+          [
+            794,
+            843,
+            3403
+          ],
+          [
+            1259,
+            1302,
+            2238
+          ]
+        ]
+      }
+    },
+    "layout": {
+      "scrollHeight": {
+        "live": 15299,
+        "copy": 15299,
+        "pass": true
+      },
+      "scrollWidth": {
+        "live": 390,
+        "copy": 390,
+        "pass": true
+      },
+      "links": {
+        "live": 251,
+        "copy": 251,
+        "pass": true
+      },
+      "visibleLinks": {
+        "live": 91,
+        "copy": 91,
+        "pass": true
+      },
+      "headings": {
+        "live": 11,
+        "copy": 11,
+        "pass": true
+      },
+      "headingOrder": {
+        "live": 11,
+        "copy": 11,
+        "pass": true
+      },
+      "tapTargets": {
+        "live": 182,
+        "copy": 182,
+        "pass": true
+      },
+      "tapUnder44": {
+        "live": 117,
+        "copy": 117,
+        "pass": true
+      },
+      "tapUnder24": {
+        "live": 84,
+        "copy": 84,
+        "pass": true
+      },
+      "bodyFontPx": {
+        "live": 16,
+        "copy": 16,
+        "pass": true
+      },
+      "paraFontPx": {
+        "live": 18,
+        "copy": 18,
+        "pass": true
+      },
+      "textUnder16Pct": {
+        "live": 16.6,
+        "copy": 16.6,
+        "pass": true
+      },
+      "fixedCoverTopPct": {
+        "live": 15.7,
+        "copy": 15.7,
+        "pass": true
+      },
+      "fixedCoverMidPct": {
+        "live": 15.7,
+        "copy": 15.7,
+        "pass": true
+      },
+      "visibleElements": {
+        "live": 2334,
+        "copy": 2334,
+        "pass": true
+      },
+      "imagesVisible": {
+        "live": 31,
+        "copy": 31,
+        "pass": true
+      },
+      "firstScreenText": {
+        "live": "718:619801571",
+        "copy": "729:1691119853",
+        "pass": false
+      },
+      "loadedFontFamilies": {
+        "live": "CopperPot, SourceSansPro",
+        "copy": "CopperPot, SourceSansPro",
+        "pass": true
+      }
+    },
+    "widths": [
+      {
+        "w": 390,
+        "live": {
+          "scrollWidth": 390,
+          "scrollHeight": 14949,
+          "overflowing": 0
+        },
+        "copy": {
+          "scrollWidth": 390,
+          "scrollHeight": 15299,
+          "overflowing": 0,
+          "sample": []
+        },
+        "pass": true
+      },
+      {
+        "w": 312,
+        "live": {
+          "scrollWidth": 359,
+          "scrollHeight": 15790,
+          "overflowing": 66
+        },
+        "copy": {
+          "scrollWidth": 359,
+          "scrollHeight": 16140,
+          "overflowing": 66,
+          "sample": [
+            "div#mm-ads-mob-adhesive-banner-fixed-ad_1-0.comp.mm-ads-mob-adhesive-banner-fixed-ad 359",
+            "span#ad-label_1-0.comp.ad-label 359",
+            "div#mob-adhesive-banner-fixed.wrapper.gpt-requested 359",
+            "div#google_ads_iframe_3865/ddm.allrecipes.mob/tier1/recipesc/Recipes_0__container__ 340",
+            "iframe#google_ads_iframe_3865/ddm.allrecipes.mob/tier1/recipesc/Recipes_0 340",
+            "div#recipe-utility-nav_1-0.comp.recipe-utility-nav 359"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 260,
+        "live": {
+          "scrollWidth": 359,
+          "scrollHeight": 16274,
+          "overflowing": 83
+        },
+        "copy": {
+          "scrollWidth": 359,
+          "scrollHeight": 16624,
+          "overflowing": 83,
+          "sample": [
+            "div#mm-ads-mob-adhesive-banner-fixed-ad_1-0.comp.mm-ads-mob-adhesive-banner-fixed-ad 359",
+            "span#ad-label_1-0.comp.ad-label 359",
+            "div#mob-adhesive-banner-fixed.wrapper.gpt-requested 359",
+            "div#google_ads_iframe_3865/ddm.allrecipes.mob/tier1/recipesc/Recipes_0__container__ 340",
+            "iframe#google_ads_iframe_3865/ddm.allrecipes.mob/tier1/recipesc/Recipes_0 340",
+            "div#recipe-utility-nav_1-0.comp.recipe-utility-nav 359"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 223,
+        "live": {
+          "scrollWidth": 359,
+          "scrollHeight": 17037,
+          "overflowing": 107
+        },
+        "copy": {
+          "scrollWidth": 359,
+          "scrollHeight": 17387,
+          "overflowing": 107,
+          "sample": [
+            "div#mntl-utility-nav_1-0.comp.mntl-utility-nav 228",
+            "ul.mntl-utility-nav__list.text-utility-200 228",
+            "li.mntl-utility-nav__signin--myr.mntl-utility-nav__signin--myr-app 228",
+            "a.mntl-utility-nav__sublist-link.myr-get-app-trigger 228",
+            "svg.icon.icon-myr-app-wordmark-sm 228",
+            "div#mm-ads-mob-adhesive-banner-fixed-ad_1-0.comp.mm-ads-mob-adhesive-banner-fixed-ad 359"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 195,
+        "live": {
+          "scrollWidth": 359,
+          "scrollHeight": 17785,
+          "overflowing": 134
+        },
+        "copy": {
+          "scrollWidth": 359,
+          "scrollHeight": 18135,
+          "overflowing": 134,
+          "sample": [
+            "div#mntl-utility-nav_1-0.comp.mntl-utility-nav 228",
+            "ul.mntl-utility-nav__list.text-utility-200 228",
+            "li.mntl-utility-nav__signin--myr.mntl-utility-nav__signin--myr-app 228",
+            "a.mntl-utility-nav__sublist-link.myr-get-app-trigger 228",
+            "svg.icon.icon-myr-app-wordmark-sm 228",
+            "div#mm-ads-mob-adhesive-banner-fixed-ad_1-0.comp.mm-ads-mob-adhesive-banner-fixed-ad 359"
+          ]
+        },
+        "pass": true
+      }
+    ],
+    "behaviours": [
+      {
+        "name": "menu opens and closes",
+        "live": {
+          "openFullnav": true,
+          "openVisible": "visible",
+          "openTop": 61,
+          "openH": 783,
+          "closedFullnav": false,
+          "closedVisible": "visible"
+        },
+        "copy": {
+          "openFullnav": true,
+          "openVisible": "visible",
+          "openTop": 61,
+          "openH": 783,
+          "closedFullnav": false,
+          "closedVisible": "visible"
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "scrolling: utility bar replaces the header, Ingredients button shows past the list",
+        "live": {
+          "topHeaderHidden": false,
+          "topHeaderTop": 0,
+          "topUtilVisible": false,
+          "topUtilTop": -60,
+          "topIngButton": false,
+          "topIngButtonOpacity": "0",
+          "downHeaderHidden": true,
+          "downHeaderTop": -60,
+          "downUtilVisible": true,
+          "downUtilTop": 0,
+          "downIngButton": false,
+          "downIngButtonOpacity": "0",
+          "inListHeaderHidden": true,
+          "inListHeaderTop": -60,
+          "inListUtilVisible": true,
+          "inListUtilTop": 0,
+          "inListIngButton": false,
+          "inListIngButtonOpacity": "0",
+          "pastListHeaderHidden": true,
+          "pastListHeaderTop": -60,
+          "pastListUtilVisible": true,
+          "pastListUtilTop": 0,
+          "pastListIngButton": true,
+          "pastListIngButtonOpacity": "1",
+          "pastStepsHeaderHidden": true,
+          "pastStepsHeaderTop": -60,
+          "pastStepsUtilVisible": true,
+          "pastStepsUtilTop": 0,
+          "pastStepsIngButton": false,
+          "pastStepsIngButtonOpacity": "0",
+          "upHeaderHidden": true,
+          "upHeaderTop": -60,
+          "upUtilVisible": true,
+          "upUtilTop": 0,
+          "upIngButton": false,
+          "upIngButtonOpacity": "0",
+          "backHeaderHidden": false,
+          "backHeaderTop": 0,
+          "backUtilVisible": false,
+          "backUtilTop": -60,
+          "backIngButton": false,
+          "backIngButtonOpacity": "0"
+        },
+        "copy": {
+          "topHeaderHidden": false,
+          "topHeaderTop": 0,
+          "topUtilVisible": false,
+          "topUtilTop": -60,
+          "topIngButton": false,
+          "topIngButtonOpacity": "0",
+          "downHeaderHidden": true,
+          "downHeaderTop": -60,
+          "downUtilVisible": true,
+          "downUtilTop": 0,
+          "downIngButton": false,
+          "downIngButtonOpacity": "0",
+          "inListHeaderHidden": true,
+          "inListHeaderTop": -60,
+          "inListUtilVisible": true,
+          "inListUtilTop": 0,
+          "inListIngButton": false,
+          "inListIngButtonOpacity": "0",
+          "pastListHeaderHidden": true,
+          "pastListHeaderTop": -60,
+          "pastListUtilVisible": true,
+          "pastListUtilTop": 0,
+          "pastListIngButton": true,
+          "pastListIngButtonOpacity": "1",
+          "pastStepsHeaderHidden": true,
+          "pastStepsHeaderTop": -60,
+          "pastStepsUtilVisible": true,
+          "pastStepsUtilTop": 0,
+          "pastStepsIngButton": false,
+          "pastStepsIngButtonOpacity": "0",
+          "upHeaderHidden": true,
+          "upHeaderTop": -60,
+          "upUtilVisible": true,
+          "upUtilTop": 0,
+          "upIngButton": false,
+          "upIngButtonOpacity": "0",
+          "backHeaderHidden": false,
+          "backHeaderTop": 0,
+          "backUtilVisible": false,
+          "backUtilTop": -60,
+          "backIngButton": false,
+          "backIngButtonOpacity": "0"
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "Ingredients button opens and closes the overlay",
+        "live": {
+          "openHidden": "false",
+          "openExpanded": "true",
+          "openTop": 24,
+          "openH": 820,
+          "openVis": "visible",
+          "openText": "Close",
+          "closedHidden": "true",
+          "closedExpanded": "false",
+          "closedTop": 24,
+          "closedVis": "visible",
+          "closedText": "Ingredients"
+        },
+        "copy": {
+          "openHidden": "false",
+          "openExpanded": "true",
+          "openTop": 24,
+          "openH": 820,
+          "openVis": "visible",
+          "openText": "Close",
+          "closedHidden": "true",
+          "closedExpanded": "false",
+          "closedTop": 24,
+          "closedVis": "visible",
+          "closedText": "Ingredients"
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "servings 2x and 1/2x rescale the ingredients",
+        "live": {
+          "one": "cooking spray | 2 cups all-purpose flour | 1 teaspoon baking powder | ½ teaspoon salt | 4 ripe bananas, mashed | 2 large eggs | ⅔ cup white sugar | ½ cup chopped walnuts",
+          "two": "cooking spray | 4 cups all-purpose flour | 2 teaspoons baking powder | 1 teaspoon salt | 8 ripe bananas, mashed | 4 large eggs | 1 ⅓ cups white sugar | 1 cup chopped walnuts",
+          "twoMeta": "Original recipe (1X) yields 10 servings || Original recipe (1X) yields 10 servings",
+          "half": "cooking spray | 1 cup all-purpose flour | ½ teaspoon baking powder | ¼ teaspoon salt | 2 ripe bananas, mashed | 1 large eggs | ⅓ cup white sugar | ¼ cup chopped walnuts",
+          "halfMeta": "Original recipe (1X) yields 10 servings || Original recipe (1X) yields 10 servings",
+          "back": "cooking spray | 2 cups all-purpose flour | 1 teaspoon baking powder | ½ teaspoon salt | 4 ripe bananas, mashed | 2 large eggs | ⅔ cup white sugar | ½ cup chopped walnuts",
+          "backMeta": "Original recipe (1X) yields 10 servings || Original recipe (1X) yields 10 servings"
+        },
+        "copy": {
+          "one": "cooking spray | 2 cups all-purpose flour | 1 teaspoon baking powder | ½ teaspoon salt | 4 ripe bananas, mashed | 2 large eggs | ⅔ cup white sugar | ½ cup chopped walnuts",
+          "two": "cooking spray | 4 cups all-purpose flour | 2 teaspoons baking powder | 1 teaspoon salt | 8 ripe bananas, mashed | 4 large eggs | 1 ⅓ cups white sugar | 1 cup chopped walnuts",
+          "twoMeta": "Original recipe (1X) yields 10 servings || Original recipe (1X) yields 10 servings",
+          "half": "cooking spray | 1 cup all-purpose flour | ½ teaspoon baking powder | ¼ teaspoon salt | 2 ripe bananas, mashed | 1 large eggs | ⅓ cup white sugar | ¼ cup chopped walnuts",
+          "halfMeta": "Original recipe (1X) yields 10 servings || Original recipe (1X) yields 10 servings",
+          "back": "cooking spray | 2 cups all-purpose flour | 1 teaspoon baking powder | ½ teaspoon salt | 4 ripe bananas, mashed | 2 large eggs | ⅔ cup white sugar | ½ cup chopped walnuts",
+          "backMeta": "Original recipe (1X) yields 10 servings || Original recipe (1X) yields 10 servings"
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "Share row, nutrition label, Jump to Nutrition Facts",
+        "live": {
+          "shareOpen": true,
+          "shareOpenAria": "true",
+          "shareOpenIconLeft": 217,
+          "shareClosed": true,
+          "shareClosedAria": "true",
+          "jumpFactsTop": 28,
+          "labelCls0": "mm-recipes-nutrition-facts-label__button mm-recipes-nutrition-facts-label__button--show text-body-100",
+          "labelH0": 331,
+          "labelCls1": "mm-recipes-nutrition-facts-label__button text-body-100 mm-recipes-nutrition-facts-label__button--hide",
+          "labelH1": 1456
+        },
+        "copy": {
+          "shareOpen": true,
+          "shareOpenAria": "true",
+          "shareOpenIconLeft": 217,
+          "shareClosed": true,
+          "shareClosedAria": "true",
+          "jumpFactsTop": 28,
+          "labelCls0": "mm-recipes-nutrition-facts-label__button mm-recipes-nutrition-facts-label__button--show text-body-100",
+          "labelH0": 331,
+          "labelCls1": "mm-recipes-nutrition-facts-label__button text-body-100 mm-recipes-nutrition-facts-label__button--hide",
+          "labelH1": 1456
+        },
+        "pass": true,
+        "diffs": []
+      }
+    ],
+    "roundTrip": {
+      "mismatches": 49,
+      "rootCauses": 1,
+      "parserAdded": 0
+    },
+    "pass": {
+      "hard": true,
+      "pixels": false,
+      "layout": false,
+      "widths": true,
+      "behaviours": true
+    },
+    "notes": [
+      "Full-page pixel bands are the in-content 300x250 / 300x600 ad slots: in the live full-page screenshot, cross-origin ad frames below the first screen paint empty (only the \"Advertisement\" label shows), while the copy shows each slot's creative as it looked on screen at capture. On a phone, live shows the creative when the slot is scrolled into view.",
+      "\"Jump to Nutrition Facts\" is compared by where the facts box lands (28 px from the top), not the scroll offset: on a fresh live load an unfilled ad slot above it can make the page shorter.",
+      "Round trip: the stylesheet <link> a site script puts straight under <html> is moved to the start of <head> by fixDom (renders the same; roundtrip.mjs counts it as 1 root cause, parent html vs head).",
+      "Lazy pictures the site never loaded (class lazyloadwait) lost their data-src / data-srcset addresses on allrecipes.com (fixDom), so nothing in the copy points outside; they stay blank, as captured."
+    ]
+  }
+}

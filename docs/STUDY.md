@@ -1,13 +1,54 @@
-# WebAble mobile study: protocol `mobile-replica-4.0.0`
+# WebAble mobile study: protocol `mobile-replica-4.1.0`
 
-*Revised 2 Nov 2026: 4.0.0 (Caden's first in-person pilot: shorter, find-the-answer tasks, live AI fitted to the
-person) on 3.0.0 (the committee's review of 28 Oct), on 2.1.0 (outcome tasks, every scale point labelled, 28 Oct 2026),
-on 2.0.0, itself on 1.0.0 (27 Oct 2026). The code is in `apps/study`; this file is the protocol, the measures
-and the analysis plan. When the code and this file disagree, fix one of them before collecting data. Change the
-protocol version for any change to pages, tasks, wording, scoring or engine. Choices still open for Caden and
-Dr. Rani are in `docs/STUDY-DECISIONS.md`. Sections below 0 still describe 3.0.0 where 4.0.0 does not say otherwise.*
+*Revised 2 Nov 2026 (evening): 4.1.0 (recipes in place of the football pages, the round ratings in words, captions and
+comments kept small on the simplified page) on 4.0.0 (Caden's first in-person pilot: shorter, find-the-answer tasks,
+live AI fitted to the person), on 3.0.0 (the committee's review of 28 Oct), on 2.1.0 (outcome tasks, every scale point
+labelled, 28 Oct 2026), on 2.0.0, itself on 1.0.0 (27 Oct 2026). The code is in `apps/study`; this file is the
+protocol, the measures and the analysis plan. When the code and this file disagree, fix one of them before collecting
+data. Change the protocol version for any change to pages, tasks, wording, scoring or engine. Choices still open for
+Caden and Dr. Rani are in `docs/STUDY-DECISIONS.md`. Sections below 0 still describe 3.0.0 where 4.0.0 and 4.1.0 do not
+say otherwise.*
 
 ## 0. What changed
+
+### In 4.1.0
+
+From Caden's review of 4.0.0 (2 Nov 2026, evening):
+
+- **Recipes instead of football.** The Florida Gators opponent-history pages confused people who do not follow
+  football. Each round's second website is now a recipe on Allrecipes (family `recipe`): set A "Simple Banana Bread"
+  (`ar-banana-bread`, "How many cups of sugar go into the banana bread?", ⅔ cup) and set B "The Perfect Chocolate
+  Chip Cookie" (`ar-cookies`, "How many cups of chocolate chips go into the cookies?", 1 cup). Both answers are an
+  ingredient amount that is not a usual default, shown once on the page, about 3 screens down on the original (the
+  news answers are 4–5); a floating "Ingredients" button on both opens the list, as on the live site, and the
+  servings buttons (½x, 2x) rescale the amounts there too. Both pages carry the same furniture (header, sticky
+  bottom ad, display ads, the share row, reviews). Validation: no outside requests or missing files and all behaviour
+  checks pass; the first screen differs from live by 0.51–0.52% of pixels (target 0.5%, the header's slide-in
+  timing) and the full page by 3–9% (target 2%: the live screenshot paints off-screen ad frames empty, the copy keeps
+  the ads it showed). The Gators copies stay in `replicas/` and are no longer shown.
+- **The round ratings in words.** "How much did you like using the websites in round N?" has 7 answers in words
+  (Disliked it a lot, Disliked it, Disliked it a little, Neither liked nor disliked it, Liked it a little, Liked it,
+  Liked it a lot), stored 1 to 7, in place of 1 to 10 with words only at the ends. The export keeps 4.0.0's 1 to 10
+  ratings apart (`liking_scale`); the paired summary uses only the 7-point ones.
+- **Small things stay small on the simplified page** (`apps/extension/src/ui/calm/plan.ts`, `model.ts`). On AP News
+  the lead photo's caption had become a large subtitle under the headline, and the byline, date, "Leer en español"
+  and a comment count ("15") sat at full reading size between the photo and the story: a long caption in the photo
+  gallery was taken as the story's first paragraph. Captions and gallery text are no longer read as the story, its
+  subtitle or its byline; the caption is small under the photo; the date and section are the small line above the
+  headline; the byline is one small line; the gallery's other captions and counters are left out; readers' comments
+  move into a closed "Comments" at the end (their words only, no reply or report buttons); and the lead photo is the
+  page's own copy (the share image's address is on AP's servers, which the study site's security policy blocks).
+  The AI answers for both AP pages were recorded again after this change.
+- **A closed pop-up is not an alert.** On the cookie recipe the AI rated Allrecipes' "Ingredients" panel (closed until
+  its floating button is tapped) as a pop-up that matters to the task (0.71, the bar is 0.70; 0.62 on the banana bread),
+  and the simplified page then drew the whole recipe part that holds the panel as a warning card of large buttons
+  ("Toggle Screen Wake", "Save", "Rate") above the ingredients. A kept pop-up now counts only while it shows, and a
+  part counts as the pop-up only when it sits inside it or holds little more than it. Both recipes now open on the
+  title, ingredients and steps.
+- **Recorded in both engines.** Each adapted page's AI answers are now recorded in Chromium and then in WebKit
+  (`record.mjs --engine webkit --add`), so iPhones replay the AI's read of every element: 4.0.0 had one element on the
+  AP stories (the video and ad box at the end) that WebKit read differently and that had no recorded answer. All four
+  adapted pages replay with no misses in either engine, in every recorded setting.
 
 ### In 4.0.0
 

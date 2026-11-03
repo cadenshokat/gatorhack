@@ -6,7 +6,7 @@
 
 import type { FitProfile, FittingRaw, ReaderProfile } from '@webable/core';
 
-export const PROTOCOL = 'mobile-replica-4.0.0';
+export const PROTOCOL = 'mobile-replica-4.1.0';
 
 /** The agreement's version, saved with "I agree to take part": the protocol's own number. */
 export const CONSENT_VERSION = PROTOCOL.replace(/^mobile-replica-/, '');
@@ -16,7 +16,7 @@ export const LAYOUT_WIDTH = 390;
 
 export type Condition = 'original' | 'adapted';
 export type SetId = 'A' | 'B';
-export type FamilyId = 'news' | 'sports' | 'gov';
+export type FamilyId = 'news' | 'recipe' | 'sports' | 'gov';
 
 /* ------------------------------------------------------------------ */
 /* Replicas                                                            */
@@ -272,7 +272,7 @@ export type ChangeSource = 'fit' | 'jev' | 'check' | 'signals' | 'layout' | 'per
 
 export type Likert7 = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-/** A 1 to 10 rating; only the two ends carry words (protocol 3.0.0, the committee's request). */
+/** A 1 to 10 rating; only the two ends carry words (protocol 3.0.0 to 4.0.0, the liking of each round). */
 export type Rating10 = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 export interface SusResponse {
@@ -413,10 +413,11 @@ export interface FinalAnswers {
   different?: 'yes' | 'no' | 'unsure' | null;
   noticed: string;
   /**
-   * From 3.0.0: how much they liked using each round's websites, 1 = Did not like it at all … 10 = Liked it a great
-   * deal. Asked after "different", on screens that say which round used WebAble.
+   * From 3.0.0: how much they liked using each round's websites. Asked after "different", on screens that say which
+   * round used WebAble. From 4.1.0, 7 answers in words, 1 = Disliked it a lot … 7 = Liked it a lot; before, 1 = Did not
+   * like it at all … 10 = Liked it a great deal, with words only at the ends.
    */
-  liking?: { 1: Rating10 | null; 2: Rating10 | null };
+  liking?: { 1: Likert7 | Rating10 | null; 2: Likert7 | Rating10 | null };
   /** "Anything that was hard to do", asked once at the end before protocol 2.0.0; now asked per round (`comments`). */
   difficulty?: string;
   /** F4 chips: 'helped', 'changed_setting', 'interrupted', 'broken', 'nothing'. */

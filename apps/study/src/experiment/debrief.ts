@@ -70,6 +70,7 @@ export function debriefFor(trials: TrialRecord[]): Debrief {
   // The simplified page opens after the AI's check that it keeps the page's meaning. A story is "the story".
   const simpler = new Set(ds.filter(({ d }) => d.simplified.open).map(({ family }) => family));
   if (simpler.has('news')) ai.add('showed a simpler version of the news story');
+  if (simpler.has('recipe')) ai.add('showed a simpler version of the recipe');
   if (simpler.has('sports')) ai.add('showed a simpler version of the sports website');
   if (simpler.has('gov')) ai.add('showed a simpler version of the park website');
 

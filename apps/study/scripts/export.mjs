@@ -161,6 +161,12 @@ const OUTCOMES = [
   'gave_up_without_reaching', 'skipped', 'technical',
 ];
 
+/** The liking scale's top answer: 7 (words) from protocol 4.1.0, 10 (numbers) before. */
+const likingScale = (protocol) => {
+  const m = /(\d+)\.(\d+)\.\d+$/.exec(protocol ?? '');
+  return m && (Number(m[1]) > 4 || (Number(m[1]) === 4 && Number(m[2]) >= 1)) ? 7 : 10;
+};
+
 /** Changes that stuck, by who decided them: the person's warm-up settings ('fit') or the AI's page read ('jev'). */
 const opsFrom = (d, source) => (d.ops ? d.ops.filter((o) => o.status === 'applied' && o.source === source).length : null);
 
@@ -204,9 +210,10 @@ for (const s of sessions.values()) {
   const prefCond = pref === 'round1' || pref === 'round2' ? (Number(pref.slice(-1)) === adaptedRound ? 'adapted' : 'original') : pref ?? null;
   const touch = (s.device?.inputsSeen ?? []).includes('touch');
   const excluded = s.final?.useMyData === 'no' ? 'said_not_to_use' : !touch ? 'no_touch' : null;
-  // 1 to 10 ratings of each round (3.0.0), by condition.
+  // How much they liked each round, by condition: 1 to 10 from 3.0.0, 1 to 7 in words from 4.1.0.
   const likeA = adaptedRound ? s.final?.liking?.[adaptedRound] ?? null : null;
   const likeO = originalRound ? s.final?.liking?.[originalRound] ?? null : null;
+  const likeScale = likingScale(s.protocol);
   // UMUX-Lite (4.0.0, in place of the SUS), and the tap baseline from the question screens.
   const umuxA = adaptedRound ? s.umux?.[adaptedRound]?.score ?? null : null;
   const umuxO = originalRound ? s.umux?.[originalRound]?.score ?? null : null;
@@ -231,6 +238,7 @@ for (const s of sessions.values()) {
     sus_original_flag: susO?.flagged ?? null, sus_adapted_flag: susA?.flagged ?? null,
     umux_original: umuxO, umux_adapted: umuxA, umux_diff: umuxA != null && umuxO != null ? Math.round((umuxA - umuxO) * 10) / 10 : null,
     seq_original: seqMean('original'), seq_adapted: seqMean('adapted'),
+    liking_scale: likeA != null || likeO != null ? likeScale : null,
     liking_original: likeO, liking_adapted: likeA, liking_diff: likeA != null && likeO != null ? likeA - likeO : null,
     adapted_realism: s.final?.adaptedRealism ?? null,
     preferred: prefCond, realism: s.final?.realism ?? null, use_my_data: s.final?.useMyData ?? null,
@@ -246,7 +254,7 @@ for (const s of sessions.values()) {
   const proA = susProrated(susA?.items), proO = susProrated(susO?.items);
   if (!excluded && proA != null && proO != null) pairs.susPro.push(proA - proO);
   if (!excluded && Number.isFinite(seqMean('adapted')) && Number.isFinite(seqMean('original'))) pairs.seq.push(seqMean('adapted') - seqMean('original'));
-  if (!excluded && likeA != null && likeO != null) pairs.liking.push(likeA - likeO);
+  if (!excluded && likeScale === 7 && likeA != null && likeO != null) pairs.liking.push(likeA - likeO);
   if (!excluded && umuxA != null && umuxO != null) pairs.umux.push(umuxA - umuxO);
 
   for (const t of mine) {
@@ -328,7 +336,7 @@ Sensitivity (one missing item prorated): n = ${ciPro?.n ?? 0}, mean ${fmt(ciPro?
 
 SEQ paired (person means): n = ${ciSeq?.n ?? 0}, mean difference ${fmt(ciSeq?.mean, 2)}, 95% CI ${fmt(ciSeq?.lo, 2)} to ${fmt(ciSeq?.hi, 2)}.
 
-Liking each round (1–10, from protocol 3.0.0, asked after the round was revealed), adapted minus original: n = ${ciLike?.n ?? 0}, mean difference ${fmt(ciLike?.mean, 2)}, 95% CI ${fmt(ciLike?.lo, 2)} to ${fmt(ciLike?.hi, 2)}.
+Liking each round (1–7 in words, from protocol 4.1.0, asked after the round was revealed; earlier 1–10 ratings are in participants.csv only), adapted minus original: n = ${ciLike?.n ?? 0}, mean difference ${fmt(ciLike?.mean, 2)}, 95% CI ${fmt(ciLike?.lo, 2)} to ${fmt(ciLike?.hi, 2)}.
 
 ## How each website ended
 

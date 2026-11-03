@@ -1,0 +1,4486 @@
+{
+ "v": "study-fixtures.1",
+ "replicaId": "ar-cookies",
+ "version": "2",
+ "servePath": "/recipe/25110/the-perfect-chocolate-chip-cookie/",
+ "originalHost": "www.allrecipes.com",
+ "engineCommit": "0c4e8f9a65dab31cbe88b486508d66c432a57da5+dirty",
+ "serverCommit": "0c4e8f9a65dab31cbe88b486508d66c432a57da5",
+ "models": {
+  "jev": "jev-1.14.0",
+  "compose": "gpt-5.4-mini"
+ },
+ "recordedAt": "2026-11-03T02:59:01.703Z",
+ "matrix": {
+  "fits": [
+   "typical",
+   "rosa",
+   "reader",
+   "large",
+   "calm"
+  ],
+  "heights": [
+   568,
+   664,
+   760
+  ],
+  "engines": [
+   "chromium",
+   "webkit"
+  ],
+  "canonical": {
+   "fit": "typical",
+   "h": 664
+  }
+ },
+ "understand": {
+  "page": {
+   "purpose": {
+    "kind": "recipe",
+    "p": 1,
+    "probs": {
+     "record_stats": 0,
+     "scoreboard": 0,
+     "schedule": 0,
+     "standings": 0,
+     "roster": 0,
+     "article": 0,
+     "news_index": 0,
+     "recipe": 1,
+     "product": 0,
+     "search_results": 0,
+     "form_task": 0,
+     "checkout": 0,
+     "sign_in": 0,
+     "account_dashboard": 0,
+     "bill_statement": 0,
+     "appointment": 0,
+     "status_lookup": 0,
+     "info_guide": 0,
+     "faq": 0,
+     "directory_listing": 0,
+     "location_hours": 0,
+     "calendar_dates": 0,
+     "comparison": 0,
+     "video": 0,
+     "gallery": 0,
+     "home_portal": 0,
+     "course_lesson": 0,
+     "course_overview": 0,
+     "live_blog": 0,
+     "product_listing": 0,
+     "game_detail": 0,
+     "other": 0
+    }
+   },
+   "mainRegion": {
+    "id": "n562",
+    "p": 0.66,
+    "probs": {
+     "n564": 0.25,
+     "n565": 0.01,
+     "n562": 0.725,
+     "n437": 0,
+     "n563": 0,
+     "none": 0.015
+    }
+   },
+   "mainPick": {
+    "id": "none",
+    "p": 0.67,
+    "probs": {
+     "n13": 0.02,
+     "n80": 0,
+     "n81": 0,
+     "n83": 0.02,
+     "n84": 0,
+     "n86": 0,
+     "n87": 0,
+     "n88": 0,
+     "n89": 0,
+     "n103": 0.02,
+     "n115": 0,
+     "n123": 0,
+     "n139": 0,
+     "n146": 0,
+     "n167": 0,
+     "n172": 0.01,
+     "n173": 0,
+     "n179": 0.24,
+     "n196": 0.02,
+     "none": 0.67
+    }
+   },
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 5,
+    "questions": 200,
+    "inputTokens": 100095,
+    "wallMs": 236,
+    "serverMs": 176,
+    "costUsd": 0.00420399
+   },
+   "ids": {
+    "n6": [
+     "div|region|Ad|none|mm ads mob banner fixed||",
+     true
+    ],
+    "n10": [
+     "iframe|none|Advertisement|none|||inline_frame",
+     true
+    ],
+    "n11": [
+     "div|region|Save Rate · Menu / Save Recipe / Rate It|none|utility nav mm||",
+     true
+    ],
+    "n13": [
+     "button|button|Save Recipe|none|mm favorite link||",
+     true
+    ],
+    "n15": [
+     "nav|navigation|Header · Click to search / [name] / Recipes|navigation|mm utility nav||",
+     true
+    ],
+    "n80": [
+     "button|button|Save Recipe|main|mm favorite link||",
+     false
+    ],
+    "n81": [
+     "button|button|Rate|main|mm social share rate button||",
+     true
+    ],
+    "n83": [
+     "button|button|Print this article.|form|print button btn||",
+     true
+    ],
+    "n84": [
+     "button|button|Share|main|mm social share button||",
+     true
+    ],
+    "n86": [
+     "button|button|Add Photo|main|add photo button||",
+     true
+    ],
+    "n87": [
+     "a|button|73|main|gallery photo dialog link||",
+     false
+    ],
+    "n88": [
+     "a|button|73|main|gallery photo dialog link||",
+     false
+    ],
+    "n89": [
+     "a|button|73|main|gallery photo dialog link||",
+     false
+    ],
+    "n562": [
+     "div|region|Why [name] This Recipe · Jump to [name] / Toggle Screen Wake /|main|article content||",
+     true
+    ],
+    "n103": [
+     "button|button|Jump to [name]|main|mm details link||",
+     true
+    ],
+    "n108": [
+     "iframe|none|Advertisement|main|||inline_frame",
+     false
+    ],
+    "n115": [
+     "button|button|Toggle Screen Wake|main|mm screen button||",
+     true
+    ],
+    "n123": [
+     "button|button||main|serving tooltip button||",
+     true
+    ],
+    "n137": [
+     "div|dialog|Ingredients · Toggle Screen Wake /|dialog|mm||",
+     true
+    ],
+    "n139": [
+     "button|button|Toggle Screen Wake|dialog|mm screen button||",
+     true
+    ],
+    "n146": [
+     "button|button||dialog|serving tooltip button||",
+     true
+    ],
+    "n162": [
+     "iframe|none|Advertisement|main|||inline_frame",
+     false
+    ],
+    "n166": [
+     "table|table|219 [name] 12g [name] 28g [name] 2g [name]|main|||",
+     true
+    ],
+    "n167": [
+     "button|button|Show Full Nutrition Label Hide Full Nutrition Label|main|mm label button||",
+     true
+    ],
+    "n172": [
+     "button|button|Save Recipe|main|mm favorite link||",
+     false
+    ],
+    "n173": [
+     "button|button|Rate It|main|mm rate print button||",
+     true
+    ],
+    "n179": [
+     "button|button|I Made It|main|mm made it button||",
+     true
+    ],
+    "n182": [
+     "iframe|none|Advertisement|main|||ad_network",
+     true
+    ],
+    "n195": [
+     "p|text|Get recipe help and connect with the community|main|mm ugc ask question||",
+     true
+    ],
+    "n196": [
+     "button|button|Ask my question|main|||",
+     true
+    ],
+    "n210": [
+     "textarea|textbox|My Review|main|feedback user review||",
+     true
+    ],
+    "n370": [
+     "iframe|none|Advertisement|main|||inline_frame",
+     false
+    ],
+    "n448": [
+     "li|region|Links: [name] Cookies… / Save Recipe|main|carousel item myr||",
+     false
+    ],
+    "n451": [
+     "li|region|Links: Quick Zucchini Cookies 17… / Save Recipe|main|carousel item myr||",
+     true
+    ],
+    "n454": [
+     "li|region|Links: [name] Cookies… / Save Recipe|main|carousel item myr||",
+     false
+    ],
+    "n457": [
+     "li|region|Links: [name]… / Save Recipe|main|carousel item myr||",
+     false
+    ],
+    "n460": [
+     "li|region|Links: [name]… / Save Recipe|main|carousel item myr||",
+     false
+    ],
+    "n463": [
+     "li|region|Links: Light and [name]… / Save Recipe|main|carousel item myr||",
+     true
+    ],
+    "n466": [
+     "li|region|Links: The Best [name]… / Save Recipe|main|carousel item myr||",
+     true
+    ],
+    "n563": [
+     "div|region|You’ll Also Love · [name] Cookies V… / [name]… / [name] Cookies…|main|section||",
+     true
+    ],
+    "n564": [
+     "div|region holding headings x1, paragraphs x1, buttons x4|The [name] Cookie · Save Recipe / Rate / Print this article.|main|loc article post header||",
+     true
+    ],
+    "n565": [
+     "figure|region holding pictures x1||main|figure article primary||",
+     true
+    ],
+    "n437": [
+     "section|region holding headings x1, pictures x10, lists x1, buttons x10, links x10|[name] Like This · [name] Cookies… / Save Recipe / [name] Cookies…|main|most saved carousel||",
+     true
+    ]
+   }
+  },
+  "elements": [
+   {
+    "id": "n6",
+    "fp": "div|region|Ad|none|mm ads mob banner fixed||",
+    "uniq": true,
+    "j": {
+     "id": "n6",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.04,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.99,
+     "importance": 0.02
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n10",
+    "fp": "iframe|none|Advertisement|none|||inline_frame",
+    "uniq": true,
+    "j": {
+     "id": "n10",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.04,
+     "main": 0,
+     "help": 0.01,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.03,
+     "paidAsStoryP": 0.07
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n11",
+    "fp": "div|region|Save Rate · Menu / Save Recipe / Rate It|none|utility nav mm||",
+    "uniq": true,
+    "j": {
+     "id": "n11",
+     "role": "account_utility",
+     "roleP": 0.59,
+     "roleProbs": {
+      "action_button": 0.19,
+      "navigation": 0.08,
+      "popup_overlay": 0.05,
+      "other": 0.03,
+      "account_utility": 0.59
+     },
+     "task": 0.41,
+     "main": 0,
+     "help": 0.03,
+     "fine": "account_utility",
+     "fineP": 0.59,
+     "importance": 1.6
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n13",
+    "fp": "button|button|Save Recipe|none|mm favorite link||",
+    "uniq": true,
+    "j": {
+     "id": "n13",
+     "role": "action_button",
+     "roleP": 0.77,
+     "roleProbs": {
+      "action_button": 0.77,
+      "popup_overlay": 0.12,
+      "account_utility": 0.07
+     },
+     "task": 0.73,
+     "main": 0.15,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.77,
+     "importance": 1.85
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n15",
+    "fp": "nav|navigation|Header · Click to search / [name] / Recipes|navigation|mm utility nav||",
+    "uniq": true,
+    "j": {
+     "id": "n15",
+     "role": "navigation",
+     "roleP": 0.91,
+     "roleProbs": {
+      "navigation": 0.91,
+      "popup_overlay": 0.05,
+      "account_utility": 0.04
+     },
+     "task": 0.15,
+     "main": 0,
+     "help": 0.04,
+     "fine": "site_nav",
+     "fineP": 0.91,
+     "importance": 0.95
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n80",
+    "fp": "button|button|Save Recipe|main|mm favorite link||",
+    "uniq": false,
+    "j": {
+     "id": "n80",
+     "role": "action_button",
+     "roleP": 0.93,
+     "roleProbs": {
+      "action_button": 0.93,
+      "account_utility": 0.05
+     },
+     "task": 0.86,
+     "main": 0.15,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.93,
+     "importance": 2.59
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n81",
+    "fp": "button|button|Rate|main|mm social share rate button||",
+    "uniq": true,
+    "j": {
+     "id": "n81",
+     "role": "other",
+     "roleP": 0.57,
+     "roleProbs": {
+      "main_content": 0.09,
+      "action_button": 0.33,
+      "other": 0.57
+     },
+     "task": 0.51,
+     "main": 0.08,
+     "help": 0.03,
+     "fine": "social_share",
+     "fineP": 0.57,
+     "importance": 1.99
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n83",
+    "fp": "button|button|Print this article.|form|print button btn||",
+    "uniq": true,
+    "j": {
+     "id": "n83",
+     "role": "action_button",
+     "roleP": 0.99,
+     "roleProbs": {
+      "action_button": 0.99
+     },
+     "task": 0.85,
+     "main": 0.11,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.99,
+     "importance": 2.49
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n84",
+    "fp": "button|button|Share|main|mm social share button||",
+    "uniq": true,
+    "j": {
+     "id": "n84",
+     "role": "other",
+     "roleP": 0.98,
+     "roleProbs": {
+      "other": 0.98
+     },
+     "task": 0.11,
+     "main": 0.06,
+     "help": 0.02,
+     "fine": "social_share",
+     "fineP": 0.98,
+     "importance": 1.07
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n86",
+    "fp": "button|button|Add Photo|main|add photo button||",
+    "uniq": true,
+    "j": {
+     "id": "n86",
+     "role": "action_button",
+     "roleP": 0.43,
+     "roleProbs": {
+      "form_field": 0.36,
+      "action_button": 0.43,
+      "other": 0.15
+     },
+     "task": 0.64,
+     "main": 0.08,
+     "help": 0.03,
+     "fine": "secondary_action",
+     "fineP": 0.4,
+     "importance": 2.39
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n87",
+    "fp": "a|button|73|main|gallery photo dialog link||",
+    "uniq": false,
+    "j": {
+     "id": "n87",
+     "role": "main_content",
+     "roleP": 0.79,
+     "roleProbs": {
+      "main_content": 0.79,
+      "action_button": 0.04,
+      "popup_overlay": 0.03,
+      "recommendations": 0.04,
+      "other": 0.04
+     },
+     "task": 0.61,
+     "main": 0.1,
+     "help": 0.04,
+     "fine": "gallery",
+     "fineP": 0.61,
+     "importance": 2.54
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n88",
+    "fp": "a|button|73|main|gallery photo dialog link||",
+    "uniq": false,
+    "j": {
+     "id": "n88",
+     "role": "main_content",
+     "roleP": 0.76,
+     "roleProbs": {
+      "main_content": 0.76,
+      "action_button": 0.04,
+      "navigation": 0.03,
+      "popup_overlay": 0.03,
+      "recommendations": 0.03,
+      "other": 0.04
+     },
+     "task": 0.62,
+     "main": 0.09,
+     "help": 0.04,
+     "fine": "gallery",
+     "fineP": 0.62,
+     "importance": 2.43
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n89",
+    "fp": "a|button|73|main|gallery photo dialog link||",
+    "uniq": false,
+    "j": {
+     "id": "n89",
+     "role": "main_content",
+     "roleP": 0.78,
+     "roleProbs": {
+      "main_content": 0.78,
+      "action_button": 0.04,
+      "recommendations": 0.04,
+      "other": 0.04
+     },
+     "task": 0.66,
+     "main": 0.08,
+     "help": 0.04,
+     "fine": "gallery",
+     "fineP": 0.62,
+     "importance": 2.43
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n562",
+    "fp": "div|region|Why [name] This Recipe · Jump to [name] / Toggle Screen Wake /|main|article content||",
+    "uniq": true,
+    "j": {
+     "id": "n562",
+     "role": "main_content",
+     "roleP": 0.85,
+     "roleProbs": {
+      "main_content": 0.85,
+      "other": 0.09
+     },
+     "task": 0.87,
+     "main": 0,
+     "help": 0.04,
+     "fine": "body_text",
+     "fineP": 0.76,
+     "importance": 3.3
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n103",
+    "fp": "button|button|Jump to [name]|main|mm details link||",
+    "uniq": true,
+    "j": {
+     "id": "n103",
+     "role": "navigation",
+     "roleP": 0.95,
+     "roleProbs": {
+      "action_button": 0.05,
+      "navigation": 0.95
+     },
+     "task": 0.78,
+     "main": 0.14,
+     "help": 0.04,
+     "fine": "jump_link",
+     "fineP": 0.89,
+     "importance": 2.62
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n108",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n108",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.04,
+     "paidAsStoryP": 0.17
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n115",
+    "fp": "button|button|Toggle Screen Wake|main|mm screen button||",
+    "uniq": true,
+    "j": {
+     "id": "n115",
+     "role": "action_button",
+     "roleP": 0.45,
+     "roleProbs": {
+      "action_button": 0.45,
+      "account_utility": 0.13,
+      "other": 0.31
+     },
+     "task": 0.42,
+     "main": 0.03,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.42,
+     "importance": 1.34
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n123",
+    "fp": "button|button||main|serving tooltip button||",
+    "uniq": true,
+    "j": {
+     "id": "n123",
+     "role": "main_content",
+     "roleP": 0.53,
+     "roleProbs": {
+      "main_content": 0.53,
+      "action_button": 0.18,
+      "help_contact": 0.13,
+      "other": 0.11
+     },
+     "task": 0.79,
+     "main": 0.07,
+     "help": 0.38,
+     "fine": "recipe_meta",
+     "fineP": 0.53,
+     "importance": 2.62
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n137",
+    "fp": "div|dialog|Ingredients · Toggle Screen Wake /|dialog|mm||",
+    "uniq": true,
+    "j": {
+     "id": "n137",
+     "role": "popup_overlay",
+     "roleP": 0.89,
+     "roleProbs": {
+      "main_content": 0.09,
+      "popup_overlay": 0.89
+     },
+     "task": 0.71,
+     "main": 0,
+     "help": 0.05,
+     "fine": "popup",
+     "fineP": 0.89,
+     "importance": 2.08
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n139",
+    "fp": "button|button|Toggle Screen Wake|dialog|mm screen button||",
+    "uniq": true,
+    "j": {
+     "id": "n139",
+     "role": "popup_overlay",
+     "roleP": 0.66,
+     "roleProbs": {
+      "action_button": 0.16,
+      "popup_overlay": 0.66,
+      "account_utility": 0.06,
+      "other": 0.11
+     },
+     "task": 0.17,
+     "main": 0.02,
+     "help": 0.02,
+     "fine": "popup",
+     "fineP": 0.66,
+     "importance": 0.32
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n146",
+    "fp": "button|button||dialog|serving tooltip button||",
+    "uniq": true,
+    "j": {
+     "id": "n146",
+     "role": "popup_overlay",
+     "roleP": 0.55,
+     "roleProbs": {
+      "main_content": 0.03,
+      "action_button": 0.31,
+      "navigation": 0.04,
+      "popup_overlay": 0.55,
+      "other": 0.06
+     },
+     "task": 0.48,
+     "main": 0.04,
+     "help": 0.19,
+     "fine": "popup",
+     "fineP": 0.55,
+     "importance": 1.09
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n162",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n162",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.05,
+     "paidAsStoryP": 0.21
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n166",
+    "fp": "table|table|219 [name] 12g [name] 28g [name] 2g [name]|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n166",
+     "role": "main_content",
+     "roleP": 0.99,
+     "roleProbs": {
+      "main_content": 0.99
+     },
+     "task": 0.9,
+     "main": 0,
+     "help": 0.02,
+     "fine": "recipe_meta",
+     "fineP": 0.7,
+     "importance": 3.42
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n167",
+    "fp": "button|button|Show Full Nutrition Label Hide Full Nutrition Label|main|mm label button||",
+    "uniq": true,
+    "j": {
+     "id": "n167",
+     "role": "action_button",
+     "roleP": 0.8,
+     "roleProbs": {
+      "main_content": 0.19,
+      "action_button": 0.8
+     },
+     "task": 0.92,
+     "main": 0.07,
+     "help": 0.03,
+     "fine": "secondary_action",
+     "fineP": 0.71,
+     "importance": 3.07
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n172",
+    "fp": "button|button|Save Recipe|main|mm favorite link||",
+    "uniq": false,
+    "j": {
+     "id": "n172",
+     "role": "action_button",
+     "roleP": 0.95,
+     "roleProbs": {
+      "action_button": 0.95,
+      "account_utility": 0.05
+     },
+     "task": 0.88,
+     "main": 0.23,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.91,
+     "importance": 2.91
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n173",
+    "fp": "button|button|Rate It|main|mm rate print button||",
+    "uniq": true,
+    "j": {
+     "id": "n173",
+     "role": "action_button",
+     "roleP": 0.81,
+     "roleProbs": {
+      "main_content": 0.1,
+      "action_button": 0.81,
+      "other": 0.03
+     },
+     "task": 0.82,
+     "main": 0.13,
+     "help": 0.03,
+     "fine": "secondary_action",
+     "fineP": 0.81,
+     "importance": 2.72
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n179",
+    "fp": "button|button|I Made It|main|mm made it button||",
+    "uniq": true,
+    "j": {
+     "id": "n179",
+     "role": "action_button",
+     "roleP": 0.71,
+     "roleProbs": {
+      "main_content": 0.05,
+      "form_field": 0.05,
+      "action_button": 0.71,
+      "recommendations": 0.04,
+      "other": 0.13
+     },
+     "task": 0.85,
+     "main": 0.37,
+     "help": 0.03,
+     "fine": "secondary_action",
+     "fineP": 0.52,
+     "importance": 2.98
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n182",
+    "fp": "iframe|none|Advertisement|main|||ad_network",
+    "uniq": true,
+    "j": {
+     "id": "n182",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.04,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.04,
+     "paidAsStoryP": 0.14
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n195",
+    "fp": "p|text|Get recipe help and connect with the community|main|mm ugc ask question||",
+    "uniq": true,
+    "j": {
+     "id": "n195",
+     "role": "help_contact",
+     "roleP": 0.34,
+     "roleProbs": {
+      "main_content": 0.32,
+      "help_contact": 0.34,
+      "recommendations": 0.04,
+      "other": 0.19
+     },
+     "task": 0.19,
+     "main": 0,
+     "help": 0.64,
+     "fine": "body_text",
+     "fineP": 0.32,
+     "importance": 2.15
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n196",
+    "fp": "button|button|Ask my question|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n196",
+     "role": "action_button",
+     "roleP": 0.85,
+     "roleProbs": {
+      "form_field": 0.03,
+      "action_button": 0.85,
+      "other": 0.08
+     },
+     "task": 0.84,
+     "main": 0.24,
+     "help": 0.65,
+     "fine": "primary_action",
+     "fineP": 0.69,
+     "importance": 2.8
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n210",
+    "fp": "textarea|textbox|My Review|main|feedback user review||",
+    "uniq": true,
+    "j": {
+     "id": "n210",
+     "role": "form_field",
+     "roleP": 0.98,
+     "roleProbs": {
+      "form_field": 0.98
+     },
+     "task": 0.72,
+     "main": 0,
+     "help": 0.03,
+     "fine": "form_field",
+     "fineP": 0.98,
+     "importance": 3.05
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n370",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n370",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.04,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.04,
+     "paidAsStoryP": 0.15
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n448",
+    "fp": "li|region|Links: [name] Cookies… / Save Recipe|main|carousel item myr||",
+    "uniq": false,
+    "j": {
+     "id": "n448",
+     "role": "recommendations",
+     "roleP": 0.9,
+     "roleProbs": {
+      "main_content": 0.05,
+      "recommendations": 0.9
+     },
+     "task": 0.14,
+     "main": 0,
+     "help": 0.03,
+     "fine": "carousel",
+     "fineP": 0.55,
+     "importance": 0.54
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n451",
+    "fp": "li|region|Links: Quick Zucchini Cookies 17… / Save Recipe|main|carousel item myr||",
+    "uniq": true,
+    "j": {
+     "id": "n451",
+     "role": "recommendations",
+     "roleP": 0.88,
+     "roleProbs": {
+      "main_content": 0.08,
+      "recommendations": 0.88
+     },
+     "task": 0.12,
+     "main": 0,
+     "help": 0.02,
+     "fine": "carousel",
+     "fineP": 0.59,
+     "importance": 0.24
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n454",
+    "fp": "li|region|Links: [name] Cookies… / Save Recipe|main|carousel item myr||",
+    "uniq": false,
+    "j": {
+     "id": "n454",
+     "role": "recommendations",
+     "roleP": 0.89,
+     "roleProbs": {
+      "main_content": 0.05,
+      "recommendations": 0.89
+     },
+     "task": 0.14,
+     "main": 0,
+     "help": 0.03,
+     "fine": "carousel",
+     "fineP": 0.57,
+     "importance": 0.55
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n457",
+    "fp": "li|region|Links: [name]… / Save Recipe|main|carousel item myr||",
+    "uniq": false,
+    "j": {
+     "id": "n457",
+     "role": "recommendations",
+     "roleP": 0.89,
+     "roleProbs": {
+      "main_content": 0.05,
+      "recommendations": 0.89
+     },
+     "task": 0.17,
+     "main": 0,
+     "help": 0.04,
+     "fine": "carousel",
+     "fineP": 0.49,
+     "importance": 0.6
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n460",
+    "fp": "li|region|Links: [name]… / Save Recipe|main|carousel item myr||",
+    "uniq": false,
+    "j": {
+     "id": "n460",
+     "role": "recommendations",
+     "roleP": 0.88,
+     "roleProbs": {
+      "main_content": 0.04,
+      "recommendations": 0.88
+     },
+     "task": 0.16,
+     "main": 0,
+     "help": 0.04,
+     "fine": "carousel",
+     "fineP": 0.49,
+     "importance": 0.61
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n463",
+    "fp": "li|region|Links: Light and [name]… / Save Recipe|main|carousel item myr||",
+    "uniq": true,
+    "j": {
+     "id": "n463",
+     "role": "recommendations",
+     "roleP": 0.89,
+     "roleProbs": {
+      "main_content": 0.06,
+      "recommendations": 0.89
+     },
+     "task": 0.13,
+     "main": 0,
+     "help": 0.03,
+     "fine": "carousel",
+     "fineP": 0.54,
+     "importance": 0.47
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n466",
+    "fp": "li|region|Links: The Best [name]… / Save Recipe|main|carousel item myr||",
+    "uniq": true,
+    "j": {
+     "id": "n466",
+     "role": "recommendations",
+     "roleP": 0.88,
+     "roleProbs": {
+      "main_content": 0.08,
+      "recommendations": 0.88
+     },
+     "task": 0.12,
+     "main": 0,
+     "help": 0.03,
+     "fine": "carousel",
+     "fineP": 0.52,
+     "importance": 0.31
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n563",
+    "fp": "div|region|You’ll Also Love · [name] Cookies V… / [name]… / [name] Cookies…|main|section||",
+    "uniq": true,
+    "j": {
+     "id": "n563",
+     "role": "recommendations",
+     "roleP": 1,
+     "roleProbs": {
+      "recommendations": 1
+     },
+     "task": 0.16,
+     "main": 0,
+     "help": 0.02,
+     "fine": "teaser_other_content",
+     "fineP": 0.96,
+     "importance": 0.29
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n564",
+    "fp": "div|region holding headings x1, paragraphs x1, buttons x4|The [name] Cookie · Save Recipe / Rate / Print this article.|main|loc article post header||",
+    "uniq": true,
+    "j": {
+     "id": "n564",
+     "role": "main_content",
+     "roleP": 0.68,
+     "roleProbs": {
+      "main_content": 0.68,
+      "action_button": 0.16,
+      "other": 0.08
+     },
+     "task": 0.83,
+     "main": 0,
+     "help": 0.04,
+     "fine": "page_title",
+     "fineP": 0.37,
+     "importance": 3.5
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n565",
+    "fp": "figure|region holding pictures x1||main|figure article primary||",
+    "uniq": true,
+    "j": {
+     "id": "n565",
+     "role": "main_content",
+     "roleP": 1,
+     "roleProbs": {
+      "main_content": 1
+     },
+     "task": 0.89,
+     "main": 0,
+     "help": 0.03,
+     "fine": "lead_image",
+     "fineP": 0.68,
+     "importance": 3.54
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n437",
+    "fp": "section|region holding headings x1, pictures x10, lists x1, buttons x10, links x10|[name] Like This · [name] Cookies… / Save Recipe / [name] Cookies…|main|most saved carousel||",
+    "uniq": true,
+    "j": {
+     "id": "n437",
+     "role": "recommendations",
+     "roleP": 0.99,
+     "roleProbs": {
+      "recommendations": 0.99
+     },
+     "task": 0.19,
+     "main": 0,
+     "help": 0.02,
+     "fine": "carousel",
+     "fineP": 0.8,
+     "importance": 0.77
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n437",
+    "fp": "section|region holding headings x1, pictures x7, lists x1, buttons x10, links x10|[name] Like This · [name] Cookies… / Save Recipe / [name] Cookies…|main|most saved carousel||",
+    "uniq": true,
+    "j": {
+     "id": "n437",
+     "role": "recommendations",
+     "roleP": 0.99,
+     "roleProbs": {
+      "recommendations": 0.99
+     },
+     "task": 0.2,
+     "main": 0,
+     "help": 0.03,
+     "fine": "carousel",
+     "fineP": 0.71,
+     "importance": 0.84
+    },
+    "from": "canonical"
+   }
+  ]
+ },
+ "meaning": {
+  "c7dbc91e272a3b66943ee9478817392e7ec688be8e27986df8095177cc6b120c": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.08,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1302,
+    "wallMs": 116,
+    "serverMs": 60,
+    "costUsd": 0.00005468400000000001
+   }
+  },
+  "a16ce0060b72396f284fbf2289e487472cd401bce78a965b8f7dc6f4d7e24363": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.04,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1271,
+    "wallMs": 101,
+    "serverMs": 38,
+    "costUsd": 0.000053382000000000005
+   }
+  },
+  "d9cc581974432401a73bb12fe34bee33f6c29bf9c7294c27f7b0e86c9e52d6c7": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.04,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1308,
+    "wallMs": 86,
+    "serverMs": 25,
+    "costUsd": 0.000054936000000000004
+   }
+  },
+  "977f8c33f4da52f8e2fe6e9aa44138095088e102e95ea9a2f9445e3ad305cdbc": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1297,
+    "wallMs": 97,
+    "serverMs": 45,
+    "costUsd": 0.00005447400000000001
+   }
+  },
+  "13c726b74fc8a4eeb9bd27f165634917bfc687dd54703813a4e7d78ab719def7": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.04,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1302,
+    "wallMs": 105,
+    "serverMs": 49,
+    "costUsd": 0.00005468400000000001
+   }
+  },
+  "2c6f325ef987715b1b106c0a7b0e3a325494d1f4918572d148c2c56c2002a393": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1277,
+    "wallMs": 113,
+    "serverMs": 41,
+    "costUsd": 0.00005363400000000001
+   }
+  },
+  "0d5d2d17f50faec4f107fcaa5338806d82508247a6eae368ff6f5e5fe1ddb7f7": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1308,
+    "wallMs": 120,
+    "serverMs": 50,
+    "costUsd": 0.000054936000000000004
+   }
+  },
+  "0aa0c5acb46d3e54067615c93b73e31d66028333c2b233d336dc9259f4166e5c": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.12,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1324,
+    "wallMs": 94,
+    "serverMs": 40,
+    "costUsd": 0.00005560800000000001
+   }
+  },
+  "505bc1bac64565c2ae44670e6b25f43ce5600c0eacee7700aea36cbce70f96c2": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.04,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1276,
+    "wallMs": 89,
+    "serverMs": 31,
+    "costUsd": 0.000053592000000000005
+   }
+  },
+  "c192748474d57b346aa38b55ec962b6828769da19f48fd705cadb20e7858ecdb": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.05,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1276,
+    "wallMs": 115,
+    "serverMs": 43,
+    "costUsd": 0.000053592000000000005
+   }
+  }
+ },
+ "overlayClose": {},
+ "compose": {},
+ "composeMeta": null,
+ "runs": [
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T02:54:37.370Z",
+   "added": {
+    "elements": 43,
+    "page": true,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2132,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 7,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:54:42.940Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2142,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 9,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:54:48.493Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2150,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 8,
+     "protected": 31,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:54:54.090Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2248,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 116 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.91; task 0.15; help 0.04; carousel 0.64 | recommendations 0.90; task 0.15; help 0.04; carousel 0.60",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 9,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:54:59.703Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2344,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 116 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.91; task 0.16; help 0.04; carousel 0.59",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 8,
+     "protected": 31,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:55:05.300Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2245,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 116 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.90; task 0.17; help 0.04; carousel 0.49",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 9,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:55:10.878Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2227,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 4 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 109 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 7,
+     "protected": 31,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:55:16.442Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2247,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 4 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 109 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.91; task 0.16; help 0.04; carousel 0.65",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 8,
+     "protected": 31,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:55:22.007Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2245,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 4 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 109 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.91; task 0.16; help 0.04; carousel 0.61",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 9,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:55:27.616Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2239,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 110 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 27,
+    "decisions": {
+     "folded": 7,
+     "protected": 32,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:55:33.205Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2243,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 110 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 27,
+    "decisions": {
+     "folded": 7,
+     "protected": 32,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:55:38.869Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2245,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 110 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 27,
+    "decisions": {
+     "folded": 9,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:55:44.228Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2144,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 109 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.03; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.93; task 0.14; help 0.03; carousel 0.64 | recommendations 0.91; task 0.16; help 0.04; carousel 0.50",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 9,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:55:49.795Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2159,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 109 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 7,
+     "protected": 32,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:55:55.357Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2140,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 109 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.93; task 0.18; help 0.04; carousel 0.73",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 9,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T02:57:34.336Z",
+   "added": {
+    "elements": 1,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2331,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 8,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:57:39.947Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2314,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 8,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:57:45.658Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2317,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 7,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:57:52.297Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3163,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 117 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.92; task 0.16; help 0.04; carousel 0.65 | recommendations 0.92; task 0.18; help 0.04; carousel 0.63",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 9,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:57:58.881Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3213,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 117 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.92; task 0.13; help 0.03; carousel 0.55",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 9,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:58:05.437Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3148,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 117 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.91; task 0.14; help 0.03; carousel 0.65",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 10,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:58:11.908Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3066,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 4 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 110 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.90; task 0.15; help 0.03; carousel 0.56",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 8,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:58:18.395Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3093,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 4 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 110 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.90; task 0.15; help 0.03; carousel 0.60",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 8,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:58:24.853Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2987,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.13 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 4 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 110 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 7,
+     "protected": 31,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:58:31.380Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3143,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 110 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 27,
+    "decisions": {
+     "folded": 9,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:58:37.947Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3161,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 110 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 27,
+    "decisions": {
+     "folded": 9,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:58:44.544Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3188,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 110 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 27,
+    "decisions": {
+     "folded": 8,
+     "protected": 31,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:58:50.215Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2356,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 109 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.92; task 0.14; help 0.03; carousel 0.63 | recommendations 0.92; task 0.17; help 0.03; carousel 0.61",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 9,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:58:55.902Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2315,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 109 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.91; task 0.14; help 0.03; carousel 0.59",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 10,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:59:01.648Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2335,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 0,
+     "laidOut": 0,
+     "kept": 0,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 2 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 109 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.03; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "recommendations 0.90; task 0.16; help 0.04; carousel 0.58",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 9,
+     "protected": 30,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  }
+ ],
+ "replicaHash": "sha256:ef12582b16e51bb6a1727a59bdbca7016a5d40a76db7a73793946b00fdad8121"
+}

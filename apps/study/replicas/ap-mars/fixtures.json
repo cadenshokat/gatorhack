@@ -1,16 +1,16 @@
 {
  "v": "study-fixtures.1",
  "replicaId": "ap-mars",
- "version": "5",
+ "version": "8",
  "servePath": "/article/japan-mars-moon-mission-fb51fbbf90374631e8ae658f9ca46154",
  "originalHost": "apnews.com",
- "engineCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
- "serverCommit": "62ec557e3b2e7e3d6e3e865d982672960ee260ad+dirty",
+ "engineCommit": "0c4e8f9a65dab31cbe88b486508d66c432a57da5+dirty",
+ "serverCommit": "0c4e8f9a65dab31cbe88b486508d66c432a57da5",
  "models": {
   "jev": "jev-1.14.0",
   "compose": "gpt-5.4-mini"
  },
- "recordedAt": "2026-10-27T22:24:49.869Z",
+ "recordedAt": "2026-11-03T02:40:29.476Z",
  "matrix": {
   "fits": [
    "typical",
@@ -20,14 +20,13 @@
    "calm"
   ],
   "heights": [
-   456,
-   520,
-   600,
+   568,
    664,
    760
   ],
   "engines": [
-   "chromium"
+   "chromium",
+   "webkit"
   ],
   "canonical": {
    "fit": "typical",
@@ -38,15 +37,15 @@
   "page": {
    "purpose": {
     "kind": "article",
-    "p": 0.99,
+    "p": 1,
     "probs": {
      "record_stats": 0,
      "scoreboard": 0,
      "schedule": 0,
      "standings": 0,
      "roster": 0,
-     "article": 0.99,
-     "news_index": 0.01,
+     "article": 1,
+     "news_index": 0,
      "recipe": 0,
      "product": 0,
      "search_results": 0,
@@ -76,10 +75,10 @@
    },
    "mainRegion": {
     "id": "n255",
-    "p": 0.71,
+    "p": 0.7,
     "probs": {
-     "n16": 0.09,
-     "n254": 0.18,
+     "n16": 0.08,
+     "n254": 0.19,
      "n255": 0.725,
      "n136": 0,
      "n256": 0.005,
@@ -89,12 +88,12 @@
    },
    "mainPick": {
     "id": "none",
-    "p": 0.93,
+    "p": 0.91,
     "probs": {
      "n4": 0,
-     "n67": 0.02,
+     "n67": 0.04,
      "n72": 0.03,
-     "n73": 0.01,
+     "n73": 0.02,
      "n79": 0,
      "n93": 0,
      "n105": 0,
@@ -111,7 +110,7 @@
      "n165": 0,
      "n168": 0,
      "n193": 0,
-     "none": 0.93
+     "none": 0.91
     }
    },
    "metrics": {
@@ -119,8 +118,8 @@
     "calls": 5,
     "questions": 217,
     "inputTokens": 108804,
-    "wallMs": 445,
-    "serverMs": 172,
+    "wallMs": 332,
+    "serverMs": 193,
     "costUsd": 0.004569768000000001
    },
    "ids": {
@@ -318,16 +317,17 @@
     "j": {
      "id": "n2",
      "role": "navigation",
-     "roleP": 0.93,
+     "roleP": 0.92,
      "roleProbs": {
-      "navigation": 0.93
+      "navigation": 0.92,
+      "account_utility": 0.04
      },
      "task": 0.12,
      "main": 0,
-     "help": 0.04,
+     "help": 0.03,
      "fine": "site_nav",
-     "fineP": 0.93,
-     "importance": 0.94
+     "fineP": 0.92,
+     "importance": 0.98
     },
     "from": "canonical"
    },
@@ -347,7 +347,7 @@
      "help": 0.02,
      "fine": "site_logo",
      "fineP": 0.89,
-     "importance": 0.98
+     "importance": 1.01
     },
     "from": "canonical"
    },
@@ -362,11 +362,11 @@
      "roleProbs": {
       "main_content": 1
      },
-     "task": 0.96,
+     "task": 0.97,
      "main": 0,
      "help": 0.01,
      "fine": "headline",
-     "fineP": 0.89,
+     "fineP": 0.91,
      "importance": 3.96
     },
     "from": "canonical"
@@ -382,12 +382,12 @@
      "roleProbs": {
       "recommendations": 0.99
      },
-     "task": 0.25,
+     "task": 0.29,
      "main": 0,
      "help": 0.02,
      "fine": "carousel",
-     "fineP": 0.88,
-     "importance": 1.07
+     "fineP": 0.83,
+     "importance": 1.24
     },
     "from": "canonical"
    },
@@ -398,18 +398,17 @@
     "j": {
      "id": "n67",
      "role": "recommendations",
-     "roleP": 0.83,
+     "roleP": 0.87,
      "roleProbs": {
-      "action_button": 0.1,
-      "navigation": 0.04,
-      "recommendations": 0.83
+      "action_button": 0.08,
+      "recommendations": 0.87
      },
-     "task": 0.77,
-     "main": 0.11,
-     "help": 0.02,
+     "task": 0.8,
+     "main": 0.12,
+     "help": 0.01,
      "fine": "carousel",
-     "fineP": 0.83,
-     "importance": 1.63
+     "fineP": 0.87,
+     "importance": 1.73
     },
     "from": "canonical"
    },
@@ -420,18 +419,19 @@
     "j": {
      "id": "n72",
      "role": "action_button",
-     "roleP": 0.44,
+     "roleP": 0.39,
      "roleProbs": {
-      "action_button": 0.44,
-      "advertising": 0.16,
-      "account_utility": 0.21,
-      "other": 0.07
+      "action_button": 0.39,
+      "consent_notice": 0.03,
+      "advertising": 0.17,
+      "account_utility": 0.27,
+      "other": 0.06
      },
      "task": 0.17,
      "main": 0.07,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.39,
+     "fineP": 0.34,
      "importance": 0.19
     },
     "from": "canonical"
@@ -443,17 +443,17 @@
     "j": {
      "id": "n73",
      "role": "other",
-     "roleP": 0.87,
+     "roleP": 0.86,
      "roleProbs": {
-      "action_button": 0.13,
-      "other": 0.87
+      "action_button": 0.14,
+      "other": 0.86
      },
      "task": 0.09,
-     "main": 0.06,
+     "main": 0.04,
      "help": 0.02,
      "fine": "social_share",
-     "fineP": 0.87,
-     "importance": 1.05
+     "fineP": 0.86,
+     "importance": 1.06
     },
     "from": "canonical"
    },
@@ -468,9 +468,9 @@
      "roleProbs": {
       "advertising": 0.98
      },
-     "task": 0.07,
+     "task": 0.06,
      "main": 0,
-     "help": 0.19,
+     "help": 0.18,
      "fine": "advertising",
      "fineP": 0.98,
      "importance": 0.12
@@ -493,7 +493,7 @@
      "help": 0.18,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.06
+     "importance": 0.05
     },
     "from": "canonical"
    },
@@ -504,17 +504,17 @@
     "j": {
      "id": "n77",
      "role": "advertising",
-     "roleP": 1,
+     "roleP": 0.99,
      "roleProbs": {
-      "advertising": 1
+      "advertising": 0.99
      },
      "task": 0.07,
      "main": 0,
-     "help": 0.11,
+     "help": 0.14,
      "fine": "advertising",
-     "fineP": 0.96,
-     "importance": 0.22,
-     "paidAsStoryP": 0.16
+     "fineP": 0.94,
+     "importance": 0.18,
+     "paidAsStoryP": 0.15
     },
     "from": "canonical"
    },
@@ -525,19 +525,19 @@
     "j": {
      "id": "n79",
      "role": "action_button",
-     "roleP": 0.76,
+     "roleP": 0.71,
      "roleProbs": {
-      "action_button": 0.76,
+      "action_button": 0.71,
       "advertising": 0.15,
-      "account_utility": 0.03,
-      "other": 0.04
+      "account_utility": 0.04,
+      "other": 0.05
      },
-     "task": 0.14,
-     "main": 0.02,
-     "help": 0.15,
+     "task": 0.12,
+     "main": 0.03,
+     "help": 0.17,
      "fine": "secondary_action",
-     "fineP": 0.76,
-     "importance": 0.93
+     "fineP": 0.71,
+     "importance": 0.91
     },
     "from": "canonical"
    },
@@ -548,16 +548,16 @@
     "j": {
      "id": "n253",
      "role": "main_content",
-     "roleP": 0.97,
+     "roleP": 0.99,
      "roleProbs": {
-      "main_content": 0.97
+      "main_content": 0.99
      },
-     "task": 0.94,
+     "task": 0.93,
      "main": 0,
      "help": 0.02,
      "fine": "body_text",
-     "fineP": 0.97,
-     "importance": 3.78
+     "fineP": 0.96,
+     "importance": 3.82
     },
     "from": "canonical"
    },
@@ -574,11 +574,11 @@
      },
      "task": 0.06,
      "main": 0,
-     "help": 0.14,
+     "help": 0.15,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.05,
-     "paidAsStoryP": 0.29
+     "importance": 0.06,
+     "paidAsStoryP": 0.27
     },
     "from": "canonical"
    },
@@ -589,16 +589,16 @@
     "j": {
      "id": "n91",
      "role": "advertising",
-     "roleP": 0.91,
+     "roleP": 0.97,
      "roleProbs": {
-      "advertising": 0.91
+      "advertising": 0.97
      },
      "task": 0.11,
      "main": 0,
-     "help": 0.19,
+     "help": 0.18,
      "fine": "advertising",
-     "fineP": 0.87,
-     "importance": 0.2
+     "fineP": 0.93,
+     "importance": 0.27
     },
     "from": "canonical"
    },
@@ -613,13 +613,13 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.06,
+     "task": 0.05,
      "main": 0,
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.05,
-     "paidAsStoryP": 0.17
+     "importance": 0.06,
+     "paidAsStoryP": 0.19
     },
     "from": "canonical"
    },
@@ -630,19 +630,19 @@
     "j": {
      "id": "n93",
      "role": "action_button",
-     "roleP": 0.74,
+     "roleP": 0.69,
      "roleProbs": {
-      "action_button": 0.74,
-      "advertising": 0.16,
-      "account_utility": 0.03,
+      "action_button": 0.69,
+      "advertising": 0.18,
+      "account_utility": 0.05,
       "other": 0.04
      },
      "task": 0.12,
      "main": 0.02,
-     "help": 0.16,
+     "help": 0.17,
      "fine": "secondary_action",
-     "fineP": 0.74,
-     "importance": 0.9
+     "fineP": 0.69,
+     "importance": 0.91
     },
     "from": "canonical"
    },
@@ -659,11 +659,11 @@
      },
      "task": 0.06,
      "main": 0,
-     "help": 0.17,
+     "help": 0.15,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.05,
-     "paidAsStoryP": 0.25
+     "importance": 0.06,
+     "paidAsStoryP": 0.26
     },
     "from": "canonical"
    },
@@ -678,7 +678,7 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.06,
+     "task": 0.05,
      "main": 0,
      "help": 0.02,
      "fine": "advertising",
@@ -695,19 +695,19 @@
     "j": {
      "id": "n105",
      "role": "action_button",
-     "roleP": 0.77,
+     "roleP": 0.76,
      "roleProbs": {
-      "action_button": 0.77,
+      "action_button": 0.76,
       "advertising": 0.13,
-      "account_utility": 0.03,
+      "account_utility": 0.04,
       "other": 0.04
      },
      "task": 0.12,
      "main": 0.02,
-     "help": 0.18,
+     "help": 0.14,
      "fine": "secondary_action",
-     "fineP": 0.77,
-     "importance": 0.92
+     "fineP": 0.76,
+     "importance": 0.98
     },
     "from": "canonical"
    },
@@ -722,13 +722,13 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.05,
+     "task": 0.06,
      "main": 0,
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
      "importance": 0.05,
-     "paidAsStoryP": 0.19
+     "paidAsStoryP": 0.18
     },
     "from": "canonical"
    },
@@ -739,17 +739,17 @@
     "j": {
      "id": "n133",
      "role": "advertising",
-     "roleP": 0.88,
+     "roleP": 0.89,
      "roleProbs": {
-      "main_content": 0.05,
-      "popup_overlay": 0.04,
-      "advertising": 0.88
+      "main_content": 0.04,
+      "popup_overlay": 0.05,
+      "advertising": 0.89
      },
-     "task": 0.06,
+     "task": 0.07,
      "main": 0,
      "help": 0.01,
      "fine": "advertising",
-     "fineP": 0.88,
+     "fineP": 0.89,
      "importance": 0.05,
      "paidAsStoryP": 0.12
     },
@@ -766,7 +766,7 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.05,
+     "task": 0.06,
      "main": 0,
      "help": 0.02,
      "fine": "advertising",
@@ -788,12 +788,12 @@
       "navigation": 0.06,
       "other": 0.93
      },
-     "task": 0.09,
+     "task": 0.08,
      "main": 0,
      "help": 0.03,
      "fine": "comments",
      "fineP": 0.93,
-     "importance": 2.45
+     "importance": 2.47
     },
     "from": "canonical"
    },
@@ -804,18 +804,18 @@
     "j": {
      "id": "n142",
      "role": "account_utility",
-     "roleP": 0.79,
+     "roleP": 0.78,
      "roleProbs": {
       "action_button": 0.04,
-      "navigation": 0.03,
-      "account_utility": 0.79,
-      "advertising": 0.09
+      "navigation": 0.06,
+      "account_utility": 0.78,
+      "advertising": 0.07
      },
-     "task": 0.11,
+     "task": 0.13,
      "main": 0.05,
      "help": 0.03,
      "fine": "login_prompt",
-     "fineP": 0.45,
+     "fineP": 0.42,
      "importance": 1.01
     },
     "from": "canonical"
@@ -832,12 +832,12 @@
       "form_field": 0.91,
       "other": 0.09
      },
-     "task": 0.43,
+     "task": 0.42,
      "main": 0,
-     "help": 0.03,
+     "help": 0.04,
      "fine": "form_field",
      "fineP": 0.91,
-     "importance": 2.74
+     "importance": 2.76
     },
     "from": "canonical"
    },
@@ -848,17 +848,17 @@
     "j": {
      "id": "n145",
      "role": "navigation",
-     "roleP": 0.87,
+     "roleP": 0.88,
      "roleProbs": {
-      "navigation": 0.87,
-      "other": 0.11
+      "navigation": 0.88,
+      "other": 0.1
      },
-     "task": 0.16,
+     "task": 0.15,
      "main": 0,
-     "help": 0.02,
+     "help": 0.03,
      "fine": "tabs",
-     "fineP": 0.83,
-     "importance": 2.16
+     "fineP": 0.85,
+     "importance": 2.01
     },
     "from": "canonical"
    },
@@ -868,20 +868,20 @@
     "uniq": false,
     "j": {
      "id": "n151",
-     "role": "other",
-     "roleP": 0.45,
+     "role": "action_button",
+     "roleP": 0.42,
      "roleProbs": {
       "action_button": 0.42,
-      "navigation": 0.03,
-      "other": 0.45,
+      "navigation": 0.04,
+      "other": 0.41,
       "account_utility": 0.03
      },
      "task": 0.37,
-     "main": 0.06,
+     "main": 0.08,
      "help": 0.07,
      "fine": "secondary_action",
      "fineP": 0.39,
-     "importance": 1.59
+     "importance": 1.62
     },
     "from": "canonical"
    },
@@ -891,19 +891,19 @@
     "uniq": true,
     "j": {
      "id": "n152",
-     "role": "other",
+     "role": "action_button",
      "roleP": 0.43,
      "roleProbs": {
-      "action_button": 0.38,
+      "action_button": 0.43,
       "navigation": 0.03,
-      "other": 0.43
+      "other": 0.37
      },
-     "task": 0.29,
-     "main": 0.06,
+     "task": 0.27,
+     "main": 0.05,
      "help": 0.03,
      "fine": "secondary_action",
-     "fineP": 0.38,
-     "importance": 1.16
+     "fineP": 0.43,
+     "importance": 1.1
     },
     "from": "canonical"
    },
@@ -914,17 +914,17 @@
     "j": {
      "id": "n156",
      "role": "action_button",
-     "roleP": 0.68,
+     "roleP": 0.72,
      "roleProbs": {
-      "action_button": 0.68,
-      "other": 0.3
+      "action_button": 0.72,
+      "other": 0.26
      },
-     "task": 0.15,
-     "main": 0.06,
+     "task": 0.14,
+     "main": 0.07,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.68,
-     "importance": 2.42
+     "fineP": 0.72,
+     "importance": 2.39
     },
     "from": "canonical"
    },
@@ -935,18 +935,18 @@
     "j": {
      "id": "n157",
      "role": "action_button",
-     "roleP": 0.48,
+     "roleP": 0.51,
      "roleProbs": {
       "main_content": 0.03,
-      "action_button": 0.48,
-      "other": 0.48
+      "action_button": 0.51,
+      "other": 0.44
      },
-     "task": 0.3,
+     "task": 0.31,
      "main": 0.04,
      "help": 0.01,
      "fine": "secondary_action",
-     "fineP": 0.48,
-     "importance": 1.6
+     "fineP": 0.51,
+     "importance": 1.49
     },
     "from": "canonical"
    },
@@ -957,18 +957,18 @@
     "j": {
      "id": "n158",
      "role": "action_button",
-     "roleP": 0.79,
+     "roleP": 0.72,
      "roleProbs": {
-      "main_content": 0.04,
-      "action_button": 0.79,
-      "other": 0.15
+      "main_content": 0.05,
+      "action_button": 0.72,
+      "other": 0.22
      },
-     "task": 0.35,
+     "task": 0.38,
      "main": 0.04,
      "help": 0.01,
      "fine": "secondary_action",
-     "fineP": 0.79,
-     "importance": 1.93
+     "fineP": 0.72,
+     "importance": 1.84
     },
     "from": "canonical"
    },
@@ -979,17 +979,17 @@
     "j": {
      "id": "n159",
      "role": "other",
-     "roleP": 0.87,
+     "roleP": 0.89,
      "roleProbs": {
-      "action_button": 0.13,
-      "other": 0.87
+      "action_button": 0.11,
+      "other": 0.89
      },
-     "task": 0.09,
-     "main": 0.04,
+     "task": 0.1,
+     "main": 0.03,
      "help": 0.02,
      "fine": "social_share",
-     "fineP": 0.87,
-     "importance": 1.04
+     "fineP": 0.89,
+     "importance": 1.06
     },
     "from": "canonical"
    },
@@ -1000,17 +1000,17 @@
     "j": {
      "id": "n160",
      "role": "action_button",
-     "roleP": 0.81,
+     "roleP": 0.83,
      "roleProbs": {
-      "action_button": 0.81,
-      "other": 0.15
+      "action_button": 0.83,
+      "other": 0.14
      },
-     "task": 0.34,
+     "task": 0.33,
      "main": 0.05,
-     "help": 0.18,
+     "help": 0.17,
      "fine": "secondary_action",
-     "fineP": 0.81,
-     "importance": 1.84
+     "fineP": 0.83,
+     "importance": 1.71
     },
     "from": "canonical"
    },
@@ -1021,17 +1021,17 @@
     "j": {
      "id": "n162",
      "role": "action_button",
-     "roleP": 0.68,
+     "roleP": 0.77,
      "roleProbs": {
-      "action_button": 0.68,
-      "other": 0.27
+      "action_button": 0.77,
+      "other": 0.2
      },
-     "task": 0.18,
+     "task": 0.15,
      "main": 0.04,
      "help": 0.01,
      "fine": "secondary_action",
-     "fineP": 0.68,
-     "importance": 2.32
+     "fineP": 0.77,
+     "importance": 2.42
     },
     "from": "canonical"
    },
@@ -1046,15 +1046,15 @@
      "roleProbs": {
       "action_button": 0.44,
       "navigation": 0.03,
-      "other": 0.38,
+      "other": 0.41,
       "account_utility": 0.03
      },
-     "task": 0.38,
+     "task": 0.36,
      "main": 0.07,
      "help": 0.07,
      "fine": "secondary_action",
-     "fineP": 0.41000000000000003,
-     "importance": 1.61
+     "fineP": 0.41,
+     "importance": 1.65
     },
     "from": "canonical"
    },
@@ -1064,22 +1064,23 @@
     "uniq": true,
     "j": {
      "id": "n165",
-     "role": "other",
-     "roleP": 0.3,
+     "role": "action_button",
+     "roleP": 0.32,
      "roleProbs": {
-      "action_button": 0.25,
-      "form_field": 0.05,
+      "main_content": 0.03,
+      "action_button": 0.32,
+      "form_field": 0.06,
       "navigation": 0.1,
-      "advertising": 0.03,
-      "recommendations": 0.04,
-      "other": 0.3
+      "recommendations": 0.03,
+      "other": 0.26,
+      "account_utility": 0.03
      },
-     "task": 0.22,
+     "task": 0.2,
      "main": 0.04,
      "help": 0.03,
-     "fine": "other",
-     "fineP": 0.27,
-     "importance": 0.84
+     "fine": "secondary_action",
+     "fineP": 0.32,
+     "importance": 0.83
     },
     "from": "canonical"
    },
@@ -1090,17 +1091,17 @@
     "j": {
      "id": "n168",
      "role": "action_button",
-     "roleP": 0.78,
+     "roleP": 0.76,
      "roleProbs": {
-      "action_button": 0.78,
-      "other": 0.21
+      "action_button": 0.76,
+      "other": 0.22
      },
-     "task": 0.15,
-     "main": 0.08,
+     "task": 0.14,
+     "main": 0.07,
      "help": 0.03,
      "fine": "secondary_action",
-     "fineP": 0.78,
-     "importance": 2.41
+     "fineP": 0.76,
+     "importance": 2.35
     },
     "from": "canonical"
    },
@@ -1121,7 +1122,7 @@
      "help": 0.02,
      "fine": "teaser_other_content",
      "fineP": 0.9,
-     "importance": 0.41
+     "importance": 0.32
     },
     "from": "canonical"
    },
@@ -1132,17 +1133,17 @@
     "j": {
      "id": "n193",
      "role": "recommendations",
-     "roleP": 0.95,
+     "roleP": 0.92,
      "roleProbs": {
-      "main_content": 0.04,
-      "recommendations": 0.95
+      "main_content": 0.06,
+      "recommendations": 0.92
      },
-     "task": 0.12,
+     "task": 0.11,
      "main": 0.03,
      "help": 0.01,
      "fine": "teaser_other_content",
-     "fineP": 0.95,
-     "importance": 0.21
+     "fineP": 0.92,
+     "importance": 0.19
     },
     "from": "canonical"
    },
@@ -1155,15 +1156,15 @@
      "role": "help_contact",
      "roleP": 0.8,
      "roleProbs": {
-      "navigation": 0.14,
+      "navigation": 0.13,
       "help_contact": 0.8,
-      "legal_footer": 0.04
+      "legal_footer": 0.03
      },
-     "task": 0.08,
+     "task": 0.07,
      "main": 0,
-     "help": 0.89,
+     "help": 0.88,
      "fine": "contact_info",
-     "fineP": 0.77,
+     "fineP": 0.8,
      "importance": 1.01
     },
     "from": "canonical"
@@ -1175,18 +1176,18 @@
     "j": {
      "id": "n16",
      "role": "main_content",
-     "roleP": 0.72,
+     "roleP": 0.75,
      "roleProbs": {
-      "main_content": 0.72,
-      "recommendations": 0.15,
+      "main_content": 0.75,
+      "recommendations": 0.1,
       "other": 0.03
      },
-     "task": 0.74,
+     "task": 0.73,
      "main": 0,
      "help": 0.02,
      "fine": "headline",
-     "fineP": 0.46,
-     "importance": 3.05
+     "fineP": 0.47,
+     "importance": 3.18
     },
     "from": "canonical"
    },
@@ -1197,16 +1198,17 @@
     "j": {
      "id": "n254",
      "role": "recommendations",
-     "roleP": 0.95,
+     "roleP": 0.92,
      "roleProbs": {
-      "recommendations": 0.95
+      "main_content": 0.03,
+      "recommendations": 0.92
      },
-     "task": 0.4,
+     "task": 0.42,
      "main": 0,
      "help": 0.02,
      "fine": "teaser_other_content",
-     "fineP": 0.89,
-     "importance": 2.2
+     "fineP": 0.88,
+     "importance": 2.25
     },
     "from": "canonical"
    },
@@ -1217,17 +1219,18 @@
     "j": {
      "id": "n255",
      "role": "main_content",
-     "roleP": 0.72,
+     "roleP": 0.77,
      "roleProbs": {
-      "main_content": 0.72,
-      "other": 0.18
+      "main_content": 0.77,
+      "recommendations": 0.03,
+      "other": 0.14
      },
      "task": 0.91,
      "main": 0,
      "help": 0.02,
      "fine": "body_text",
-     "fineP": 0.72,
-     "importance": 3.42
+     "fineP": 0.77,
+     "importance": 3.53
     },
     "from": "canonical"
    },
@@ -1244,11 +1247,11 @@
      },
      "task": 0.07,
      "main": 0,
-     "help": 0.14,
+     "help": 0.13,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.05,
-     "paidAsStoryP": 0.25
+     "importance": 0.04,
+     "paidAsStoryP": 0.28
     },
     "from": "canonical"
    },
@@ -1265,10 +1268,10 @@
      },
      "task": 0.12,
      "main": 0,
-     "help": 0.04,
+     "help": 0.03,
      "fine": "comments",
      "fineP": 0.98,
-     "importance": 2.64
+     "importance": 2.66
     },
     "from": "canonical"
    },
@@ -1279,19 +1282,18 @@
     "j": {
      "id": "n257",
      "role": "main_content",
-     "roleP": 0.64,
+     "roleP": 0.69,
      "roleProbs": {
-      "main_content": 0.64,
-      "advertising": 0.04,
-      "recommendations": 0.03,
-      "other": 0.26
+      "main_content": 0.69,
+      "advertising": 0.03,
+      "other": 0.24
      },
-     "task": 0.71,
+     "task": 0.74,
      "main": 0,
-     "help": 0.03,
+     "help": 0.02,
      "fine": "video_player",
-     "fineP": 0.56,
-     "importance": 2.81
+     "fineP": 0.62,
+     "importance": 2.83
     },
     "from": "canonical"
    },
@@ -1302,20 +1304,20 @@
     "j": {
      "id": "n1",
      "role": "account_utility",
-     "roleP": 0.33,
+     "roleP": 0.43,
      "roleProbs": {
       "action_button": 0.11,
-      "help_contact": 0.13,
-      "popup_overlay": 0.12,
-      "account_utility": 0.33,
-      "other": 0.24
+      "help_contact": 0.12,
+      "popup_overlay": 0.08,
+      "account_utility": 0.43,
+      "other": 0.21
      },
-     "task": 0.23,
+     "task": 0.21,
      "main": 0,
-     "help": 0.22,
+     "help": 0.19,
      "fine": "account_utility",
-     "fineP": 0.33,
-     "importance": 1.41
+     "fineP": 0.43,
+     "importance": 1.37
     },
     "from": "union"
    },
@@ -1326,16 +1328,17 @@
     "j": {
      "id": "n3",
      "role": "navigation",
-     "roleP": 0.95,
+     "roleP": 0.94,
      "roleProbs": {
-      "navigation": 0.95
+      "navigation": 0.94,
+      "account_utility": 0.03
      },
-     "task": 0.11,
+     "task": 0.12,
      "main": 0,
-     "help": 0.03,
+     "help": 0.04,
      "fine": "site_nav",
-     "fineP": 0.92,
-     "importance": 0.95
+     "fineP": 0.94,
+     "importance": 0.99
     },
     "from": "union"
    },
@@ -1350,12 +1353,12 @@
      "roleProbs": {
       "navigation": 0.96
      },
-     "task": 0.13,
-     "main": 0.04,
+     "task": 0.12,
+     "main": 0.03,
      "help": 0.03,
      "fine": "site_logo",
      "fineP": 0.89,
-     "importance": 0.99
+     "importance": 1
     },
     "from": "union"
    },
@@ -1375,7 +1378,7 @@
      "help": 0.01,
      "fine": "headline",
      "fineP": 0.88,
-     "importance": 3.96
+     "importance": 3.95
     },
     "from": "union"
    },
@@ -1390,12 +1393,12 @@
      "roleProbs": {
       "recommendations": 1
      },
-     "task": 0.29,
+     "task": 0.28,
      "main": 0,
      "help": 0.02,
      "fine": "carousel",
-     "fineP": 0.9,
-     "importance": 1.24
+     "fineP": 0.87,
+     "importance": 1.3
     },
     "from": "union"
    },
@@ -1406,18 +1409,18 @@
     "j": {
      "id": "n68",
      "role": "recommendations",
-     "roleP": 0.83,
+     "roleP": 0.86,
      "roleProbs": {
-      "action_button": 0.09,
-      "navigation": 0.05,
-      "recommendations": 0.83
+      "action_button": 0.07,
+      "navigation": 0.04,
+      "recommendations": 0.86
      },
-     "task": 0.78,
+     "task": 0.77,
      "main": 0.12,
      "help": 0.02,
      "fine": "carousel",
-     "fineP": 0.83,
-     "importance": 1.65
+     "fineP": 0.86,
+     "importance": 1.62
     },
     "from": "union"
    },
@@ -1428,20 +1431,20 @@
     "j": {
      "id": "n73",
      "role": "action_button",
-     "roleP": 0.43,
+     "roleP": 0.42,
      "roleProbs": {
-      "action_button": 0.43,
+      "action_button": 0.42,
       "consent_notice": 0.03,
-      "advertising": 0.21,
-      "account_utility": 0.18,
-      "other": 0.05
+      "advertising": 0.17,
+      "account_utility": 0.24,
+      "other": 0.06
      },
-     "task": 0.18,
+     "task": 0.16,
      "main": 0.07,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.37,
-     "importance": 0.2
+     "fineP": 0.36,
+     "importance": 0.23
     },
     "from": "union"
    },
@@ -1458,11 +1461,11 @@
       "other": 0.88
      },
      "task": 0.09,
-     "main": 0.04,
+     "main": 0.05,
      "help": 0.02,
      "fine": "social_share",
      "fineP": 0.88,
-     "importance": 1.06
+     "importance": 1.05
     },
     "from": "union"
    },
@@ -1473,15 +1476,15 @@
     "j": {
      "id": "n76",
      "role": "advertising",
-     "roleP": 0.98,
+     "roleP": 0.99,
      "roleProbs": {
-      "advertising": 0.98
+      "advertising": 0.99
      },
-     "task": 0.06,
+     "task": 0.07,
      "main": 0,
-     "help": 0.16,
+     "help": 0.14,
      "fine": "advertising",
-     "fineP": 0.98,
+     "fineP": 0.99,
      "importance": 0.11
     },
     "from": "union"
@@ -1513,16 +1516,16 @@
     "j": {
      "id": "n78",
      "role": "advertising",
-     "roleP": 0.99,
+     "roleP": 1,
      "roleProbs": {
-      "advertising": 0.99
+      "advertising": 1
      },
      "task": 0.07,
      "main": 0,
-     "help": 0.14,
+     "help": 0.12,
      "fine": "advertising",
-     "fineP": 0.95,
-     "importance": 0.16,
+     "fineP": 0.96,
+     "importance": 0.2,
      "paidAsStoryP": 0.16
     },
     "from": "union"
@@ -1534,19 +1537,19 @@
     "j": {
      "id": "n80",
      "role": "action_button",
-     "roleP": 0.76,
+     "roleP": 0.74,
      "roleProbs": {
-      "action_button": 0.76,
-      "advertising": 0.14,
+      "action_button": 0.74,
+      "advertising": 0.16,
       "account_utility": 0.03,
-      "other": 0.04
+      "other": 0.03
      },
-     "task": 0.13,
+     "task": 0.11,
      "main": 0.02,
-     "help": 0.17,
+     "help": 0.2,
      "fine": "secondary_action",
-     "fineP": 0.76,
-     "importance": 0.9
+     "fineP": 0.74,
+     "importance": 0.8
     },
     "from": "union"
    },
@@ -1557,15 +1560,15 @@
     "j": {
      "id": "n254",
      "role": "main_content",
-     "roleP": 0.98,
+     "roleP": 0.97,
      "roleProbs": {
-      "main_content": 0.98
+      "main_content": 0.97
      },
-     "task": 0.93,
+     "task": 0.94,
      "main": 0,
      "help": 0.02,
      "fine": "body_text",
-     "fineP": 0.98,
+     "fineP": 0.97,
      "importance": 3.77
     },
     "from": "union"
@@ -1583,11 +1586,11 @@
      },
      "task": 0.06,
      "main": 0,
-     "help": 0.15,
+     "help": 0.12,
      "fine": "advertising",
      "fineP": 1,
      "importance": 0.05,
-     "paidAsStoryP": 0.3
+     "paidAsStoryP": 0.29
     },
     "from": "union"
    },
@@ -1598,18 +1601,16 @@
     "j": {
      "id": "n92",
      "role": "advertising",
-     "roleP": 0.88,
+     "roleP": 0.92,
      "roleProbs": {
-      "help_contact": 0.03,
-      "advertising": 0.88,
-      "other": 0.03
+      "advertising": 0.92
      },
-     "task": 0.11,
+     "task": 0.1,
      "main": 0,
-     "help": 0.2,
+     "help": 0.18,
      "fine": "advertising",
-     "fineP": 0.84,
-     "importance": 0.28
+     "fineP": 0.89,
+     "importance": 0.29
     },
     "from": "union"
    },
@@ -1629,8 +1630,8 @@
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.05,
-     "paidAsStoryP": 0.18
+     "importance": 0.06,
+     "paidAsStoryP": 0.16
     },
     "from": "union"
    },
@@ -1644,16 +1645,16 @@
      "roleP": 0.75,
      "roleProbs": {
       "action_button": 0.75,
-      "advertising": 0.15,
-      "account_utility": 0.03,
-      "other": 0.04
+      "advertising": 0.14,
+      "account_utility": 0.04,
+      "other": 0.03
      },
-     "task": 0.12,
+     "task": 0.11,
      "main": 0.02,
-     "help": 0.16,
+     "help": 0.18,
      "fine": "secondary_action",
      "fineP": 0.75,
-     "importance": 0.97
+     "importance": 0.93
     },
     "from": "union"
    },
@@ -1670,11 +1671,11 @@
      },
      "task": 0.06,
      "main": 0,
-     "help": 0.17,
+     "help": 0.16,
      "fine": "advertising",
      "fineP": 1,
      "importance": 0.06,
-     "paidAsStoryP": 0.3
+     "paidAsStoryP": 0.25
     },
     "from": "union"
    },
@@ -1694,7 +1695,7 @@
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.06,
+     "importance": 0.05,
      "paidAsStoryP": 0.17
     },
     "from": "union"
@@ -1706,18 +1707,19 @@
     "j": {
      "id": "n106",
      "role": "action_button",
-     "roleP": 0.78,
+     "roleP": 0.8,
      "roleProbs": {
-      "action_button": 0.78,
-      "advertising": 0.14,
-      "other": 0.03
+      "action_button": 0.8,
+      "advertising": 0.1,
+      "account_utility": 0.03,
+      "other": 0.04
      },
-     "task": 0.13,
+     "task": 0.11,
      "main": 0.02,
-     "help": 0.14,
+     "help": 0.18,
      "fine": "secondary_action",
-     "fineP": 0.78,
-     "importance": 1.01
+     "fineP": 0.8,
+     "importance": 0.89
     },
     "from": "union"
    },
@@ -1732,7 +1734,7 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.06,
+     "task": 0.05,
      "main": 0,
      "help": 0.02,
      "fine": "advertising",
@@ -1755,13 +1757,13 @@
       "popup_overlay": 0.04,
       "advertising": 0.9
      },
-     "task": 0.05,
+     "task": 0.06,
      "main": 0,
      "help": 0.01,
      "fine": "advertising",
      "fineP": 0.9,
-     "importance": 0.05,
-     "paidAsStoryP": 0.1
+     "importance": 0.06,
+     "paidAsStoryP": 0.13
     },
     "from": "union"
    },
@@ -1781,8 +1783,8 @@
      "help": 0.02,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.05,
-     "paidAsStoryP": 0.21
+     "importance": 0.04,
+     "paidAsStoryP": 0.2
     },
     "from": "union"
    },
@@ -1793,17 +1795,16 @@
     "j": {
      "id": "n141",
      "role": "other",
-     "roleP": 0.92,
+     "roleP": 0.95,
      "roleProbs": {
-      "navigation": 0.04,
-      "other": 0.92
+      "other": 0.95
      },
-     "task": 0.1,
+     "task": 0.09,
      "main": 0,
-     "help": 0.03,
+     "help": 0.04,
      "fine": "comments",
-     "fineP": 0.92,
-     "importance": 2.39
+     "fineP": 0.95,
+     "importance": 2.48
     },
     "from": "union"
    },
@@ -1814,18 +1815,19 @@
     "j": {
      "id": "n143",
      "role": "account_utility",
-     "roleP": 0.73,
+     "roleP": 0.77,
      "roleProbs": {
-      "action_button": 0.03,
-      "account_utility": 0.73,
-      "advertising": 0.16
+      "action_button": 0.04,
+      "navigation": 0.06,
+      "account_utility": 0.77,
+      "advertising": 0.09
      },
-     "task": 0.12,
-     "main": 0.05,
+     "task": 0.11,
+     "main": 0.06,
      "help": 0.03,
      "fine": "login_prompt",
-     "fineP": 0.42,
-     "importance": 1
+     "fineP": 0.45,
+     "importance": 1.02
     },
     "from": "union"
    },
@@ -1836,17 +1838,17 @@
     "j": {
      "id": "n144",
      "role": "form_field",
-     "roleP": 0.92,
+     "roleP": 0.91,
      "roleProbs": {
-      "form_field": 0.92,
-      "other": 0.08
+      "form_field": 0.91,
+      "other": 0.09
      },
-     "task": 0.38,
+     "task": 0.41,
      "main": 0,
      "help": 0.03,
      "fine": "form_field",
-     "fineP": 0.92,
-     "importance": 2.73
+     "fineP": 0.91,
+     "importance": 2.68
     },
     "from": "union"
    },
@@ -1856,19 +1858,20 @@
     "uniq": false,
     "j": {
      "id": "n152",
-     "role": "action_button",
-     "roleP": 0.48,
+     "role": "other",
+     "roleP": 0.46,
      "roleProbs": {
-      "action_button": 0.48,
-      "navigation": 0.04,
-      "other": 0.36
+      "action_button": 0.36,
+      "navigation": 0.03,
+      "other": 0.46,
+      "account_utility": 0.03
      },
-     "task": 0.36,
-     "main": 0.08,
+     "task": 0.35,
+     "main": 0.09,
      "help": 0.07,
      "fine": "secondary_action",
-     "fineP": 0.45,
-     "importance": 1.72
+     "fineP": 0.36,
+     "importance": 1.61
     },
     "from": "union"
    },
@@ -1879,18 +1882,18 @@
     "j": {
      "id": "n153",
      "role": "action_button",
-     "roleP": 0.49,
+     "roleP": 0.43,
      "roleProbs": {
-      "action_button": 0.49,
+      "action_button": 0.43,
       "navigation": 0.03,
-      "other": 0.34
+      "other": 0.36
      },
-     "task": 0.29,
+     "task": 0.28,
      "main": 0.06,
      "help": 0.03,
      "fine": "secondary_action",
-     "fineP": 0.49,
-     "importance": 1.09
+     "fineP": 0.43,
+     "importance": 1.13
     },
     "from": "union"
    },
@@ -1901,17 +1904,17 @@
     "j": {
      "id": "n157",
      "role": "action_button",
-     "roleP": 0.68,
+     "roleP": 0.72,
      "roleProbs": {
-      "action_button": 0.68,
-      "other": 0.31
+      "action_button": 0.72,
+      "other": 0.26
      },
-     "task": 0.15,
-     "main": 0.06,
+     "task": 0.14,
+     "main": 0.07,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.68,
-     "importance": 2.43
+     "fineP": 0.72,
+     "importance": 2.41
     },
     "from": "union"
    },
@@ -1922,17 +1925,18 @@
     "j": {
      "id": "n158",
      "role": "action_button",
-     "roleP": 0.56,
+     "roleP": 0.55,
      "roleProbs": {
-      "action_button": 0.56,
-      "other": 0.4
+      "main_content": 0.03,
+      "action_button": 0.55,
+      "other": 0.41
      },
-     "task": 0.29,
-     "main": 0.03,
+     "task": 0.28,
+     "main": 0.04,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.56,
-     "importance": 1.49
+     "fineP": 0.55,
+     "importance": 1.48
     },
     "from": "union"
    },
@@ -1943,18 +1947,18 @@
     "j": {
      "id": "n159",
      "role": "action_button",
-     "roleP": 0.71,
+     "roleP": 0.74,
      "roleProbs": {
-      "main_content": 0.07,
-      "action_button": 0.71,
-      "other": 0.2
+      "main_content": 0.06,
+      "action_button": 0.74,
+      "other": 0.18
      },
      "task": 0.33,
      "main": 0.04,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.71,
-     "importance": 2.03
+     "fineP": 0.74,
+     "importance": 1.95
     },
     "from": "union"
    },
@@ -1970,12 +1974,12 @@
       "action_button": 0.11,
       "other": 0.89
      },
-     "task": 0.1,
+     "task": 0.08,
      "main": 0.04,
      "help": 0.02,
      "fine": "social_share",
      "fineP": 0.89,
-     "importance": 1.04
+     "importance": 1.03
     },
     "from": "union"
    },
@@ -1986,17 +1990,17 @@
     "j": {
      "id": "n161",
      "role": "action_button",
-     "roleP": 0.79,
+     "roleP": 0.82,
      "roleProbs": {
-      "action_button": 0.79,
-      "other": 0.18
+      "action_button": 0.82,
+      "other": 0.16
      },
-     "task": 0.32,
+     "task": 0.29,
      "main": 0.05,
-     "help": 0.15,
+     "help": 0.19,
      "fine": "secondary_action",
-     "fineP": 0.79,
-     "importance": 1.74
+     "fineP": 0.82,
+     "importance": 1.77
     },
     "from": "union"
    },
@@ -2007,17 +2011,17 @@
     "j": {
      "id": "n163",
      "role": "action_button",
-     "roleP": 0.76,
+     "roleP": 0.69,
      "roleProbs": {
-      "action_button": 0.76,
-      "other": 0.21
+      "action_button": 0.69,
+      "other": 0.27
      },
-     "task": 0.18,
+     "task": 0.19,
      "main": 0.04,
      "help": 0.01,
      "fine": "secondary_action",
-     "fineP": 0.76,
-     "importance": 2.39
+     "fineP": 0.69,
+     "importance": 2.34
     },
     "from": "union"
    },
@@ -2027,20 +2031,19 @@
     "uniq": false,
     "j": {
      "id": "n165",
-     "role": "action_button",
-     "roleP": 0.45,
+     "role": "other",
+     "roleP": 0.44,
      "roleProbs": {
-      "action_button": 0.45,
-      "navigation": 0.04,
-      "other": 0.39,
-      "account_utility": 0.03
+      "action_button": 0.42,
+      "navigation": 0.03,
+      "other": 0.44
      },
-     "task": 0.38,
-     "main": 0.08,
+     "task": 0.35,
+     "main": 0.07,
      "help": 0.07,
      "fine": "secondary_action",
-     "fineP": 0.42,
-     "importance": 1.67
+     "fineP": 0.39,
+     "importance": 1.63
     },
     "from": "union"
    },
@@ -2051,22 +2054,21 @@
     "j": {
      "id": "n166",
      "role": "action_button",
-     "roleP": 0.32,
+     "roleP": 0.35,
      "roleProbs": {
-      "main_content": 0.03,
-      "action_button": 0.32,
-      "form_field": 0.06,
-      "navigation": 0.11,
+      "action_button": 0.35,
+      "form_field": 0.05,
+      "navigation": 0.07,
       "recommendations": 0.03,
-      "other": 0.23,
-      "account_utility": 0.04
+      "other": 0.24,
+      "account_utility": 0.03
      },
      "task": 0.2,
      "main": 0.04,
      "help": 0.03,
      "fine": "secondary_action",
-     "fineP": 0.32,
-     "importance": 0.83
+     "fineP": 0.35,
+     "importance": 0.79
     },
     "from": "union"
    },
@@ -2077,17 +2079,17 @@
     "j": {
      "id": "n169",
      "role": "action_button",
-     "roleP": 0.79,
+     "roleP": 0.74,
      "roleProbs": {
-      "action_button": 0.79,
-      "other": 0.2
+      "action_button": 0.74,
+      "other": 0.25
      },
-     "task": 0.15,
-     "main": 0.08,
+     "task": 0.14,
+     "main": 0.07,
      "help": 0.02,
      "fine": "secondary_action",
-     "fineP": 0.79,
-     "importance": 2.46
+     "fineP": 0.74,
+     "importance": 2.45
     },
     "from": "union"
    },
@@ -2098,17 +2100,17 @@
     "j": {
      "id": "n193",
      "role": "recommendations",
-     "roleP": 0.92,
+     "roleP": 0.9,
      "roleProbs": {
-      "main_content": 0.08,
-      "recommendations": 0.92
+      "main_content": 0.09,
+      "recommendations": 0.9
      },
      "task": 0.13,
      "main": 0,
-     "help": 0.01,
+     "help": 0.02,
      "fine": "teaser_other_content",
-     "fineP": 0.92,
-     "importance": 0.41
+     "fineP": 0.9,
+     "importance": 0.45
     },
     "from": "union"
    },
@@ -2119,17 +2121,17 @@
     "j": {
      "id": "n194",
      "role": "recommendations",
-     "roleP": 0.95,
+     "roleP": 0.93,
      "roleProbs": {
-      "main_content": 0.04,
-      "recommendations": 0.95
+      "main_content": 0.05,
+      "recommendations": 0.93
      },
      "task": 0.11,
      "main": 0.03,
      "help": 0.01,
      "fine": "teaser_other_content",
-     "fineP": 0.95,
-     "importance": 0.23
+     "fineP": 0.93,
+     "importance": 0.22
     },
     "from": "union"
    },
@@ -2140,17 +2142,17 @@
     "j": {
      "id": "n209",
      "role": "help_contact",
-     "roleP": 0.77,
+     "roleP": 0.88,
      "roleProbs": {
-      "navigation": 0.16,
-      "help_contact": 0.77,
-      "legal_footer": 0.05
+      "navigation": 0.07,
+      "help_contact": 0.88,
+      "legal_footer": 0.04
      },
      "task": 0.08,
      "main": 0,
-     "help": 0.88,
+     "help": 0.9,
      "fine": "contact_info",
-     "fineP": 0.74,
+     "fineP": 0.84,
      "importance": 1.01
     },
     "from": "union"
@@ -2162,18 +2164,17 @@
     "j": {
      "id": "n17",
      "role": "main_content",
-     "roleP": 0.71,
+     "roleP": 0.78,
      "roleProbs": {
-      "main_content": 0.71,
-      "recommendations": 0.16,
-      "other": 0.03
+      "main_content": 0.78,
+      "recommendations": 0.13
      },
-     "task": 0.76,
+     "task": 0.74,
      "main": 0,
      "help": 0.02,
      "fine": "headline",
-     "fineP": 0.4,
-     "importance": 3.16
+     "fineP": 0.54,
+     "importance": 3.07
     },
     "from": "union"
    },
@@ -2193,8 +2194,8 @@
      "main": 0,
      "help": 0.02,
      "fine": "teaser_other_content",
-     "fineP": 0.88,
-     "importance": 2.28
+     "fineP": 0.86,
+     "importance": 2.34
     },
     "from": "union"
    },
@@ -2205,18 +2206,18 @@
     "j": {
      "id": "n256",
      "role": "main_content",
-     "roleP": 0.69,
+     "roleP": 0.78,
      "roleProbs": {
-      "main_content": 0.69,
-      "recommendations": 0.04,
-      "other": 0.21
+      "main_content": 0.78,
+      "recommendations": 0.03,
+      "other": 0.14
      },
-     "task": 0.91,
+     "task": 0.89,
      "main": 0,
      "help": 0.02,
      "fine": "body_text",
-     "fineP": 0.6900000000000001,
-     "importance": 3.32
+     "fineP": 0.78,
+     "importance": 3.36
     },
     "from": "union"
    },
@@ -2231,13 +2232,13 @@
      "roleProbs": {
       "advertising": 1
      },
-     "task": 0.07,
+     "task": 0.06,
      "main": 0,
-     "help": 0.15,
+     "help": 0.14,
      "fine": "advertising",
      "fineP": 1,
-     "importance": 0.05,
-     "paidAsStoryP": 0.25
+     "importance": 0.06,
+     "paidAsStoryP": 0.26
     },
     "from": "union"
    },
@@ -2248,16 +2249,16 @@
     "j": {
      "id": "n257",
      "role": "other",
-     "roleP": 0.98,
+     "roleP": 0.99,
      "roleProbs": {
-      "other": 0.98
+      "other": 0.99
      },
      "task": 0.12,
      "main": 0,
      "help": 0.03,
      "fine": "comments",
-     "fineP": 0.98,
-     "importance": 2.7
+     "fineP": 0.99,
+     "importance": 2.58
     },
     "from": "union"
    },
@@ -2272,15 +2273,99 @@
      "roleProbs": {
       "main_content": 0.66,
       "advertising": 0.03,
-      "recommendations": 0.03,
-      "other": 0.25
+      "recommendations": 0.04,
+      "other": 0.23
      },
-     "task": 0.71,
+     "task": 0.72,
      "main": 0,
-     "help": 0.02,
+     "help": 0.03,
      "fine": "video_player",
-     "fineP": 0.59,
-     "importance": 2.77
+     "fineP": 0.63,
+     "importance": 2.71
+    },
+    "from": "union"
+   },
+   {
+    "id": "n256",
+    "fp": "div|region holding video or embed x2|Powered By [number]K 0 .clsx-1{isolation:isolate;}.clsx-2{fill:#ff3e5f;}.clsx-3{fill:#fff;} Skip Ad|main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n256",
+     "role": "advertising",
+     "roleP": 0.96,
+     "roleProbs": {
+      "main_content": 0.03,
+      "advertising": 0.96
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.01,
+     "fine": "advertising",
+     "fineP": 0.96,
+     "importance": 0.17
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n257",
+    "fp": "div|region holding video or embed x2|Powered By [number]K 0 .clsx-1{isolation:isolate;}.clsx-2{fill:#ff3e5f;}.clsx-3{fill:#fff;} Skip Ad|main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n257",
+     "role": "advertising",
+     "roleP": 0.97,
+     "roleProbs": {
+      "advertising": 0.97
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.01,
+     "fine": "advertising",
+     "fineP": 0.97,
+     "importance": 0.14
+    },
+    "from": "union"
+   },
+   {
+    "id": "n258",
+    "fp": "div|region holding headings x2, paragraphs x4, lists x2, form fields x1, buttons x27, links x3|Conversation · Jump to log in… / All Comments, 15 items / NEWEST|main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n258",
+     "role": "other",
+     "roleP": 0.98,
+     "roleProbs": {
+      "other": 0.98
+     },
+     "task": 0.13,
+     "main": 0,
+     "help": 0.04,
+     "fine": "comments",
+     "fineP": 0.98,
+     "importance": 2.65
+    },
+    "from": "union"
+   },
+   {
+    "id": "n259",
+    "fp": "div|region holding video or embed x1||main|module||",
+    "uniq": true,
+    "j": {
+     "id": "n259",
+     "role": "main_content",
+     "roleP": 0.68,
+     "roleProbs": {
+      "main_content": 0.68,
+      "advertising": 0.03,
+      "recommendations": 0.03,
+      "other": 0.24
+     },
+     "task": 0.7,
+     "main": 0,
+     "help": 0.03,
+     "fine": "video_player",
+     "fineP": 0.62,
+     "importance": 2.75
     },
     "from": "union"
    }
@@ -2289,15 +2374,15 @@
  "meaning": {
   "dfb80bd998b90442e0e561556f7bf6decbb5b5507f3b89e9e5aae266a79fb789": {
    "leadsWithMain": 0.96,
-   "missingMain": 0.02,
+   "missingMain": 0.03,
    "pass": true,
    "metrics": {
     "model": "jev-1.14.0",
     "calls": 1,
     "questions": 2,
     "inputTokens": 1087,
-    "wallMs": 119,
-    "serverMs": 59,
+    "wallMs": 101,
+    "serverMs": 39,
     "costUsd": 0.00004565400000000001
    }
   },
@@ -2310,149 +2395,23 @@
     "calls": 1,
     "questions": 2,
     "inputTokens": 1050,
-    "wallMs": 81,
-    "serverMs": 34,
+    "wallMs": 121,
+    "serverMs": 66,
     "costUsd": 0.00004410000000000001
    }
   },
-  "e684d6a5df008a1ecd5d99943882ee2665143faf52d9032a397376354aa63156": {
-   "leadsWithMain": 0.98,
-   "missingMain": 0.03,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1105,
-    "wallMs": 83,
-    "serverMs": 29,
-    "costUsd": 0.000046410000000000005
-   }
-  },
-  "3749629ada2b2a20afa7a001d1535a159ef797d72c3343697f1ad1087cc88cba": {
-   "leadsWithMain": 0.98,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1068,
-    "wallMs": 101,
-    "serverMs": 47,
-    "costUsd": 0.000044856000000000006
-   }
-  },
   "596b745deb7242f51c723bf074abb403fbca8a4a64a5806701f818aaa3dc0f13": {
-   "leadsWithMain": 0.97,
-   "missingMain": 0.02,
+   "leadsWithMain": 0.95,
+   "missingMain": 0.03,
    "pass": true,
    "metrics": {
     "model": "jev-1.14.0",
     "calls": 1,
     "questions": 2,
     "inputTokens": 1069,
-    "wallMs": 108,
-    "serverMs": 49,
+    "wallMs": 92,
+    "serverMs": 37,
     "costUsd": 0.000044898
-   }
-  },
-  "12ed99591c7f2bb058f151c3d601f031196856101b2b95ad372ff9a67995a47c": {
-   "leadsWithMain": 0.99,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1068,
-    "wallMs": 117,
-    "serverMs": 45,
-    "costUsd": 0.000044856000000000006
-   }
-  },
-  "8446ad63d8403ee316f3a214a83d67cd8971d032c18128b2ea319a4543410859": {
-   "leadsWithMain": 0.96,
-   "missingMain": 0.03,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1124,
-    "wallMs": 83,
-    "serverMs": 35,
-    "costUsd": 0.000047208000000000006
-   }
-  },
-  "ccb4f097d90d186477751204c78ef90ca2d22d2af51417eba8fc1a680f6bfb66": {
-   "leadsWithMain": 0.98,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1050,
-    "wallMs": 114,
-    "serverMs": 48,
-    "costUsd": 0.00004410000000000001
-   }
-  },
-  "23584c09143c279b950dac999e670db465c5953c9e447213d1be72dda26b0bc5": {
-   "leadsWithMain": 0.99,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1087,
-    "wallMs": 98,
-    "serverMs": 29,
-    "costUsd": 0.00004565400000000001
-   }
-  },
-  "220c21eeb3aec33d8479a870daa485fee8d2f8040ba5f58bae5616d8e1dab94f": {
-   "leadsWithMain": 0.98,
-   "missingMain": 0.03,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1087,
-    "wallMs": 87,
-    "serverMs": 31,
-    "costUsd": 0.00004565400000000001
-   }
-  },
-  "9690abfecb7c9739fd410c4f7da1b043ccc77ec6669d9d617367f4e9f6be12a8": {
-   "leadsWithMain": 0.96,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1106,
-    "wallMs": 88,
-    "serverMs": 35,
-    "costUsd": 0.00004645200000000001
-   }
-  },
-  "b1c5beb2dfd8d3e0cd652c4bf50d61a5c1c7225f0a90f16a2e593848fd6e7526": {
-   "leadsWithMain": 0.96,
-   "missingMain": 0.02,
-   "pass": true,
-   "metrics": {
-    "model": "jev-1.14.0",
-    "calls": 1,
-    "questions": 2,
-    "inputTokens": 1095,
-    "wallMs": 112,
-    "serverMs": 38,
-    "costUsd": 0.000045990000000000005
    }
   },
   "9af7234dd6701f2d88ae90916f0108f7b154d61be39ae0f37fbabe1c8b0d174a": {
@@ -2464,16 +2423,100 @@
     "calls": 1,
     "questions": 2,
     "inputTokens": 1105,
-    "wallMs": 93,
-    "serverMs": 36,
+    "wallMs": 99,
+    "serverMs": 38,
     "costUsd": 0.000046410000000000005
+   }
+  },
+  "12ed99591c7f2bb058f151c3d601f031196856101b2b95ad372ff9a67995a47c": {
+   "leadsWithMain": 0.98,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1068,
+    "wallMs": 137,
+    "serverMs": 84,
+    "costUsd": 0.000044856000000000006
+   }
+  },
+  "8446ad63d8403ee316f3a214a83d67cd8971d032c18128b2ea319a4543410859": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1124,
+    "wallMs": 84,
+    "serverMs": 31,
+    "costUsd": 0.000047208000000000006
+   }
+  },
+  "3749629ada2b2a20afa7a001d1535a159ef797d72c3343697f1ad1087cc88cba": {
+   "leadsWithMain": 0.98,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1068,
+    "wallMs": 121,
+    "serverMs": 59,
+    "costUsd": 0.000044856000000000006
+   }
+  },
+  "ccb4f097d90d186477751204c78ef90ca2d22d2af51417eba8fc1a680f6bfb66": {
+   "leadsWithMain": 0.99,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1050,
+    "wallMs": 99,
+    "serverMs": 31,
+    "costUsd": 0.00004410000000000001
+   }
+  },
+  "b1c5beb2dfd8d3e0cd652c4bf50d61a5c1c7225f0a90f16a2e593848fd6e7526": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1095,
+    "wallMs": 102,
+    "serverMs": 38,
+    "costUsd": 0.000045990000000000005
+   }
+  },
+  "9690abfecb7c9739fd410c4f7da1b043ccc77ec6669d9d617367f4e9f6be12a8": {
+   "leadsWithMain": 0.97,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1106,
+    "wallMs": 106,
+    "serverMs": 38,
+    "costUsd": 0.00004645200000000001
    }
   }
  },
  "overlayClose": {},
  "compose": {
-  "gdqsoyv": {
-   "id": "gdqsoyv",
+  "gxpwxaj": {
+   "id": "gxpwxaj",
    "ok": false,
    "blocks": [
     {
@@ -2481,10 +2524,9 @@
      "src": [
       "u1",
       "u2",
-      "u3",
-      "u4"
+      "u3"
      ],
-     "text": "15\n\nA Japanese spacecraft rocketed toward Mars on Tuesday on a quest to explore its mysterious moons and bring back samples.\n\nFive of the world’s space agencies joined forces for the ⟦1⟧ that will attempt to land a robotic prospector plus a rover on Phobos, the larger and closer of Mars’ two pint-sized moons.\n\nThe ⟦2⟧, which is leading the bold sampling effort, launched the spacecraft before dawn from the country’s main spaceport on Tanegashima Island. Officials declared success an hour later when the spacecraft separated as planned from the rocket’s upper stage. Flight controllers burst into applause and jumped to their feet, shaking hands and embracing."
+     "text": "A Japanese spacecraft rocketed toward Mars on Tuesday on a quest to explore its mysterious moons and bring back samples.\n\nFive of the world’s space agencies joined forces for the ⟦1⟧ that will attempt to land a robotic prospector plus a rover on Phobos, the larger and closer of Mars’ two pint-sized moons.\n\nThe ⟦2⟧, which is leading the bold sampling effort, launched the spacecraft before dawn from the country’s main spaceport on Tanegashima Island. Officials declared success an hour later when the spacecraft separated as planned from the rocket’s upper stage. Flight controllers burst into applause and jumped to their feet, shaking hands and embracing."
     }
    ],
    "better": null,
@@ -2507,36 +2549,121 @@
      "k": "prose",
      "src": [
       "u1",
-      "u2"
-     ],
-     "text": "While ⟦1⟧ nine spacecraft on Mars over the past 50 years and ⟦2⟧, no one has ever reached Phobos or its sidekick ⟦3⟧. And no one has managed to fetch samples from Mars, let alone its moons.\n\nIf successful, bits of dust, soil and rocks from Phobos will arrive on Earth in 2031."
-    },
-    {
-     "k": "quote",
-     "src": [
-      "u3"
-     ],
-     "text": "There’s a lot of adrenaline and a lot of excitement and a lot of wow,",
-     "who": "NASA astrophysicist Tom Statler",
-     "role": "who’s involved with the project"
-    },
-    {
-     "k": "prose",
-     "src": [
+      "u2",
+      "u3",
       "u4"
      ],
-     "text": "Japan has an edge going in, with ⟦4⟧ already under its cosmic belt."
+     "text": "While ⟦1⟧ nine spacecraft on Mars over the past 50 years and ⟦2⟧, no one has ever reached Phobos or its sidekick ⟦3⟧. And no one has managed to fetch samples from Mars, let alone its moons.\n\nIf successful, bits of dust, soil and rocks from Phobos will arrive on Earth in 2031.\n\n“There’s a lot of adrenaline and a lot of excitement and a lot of wow,” said NASA astrophysicist Tom Statler, who’s involved with the project.\n\nJapan has an edge going in, with ⟦4⟧ already under its cosmic belt."
     }
    ],
-   "better": 0.39,
+   "better": null,
    "checks": {
     "covered": true,
     "numbersKept": true,
     "noNewNumbers": true,
     "linksKept": true,
     "quotesKept": true,
-    "dropped": 0.26,
-    "added": 0.05
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  },
+  "g1yhwu2n": {
+   "id": "g1yhwu2n",
+   "ok": true,
+   "blocks": [
+    {
+     "k": "stats",
+     "src": [
+      "u1"
+     ],
+     "tiles": [
+      {
+       "label": "Phobos size",
+       "value": "22 kilometers (14 miles) or so across",
+       "note": "A lumpy, potato-shaped rock",
+       "icon": "circle-check"
+      }
+     ]
+    },
+    {
+     "k": "prose",
+     "src": [
+      "u1"
+     ],
+     "text": "Examining pieces of Phobos can help explain how Mars’ moons — and maybe moons elsewhere — came to be."
+    },
+    {
+     "k": "stats",
+     "src": [
+      "u2"
+     ],
+     "tiles": [
+      {
+       "label": "Mission name",
+       "value": "MMX",
+       "note": "Martian Moons Exploration",
+       "icon": "globe"
+      },
+      {
+       "label": "Mission cost",
+       "value": "$578 million",
+       "note": "The mission features a hefty 5-ton spacecraft.",
+       "icon": "banknote"
+      },
+      {
+       "label": "Arrival time",
+       "value": "by late next summer",
+       "note": "It should reach Mars then.",
+       "icon": "calendar"
+      }
+     ]
+    },
+    {
+     "k": "prose",
+     "src": [
+      "u2",
+      "u3"
+     ],
+     "text": "The 5-ton spacecraft will sync up with Phobos’ tight orbit around Mars, then eject the French-German rover named Idefix after the white terrier in the Asterix comics. Idefix is no bigger than a microwave oven. It will land on Phobos by itself, bounce for several minutes, and then come to a stop in the moon’s extraordinarily low gravity."
+    }
+   ],
+   "better": 0.59,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 0.52,
+    "added": 0.12
+   }
+  },
+  "gowf2xv": {
+   "id": "gowf2xv",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u5"
+     ],
+     "text": "The four-wheeled rover is designed to right itself if it lands upside down. All bets are off, though, if it sinks into soft soil or gets wedged between rocks, said the French Space Agency’s Julien Baroukh. Once the rover’s solar panels are deployed, the vehicle can no longer right itself, he added, which is why it will move at a glacial 1 millimeter per second (0.04 inches per second).\n\nIdefix will serve as a “scout for safety,” according to Baroukh, as it prowls around Phobos for 100 days. Japanese flight controllers want to avoid powdery soil and rough terrain when the mothership — a four-legged stationary lander — descends to the surface to gather samples in late 2028 or 2029.\n\nThe lander will spend just two hours on Phobos, drilling and vacuuming up at least 10 grams (one-third of an ounce) of material, before launching back into space. It will study Deimos during a series of flybys before leaving the Martian neighborhood in 2030 and hustling back to Earth for a 2031 sample delivery in the Australian desert.\n\nIt’s a treacherous undertaking, with wreckage littering the path.\n\nThe moons’ names aren’t exactly comforting: Phobos is Greek for fear and Deimos means dread. They’re the twin sons of the god of war Ares — Mars in Roman mythology."
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
    },
    "reason": "plain_is_better"
   },
@@ -2566,155 +2693,75 @@
      "k": "prose",
      "src": [
       "u5",
-      "u6",
-      "u7",
-      "u8",
-      "u9"
+      "u6"
      ],
-     "text": "Japan isn’t the only one looking to claim the scientific riches packed into the Martian system’s rocks and dirt. China plans to launch a sample return mission to Mars in 2028, while NASA is still debating how to retrieve the more than 30 sample tubes collected by the Perseverance Mars rover, the new champion for off-Earth driving.\n\nJapan and China could be neck-and-neck in getting samples back from the Martian system. Both are targeting 2031.\n\nJapan is investing $350 million in this mission. NASA is contributing $87 million, the French Space Agency about $68 million, the German Space Agency about $56 million and the European Space Agency some $17 million.\n\n___\n\nThe Associated Press’ health and science coverage receives financial support from the ⟦1⟧ and private foundations. AP is solely responsible for all content. Find AP’s ⟦2⟧ for working with philanthropies, a list of supporters and funded coverage areas at ⟦3⟧"
-    }
-   ],
-   "better": 0.24,
-   "checks": {
-    "covered": true,
-    "numbersKept": true,
-    "noNewNumbers": true,
-    "linksKept": true,
-    "quotesKept": true,
-    "dropped": 0.15,
-    "added": 0.12
-   },
-   "reason": "plain_is_better"
-  },
-  "g1yhwu2n": {
-   "id": "g1yhwu2n",
-   "ok": false,
-   "blocks": [
+     "text": "Japan isn’t the only one looking to claim the scientific riches packed into the Martian system’s rocks and dirt. China plans to launch a sample return mission to Mars in 2028, while NASA is still debating how to retrieve the more than 30 sample tubes collected by the Perseverance Mars rover, the new champion for off-Earth driving.\n\nJapan and China could be neck-and-neck in getting samples back from the Martian system. Both are targeting 2031."
+    },
+    {
+     "k": "stats",
+     "src": [
+      "u7"
+     ],
+     "tiles": [
+      {
+       "label": "Japan",
+       "value": "$350 million",
+       "note": "in this mission",
+       "icon": "banknote"
+      },
+      {
+       "label": "NASA",
+       "value": "$87 million",
+       "note": "contributing",
+       "icon": "banknote"
+      },
+      {
+       "label": "French Space Agency",
+       "value": "about $68 million",
+       "note": "contributing",
+       "icon": "banknote"
+      },
+      {
+       "label": "German Space Agency",
+       "value": "about $56 million",
+       "note": "contributing",
+       "icon": "banknote"
+      }
+     ]
+    },
     {
      "k": "prose",
      "src": [
-      "u1",
-      "u2",
-      "u3"
+      "u8",
+      "u9"
      ],
-     "text": "Phobos is a lumpy, potato-shaped rock just 22 kilometers (14 miles) or so across. Examining pieces of it can explain how Mars’ moons — and possibly moons elsewhere — came to be.\n\nDubbed MMX for Martian Moons Exploration, the $578 million mission features a hefty 5-ton spacecraft that should reach Mars by late next summer. It will sync up with Phobos’ tight orbit around the red planet, before ejecting the French-German rover that’s named Idefix after the white terrier in the Asterix comics.\n\nNo bigger than a microwave oven, Idefix will plop onto Phobos by itself, bouncing for several minutes before coming to a halt in the moon’s extraordinarily low gravity."
+     "text": "___\n\nThe Associated Press’ health and science coverage receives financial support from the ⟦1⟧ and private foundations. AP is solely responsible for all content. Find AP’s ⟦2⟧ for working with philanthropies, a list of supporters and funded coverage areas at ⟦3⟧"
     }
    ],
    "better": null,
    "checks": {
     "covered": true,
-    "numbersKept": true,
+    "numbersKept": false,
     "noNewNumbers": true,
     "linksKept": true,
     "quotesKept": true,
     "dropped": 1,
     "added": 1
    },
-   "reason": "plain_is_better"
-  },
-  "gowf2xv": {
-   "id": "gowf2xv",
-   "ok": true,
-   "blocks": [
-    {
-     "k": "prose",
-     "src": [
-      "u1"
-     ],
-     "text": "The four-wheeled rover is designed to right itself if it lands upside down. All bets are off, though, if it sinks into soft soil or gets wedged between rocks, said the French Space Agency’s Julien Baroukh. Once the rover’s solar panels are deployed, the vehicle can no longer right itself, he added, which is why it will move at a glacial 1 millimeter per second (0.04 inches per second)."
-    },
-    {
-     "k": "keyfacts",
-     "src": [
-      "u2",
-      "u3"
-     ],
-     "title": null,
-     "icon": "shield-check",
-     "rows": [
-      {
-       "label": "Job",
-       "value": "a “scout for safety,” according to Baroukh",
-       "icon": "eye"
-      },
-      {
-       "label": "Time on Phobos",
-       "value": "100 days",
-       "icon": "clock"
-      },
-      {
-       "label": "Avoid",
-       "value": "powdery soil and rough terrain when the mothership — a four-legged stationary lander — descends to the surface to gather samples in late 2028 or 2029",
-       "icon": "triangle-alert"
-      },
-      {
-       "label": "Lander time",
-       "value": "just two hours on Phobos",
-       "icon": "clock"
-      },
-      {
-       "label": "What it does",
-       "value": "drilling and vacuuming up at least 10 grams (one-third of an ounce) of material",
-       "icon": "package"
-      },
-      {
-       "label": "After Phobos",
-       "value": "study Deimos during a series of flybys",
-       "icon": "eye"
-      },
-      {
-       "label": "Leaves Martian neighborhood",
-       "value": "in 2030",
-       "icon": "plane"
-      },
-      {
-       "label": "Sample delivery",
-       "value": "in the Australian desert in 2031",
-       "icon": "map-pin"
-      }
-     ]
-    },
-    {
-     "k": "callout",
-     "src": [
-      "u4"
-     ],
-     "tone": "warning",
-     "title": "Treacherous task",
-     "text": "It’s a treacherous undertaking, with wreckage littering the path.",
-     "icon": "triangle-alert"
-    },
-    {
-     "k": "prose",
-     "src": [
-      "u5"
-     ],
-     "text": "The moons’ names aren’t exactly comforting: Phobos is Greek for fear and Deimos means dread. They’re the twin sons of the god of war Ares — Mars in Roman mythology."
-    }
-   ],
-   "better": 0.63,
-   "checks": {
-    "covered": true,
-    "numbersKept": true,
-    "noNewNumbers": true,
-    "linksKept": true,
-    "quotesKept": true,
-    "dropped": 0.62,
-    "added": 0.07
-   }
+   "reason": "numbers"
   }
  },
  "composeMeta": {
   "model": "gpt-5.4-mini",
-  "ms": 3732,
+  "ms": 2320,
   "jev": {
    "model": "jev-1.14.0",
-   "calls": 1,
-   "questions": 3,
-   "inputTokens": 2180,
-   "wallMs": 143,
-   "serverMs": 37,
-   "costUsd": 0.00009156000000000001
+   "calls": 0,
+   "questions": 0,
+   "inputTokens": 0,
+   "wallMs": 0,
+   "serverMs": null,
+   "costUsd": 0
   }
  },
  "runs": [
@@ -2722,7 +2769,7 @@
    "fit": "typical",
    "h": 664,
    "canonical": true,
-   "at": "2026-10-27T22:22:32.334Z",
+   "at": "2026-11-03T02:25:11.873Z",
    "added": {
     "elements": 46,
     "page": true,
@@ -2732,9 +2779,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 7279,
+    "settleMs": 5670,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -2747,24 +2794,33 @@
     "compose": {
      "groups": 5,
      "laidOut": 1,
-     "kept": 4,
-     "failed": 0
+     "kept": 3,
+     "failed": 1
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 400"
+      "reason": "weight floor 400",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
@@ -2787,9 +2843,9 @@
   },
   {
    "fit": "typical",
-   "h": 456,
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:22:37.891Z",
+   "at": "2026-11-03T02:25:17.402Z",
    "added": {
     "elements": 46,
     "page": false,
@@ -2799,9 +2855,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2243,
+    "settleMs": 2211,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -2814,178 +2870,38 @@
     "compose": {
      "groups": 5,
      "laidOut": 1,
-     "kept": 4,
-     "failed": 0
+     "kept": 3,
+     "failed": 1
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 400"
+      "reason": "weight floor 400",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
       "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 0,
-    "decisions": {
-     "folded": 6,
-     "protected": 26,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "typical",
-   "h": 520,
-   "canonical": false,
-   "at": "2026-10-27T22:22:43.497Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 0,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2273,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 16,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 400"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 0,
-    "decisions": {
-     "folded": 5,
-     "protected": 27,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "typical",
-   "h": 600,
-   "canonical": false,
-   "at": "2026-10-27T22:22:49.088Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2301,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 16,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 400"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
      }
     ],
     "checksFailed": 0,
@@ -3005,19 +2921,19 @@
    "fit": "typical",
    "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:22:54.613Z",
+   "at": "2026-11-03T02:25:22.843Z",
    "added": {
     "elements": 0,
     "page": false,
-    "meaning": 1,
+    "meaning": 0,
     "overlayClose": 0,
     "compose": 0
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2193,
+    "settleMs": 2178,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -3030,29 +2946,27 @@
     "compose": {
      "groups": 5,
      "laidOut": 1,
-     "kept": 4,
-     "failed": 0
+     "kept": 3,
+     "failed": 1
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 400"
+      "reason": "weight floor 400",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 4.5:1 (large text 3:1), 1 colours"
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -3062,8 +2976,8 @@
     ],
     "checksFailed": 0,
     "decisions": {
-     "folded": 5,
-     "protected": 27,
+     "folded": 4,
+     "protected": 29,
      "promoted": 0
     },
     "overlays": 0,
@@ -3075,9 +2989,9 @@
   },
   {
    "fit": "rosa",
-   "h": 456,
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:23:00.619Z",
+   "at": "2026-11-03T02:28:29.075Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -3087,9 +3001,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2715,
+    "settleMs": 2589,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -3102,8 +3016,8 @@
     "compose": {
      "groups": 5,
      "laidOut": 1,
-     "kept": 4,
-     "failed": 0
+     "kept": 3,
+     "failed": 1
     },
     "ops": [
      {
@@ -3114,42 +3028,49 @@
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×1.09 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 56 px on 65 controls"
+      "reason": "hit area 56 px on 65 controls",
+      "source": "fit"
      },
      {
       "kind": "steady_clicks",
       "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
      },
      {
       "kind": "motion",
       "status": "applied",
-      "reason": "reduce motion"
+      "reason": "reduce motion",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -3159,282 +3080,44 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00"
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "reversed",
-      "reason": "recommendations 0.94; task 0.12; help 0.01; teaser for other pages 0.94"
+      "reason": "recommendations 0.95; task 0.11; help 0.01; teaser for other pages 0.95",
+      "source": "check"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
-    "checksFailed": 30,
+    "checksFailed": 23,
     "decisions": {
-     "folded": 5,
+     "folded": 6,
      "protected": 28,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "rosa",
-   "h": 520,
-   "canonical": false,
-   "at": "2026-10-27T22:23:06.464Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 0,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2522,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 22,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 56 px on 65 controls"
-     },
-     {
-      "kind": "steady_clicks",
-      "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
-     },
-     {
-      "kind": "motion",
-      "status": "applied",
-      "reason": "reduce motion"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 29,
-    "decisions": {
-     "folded": 5,
-     "protected": 28,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "rosa",
-   "h": 600,
-   "canonical": false,
-   "at": "2026-10-27T22:23:12.256Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2527,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 22,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 56 px on 65 controls"
-     },
-     {
-      "kind": "steady_clicks",
-      "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
-     },
-     {
-      "kind": "motion",
-      "status": "applied",
-      "reason": "reduce motion"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 29,
-    "decisions": {
-     "folded": 5,
-     "protected": 27,
      "promoted": 0
     },
     "overlays": 0,
@@ -3448,19 +3131,19 @@
    "fit": "rosa",
    "h": 664,
    "canonical": false,
-   "at": "2026-10-27T22:23:18.038Z",
+   "at": "2026-11-03T02:28:34.847Z",
    "added": {
     "elements": 0,
     "page": false,
-    "meaning": 0,
+    "meaning": 1,
     "overlayClose": 0,
     "compose": 0
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2527,
+    "settleMs": 2480,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -3473,8 +3156,8 @@
     "compose": {
      "groups": 5,
      "laidOut": 1,
-     "kept": 4,
-     "failed": 0
+     "kept": 3,
+     "failed": 1
     },
     "ops": [
      {
@@ -3490,37 +3173,44 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 56 px on 64 controls"
+      "reason": "hit area 56 px on 64 controls",
+      "source": "fit"
      },
      {
       "kind": "steady_clicks",
       "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
      },
      {
       "kind": "motion",
       "status": "applied",
-      "reason": "reduce motion"
+      "reason": "reduce motion",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -3530,33 +3220,38 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.01; ad 1.00"
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.95; task 0.12; help 0.01; teaser for other pages 0.95",
+      "source": "check"
      }
     ],
-    "checksFailed": 30,
+    "checksFailed": 31,
     "decisions": {
      "folded": 5,
-     "protected": 28,
+     "protected": 27,
      "promoted": 0
     },
     "overlays": 0,
@@ -3570,7 +3265,7 @@
    "fit": "rosa",
    "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:23:23.848Z",
+   "at": "2026-11-03T02:28:40.620Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -3580,9 +3275,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2518,
+    "settleMs": 2481,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -3595,8 +3290,8 @@
     "compose": {
      "groups": 5,
      "laidOut": 1,
-     "kept": 4,
-     "failed": 0
+     "kept": 3,
+     "failed": 1
     },
     "ops": [
      {
@@ -3612,37 +3307,44 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 56 px on 64 controls"
+      "reason": "hit area 56 px on 64 controls",
+      "source": "fit"
      },
      {
       "kind": "steady_clicks",
       "status": "applied",
-      "reason": "window 320 ms, radius 11 px"
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
      },
      {
       "kind": "motion",
       "status": "applied",
-      "reason": "reduce motion"
+      "reason": "reduce motion",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -3652,32 +3354,416 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "reversed",
-      "reason": "recommendations 0.96; task 0.11; help 0.01; teaser for other pages 0.96"
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 23,
+    "decisions": {
+     "folded": 5,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:28:46.382Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2511,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.09 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.95; task 0.12; help 0.01; teaser for other pages 0.95",
+      "source": "check"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 23,
+    "decisions": {
+     "folded": 6,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:28:52.132Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2479,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.96; task 0.11; help 0.01; teaser for other pages 0.96",
+      "source": "check"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 31,
+    "decisions": {
+     "folded": 6,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:28:57.867Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2386,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.1 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.95; task 0.11; help 0.01; teaser for other pages 0.95",
+      "source": "check"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 24,
@@ -3694,234 +3780,10 @@
    }
   },
   {
-   "fit": "reader",
-   "h": 456,
+   "fit": "large",
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:23:29.607Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2409,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 24,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 29,
-    "decisions": {
-     "folded": 5,
-     "protected": 27,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "reader",
-   "h": 520,
-   "canonical": false,
-   "at": "2026-10-27T22:23:35.435Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2616,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 24,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "text_map",
-      "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
-     },
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     }
-    ],
-    "checksFailed": 29,
-    "decisions": {
-     "folded": 5,
-     "protected": 27,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "reader",
-   "h": 600,
-   "canonical": false,
-   "at": "2026-10-27T22:23:41.243Z",
+   "at": "2026-11-03T02:29:03.602Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -3931,14 +3793,14 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2419,
+    "settleMs": 2379,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
     "bodyPxBefore": 16,
-    "bodyPxAfter": 24,
+    "bodyPxAfter": 33.5,
     "simplified": {
      "open": true,
      "auto": true
@@ -3946,44 +3808,141 @@
     "compose": {
      "groups": 5,
      "laidOut": 1,
-     "kept": 4,
-     "failed": 0
+     "kept": 3,
+     "failed": 1
     },
     "ops": [
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 32,
+    "decisions": {
+     "folded": 5,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:29:09.335Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2476,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -3991,37 +3950,453 @@
       "reason": "scroll padding for pinned bars (WCAG technique C43)"
      },
      {
-      "kind": "dim",
+      "kind": "unobstruct",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 32,
+    "decisions": {
+     "folded": 5,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:29:15.125Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2542,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 1
+    },
+    "ops": [
      {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
+      "kind": "text_map",
       "status": "reversed",
-      "reason": "recommendations 0.96; task 0.11; help 0.01; teaser for other pages 0.96"
+      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.1 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
-    "checksFailed": 30,
+    "checksFailed": 27,
+    "decisions": {
+     "folded": 6,
+     "protected": 26,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:29:20.646Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2177,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.95; task 0.12; help 0.01; teaser for other pages 0.95",
+      "source": "check"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 5,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:29:26.118Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2181,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:29:31.623Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2225,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 64 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.96; task 0.11; help 0.01; teaser for other pages 0.96",
+      "source": "check"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 1,
     "decisions": {
      "folded": 6,
      "protected": 27,
@@ -4035,10 +4410,156 @@
    }
   },
   {
-   "fit": "reader",
+   "fit": "typical",
    "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T02:36:44.716Z",
+   "added": {
+    "elements": 1,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 7896,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 2,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 4,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:23:47.355Z",
+   "at": "2026-11-03T02:36:50.755Z",
+   "added": {
+    "elements": 3,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2565,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 2,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T02:36:56.637Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -4048,22 +4569,226 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2681,
+    "settleMs": 2535,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
     "bodyPxBefore": 16,
-    "bodyPxAfter": 24,
+    "bodyPxAfter": 16,
     "simplified": {
      "open": true,
      "auto": true
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 6,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:37:03.616Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3541,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 2,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.09 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 67 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 19,
+    "decisions": {
+     "folded": 4,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:37:10.526Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3610,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -4080,27 +4805,44 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 64 controls"
+      "reason": "hit area 56 px on 66 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4110,30 +4852,35 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
-    "checksFailed": 30,
+    "checksFailed": 26,
     "decisions": {
      "folded": 5,
      "protected": 27,
@@ -4147,10 +4894,10 @@
    }
   },
   {
-   "fit": "reader",
+   "fit": "rosa",
    "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:23:53.198Z",
+   "at": "2026-11-03T02:37:17.774Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -4160,22 +4907,22 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2605,
+    "settleMs": 3699,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
     "bodyPxBefore": 16,
-    "bodyPxAfter": 24,
+    "bodyPxAfter": 22,
     "simplified": {
      "open": true,
      "auto": true
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -4192,27 +4939,44 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 15:1 (large text 7:1), 8 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 64 controls"
+      "reason": "hit area 56 px on 66 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4222,33 +4986,38 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
-    "checksFailed": 23,
+    "checksFailed": 19,
     "decisions": {
      "folded": 5,
-     "protected": 29,
+     "protected": 28,
      "promoted": 0
     },
     "overlays": 0,
@@ -4259,72 +5028,77 @@
    }
   },
   {
-   "fit": "large",
-   "h": 456,
+   "fit": "reader",
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:23:58.969Z",
+   "at": "2026-11-03T02:37:24.732Z",
    "added": {
     "elements": 0,
     "page": false,
-    "meaning": 1,
+    "meaning": 0,
     "overlayClose": 0,
     "compose": 0
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2540,
+    "settleMs": 3576,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
     "bodyPxBefore": 16,
-    "bodyPxAfter": 33.5,
+    "bodyPxAfter": 24,
     "simplified": {
      "open": true,
      "auto": true
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×1.09 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
+      "reason": "hit area 44 px on 67 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4332,12 +5106,165 @@
       "reason": "scroll padding for pinned bars (WCAG technique C43)"
      },
      {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
-    "checksFailed": 32,
+    "checksFailed": 19,
+    "decisions": {
+     "folded": 5,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T02:37:31.973Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 3846,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 2,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 66 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.94; task 0.11; help 0.01; teaser for other pages 0.94",
+      "source": "check"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 27,
     "decisions": {
      "folded": 6,
      "protected": 26,
@@ -4351,72 +5278,77 @@
    }
   },
   {
-   "fit": "large",
-   "h": 520,
+   "fit": "reader",
+   "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:24:04.824Z",
+   "at": "2026-11-03T02:37:38.895Z",
    "added": {
     "elements": 0,
     "page": false,
-    "meaning": 1,
+    "meaning": 0,
     "overlayClose": 0,
     "compose": 0
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2516,
+    "settleMs": 3618,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
     "bodyPxBefore": 16,
-    "bodyPxAfter": 33.5,
+    "bodyPxAfter": 24,
     "simplified": {
      "open": true,
      "auto": true
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×2 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×1.1 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
+      "reason": "hit area 44 px on 66 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4424,12 +5356,37 @@
       "reason": "scroll padding for pinned bars (WCAG technique C43)"
      },
      {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
-    "checksFailed": 32,
+    "checksFailed": 19,
     "decisions": {
      "folded": 5,
      "protected": 28,
@@ -4444,21 +5401,21 @@
   },
   {
    "fit": "large",
-   "h": 600,
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:24:10.614Z",
+   "at": "2026-11-03T02:37:46.003Z",
    "added": {
     "elements": 0,
     "page": false,
-    "meaning": 0,
+    "meaning": 1,
     "overlayClose": 0,
     "compose": 0
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2490,
+    "settleMs": 3692,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4470,8 +5427,8 @@
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -4483,32 +5440,37 @@
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×1.41 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
+      "reason": "hit area 44 px on 67 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4518,10 +5480,11 @@
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
-    "checksFailed": 32,
+    "checksFailed": 30,
     "decisions": {
      "folded": 6,
      "protected": 27,
@@ -4538,7 +5501,7 @@
    "fit": "large",
    "h": 664,
    "canonical": false,
-   "at": "2026-10-27T22:24:16.380Z",
+   "at": "2026-11-03T02:37:53.035Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -4548,9 +5511,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2407,
+    "settleMs": 3680,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4562,8 +5525,8 @@
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -4575,40 +5538,51 @@
      {
       "kind": "text_map",
       "status": "reversed",
-      "reason": "every text size ×1.42 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
+      "reason": "every text size ×1.41 at 100% zoom (planned 200%; a larger zoom scrolls sideways on this narrow screen)"
      },
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 64 controls"
+      "reason": "hit area 44 px on 66 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
       "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
-    "checksFailed": 32,
+    "checksFailed": 30,
     "decisions": {
      "folded": 5,
      "protected": 27,
@@ -4625,7 +5599,7 @@
    "fit": "large",
    "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:24:22.162Z",
+   "at": "2026-11-03T02:38:00.045Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -4635,9 +5609,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2428,
+    "settleMs": 3663,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4649,8 +5623,8 @@
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
@@ -4667,27 +5641,32 @@
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 64 controls"
+      "reason": "hit area 44 px on 66 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4697,119 +5676,13 @@
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
-    "checksFailed": 27,
+    "checksFailed": 22,
     "decisions": {
      "folded": 5,
-     "protected": 28,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "calm",
-   "h": 456,
-   "canonical": false,
-   "at": "2026-10-27T22:24:27.664Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2180,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 16,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "reversed",
-      "reason": "recommendations 0.95; task 0.11; help 0.01; teaser for other pages 0.95"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     }
-    ],
-    "checksFailed": 1,
-    "decisions": {
-     "folded": 6,
      "protected": 27,
      "promoted": 0
     },
@@ -4822,9 +5695,9 @@
   },
   {
    "fit": "calm",
-   "h": 520,
+   "h": 568,
    "canonical": false,
-   "at": "2026-10-27T22:24:33.211Z",
+   "at": "2026-11-03T02:38:05.979Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -4834,9 +5707,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2302,
+    "settleMs": 2548,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -4848,142 +5721,40 @@
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
+      "reason": "hit area 44 px on 67 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
-     },
-     {
-      "kind": "dim",
-      "status": "reversed",
-      "reason": "recommendations 0.96; task 0.12; help 0.01; teaser for other pages 0.96"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
-     },
-     {
-      "kind": "unobstruct",
-      "status": "applied",
-      "reason": "scroll padding for pinned bars (WCAG technique C43)"
-     }
-    ],
-    "checksFailed": 1,
-    "decisions": {
-     "folded": 6,
-     "protected": 26,
-     "promoted": 0
-    },
-    "overlays": 0,
-    "toasts": 0,
-    "offers": 0,
-    "replayMisses": [],
-    "delivered": true
-   }
-  },
-  {
-   "fit": "calm",
-   "h": 600,
-   "canonical": false,
-   "at": "2026-10-27T22:24:38.744Z",
-   "added": {
-    "elements": 0,
-    "page": false,
-    "meaning": 1,
-    "overlayClose": 0,
-    "compose": 0
-   },
-   "errors": [],
-   "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
-    "fixturesVersion": "record",
-    "settleMs": 2216,
-    "phase": "calm",
-    "pageZoom": 1,
-    "textZoom": 1,
-    "bodyPxBefore": 16,
-    "bodyPxAfter": 16,
-    "simplified": {
-     "open": true,
-     "auto": true
-    },
-    "compose": {
-     "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
-     "failed": 0
-    },
-    "ops": [
-     {
-      "kind": "weight",
-      "status": "applied",
-      "reason": "weight floor 500"
-     },
-     {
-      "kind": "contrast",
-      "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
-     },
-     {
-      "kind": "targets",
-      "status": "applied",
-      "reason": "hit area 44 px on 65 controls"
-     },
-     {
-      "kind": "focus_ring",
-      "status": "applied",
-      "reason": "two-tone focus ring"
-     },
-     {
-      "kind": "heading_scale",
-      "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -4993,27 +5764,32 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 0,
@@ -5033,7 +5809,7 @@
    "fit": "calm",
    "h": 664,
    "canonical": false,
-   "at": "2026-10-27T22:24:44.317Z",
+   "at": "2026-11-03T02:38:11.852Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -5043,9 +5819,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2139,
+    "settleMs": 2564,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -5057,35 +5833,40 @@
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 64 controls"
+      "reason": "hit area 44 px on 66 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -5095,32 +5876,38 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "reversed",
-      "reason": "recommendations 0.95; task 0.11; help 0.01; teaser for other pages 0.95"
+      "reason": "recommendations 0.95; task 0.11; help 0.01; teaser for other pages 0.95",
+      "source": "check"
      },
      {
       "kind": "unobstruct",
       "status": "applied",
-      "reason": "tucked floating panel toward the bottom edge"
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
      }
     ],
     "checksFailed": 1,
@@ -5140,7 +5927,7 @@
    "fit": "calm",
    "h": 760,
    "canonical": false,
-   "at": "2026-10-27T22:24:49.815Z",
+   "at": "2026-11-03T02:38:17.872Z",
    "added": {
     "elements": 0,
     "page": false,
@@ -5150,9 +5937,9 @@
    },
    "errors": [],
    "delivery": {
-    "engineCommit": "62ec557e3b2e+dirty",
+    "engineCommit": "72a4fcfce6f3+dirty",
     "fixturesVersion": "record",
-    "settleMs": 2205,
+    "settleMs": 2614,
     "phase": "calm",
     "pageZoom": 1,
     "textZoom": 1,
@@ -5164,35 +5951,40 @@
     },
     "compose": {
      "groups": 5,
-     "laidOut": 1,
-     "kept": 4,
+     "laidOut": 2,
+     "kept": 3,
      "failed": 0
     },
     "ops": [
      {
       "kind": "weight",
       "status": "applied",
-      "reason": "weight floor 500"
+      "reason": "weight floor 500",
+      "source": "fit"
      },
      {
       "kind": "contrast",
       "status": "applied",
-      "reason": "floor 7:1 (large text 4.5:1), 5 colours"
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
      },
      {
       "kind": "targets",
       "status": "applied",
-      "reason": "hit area 44 px on 64 controls"
+      "reason": "hit area 44 px on 66 controls",
+      "source": "fit"
      },
      {
       "kind": "focus_ring",
       "status": "applied",
-      "reason": "two-tone focus ring"
+      "reason": "two-tone focus ring",
+      "source": "fit"
      },
      {
       "kind": "heading_scale",
       "status": "applied",
-      "reason": "1 headings raised against body 16 px (levels 2)"
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
      },
      {
       "kind": "unobstruct",
@@ -5202,28 +5994,488 @@
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
      },
      {
       "kind": "dim",
       "status": "applied",
-      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00"
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.96; task 0.11; help 0.01; teaser for other pages 0.96",
+      "source": "check"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 1,
+    "decisions": {
+     "folded": 6,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T02:40:12.312Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 8025,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 2,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 400",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
      }
     ],
     "checksFailed": 0,
     "decisions": {
      "folded": 4,
-     "protected": 29,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:40:18.150Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2512,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 2,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.09 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 65 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 22,
+    "decisions": {
+     "folded": 5,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:40:23.934Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2517,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 2,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.5 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.09 at 100% zoom (planned 150%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 8 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "reversed",
+      "reason": "recommendations 0.95; task 0.11; help 0.01; teaser for other pages 0.95",
+      "source": "check"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 23,
+    "decisions": {
+     "folded": 6,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T02:40:29.430Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "72a4fcfce6f3+dirty",
+    "fixturesVersion": "record",
+    "settleMs": 2214,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 16,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 5,
+     "laidOut": 2,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 65 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "1 headings raised against body 16 px (levels 2)",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 5,
+     "protected": 27,
      "promoted": 0
     },
     "overlays": 0,

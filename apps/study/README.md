@@ -45,8 +45,10 @@ simplified page can be measured.
 ## Before collecting data
 
 1. **Model answers.** With the server running on 127.0.0.1:41741 and the dev server on 127.0.0.1:5190:
-   `node scripts/record.mjs <replica ids>`, then `node scripts/replay-check.mjs <replica ids>` (no misses allowed in the
-   canonical setting). Re-record after any change to `apps/extension/src` or `packages/core/src`.
+   `node scripts/record.mjs <replica ids>`, then `node scripts/record.mjs <replica ids> --engine webkit --add` (iPhones
+   read a few elements differently; `--add` keeps the Chromium answers and adds only new ones), then
+   `node scripts/replay-check.mjs <replica ids>` with `--engine chromium` and `--engine webkit` (no misses allowed in
+   the canonical setting). Re-record after any change to `apps/extension/src` or `packages/core/src`, or to a copy.
 2. **Storage.** `supabase/migrations/*.sql` lives in the existing WebAble Supabase project (applied 27 Oct 2026; checked
    with the public key: insert only, no read/update/delete, forged withdrawals refused, withdrawal needs the session's
    secret). Put the URL and publishable key in `.env.local` (see `.env.example`) along with the agreement details;

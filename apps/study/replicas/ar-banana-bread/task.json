@@ -1,0 +1,24 @@
+{
+  "id": "recipe-A",
+  "replicaId": "ar-banana-bread",
+  "family": "recipe",
+  "set": "A",
+  "kind": "find",
+  "title": "Find out how much sugar goes into the banana bread",
+  "context": "A recipe on the Allrecipes website, for banana bread.",
+  "prompt": "Find out how much sugar goes into the banana bread",
+  "question": "How many cups of sugar go into the banana bread?",
+  "short": "Sugar in the banana bread",
+  "label": "Allrecipes, the recipe for banana bread",
+  "tag": "the banana bread recipe",
+  "choices": [
+    "½ cup",
+    "⅔ cup",
+    "1 cup",
+    "1 ½ cups"
+  ],
+  "correct": 1,
+  "answerText": "⅔ cup white sugar",
+  "answerSelector": "#mm-recipes-structured-ingredients_1-0 li:nth-of-type(7) > p",
+  "answerDepthScreens": 3.08
+}

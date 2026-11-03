@@ -306,6 +306,17 @@ export const LIKE_7: Scale7Words = [
   'Exactly like them',
 ];
 
+/** How much they liked using each round's websites (from 4.1.0: 7 answers in words, in place of 1 to 10). */
+export const LIKING_7: Scale7Words = [
+  'Disliked it a lot',
+  'Disliked it',
+  'Disliked it a little',
+  'Neither liked nor disliked it',
+  'Liked it a little',
+  'Liked it',
+  'Liked it a lot',
+];
+
 /** One of a scale's answers: its words only (no number shown; the value stored is still 1 to 7). */
 export function scaleOption(n: Likert7, words: Scale7Words): ChoiceOption<Likert7> {
   return {

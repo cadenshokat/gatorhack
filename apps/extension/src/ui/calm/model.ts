@@ -717,7 +717,13 @@ const BANNER_SEL = '[class*="hero" i],[class*="carousel" i],[class*="slider" i],
 
 /** Caption and credit elements drawn with their picture: never read again as text. */
 const captionEls = new WeakSet<Element>();
-const CAPTION_SEL = 'figcaption,[class*="caption" i],[class*="credit" i],[itemprop="caption"]';
+/**
+ * Captions and credits by their markup. A gallery or slide's description is its picture's caption too (AP News:
+ * "CarouselSlide-infoDescription"), not the story's first paragraph or its dek.
+ */
+export const CAPTION_SEL =
+  'figcaption,[class*="caption" i],[class*="credit" i],[itemprop="caption"],' +
+  '[class*="slide" i][class*="desc" i],[class*="carousel" i][class*="desc" i],[class*="gallery" i][class*="desc" i]';
 
 /**
  * A caption or credit drawn under its picture (F7), whichever the reader meets first: an element the picture claimed,
@@ -813,7 +819,7 @@ function captionFor(img: Element, url: string): { caption: string; credit: strin
   let creditEl: Element | null = null;
   for (let x = img.parentElement, i = 0; x && i < 4 && x !== document.body; x = x.parentElement, i++) {
     if (Array.from(x.querySelectorAll('img')).some((o) => o !== img && o.getBoundingClientRect().width >= 60)) break;
-    for (const c of Array.from(x.querySelectorAll('figcaption,[class*="caption" i],[class*="credit" i],[itemprop="caption"]'))) {
+    for (const c of Array.from(x.querySelectorAll(CAPTION_SEL))) {
       if (c.contains(img) || !clean(c.textContent)) continue;
       const isCredit = /credit|copyright|byline/i.test(c.getAttribute('class') ?? '');
       if (isCredit) creditEl ??= c;
@@ -943,6 +949,16 @@ export function keepImage(b: ImageBlock, framed: boolean): boolean {
 
 /** The page's lead picture from its JSON-LD, else og:image unless it is a placeholder (F5 step 7, the lead only). */
 export function pageLeadImage(): ImageBlock | null {
+  // The page's own copy of its share picture (the same alt words), when it shows one: it loads from the page like its
+  // other pictures (a saved copy of the page can't reach the site's image host) and brings its caption.
+  const shareAlt = clean(document.querySelector('meta[property="og:image:alt"],meta[name="twitter:image:alt"]')?.getAttribute('content'));
+  if (shareAlt.length >= 12) {
+    for (const img of Array.from(document.querySelectorAll('img'))) {
+      if (clean(img.getAttribute('alt')) !== shareAlt || img.closest('webable-ui')) continue;
+      const b = imageFor(img, { important: true });
+      if (b && Math.max(b.w, b.h) >= 240) return { ...b, banner: false };
+    }
+  }
   const ld = ldImages().first;
   const og = absUrl(document.querySelector<HTMLMetaElement>('meta[property="og:image"]')?.content);
   const pick = ld ?? (og && !isPlaceholderSrc(og) ? { url: og, caption: '' } : null);

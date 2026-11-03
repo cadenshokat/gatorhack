@@ -6,7 +6,7 @@
 
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
-import type { AboutYou, FinalAnswers, Likert7, RaceEthnicity, Rating10, WebTrouble } from '../contracts';
+import type { AboutYou, FinalAnswers, Likert7, RaceEthnicity, WebTrouble } from '../contracts';
 import type { Debrief } from '../experiment/debrief';
 import { TROUBLES, type AgeAnswer } from '../experiment/eligibility';
 import { SUS_ITEMS } from '../experiment/sus';
@@ -18,6 +18,7 @@ import {
   Choices,
   ErrorLine,
   LIKE_7,
+  LIKING_7,
   Primary,
   Scale7,
   scaleOption,
@@ -767,19 +768,6 @@ const FINAL_NUMBER: Record<FinalStep, number> = {
   like2: 3,
 };
 
-/** The 1 to 10 rating of each round: numbers, with words at the two ends. */
-const LIKE_ENDS = ['Did not like it at all', 'Liked it a great deal'] as const;
-
-const RATING_OPTIONS: Array<ChoiceOption<Rating10>> = ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((n) => ({
-  value: n,
-  label: (
-    <>
-      <span class="st-num">{n}</span>
-      {n === 1 || n === 10 ? <> <span class="st-num-label">{LIKE_ENDS[n === 1 ? 0 : 1]}</span></> : null}
-    </>
-  ),
-}));
-
 const DEVIATIONS: Array<{ id: string; label: string }> = [
   { id: 'helped', label: 'Someone helped me' },
   { id: 'changed_setting', label: 'I changed a setting on my phone' },
@@ -790,7 +778,7 @@ const DEVIATIONS: Array<{ id: string; label: string }> = [
 /** The realism question's way out ("I have not used the real websites before"), kept apart from the 1 to 7 answers. */
 const NOT_USED = 0;
 
-/** "the Mars story, the LSU football results and the Biscayne park information". */
+/** "the Mars story and the banana bread recipe". */
 function joinWords(xs: string[]): string {
   return xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : (xs[0] ?? '');
 }
@@ -806,7 +794,7 @@ export function FinalScreens(props: {
   adaptedRound: 1 | 2;
   /** Each round's websites, short ("the Mars story"), so the ratings say what was in each round. */
   rounds: [string[], string[]];
-  /** The real websites the copies came from ("AP News", "Florida Gators", …). */
+  /** The real websites the copies came from ("AP News", "Allrecipes", …). */
   sources: string[];
   onDone: (f: FinalAnswers) => void;
   onLeave: () => void;
@@ -872,14 +860,13 @@ export function FinalScreens(props: {
         <Title eyebrow={eyebrow} question deck={sites ? `${what} They were ${sites}.` : what}>
           {title}
         </Title>
-        {nudge ? <ErrorLine>Choose a number from 1 to 10, or tap Skip this question</ErrorLine> : null}
-        <Choices<Rating10>
+        {nudge ? <ErrorLine>Choose an answer, or tap Skip this question</ErrorLine> : null}
+        <Scale7
           key={step}
-          options={RATING_OPTIONS}
-          value={liking[r]}
+          words={LIKING_7}
+          value={(liking[r] as Likert7 | null) ?? null}
           onPick={(v) => set({ liking: { ...liking, [r]: v } })}
           label={title}
-          compact
         />
       </Screen>
     );

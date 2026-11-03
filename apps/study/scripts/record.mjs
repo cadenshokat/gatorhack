@@ -9,7 +9,9 @@
 // never frozen. Nothing is hand-picked.
 //
 //   node scripts/record.mjs <replicaId> [<replicaId>…] [--port 5192] [--fits typical,rosa,reader,large,calm]
-//        [--heights 568,664,760] [--timeout 180]
+//        [--heights 568,664,760] [--timeout 180] [--engine chromium|webkit] [--add]
+// --add keeps the answers already in fixtures.json and only adds new ones (first answer still wins): a WebKit pass
+// after the Chromium one (iPhones read a few elements differently), or configurations whose answer failed.
 // Needs: the server on 127.0.0.1:41741 (refuses to run otherwise) and the study dev server on --port
 // (./node_modules/.bin/vite --mode e2e --host 127.0.0.1 --port 5192).
 
@@ -29,7 +31,7 @@ export const CANONICAL = { fit: 'typical', h: 664 };
 const FIXTURES_V = 'study-fixtures.1';
 
 export function parseArgs(argv) {
-  const out = { ids: [], port: 5192, fits: FITS, heights: HEIGHTS, timeout: 180, engine: 'chromium' };
+  const out = { ids: [], port: 5192, fits: FITS, heights: HEIGHTS, timeout: 180, engine: 'chromium', add: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -38,6 +40,7 @@ export function parseArgs(argv) {
     else if (a === '--heights') out.heights = next().split(',').map(Number).filter(Boolean);
     else if (a === '--timeout') out.timeout = Number(next());
     else if (a === '--engine') out.engine = next();
+    else if (a === '--add') out.add = true;
     else if (a.startsWith('--')) throw new Error(`Unknown option ${a}`);
     else out.ids.push(a);
   }
@@ -218,7 +221,7 @@ function composeModel() {
 async function recordReplica(browser, opts, id, health) {
   const manifest = readManifest(id);
   const prev = readFixtures(id);
-  const fx = emptyFixtures(id, manifest);
+  const fx = opts.add && prev ? structuredClone(prev) : emptyFixtures(id, manifest);
   const runs = matrix(opts.fits, opts.heights);
   console.log(`\n${id}: ${runs.length} configurations, canonical ${CANONICAL.fit} @ ${CANONICAL.h}`);
   for (const run of runs) {
@@ -253,7 +256,12 @@ async function recordReplica(browser, opts, id, health) {
   fx.serverCommit = commitOf(['apps/server/src', 'packages/core/src']);
   fx.models = { jev: health.jev?.served || health.jev?.model || '', compose: fx.composeMeta?.model || composeModel() };
   fx.recordedAt = new Date().toISOString();
-  fx.matrix = { fits: opts.fits, heights: opts.heights, engines: [opts.engine], canonical: CANONICAL };
+  const was = opts.add && prev ? prev.matrix : { fits: [], heights: [], engines: [] };
+  const union = (a, b) => [...new Set([...(a ?? []), ...b])];
+  fx.matrix = {
+    fits: union(was.fits, opts.fits), heights: union(was.heights, opts.heights), engines: union(was.engines, [opts.engine]),
+    canonical: CANONICAL,
+  };
   const out = join(studyDir, 'replicas', id, 'fixtures.json');
   writeFileSync(out, `${JSON.stringify(fx, null, 1)}\n`);
   console.log(`  wrote ${out}: version ${fx.version}, ${fx.understand.elements.length} elements, page ${fx.understand.page ? 'yes' : 'NO'}, ` +
