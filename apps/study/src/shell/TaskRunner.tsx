@@ -40,6 +40,12 @@ import {
  * The frame draws its "Links are turned off" note in this document; when its frame goes away, the frame's timer that
  * hides the note goes with it. Every website starts and ends with none on screen.
  */
+/** Each website frame's host, under the frame's name (see findHost in frame/main.ts). */
+function hosts(): Record<string, FrameHost> {
+  const w = window as unknown as { __studyHosts?: Record<string, FrameHost> };
+  return (w.__studyHosts ??= {});
+}
+
 function clearLinkNotes(): void {
   for (const n of document.querySelectorAll('study-link-note')) n.remove();
 }
@@ -83,6 +89,15 @@ interface Props {
   mode: 'replay' | 'record' | 'live';
   /** Live AI (adapted websites): the hosted server and the person's reader. */
   ai?: { origin: string; reader: ReaderProfile | null };
+  /**
+   * false: this website loads behind the current screen, invisible and out of reach, so its AI work is done before
+   * its turn (live AI only). It starts counting nothing (card, clock, rotations, leaving the app) until it is true.
+   */
+  active?: boolean;
+  /** The person finished with the website (the ease question is next), or skipped it from its card. */
+  onEnded?: () => void;
+  /** The website is ready behind its card (or behind earlier screens). */
+  onReady?: () => void;
   note: (kind: string, detail?: string) => void;
   onDone: (t: TrialRecord) => void;
   onLeave: () => void;
@@ -100,6 +115,11 @@ export function TaskRunner(props: Props): JSX.Element {
   const { task, condition, round, position } = props.planned;
   const go = task.kind === 'go';
   const frame = useRef<HTMLIFrameElement>(null);
+  const active = props.active !== false;
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  /** How long the website had been loading behind other screens when its card came up (0: it loaded with its card). */
+  const preloadMs = useRef(0);
   const [phase, setPhase] = useState<Phase>('card');
   const [ready, setReady] = useState<{
     settleMs: number;
@@ -121,6 +141,10 @@ export function TaskRunner(props: Props): JSX.Element {
   const startedAt = useRef('');
   const loadStart = useRef(performance.now());
   const readyMs = useRef(0);
+  const hostRef = useRef<FrameHost | null>(null);
+  /** Loaded behind other screens first; the card has been on screen (preloadMs is measured the first time). */
+  const mountedWarm = useRef(!active);
+  const wasActive = useRef(false);
   const clock = useRef<Clock>({
     active: 0,
     since: null,
@@ -199,30 +223,52 @@ export function TaskRunner(props: Props): JSX.Element {
       ready: (info) => {
         readyMs.current = Math.round(performance.now() - loadStart.current);
         setReady(info);
+        props.onReady?.();
       },
       note: (kind, detail) => props.note(kind, `${task.id}${detail ? `: ${detail}` : ''}`),
       picked: (p: LinkPick) => onPick(p),
     };
-    (window as unknown as { __studyHost?: FrameHost }).__studyHost = host;
-    clearLinkNotes();
+    hostRef.current = host;
+    hosts()[trial.trialId] = host;
+    if (activeRef.current) (window as unknown as { __studyHost?: FrameHost }).__studyHost = host;
     loadStart.current = performance.now();
     setReady(null);
     setSlow(false);
     setZoom(1);
     const f = frame.current;
     if (f) f.src = `${pageUrl(task)}${loadKey ? `?reload=${loadKey}` : ''}`;
+  }, [loadKey]);
+
+  // The card's timers count from when the card is on screen: at least MIN_CARD_MS up, and "taking a long time" once
+  // the website has been loading (in the background too) longer than the limit.
+  useEffect(() => {
+    if (!active) return;
+    const w = window as unknown as { __studyHost?: FrameHost };
+    if (hostRef.current) w.__studyHost = hostRef.current;
+    clearLinkNotes();
+    if (!wasActive.current) {
+      wasActive.current = true;
+      if (mountedWarm.current) {
+        preloadMs.current = Math.round(performance.now() - loadStart.current);
+        orientation.current.w = innerWidth;
+      }
+    }
+    const limit = trial.mode === 'live' ? SLOW_LIVE_MS : SLOW_MS;
+    const loading = performance.now() - loadStart.current;
     const t1 = window.setTimeout(() => setMinDone(true), MIN_CARD_MS);
-    const t2 = window.setTimeout(() => setSlow(true), trial.mode === 'live' ? SLOW_LIVE_MS : SLOW_MS);
+    const t2 = window.setTimeout(() => setSlow(true), Math.max(MIN_CARD_MS, limit - loading));
     return () => {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
     };
-  }, [loadKey]);
+  }, [loadKey, active]);
 
   useEffect(
     () => () => {
-      delete (window as unknown as { __studyHost?: FrameHost }).__studyHost;
-      clearLinkNotes();
+      if (hosts()[trial.trialId] === hostRef.current) delete hosts()[trial.trialId];
+      const w = window as unknown as { __studyHost?: FrameHost };
+      if (w.__studyHost === hostRef.current) delete w.__studyHost;
+      if (activeRef.current) clearLinkNotes();
     },
     [],
   );
@@ -242,6 +288,7 @@ export function TaskRunner(props: Props): JSX.Element {
 
   useEffect(() => {
     const vis = () => {
+      if (!activeRef.current) return;
       const c = clock.current;
       const now = performance.now();
       if (document.hidden) {
@@ -270,6 +317,7 @@ export function TaskRunner(props: Props): JSX.Element {
     };
     const poll = window.setInterval(onScale, 250);
     const onResize = () => {
+      if (!activeRef.current) return;
       if (Math.abs(innerWidth - orientation.current.w) > 40) {
         orientation.current.changes++;
         orientation.current.w = innerWidth;
@@ -399,6 +447,7 @@ export function TaskRunner(props: Props): JSX.Element {
     setEndAction(action);
     setNudge(false);
     setPhase('seq');
+    props.onEnded?.();
   };
 
   const finish = (seq: Likert7 | null) => {
@@ -431,6 +480,7 @@ export function TaskRunner(props: Props): JSX.Element {
         zoomedMs: Math.round(p.zoomedMs),
       },
       readyMs: readyMs.current,
+      ...(preloadMs.current > 0 ? { preloadMs: preloadMs.current } : {}),
       readyLate: ready?.late ?? true,
       orientationChanges: orientation.current.changes,
       metrics: results.current.metrics,
@@ -503,9 +553,9 @@ export function TaskRunner(props: Props): JSX.Element {
   ];
 
   return (
-    <div class="st-task" data-phase={phase}>
+    <div class={active ? 'st-task' : 'st-task is-warm'} data-phase={phase} inert={!active} aria-hidden={active ? undefined : 'true'}>
       <div class="st-frame-box" inert={phase !== 'running'}>
-        <iframe ref={frame} class="st-frame" style={iframeStyle} title="The website" key={loadKey} />
+        <iframe ref={frame} class="st-frame" style={iframeStyle} title="The website" name={trial.trialId} key={loadKey} />
       </div>
 
       <div class={`st-bar ${go ? '' : 'is-find'}`} ref={barRef} inert={phase !== 'running'}>

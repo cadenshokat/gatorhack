@@ -47,20 +47,21 @@ function harness(over: Partial<ComposeHost> = {}) {
 const ids = (p: Pending) => p.req.req.groups.map((g) => g.id);
 
 describe('compose runner', () => {
-  it('sends up to 2 groups a request, up to 3 requests at once, in the order given', async () => {
+  it('sends up to 2 groups a request, up to 6 requests at once, in the order given', async () => {
     const h = harness();
-    h.runner.compose(['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8'].map((id) => group(id)));
+    h.runner.compose(Array.from({ length: 14 }, (_, i) => group(`g${i + 1}`)));
     expect(COMPOSE_BATCH).toBe(2);
+    expect(COMPOSE_IN_FLIGHT).toBe(6);
     expect(h.calls).toHaveLength(COMPOSE_IN_FLIGHT);
-    expect(h.calls.map(ids)).toEqual([['g1', 'g2'], ['g3', 'g4'], ['g5', 'g6']]);
+    expect(h.calls.map(ids)).toEqual([['g1', 'g2'], ['g3', 'g4'], ['g5', 'g6'], ['g7', 'g8'], ['g9', 'g10'], ['g11', 'g12']]);
     expect(h.calls[0]!.req.req.page.host).toBe('example.gov');
     expect(h.runner.state().status).toBe('working');
     expect(Object.values(h.runner.state().groups).every((g) => g.state === 'waiting')).toBe(true);
     h.answer(1, [good('g3'), good('g4')]);
     await h.flush();
     // One answer frees a slot: the next two go out.
-    expect(h.calls).toHaveLength(4);
-    expect(ids(h.calls[3]!)).toEqual(['g7', 'g8']);
+    expect(h.calls).toHaveLength(7);
+    expect(ids(h.calls[6]!)).toEqual(['g13', 'g14']);
   });
 
   it('never asks twice for the same group on this page', async () => {
@@ -78,13 +79,13 @@ describe('compose runner', () => {
 
   it('a later call moves its groups that are still waiting to the front', async () => {
     const h = harness();
-    h.runner.compose(['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'g9', 'g10'].map((id) => group(id)));
-    expect(h.calls).toHaveLength(3);
-    // The person's screen now shows g9: it goes next, before g7 and g8.
-    h.runner.compose([group('g9'), group('g1')]);
+    h.runner.compose(Array.from({ length: 16 }, (_, i) => group(`g${i + 1}`)));
+    expect(h.calls).toHaveLength(6);
+    // The person's screen now shows g15: it goes next, before g13 and g14.
+    h.runner.compose([group('g15'), group('g1')]);
     h.answer(0, [good('g1'), good('g2')]);
     await h.flush();
-    expect(ids(h.calls[3]!)).toEqual(['g9', 'g7']);
+    expect(ids(h.calls[6]!)).toEqual(['g15', 'g13']);
   });
 
   it('waiting -> ready (with readyAt), kept, or failed; version bumps on each change; done once', async () => {
@@ -145,8 +146,8 @@ describe('compose runner', () => {
 
   it('drops late answers for an old page, and starts again on the new one', async () => {
     const h = harness();
-    h.runner.compose([group('g1'), group('g2'), group('g3'), group('g4'), group('g5'), group('g6'), group('g7')]);
-    expect(h.calls).toHaveLength(3);
+    h.runner.compose(Array.from({ length: 15 }, (_, i) => group(`g${i + 1}`)));
+    expect(h.calls).toHaveLength(6);
     h.runner.reset();
     expect(h.runner.state()).toMatchObject({ status: 'idle', groups: {} });
     h.answer(0, [good('g1'), good('g2')]);
@@ -154,10 +155,10 @@ describe('compose runner', () => {
     expect(h.runner.state().groups).toEqual({});
     // The old page's in-flight requests don't hold back the new page, and nothing from the old queue is sent.
     h.runner.compose([group('g1'), group('h2'), group('h3'), group('h4'), group('h5'), group('h6')]);
-    expect(h.calls.slice(3).map(ids)).toEqual([['g1', 'h2'], ['h3', 'h4'], ['h5', 'h6']]);
+    expect(h.calls.slice(6).map(ids)).toEqual([['g1', 'h2'], ['h3', 'h4'], ['h5', 'h6']]);
     h.answer(1, [good('g3'), good('g4')]);
     await h.flush();
-    expect(h.calls).toHaveLength(6);
+    expect(h.calls).toHaveLength(9);
     expect(h.runner.state().groups.g3).toBeUndefined();
     expect(h.done).toHaveLength(0);
   });

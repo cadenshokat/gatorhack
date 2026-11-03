@@ -16,8 +16,9 @@ import type { ComposeGroupState, EngineState } from '../contracts';
 
 /** Groups per request. */
 export const COMPOSE_BATCH = 2;
-/** Requests in flight at once. */
-export const COMPOSE_IN_FLIGHT = 3;
+/** Requests in flight at once: a long article's groups (about 12) all go out together, so the slowest answer, not a
+ *  second wave, sets how long the page takes. */
+export const COMPOSE_IN_FLIGHT = 6;
 /** A little over the background's own 20 s, so its plainer timeout message wins. */
 const COMPOSE_TIMEOUT_MS = 24_000;
 

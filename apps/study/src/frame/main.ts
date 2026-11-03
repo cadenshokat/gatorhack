@@ -15,7 +15,10 @@ const ORIGINAL_CAP_MS = 8000;
 function findHost(): FrameHost | null {
   try {
     if (window.parent === window) return null;
-    const h = (window.parent as unknown as { __studyHost?: FrameHost }).__studyHost;
+    // The shell names each website's frame and keeps its host under that name, so a website loading in the background
+    // (the next adapted one) and the one on screen never share a host. The dev page has one unnamed frame.
+    const parent = window.parent as unknown as { __studyHost?: FrameHost; __studyHosts?: Record<string, FrameHost> };
+    const h = window.name ? parent.__studyHosts?.[window.name] : parent.__studyHost;
     return h && typeof h.trial === 'function' && typeof h.ready === 'function' ? h : null;
   } catch {
     return null; // another origin

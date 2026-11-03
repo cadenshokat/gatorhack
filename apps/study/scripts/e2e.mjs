@@ -3,7 +3,11 @@
 // server up:
 //
 //   node scripts/e2e.mjs [--base http://127.0.0.1:5190] [--browsers webkit,chromium] [--seq 0,1,2,3]
-//                        [--ai https://webable-gatorhack-ai.vercel.app] [--out <dir for screenshots>]
+//                        [--ai https://webable-gatorhack-ai.vercel.app] [--out <dir for screenshots>] [--human]
+//
+// --human: take about as long as a person on the screens around the websites (reading a card 5 s, the practice website
+// 20 s, an ease question 3 s, a round's statements 6 s, the break and a round's start 8 s), so the adapted websites get
+// the head start they would get with a participant (they load behind those screens). Without it the run is quick.
 //
 // WebKit (Safari's engine, as an iPhone 15) and Chromium (as a Pixel 7), real touch taps throughout. For each sequence
 // (?seq=0..3) and browser: first someone the study is not for (stopped right after the age and trouble questions, nothing
@@ -34,6 +38,9 @@ const browsers = arg('browsers', 'webkit,chromium').split(',');
 const seqs = arg('seq', '1').split(',').map(Number);
 const aiOrigin = arg('ai', 'https://webable-gatorhack-ai.vercel.app');
 const out = arg('out', join(process.env.TMPDIR ?? '/tmp', 'webable-study-e2e'));
+const HUMAN = process.argv.includes('--human')
+  ? { card: 5000, practice: 20000, ease: 3000, statements: 6000, intro: 8000 }
+  : { card: 0, practice: 0, ease: 0, statements: 0, intro: 0 };
 mkdirSync(out, { recursive: true });
 
 /** Live AI can take ~25 s behind a website's card; wait this long for "Open the website". */
@@ -130,12 +137,14 @@ async function notEligible(browser, device, seq, which, shots) {
  * route is allowed: the simplified page shows 10 rows of a long table, then "Show all … rows", which this taps.
  */
 async function answerShown(page) {
-  const frame = page.frames().find((f) => f !== page.mainFrame());
+  // The website on screen: the next adapted one may be loading behind it in a second, hidden frame.
+  const el = await page.$('.st-task:not(.is-warm) iframe');
+  const frame = el ? await el.contentFrame() : null;
   if (!frame) return null;
   const look = (expand) =>
     frame.evaluate((expand) => {
       const norm = (x) => x.replace(/[‐-―−]/g, '-').replace(/\s+/g, ' ').toLowerCase();
-      const task = window.parent.__studyHost.trial().task;
+      const task = (window.parent.__studyHosts?.[window.name] ?? window.parent.__studyHost).trial().task;
       const d = window.__studyFrame?.delivery?.() ?? null;
       const open = d?.simplified?.open === true;
       const want = norm(open ? (task.answerTextSimplified ?? task.answerText) : task.answerText);
@@ -196,12 +205,14 @@ async function runTask(page, name, shots, mode) {
     await open.waitFor({ state: 'visible', timeout: CARD_MS });
   }
   const cardMs = Date.now() - t0;
+  // Reading the card takes a person a few seconds whether or not the website is ready.
+  if (cardMs < HUMAN.card) await sleep(HUMAN.card - cardMs);
   const task = await hostTask(page);
   if (!task) throw new Error(`${name}: no task on screen`);
   if (task.kind !== 'find') fail(`${name}: ${task.id} is a '${task.kind}' task, not 'find'`);
   await page.screenshot({ path: join(shots, `${name}-card.png`) });
   await open.tap();
-  await sleep(1200);
+  await sleep(name === 'practice' ? Math.max(1200, HUMAN.practice) : 1200);
   await page.screenshot({ path: join(shots, `${name}-page.png`) });
 
   const shown = await answerShown(page);
@@ -213,7 +224,7 @@ async function runTask(page, name, shots, mode) {
   } else if (shown.route !== 'shown') note(`${name}: the answer is in the ${shown.layer} ${shown.route}`);
 
   // Scroll the page inside the frame by a few screens, the way a thumb would.
-  const box = await page.locator('.st-frame-box').boundingBox();
+  const box = await page.locator('.st-task:not(.is-warm) .st-frame-box').boundingBox();
   if (box) {
     for (let i = 0; i < 3; i++) {
       await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height * 0.6).catch(() => {});
@@ -263,6 +274,7 @@ async function runTask(page, name, shots, mode) {
   }
   await heading(page, 'How easy or hard was it to find the answer?', 10000);
   await page.screenshot({ path: join(shots, `${name}-ease.png`) });
+  await sleep(HUMAN.ease);
   await choose(page, EASE.name);
   where = 'questions';
   return { taskId: task.id, mode, cardMs, question: task.question };
@@ -354,8 +366,10 @@ async function fullRun(page, seq, which, shots) {
     const text = await page.locator('main').innerText();
     const n = Number(/(?:There are|Round 2 has) (\d+)/.exec(text)?.[1] ?? 0);
     if (n !== PER_ROUND) fail(`${which}: round ${r} says it has ${n} websites, not ${PER_ROUND}`);
+    await sleep(HUMAN.intro);
     await tapText(page, `Start round ${r}`);
     for (let i = 1; i <= PER_ROUND; i++) intended.push({ ...(await runTask(page, `r${r}-${i}`, shots, modes[r][i - 1])), round: r });
+    await sleep(HUMAN.statements);
     await umux(page, r);
     if (r === 1) await heading(page, 'Round 1 is finished', 10000);
   }
@@ -454,6 +468,9 @@ function check(which, run, seq) {
         const n = d.ops.filter((o) => o.status === 'applied' && !o.source).length;
         if (n) note(`${which}: ${t.taskId} has ${n} change(s) with no logged source`);
         if (live) {
+          // Live AI: the website loads behind the screens before it, so its card should barely wait.
+          note(`${which}: ${t.taskId} card up ${(m.cardMs / 1000).toFixed(1)} s before Open showed; loaded ${((t.preloadMs ?? 0) / 1000).toFixed(1)} s ahead, ready ${(t.readyMs / 1000).toFixed(1)} s after it started`);
+          if (t.preloadMs == null) fail(`${which}: ${t.taskId} did not load ahead of its card`);
           if (!d.ai || d.ai.live !== true) fail(`${which}: ${t.taskId} has no delivery.ai with live AI on (${JSON.stringify(d.ai)})`);
           else if (!Array.isArray(d.ai.calls) || !Array.isArray(d.ai.accepted)) fail(`${which}: ${t.taskId} delivery.ai is missing calls or accepted`);
         } else if (d.ai?.live) fail(`${which}: ${t.taskId} says live AI answered, but it is not configured`);
@@ -522,6 +539,7 @@ for (const seq of seqs) {
           end: `${t.endAction}${t.correct ? ' (right)' : ''}`,
           s: Math.round(t.activeMs / 100) / 10,
           ready: t.readyMs,
+          ahead: t.preloadMs ?? '',
           taps: t.metrics?.taps,
           misses: t.metrics?.misses,
           scroll: t.metrics?.scrollScreens,

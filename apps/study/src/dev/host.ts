@@ -1,7 +1,8 @@
 // Dev-only host for one replica (dev.html): the FrameHost the shell gives a trial, without the rest of the shell.
 //   /dev.html?r=<replicaId>&c=original|adapted|practice&fit=typical|rosa|reader|large|calm&h=664&mode=replay|record
 //   optional: &fresh=1 (record: the canonical pass), &manifest=<url> and &task=<url> (a replica outside replicas/), &w=<px> (a wider frame),
-//   &debounce=1 (the fit's repeat-click filter on)
+//   &debounce=1 (the fit's repeat-click filter on), mode=live&ai=<server origin> (live AI for a reader who likes short
+//   points in plain words; the hosted server by default)
 // The replica loads in a same-origin iframe at its servePath. Zoom resizes the iframe to 390/f x h/f and scales it by
 // f from the top-left (Option B). A cover hides the frame until it is ready. Begin, End and Delivery print JSON.
 // window.__devHost exposes the same for scripts/record.mjs and scripts/replay-check.mjs.
@@ -10,6 +11,7 @@ import type { FrameHost, ReplicaManifest, TaskSpec, TrialConfig } from '../contr
 import { LAYOUT_WIDTH } from '../contracts';
 import type { StudyFrameApi, StudyTrial } from '../frame/types';
 import { fitByName } from './fits';
+import { readerFor } from '../experiment/tuning';
 
 
 interface DevState {
@@ -152,7 +154,10 @@ async function start(): Promise<void> {
     fit,
     frame: { w: W, h: H },
     fixturesUrl: `/_r/${rid}/fixtures.json`,
-    mode: q.get('mode') === 'record' ? 'record' : 'replay',
+    mode: q.get('mode') === 'record' ? 'record' : q.get('mode') === 'live' ? 'live' : 'replay',
+    ...(q.get('mode') === 'live'
+      ? { ai: { origin: q.get('ai') ?? 'https://webable-gatorhack-ai.vercel.app', reader: readerFor({ needs: ['busy'], polarity: 'light', shape: 'points', words: 'plain' }, new Date('2026-11-03T00:00:00Z')) } }
+      : {}),
     recordFresh: q.get('fresh') === '1',
     originalHost: manifest.originalHost,
     fitName,

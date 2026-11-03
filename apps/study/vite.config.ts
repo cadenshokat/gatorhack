@@ -190,7 +190,8 @@ function studyReplicas(): Plugin {
     },
     closeBundle() {
       // Copy every replica into the build: its files under /_r/<id>/, its page at its own path. Paths without an
-      // extension are written as <path>.html and served by Vercel's cleanUrls.
+      // extension are written as <path>.html and served by Vercel's cleanUrls; a path ending in / (the Allrecipes
+      // copies) as <path>index.html, the only name GitHub Pages serves there (it never publishes a bare '.html').
       if (!outDir || !existsSync(outDir)) return;
       for (const r of readReplicas()) {
         const site = join(replicasDir, r.id, 'site');
@@ -198,7 +199,7 @@ function studyReplicas(): Plugin {
         cpSync(site, join(outDir, '_r', r.id), { recursive: true });
         const fx = join(replicasDir, r.id, 'fixtures.json');
         if (existsSync(fx)) cpSync(fx, join(outDir, '_r', r.id, 'fixtures.json'));
-        const target = extname(r.servePath) ? r.servePath : `${r.servePath}.html`;
+        const target = r.servePath.endsWith('/') ? `${r.servePath}index.html` : extname(r.servePath) ? r.servePath : `${r.servePath}.html`;
         const dest = join(outDir, target);
         mkdirSync(dirname(dest), { recursive: true });
         writeFileSync(dest, readFileSync(join(site, r.file)));

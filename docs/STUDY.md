@@ -49,6 +49,19 @@ From Caden's review of 4.0.0 (2 Nov 2026, evening):
   (`record.mjs --engine webkit --add`), so iPhones replay the AI's read of every element: 4.0.0 had one element on the
   AP stories (the video and ad box at the end) that WebKit read differently and that had no recorded answer. All four
   adapted pages replay with no misses in either engine, in every recorded setting.
+- **The recipes open on the study link** (3 Nov, about 1 am). A copy whose address ends in "/" (both recipes) was
+  built as a file named `.html`, which GitHub Pages never publishes, so on the study link the recipe websites never
+  opened ("This website is taking a long time to open"); the dev server served them, so every check before this
+  passed. They are built as `index.html` now. Sessions saved before this fix are tests.
+- **Adapted websites load ahead.** With live AI an adapted website took about 5 s (recipe) to 12 s (news) to be ready
+  after its card came up: the news story's AI layout comes first, then the AI rewrites of its parts, about 4 s each.
+  The adapted round's two websites now load one after the other, invisibly, behind the screens before that round
+  (the practice website and the round's start; or round 1's statements, the break and round 2's start), and a website
+  not ready by then loads behind the previous one's ease question. Nothing starts loading while a website is being
+  timed, and nothing loads during the other condition's round. A website that loaded ahead appears when its card
+  does, in the same frame; its card still stays up at least 2.5 s, and "taking a long time" now counts from when it
+  started loading. The record keeps how long it loaded ahead (`preloadMs`, export `preload_ms`): the wait at the card
+  was about `readyMs − preloadMs`. The AI's rewrites of a page's parts now all go out at once (6 requests, was 3).
 
 ### In 4.0.0
 

@@ -152,6 +152,20 @@ const RECORD_MODE = /[?&]record=1/.test(location.search) && location.hostname ==
 /** Live AI on the adapted websites (protocol 4.0.0): the hosted server is set, and this is not a recording run. */
 const LIVE_AI = !RECORD_MODE && !!CONFIG.aiOrigin;
 const BEFORE_WEBSITES = new Set<string>(['welcome', 'agree', 'eligible', 'about', 'setup', 'warmup']);
+/**
+ * Live AI: the adapted round's websites load one after the other behind the screens before that round (and behind a
+ * website's ease question), so their AI work is done by their turn. These are the screens before each round; nothing
+ * starts loading while a website is being timed, and nothing loads during the other condition's round.
+ */
+const PRELOAD_FOR: Partial<Record<string, 1 | 2>> = { practice: 1, 'round1-intro': 1, sus1: 2, break: 2, 'round2-intro': 2 };
+
+/** A short tag for the fit a website loads with: if what the person accepted changes it, the website loads again. */
+function fitTag(fit: FitProfile | null): string {
+  const t = JSON.stringify(fit ?? null);
+  let h = 2166136261;
+  for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619);
+  return (h >>> 0).toString(36);
+}
 
 /**
  * The progress bar's place for each step (parts in ui.tsx PARTS): `fill` is how much of the part is done when the step
@@ -310,7 +324,55 @@ export function App(): JSX.Element {
   const fit = rec.calibration?.fit ?? null;
   const adaptedRound: 1 | 2 = plan.conditions[0] === 'adapted' ? 1 : 2;
 
-  let body: JSX.Element;
+  /* ---------------- the websites: the one on screen, and the next adapted one loading behind ---------------- */
+
+  /** The website whose ease question is up (its round's runner said it ended): the next may start loading. */
+  const [endedKey, setEndedKey] = useState<string | null>(null);
+  /** Websites that started loading ahead, and those whose frame is ready. */
+  const [loading, setLoading] = useState<string[]>([]);
+  const [readyKeys, setReadyKeys] = useState<string[]>([]);
+  const tag = fitTag(fit);
+  const keyOf = (p: PlannedTask) => `${p.round}-${p.task.id}-${tag}`;
+  const roundNow: 1 | 2 | null = stage === 'round1' ? 1 : stage === 'round2' ? 2 : null;
+  const current = roundNow ? roundTasks(roundNow)[doneIn(roundNow)] ?? null : null;
+  const preRound = roundNow ?? PRELOAD_FOR[stage] ?? null;
+  const ahead =
+    LIVE_AI && rec.setup?.reader && preRound
+      ? roundTasks(preRound).filter(
+          (p) => p.condition === 'adapted' && p !== current && !rec.trials.some((t) => t.round === p.round && t.taskId === p.task.id),
+        )
+      : [];
+  const mayStart = ahead.length > 0 && (current ? endedKey === keyOf(current) : true);
+  const aheadKeys = ahead.map(keyOf).join(' ');
+  useEffect(() => {
+    if (!mayStart) return;
+    // One at a time: the next starts once the one before it is ready.
+    for (const k of aheadKeys.split(' ')) {
+      if (!loading.includes(k)) return setLoading((l) => [...l, k]);
+      if (!readyKeys.includes(k)) return;
+    }
+  }, [mayStart, aheadKeys, loading, readyKeys]);
+  const preloads = ahead.filter((p) => loading.includes(keyOf(p)));
+  const runner = (p: PlannedTask, active: boolean) => (
+    <TaskRunner
+      key={keyOf(p)}
+      planned={p}
+      active={active}
+      eyebrow={`Round ${p.round}, website ${p.position} of ${roundTasks(p.round as 1 | 2).length}`}
+      restarted={active && restarted}
+      fit={fit}
+      sessionId={rec.sessionId}
+      mode={RECORD_MODE ? 'record' : LIVE_AI ? 'live' : 'replay'}
+      ai={LIVE_AI && CONFIG.aiOrigin ? { origin: CONFIG.aiOrigin, reader: rec.setup?.reader ?? null } : undefined}
+      onEnded={() => setEndedKey(keyOf(p))}
+      onReady={() => setReadyKeys((r) => (r.includes(keyOf(p)) ? r : [...r, keyOf(p)]))}
+      note={(k, d) => store.note(k, d)}
+      onDone={onTrial}
+      onLeave={leave}
+    />
+  );
+
+  let body: JSX.Element | null;
   switch (stage) {
     case 'welcome':
       body = <WelcomeScreen preview={preview} onStart={() => go('agree')} />;
@@ -404,24 +466,9 @@ export function App(): JSX.Element {
     }
     case 'round1':
     case 'round2': {
-      const r = stage === 'round1' ? 1 : 2;
-      const tasks = roundTasks(r);
-      const next = tasks[doneIn(r)];
-      body = next ? (
-        <TaskRunner
-          key={`${r}-${next.task.id}`}
-          planned={next}
-          eyebrow={`Round ${r}, website ${next.position} of ${tasks.length}`}
-          restarted={restarted}
-          fit={fit}
-          sessionId={rec.sessionId}
-          mode={RECORD_MODE ? 'record' : LIVE_AI ? 'live' : 'replay'}
-          ai={LIVE_AI && CONFIG.aiOrigin ? { origin: CONFIG.aiOrigin, reader: rec.setup?.reader ?? null } : undefined}
-          note={(k, d) => store.note(k, d)}
-          onDone={onTrial}
-          onLeave={leave}
-        />
-      ) : (
+      // The round's website is drawn below, with the one loading behind it, so it stays the same frame when its turn
+      // comes.
+      body = current ? null : (
         <EndedScreen
           title="Something went wrong"
           lines={['The websites for this round are missing. Email us to tell us.']}
@@ -526,6 +573,10 @@ export function App(): JSX.Element {
   return (
     <ProgressContext.Provider value={progressFor(stage, doneIn, (r) => roundTasks(r).length)}>
       {body}
+      {/* In plan order, so a website only ever loses the one before it: its frame is never moved (that reloads it). */}
+      <div key="websites" class="st-websites">
+        {[current, ...preloads].filter((p): p is PlannedTask => !!p).map((p) => runner(p, p === current))}
+      </div>
       {leaveDialog}
     </ProgressContext.Provider>
   );

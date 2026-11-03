@@ -454,8 +454,15 @@ html:has(.st-sheet-scrim) {
   background: #fff;
 }
 /* During a website nothing behind it scrolls (that would also hide and show the browser's toolbar). */
-html:has(.st-task) {
+html:has(.st-task:not(.is-warm)) {
   overflow: hidden;
+}
+/* The next adapted website, loading behind the screen in front: drawn at its real size, so it lays out and runs as it
+   will on its turn, but invisible and out of reach until then. */
+.st-task.is-warm {
+  z-index: -1;
+  opacity: 0;
+  pointer-events: none;
 }
 /* What covers the website (instruction page, answer sheet, pause dialog). While the person pinch-zooms, TaskRunner
    moves this layer and the bar onto the visible part of the screen and undoes the zoom on them. */

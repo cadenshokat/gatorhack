@@ -370,7 +370,14 @@ export interface TrialRecord {
    * than 390 px (1.10 on 430 px phones), so those builds over-count pinch zoom on wide phones.
    */
   pinch: { used: boolean; maxScale: number; zoomedMs: number };
+  /** From when the website started loading to when it was ready (behind its card, or behind earlier screens). */
   readyMs: number;
+  /**
+   * From protocol 4.1.0, live AI only: the website loaded behind the earlier screens for this long before its card came
+   * up, so its AI work was under way. The wait at the card was about max(0, readyMs - preloadMs). Absent: it started
+   * loading with its card.
+   */
+  preloadMs?: number;
   readyLate: boolean;
   orientationChanges: number;
   metrics: FrameMetrics | null;
