@@ -1,0 +1,4672 @@
+{
+ "v": "study-fixtures.1",
+ "replicaId": "pp-karin",
+ "version": "2",
+ "servePath": "/karin-slaughter-mindful-of-violence-storyline-in-the-good-daughter-12202639",
+ "originalHost": "people.com",
+ "engineCommit": "f37c9bf7c6565091834717601777a781bf68efcc",
+ "serverCommit": "f37c9bf7c6565091834717601777a781bf68efcc",
+ "models": {
+  "jev": "jev-1.14.0",
+  "compose": "gpt-5.4-mini"
+ },
+ "recordedAt": "2026-11-03T08:05:13.908Z",
+ "matrix": {
+  "fits": [
+   "typical",
+   "rosa",
+   "reader",
+   "large",
+   "calm"
+  ],
+  "heights": [
+   568,
+   664,
+   760
+  ],
+  "engines": [
+   "chromium",
+   "webkit"
+  ],
+  "canonical": {
+   "fit": "typical",
+   "h": 664
+  }
+ },
+ "understand": {
+  "page": {
+   "purpose": {
+    "kind": "article",
+    "p": 1,
+    "probs": {
+     "record_stats": 0,
+     "scoreboard": 0,
+     "schedule": 0,
+     "standings": 0,
+     "roster": 0,
+     "article": 1,
+     "news_index": 0,
+     "recipe": 0,
+     "product": 0,
+     "search_results": 0,
+     "form_task": 0,
+     "checkout": 0,
+     "sign_in": 0,
+     "account_dashboard": 0,
+     "bill_statement": 0,
+     "appointment": 0,
+     "status_lookup": 0,
+     "info_guide": 0,
+     "faq": 0,
+     "directory_listing": 0,
+     "location_hours": 0,
+     "calendar_dates": 0,
+     "comparison": 0,
+     "video": 0,
+     "gallery": 0,
+     "home_portal": 0,
+     "course_lesson": 0,
+     "course_overview": 0,
+     "live_blog": 0,
+     "product_listing": 0,
+     "game_detail": 0,
+     "other": 0
+    }
+   },
+   "mainRegion": {
+    "id": "n220",
+    "p": 0.5,
+    "probs": {
+     "n218": 0.27,
+     "n219": 0.005,
+     "n220": 0.675,
+     "n221": 0,
+     "n222": 0,
+     "n112": 0,
+     "n223": 0,
+     "n224": 0,
+     "none": 0.05
+    }
+   },
+   "mainPick": {
+    "id": "none",
+    "p": 0.74,
+    "probs": {
+     "n4": 0.01,
+     "n7": 0.11,
+     "n8": 0,
+     "n9": 0,
+     "n10": 0,
+     "n21": 0,
+     "n27": 0,
+     "n29": 0.01,
+     "n30": 0,
+     "n31": 0,
+     "n44": 0,
+     "n45": 0.01,
+     "n61": 0.12,
+     "n97": 0,
+     "n120": 0,
+     "n121": 0,
+     "n122": 0,
+     "n123": 0,
+     "n141": 0,
+     "none": 0.74
+    }
+   },
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 5,
+    "questions": 214,
+    "inputTokens": 108848,
+    "wallMs": 434,
+    "serverMs": 199,
+    "costUsd": 0.004571616000000001
+   },
+   "ids": {
+    "n4": [
+     "div|button|Close banner|dialog|||",
+     true
+    ],
+    "n7": [
+     "button|button|DOWNLOAD THE FREE APP|dialog|||",
+     true
+    ],
+    "n8": [
+     "button|button|Main menu for PEOPLE|banner|header menu button||",
+     true
+    ],
+    "n9": [
+     "a|link|Visit PEOPLE's homepage|banner|header logo|this website|",
+     true
+    ],
+    "n10": [
+     "button|button|View your notifications and profile settings|banner|vf button no outline size large||",
+     true
+    ],
+    "n11": [
+     "ul|list|List of 2 items, begins: Search Please fill out this field.… · Log In /…|banner|utility nav list||",
+     true
+    ],
+    "n17": [
+     "div|region|More Videos 0 seconds of 44 seconds Next… · Close|none|mm ads mob banner fixed||",
+     true
+    ],
+    "n21": [
+     "button|button|Close|none|jw player mobile close||",
+     true
+    ],
+    "n24": [
+     "h1|heading level 1|[name] Wanted To Be ‘Very Mindful’ of [name] in The Good Daughter|main|article heading headline||",
+     true
+    ],
+    "n27": [
+     "a|link|[name]|main|item name|this website|",
+     true
+    ],
+    "n29": [
+     "a|link|Leave a Comment|main|comment link|same page|",
+     true
+    ],
+    "n30": [
+     "a|link|Add Us On|main|follow profile link|another website|",
+     true
+    ],
+    "n31": [
+     "div|button||main|follow profile tooltip||",
+     true
+    ],
+    "n217": [
+     "div|region|NEED TO KNOW · [name] / The Good Daughter / [name]|main|page content||",
+     true
+    ],
+    "n44": [
+     "a|link|[name]|main||this website|",
+     true
+    ],
+    "n45": [
+     "a|link|The Good Daughter|main||another website|",
+     true
+    ],
+    "n48": [
+     "div|region||main|mm ads mob sticky||",
+     true
+    ],
+    "n50": [
+     "iframe|none|Advertisement|main|||inline_frame",
+     false
+    ],
+    "n55": [
+     "div|region||main|mm ads mob fixed sticky||",
+     false
+    ],
+    "n57": [
+     "iframe|none|Advertisement|main|||inline_frame",
+     false
+    ],
+    "n58": [
+     "div|region|VIPs Get More · Subscribe Now|main|people||",
+     true
+    ],
+    "n61": [
+     "a|link|Subscribe Now|main|people button link|this website|",
+     true
+    ],
+    "n63": [
+     "div|region||main|mm ads mob fixed sticky||",
+     false
+    ],
+    "n65": [
+     "iframe|none|Advertisement|main|||inline_frame",
+     false
+    ],
+    "n97": [
+     "a|link|People Who Read|main|link breadcrumbs|this website|",
+     true
+    ],
+    "n112": [
+     "div|region||main|article mobile ad mm||",
+     true
+    ],
+    "n119": [
+     "div|region|Conversation Navigation · Follow this conversation to… / Log in / Sign up|region|comments last child no ad||",
+     true
+    ],
+    "n120": [
+     "button|button|Follow this conversation to be notified when new comments are posted|region|vf button no outline cta||",
+     true
+    ],
+    "n121": [
+     "button|button|Log in|region|vf button no outline link accent||",
+     true
+    ],
+    "n122": [
+     "button|button|Sign up|region|vf button no outline link accent||",
+     true
+    ],
+    "n123": [
+     "button|button|Jump to log in or sign Up|region|vf no outline small||",
+     true
+    ],
+    "n124": [
+     "textarea|textbox|Start the conversation|region|vf content editor input form||",
+     true
+    ],
+    "n126": [
+     "button|tab|All Comments, 0 items|navigation|all button vf nav accent colour||",
+     true
+    ],
+    "n127": [
+     "button|button|NEWEST|navigation|vf dropdown button no outline secondary||",
+     true
+    ],
+    "n128": [
+     "button|button|View your notifications and profile settings|navigation|vf button no outline size large||",
+     true
+    ],
+    "n141": [
+     "a|link|[name].|region|vf branding link|another website|",
+     true
+    ],
+    "n145": [
+     "div|region||main|footer mm ads mob||",
+     false
+    ],
+    "n150": [
+     "div|region||main|footer mm ads mob||",
+     false
+    ],
+    "n206": [
+     "li|text|Customer Support|contentinfo|footer links item||",
+     true
+    ],
+    "n207": [
+     "a|link|Customer Support|contentinfo|footer links link utility|another website|",
+     true
+    ],
+    "n218": [
+     "div|region holding headings x1, paragraphs x1, links x3|[name] Wanted To Be ‘Very Mindful’… · [name] / Leave a Comment / Add Us…|main|loc article header||",
+     true
+    ],
+    "n219": [
+     "figure|region holding pictures x1|[name] at the Peacock and People Who…|main|figure article primary||",
+     true
+    ],
+    "n220": [
+     "div|region holding headings x3, paragraphs x7, pictures x2, video or embed x6, lists x1, links x8|NEED TO KNOW · [name] / The Good Daughter / [name]|main|article content||",
+     true
+    ],
+    "n221": [
+     "div|region holding links x3|Read More: Entertainment Books People Who Read · Entertainment / Books / People Who Read|main|breadcrumbs||",
+     true
+    ],
+    "n222": [
+     "div|region holding pictures x3, links x6|Trending Now Everything to Know About The Good… · Everything to Know About… / Entertainment…|main|article two||",
+     true
+    ],
+    "n223": [
+     "div|region holding headings x1, paragraphs x2, lists x1, form fields x1, buttons x7, links x4|Conversation · Community [name] / Follow this conversation to… / Log in|main|people comments article two||",
+     true
+    ],
+    "n224": [
+     "div|region holding headings x1, pictures x16, video or embed x2, links x16|Related Articles · The Good [name]… / [name]… / [name]…|main|section||",
+     true
+    ]
+   }
+  },
+  "elements": [
+   {
+    "id": "n4",
+    "fp": "div|button|Close banner|dialog|||",
+    "uniq": true,
+    "j": {
+     "id": "n4",
+     "role": "popup_overlay",
+     "roleP": 0.68,
+     "roleProbs": {
+      "action_button": 0.28,
+      "popup_overlay": 0.68
+     },
+     "task": 0.19,
+     "main": 0.02,
+     "help": 0.01,
+     "fine": "popup",
+     "fineP": 0.68,
+     "importance": 0.2
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n7",
+    "fp": "button|button|DOWNLOAD THE FREE APP|dialog|||",
+    "uniq": true,
+    "j": {
+     "id": "n7",
+     "role": "advertising",
+     "roleP": 0.88,
+     "roleProbs": {
+      "popup_overlay": 0.12,
+      "advertising": 0.88
+     },
+     "task": 0.08,
+     "main": 0.04,
+     "help": 0.02,
+     "fine": "app_install_banner",
+     "fineP": 0.88,
+     "importance": 0.04
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n8",
+    "fp": "button|button|Main menu for PEOPLE|banner|header menu button||",
+    "uniq": true,
+    "j": {
+     "id": "n8",
+     "role": "navigation",
+     "roleP": 0.96,
+     "roleProbs": {
+      "navigation": 0.96
+     },
+     "task": 0.1,
+     "main": 0.03,
+     "help": 0.02,
+     "fine": "site_nav",
+     "fineP": 0.96,
+     "importance": 1
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n9",
+    "fp": "a|link|Visit PEOPLE's homepage|banner|header logo|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n9",
+     "role": "navigation",
+     "roleP": 0.94,
+     "roleProbs": {
+      "navigation": 0.94
+     },
+     "task": 0.09,
+     "main": 0.03,
+     "help": 0.02,
+     "fine": "site_logo",
+     "fineP": 0.94,
+     "importance": 0.72
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n10",
+    "fp": "button|button|View your notifications and profile settings|banner|vf button no outline size large||",
+    "uniq": true,
+    "j": {
+     "id": "n10",
+     "role": "account_utility",
+     "roleP": 0.95,
+     "roleProbs": {
+      "popup_overlay": 0.03,
+      "account_utility": 0.95
+     },
+     "task": 0.08,
+     "main": 0.03,
+     "help": 0.03,
+     "fine": "account_utility",
+     "fineP": 0.95,
+     "importance": 0.9
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n11",
+    "fp": "ul|list|List of 2 items, begins: Search Please fill out this field.… · Log In /…|banner|utility nav list||",
+    "uniq": true,
+    "j": {
+     "id": "n11",
+     "role": "account_utility",
+     "roleP": 0.73,
+     "roleProbs": {
+      "search": 0.03,
+      "navigation": 0.15,
+      "popup_overlay": 0.08,
+      "account_utility": 0.73
+     },
+     "task": 0.13,
+     "main": 0,
+     "help": 0.06,
+     "fine": "account_utility",
+     "fineP": 0.73,
+     "importance": 0.82
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n17",
+    "fp": "div|region|More Videos 0 seconds of 44 seconds Next… · Close|none|mm ads mob banner fixed||",
+    "uniq": true,
+    "j": {
+     "id": "n17",
+     "role": "advertising",
+     "roleP": 0.45,
+     "roleProbs": {
+      "main_content": 0.21,
+      "popup_overlay": 0.14,
+      "advertising": 0.45,
+      "other": 0.16
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.01,
+     "fine": "advertising",
+     "fineP": 0.45,
+     "importance": 0.1
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n21",
+    "fp": "button|button|Close|none|jw player mobile close||",
+    "uniq": true,
+    "j": {
+     "id": "n21",
+     "role": "main_content",
+     "roleP": 0.6,
+     "roleProbs": {
+      "main_content": 0.6,
+      "action_button": 0.28,
+      "popup_overlay": 0.09
+     },
+     "task": 0.54,
+     "main": 0.03,
+     "help": 0.02,
+     "fine": "video_player",
+     "fineP": 0.6,
+     "importance": 1.5
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n24",
+    "fp": "h1|heading level 1|[name] Wanted To Be ‘Very Mindful’ of [name] in The Good Daughter|main|article heading headline||",
+    "uniq": true,
+    "j": {
+     "id": "n24",
+     "role": "main_content",
+     "roleP": 1,
+     "roleProbs": {
+      "main_content": 1
+     },
+     "task": 0.96,
+     "main": 0,
+     "help": 0.01,
+     "fine": "headline",
+     "fineP": 0.97,
+     "importance": 3.9
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n27",
+    "fp": "a|link|[name]|main|item name|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n27",
+     "role": "main_content",
+     "roleP": 0.5,
+     "roleProbs": {
+      "main_content": 0.5,
+      "action_button": 0.06,
+      "recommendations": 0.23,
+      "other": 0.11
+     },
+     "task": 0.64,
+     "main": 0.05,
+     "help": 0.04,
+     "fine": "teaser_other_content",
+     "fineP": 0.16,
+     "importance": 2.83
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n29",
+    "fp": "a|link|Leave a Comment|main|comment link|same page|",
+    "uniq": true,
+    "j": {
+     "id": "n29",
+     "role": "other",
+     "roleP": 0.43,
+     "roleProbs": {
+      "action_button": 0.24,
+      "navigation": 0.29,
+      "other": 0.43
+     },
+     "task": 0.11,
+     "main": 0.12,
+     "help": 0.07,
+     "fine": "comments",
+     "fineP": 0.43,
+     "importance": 2.16
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n30",
+    "fp": "a|link|Add Us On|main|follow profile link|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n30",
+     "role": "other",
+     "roleP": 0.79,
+     "roleProbs": {
+      "action_button": 0.03,
+      "navigation": 0.05,
+      "help_contact": 0.04,
+      "other": 0.79,
+      "account_utility": 0.07
+     },
+     "task": 0.09,
+     "main": 0.06,
+     "help": 0.04,
+     "fine": "social_share",
+     "fineP": 0.79,
+     "importance": 0.75
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n31",
+    "fp": "div|button||main|follow profile tooltip||",
+    "uniq": true,
+    "j": {
+     "id": "n31",
+     "role": "other",
+     "roleP": 0.48,
+     "roleProbs": {
+      "main_content": 0.04,
+      "action_button": 0.24,
+      "other": 0.48,
+      "account_utility": 0.19
+     },
+     "task": 0.19,
+     "main": 0.06,
+     "help": 0.04,
+     "fine": "social_share",
+     "fineP": 0.44,
+     "importance": 1.24
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n217",
+    "fp": "div|region|NEED TO KNOW · [name] / The Good Daughter / [name]|main|page content||",
+    "uniq": true,
+    "j": {
+     "id": "n217",
+     "role": "main_content",
+     "roleP": 0.9,
+     "roleProbs": {
+      "main_content": 0.9,
+      "other": 0.05
+     },
+     "task": 0.87,
+     "main": 0,
+     "help": 0.02,
+     "fine": "body_text",
+     "fineP": 0.78,
+     "importance": 3.68
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n44",
+    "fp": "a|link|[name]|main||this website|",
+    "uniq": true,
+    "j": {
+     "id": "n44",
+     "role": "main_content",
+     "roleP": 0.56,
+     "roleProbs": {
+      "main_content": 0.56,
+      "action_button": 0.1,
+      "navigation": 0.03,
+      "recommendations": 0.09,
+      "other": 0.13
+     },
+     "task": 0.68,
+     "main": 0.06,
+     "help": 0.05,
+     "fine": "body_text",
+     "fineP": 0.24,
+     "importance": 2.8
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n45",
+    "fp": "a|link|The Good Daughter|main||another website|",
+    "uniq": true,
+    "j": {
+     "id": "n45",
+     "role": "main_content",
+     "roleP": 0.47,
+     "roleProbs": {
+      "main_content": 0.47,
+      "action_button": 0.09,
+      "recommendations": 0.14,
+      "other": 0.24
+     },
+     "task": 0.62,
+     "main": 0.06,
+     "help": 0.02,
+     "fine": "body_text",
+     "fineP": 0.4,
+     "importance": 2.68
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n48",
+    "fp": "div|region||main|mm ads mob sticky||",
+    "uniq": true,
+    "j": {
+     "id": "n48",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.01,
+     "fine": "advertising",
+     "fineP": 0.99,
+     "importance": 0.2
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n50",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n50",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.05,
+     "paidAsStoryP": 0.13
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n55",
+    "fp": "div|region||main|mm ads mob fixed sticky||",
+    "uniq": false,
+    "j": {
+     "id": "n55",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.99,
+     "importance": 0.16
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n57",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n57",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.05,
+     "paidAsStoryP": 0.14
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n58",
+    "fp": "div|region|VIPs Get More · Subscribe Now|main|people||",
+    "uniq": true,
+    "j": {
+     "id": "n58",
+     "role": "advertising",
+     "roleP": 0.95,
+     "roleProbs": {
+      "advertising": 0.95
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.02,
+     "fine": "upsell_promo",
+     "fineP": 0.79,
+     "importance": 0.08
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n61",
+    "fp": "a|link|Subscribe Now|main|people button link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n61",
+     "role": "advertising",
+     "roleP": 0.85,
+     "roleProbs": {
+      "action_button": 0.05,
+      "advertising": 0.85
+     },
+     "task": 0.17,
+     "main": 0.17,
+     "help": 0.02,
+     "fine": "upsell_promo",
+     "fineP": 0.46,
+     "importance": 0.17
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n63",
+    "fp": "div|region||main|mm ads mob fixed sticky||",
+    "uniq": false,
+    "j": {
+     "id": "n63",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.99,
+     "importance": 0.18
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n65",
+    "fp": "iframe|none|Advertisement|main|||inline_frame",
+    "uniq": false,
+    "j": {
+     "id": "n65",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.06,
+     "paidAsStoryP": 0.16
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n97",
+    "fp": "a|link|People Who Read|main|link breadcrumbs|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n97",
+     "role": "navigation",
+     "roleP": 0.59,
+     "roleProbs": {
+      "navigation": 0.59,
+      "advertising": 0.08,
+      "recommendations": 0.21,
+      "other": 0.03
+     },
+     "task": 0.21,
+     "main": 0.05,
+     "help": 0.03,
+     "fine": "breadcrumb",
+     "fineP": 0.59,
+     "importance": 0.95
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n112",
+    "fp": "div|region||main|article mobile ad mm||",
+    "uniq": true,
+    "j": {
+     "id": "n112",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.15
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n119",
+    "fp": "div|region|Conversation Navigation · Follow this conversation to… / Log in / Sign up|region|comments last child no ad||",
+    "uniq": true,
+    "j": {
+     "id": "n119",
+     "role": "other",
+     "roleP": 0.86,
+     "roleProbs": {
+      "account_utility": 0.08,
+      "other": 0.86
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.05,
+     "fine": "comments",
+     "fineP": 0.86,
+     "importance": 2.04
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n120",
+    "fp": "button|button|Follow this conversation to be notified when new comments are posted|region|vf button no outline cta||",
+    "uniq": true,
+    "j": {
+     "id": "n120",
+     "role": "action_button",
+     "roleP": 0.71,
+     "roleProbs": {
+      "action_button": 0.71,
+      "other": 0.2,
+      "account_utility": 0.08
+     },
+     "task": 0.22,
+     "main": 0.15,
+     "help": 0.02,
+     "fine": "secondary_action",
+     "fineP": 0.68,
+     "importance": 2.18
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n121",
+    "fp": "button|button|Log in|region|vf button no outline link accent||",
+    "uniq": true,
+    "j": {
+     "id": "n121",
+     "role": "account_utility",
+     "roleP": 0.88,
+     "roleProbs": {
+      "account_utility": 0.88,
+      "advertising": 0.06
+     },
+     "task": 0.13,
+     "main": 0.11,
+     "help": 0.02,
+     "fine": "login_prompt",
+     "fineP": 0.65,
+     "importance": 0.97
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n122",
+    "fp": "button|button|Sign up|region|vf button no outline link accent||",
+    "uniq": true,
+    "j": {
+     "id": "n122",
+     "role": "advertising",
+     "roleP": 0.62,
+     "roleProbs": {
+      "action_button": 0.14,
+      "popup_overlay": 0.04,
+      "account_utility": 0.12,
+      "advertising": 0.62,
+      "other": 0.03
+     },
+     "task": 0.16,
+     "main": 0.13,
+     "help": 0.02,
+     "fine": "upsell_promo",
+     "fineP": 0.23,
+     "importance": 0.29
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n123",
+    "fp": "button|button|Jump to log in or sign Up|region|vf no outline small||",
+    "uniq": true,
+    "j": {
+     "id": "n123",
+     "role": "account_utility",
+     "roleP": 0.76,
+     "roleProbs": {
+      "action_button": 0.03,
+      "navigation": 0.08,
+      "popup_overlay": 0.03,
+      "account_utility": 0.76,
+      "advertising": 0.07
+     },
+     "task": 0.11,
+     "main": 0.09,
+     "help": 0.03,
+     "fine": "login_prompt",
+     "fineP": 0.51,
+     "importance": 0.91
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n124",
+    "fp": "textarea|textbox|Start the conversation|region|vf content editor input form||",
+    "uniq": true,
+    "j": {
+     "id": "n124",
+     "role": "form_field",
+     "roleP": 0.93,
+     "roleProbs": {
+      "form_field": 0.93,
+      "other": 0.07
+     },
+     "task": 0.47,
+     "main": 0,
+     "help": 0.3,
+     "fine": "form_field",
+     "fineP": 0.93,
+     "importance": 2.86
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n126",
+    "fp": "button|tab|All Comments, 0 items|navigation|all button vf nav accent colour||",
+    "uniq": true,
+    "j": {
+     "id": "n126",
+     "role": "navigation",
+     "roleP": 0.85,
+     "roleProbs": {
+      "navigation": 0.85,
+      "other": 0.11
+     },
+     "task": 0.17,
+     "main": 0,
+     "help": 0.02,
+     "fine": "tabs",
+     "fineP": 0.81,
+     "importance": 2.06
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n127",
+    "fp": "button|button|NEWEST|navigation|vf dropdown button no outline secondary||",
+    "uniq": true,
+    "j": {
+     "id": "n127",
+     "role": "form_field",
+     "roleP": 0.75,
+     "roleProbs": {
+      "form_field": 0.75,
+      "action_button": 0.04,
+      "navigation": 0.15,
+      "recommendations": 0.03
+     },
+     "task": 0.32,
+     "main": 0,
+     "help": 0.02,
+     "fine": "filter_sort",
+     "fineP": 0.52,
+     "importance": 1.2
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n128",
+    "fp": "button|button|View your notifications and profile settings|navigation|vf button no outline size large||",
+    "uniq": true,
+    "j": {
+     "id": "n128",
+     "role": "account_utility",
+     "roleP": 0.93,
+     "roleProbs": {
+      "navigation": 0.04,
+      "account_utility": 0.93
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.04,
+     "fine": "account_utility",
+     "fineP": 0.93,
+     "importance": 1.02
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n141",
+    "fp": "a|link|[name].|region|vf branding link|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n141",
+     "role": "navigation",
+     "roleP": 0.3,
+     "roleProbs": {
+      "main_content": 0.13,
+      "action_button": 0.05,
+      "navigation": 0.3,
+      "advertising": 0.05,
+      "recommendations": 0.13,
+      "legal_footer": 0.03,
+      "other": 0.24
+     },
+     "task": 0.21,
+     "main": 0.04,
+     "help": 0.04,
+     "fine": "site_logo",
+     "fineP": 0.3,
+     "importance": 1.2
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n145",
+    "fp": "div|region||main|footer mm ads mob||",
+    "uniq": false,
+    "j": {
+     "id": "n145",
+     "role": "advertising",
+     "roleP": 0.94,
+     "roleProbs": {
+      "advertising": 0.94,
+      "legal_footer": 0.03
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.94,
+     "importance": 0.29
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n150",
+    "fp": "div|region||main|footer mm ads mob||",
+    "uniq": false,
+    "j": {
+     "id": "n150",
+     "role": "advertising",
+     "roleP": 0.92,
+     "roleProbs": {
+      "advertising": 0.92,
+      "legal_footer": 0.04
+     },
+     "task": 0.09,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.92,
+     "importance": 0.27
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n206",
+    "fp": "li|text|Customer Support|contentinfo|footer links item||",
+    "uniq": true,
+    "j": {
+     "id": "n206",
+     "role": "help_contact",
+     "roleP": 0.9,
+     "roleProbs": {
+      "navigation": 0.03,
+      "help_contact": 0.9,
+      "legal_footer": 0.05
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.84,
+     "fine": "contact_info",
+     "fineP": 0.79,
+     "importance": 1.05
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n207",
+    "fp": "a|link|Customer Support|contentinfo|footer links link utility|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n207",
+     "role": "help_contact",
+     "roleP": 0.96,
+     "roleProbs": {
+      "help_contact": 0.96
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.89,
+     "fine": "contact_info",
+     "fineP": 0.81,
+     "importance": 1.03
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n218",
+    "fp": "div|region holding headings x1, paragraphs x1, links x3|[name] Wanted To Be ‘Very Mindful’… · [name] / Leave a Comment / Add Us…|main|loc article header||",
+    "uniq": true,
+    "j": {
+     "id": "n218",
+     "role": "main_content",
+     "roleP": 0.89,
+     "roleProbs": {
+      "main_content": 0.89,
+      "other": 0.04
+     },
+     "task": 0.8,
+     "main": 0,
+     "help": 0.13,
+     "fine": "headline",
+     "fineP": 0.8,
+     "importance": 3.66
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n219",
+    "fp": "figure|region holding pictures x1|[name] at the Peacock and People Who…|main|figure article primary||",
+    "uniq": true,
+    "j": {
+     "id": "n219",
+     "role": "main_content",
+     "roleP": 0.99,
+     "roleProbs": {
+      "main_content": 0.99
+     },
+     "task": 0.89,
+     "main": 0,
+     "help": 0.02,
+     "fine": "lead_image",
+     "fineP": 0.67,
+     "importance": 3.38
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n220",
+    "fp": "div|region holding headings x3, paragraphs x7, pictures x2, video or embed x6, lists x1, links x8|NEED TO KNOW · [name] / The Good Daughter / [name]|main|article content||",
+    "uniq": true,
+    "j": {
+     "id": "n220",
+     "role": "main_content",
+     "roleP": 0.9,
+     "roleProbs": {
+      "main_content": 0.9,
+      "other": 0.1
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.02,
+     "fine": "body_text",
+     "fineP": 0.84,
+     "importance": 3.9
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n221",
+    "fp": "div|region holding links x3|Read More: Entertainment Books People Who Read · Entertainment / Books / People Who Read|main|breadcrumbs||",
+    "uniq": true,
+    "j": {
+     "id": "n221",
+     "role": "navigation",
+     "roleP": 0.59,
+     "roleProbs": {
+      "navigation": 0.59,
+      "recommendations": 0.36
+     },
+     "task": 0.19,
+     "main": 0,
+     "help": 0.02,
+     "fine": "breadcrumb",
+     "fineP": 0.59,
+     "importance": 1.14
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n222",
+    "fp": "div|region holding pictures x3, links x6|Trending Now Everything to Know About The Good… · Everything to Know About… / Entertainment…|main|article two||",
+    "uniq": true,
+    "j": {
+     "id": "n222",
+     "role": "recommendations",
+     "roleP": 0.94,
+     "roleProbs": {
+      "main_content": 0.03,
+      "recommendations": 0.94
+     },
+     "task": 0.29,
+     "main": 0,
+     "help": 0.02,
+     "fine": "teaser_other_content",
+     "fineP": 0.89,
+     "importance": 1.25
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n223",
+    "fp": "div|region holding headings x1, paragraphs x2, lists x1, form fields x1, buttons x7, links x4|Conversation · Community [name] / Follow this conversation to… / Log in|main|people comments article two||",
+    "uniq": true,
+    "j": {
+     "id": "n223",
+     "role": "other",
+     "roleP": 0.98,
+     "roleProbs": {
+      "other": 0.98
+     },
+     "task": 0.12,
+     "main": 0,
+     "help": 0.04,
+     "fine": "comments",
+     "fineP": 0.98,
+     "importance": 2.7
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n224",
+    "fp": "div|region holding headings x1, pictures x16, video or embed x2, links x16|Related Articles · The Good [name]… / [name]… / [name]…|main|section||",
+    "uniq": true,
+    "j": {
+     "id": "n224",
+     "role": "recommendations",
+     "roleP": 0.98,
+     "roleProbs": {
+      "recommendations": 0.98
+     },
+     "task": 0.21,
+     "main": 0,
+     "help": 0.01,
+     "fine": "teaser_other_content",
+     "fineP": 0.84,
+     "importance": 1.65
+    },
+    "from": "canonical"
+   }
+  ]
+ },
+ "meaning": {
+  "5e8dd5ac6db36965947a2bb2435cad5ba949a16e821d0c745fd36d75af25b400": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1357,
+    "wallMs": 80,
+    "serverMs": 28,
+    "costUsd": 0.00005699400000000001
+   }
+  },
+  "2628fabf0cb9f7c5593a2aec89d96e11288110800f8926377b4e7ede99f8632e": {
+   "leadsWithMain": 0.95,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1349,
+    "wallMs": 138,
+    "serverMs": 84,
+    "costUsd": 0.000056658000000000005
+   }
+  },
+  "8b4bc21d618c886611afc9dd966e0b890c4fbef5fdc6dad3ed4f11b6d3a9b8e1": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1352,
+    "wallMs": 98,
+    "serverMs": 52,
+    "costUsd": 0.00005678400000000001
+   }
+  }
+ },
+ "overlayClose": {},
+ "compose": {
+  "gt14nft": {
+   "id": "gt14nft",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1"
+     ],
+     "text": "But the author also wanted to make sure that the fictional story didn’t sensationalize the painful reality the show explores. “From a writing viewpoint, [it was important] knowing what to show and when to pull back and how to handle these things and being very mindful that these are not stories to be exploited,” Slaughter said. “This is something that has happened to people, and I want to make sure we’re honoring that and telling their story.”"
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  },
+  "g3rc853": {
+   "id": "g3rc853",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1"
+     ],
+     "text": "In an exclusive featurette shared with PEOPLE, Fahy also discussed the show’s message of survival. “The show is really heavy but it’s so hopeful,” she said. “Ultimately I think [what] we’re hoping to take away is your trauma really doesn’t define you if you don’t let it.” All episodes of The Good Daughter premiere on Peacock on Nov. 12."
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  },
+  "g1az7hrx": {
+   "id": "g1az7hrx",
+   "ok": true,
+   "blocks": [
+    {
+     "k": "keyfacts",
+     "src": [
+      "u1"
+     ],
+     "title": "Need to know",
+     "icon": "info",
+     "rows": [
+      {
+       "label": "Focus",
+       "value": "Karin Slaughter says she was “very mindful” about how violence was shown in the TV version of her novel The Good Daughter.",
+       "icon": "eye"
+      },
+      {
+       "label": "Quote",
+       "value": "“I want to make sure we’re honoring that and telling their story,”",
+       "icon": "quote"
+      },
+      {
+       "label": "Premieres",
+       "value": "The Good Daughter, starring Rose Byrne and Meghann Fahy, premieres on Nov. 12.",
+       "icon": "calendar"
+      }
+     ]
+    },
+    {
+     "k": "prose",
+     "src": [
+      "u2"
+     ],
+     "text": "⟦1⟧’s 2017 crime thriller, ⟦2⟧, is getting a TV adaptation. The author and executive producer wanted the more disturbing parts of the book to come across carefully on screen. The author, 55, talked about turning the book into a series at an early screening of The Good Daughter in New York City on Oct. 29, hosted by Peacock and People Who Read. The Good Daughter, which stars ⟦3⟧ and ⟦4⟧, follows sisters Charlotte “Charlie” and Samantha “Sam” Quinn. Their lives change after their family is hit by a brutal act of violence. Years later, another shocking event hits their small town. Charlie, now a lawyer like her father, becomes an important witness in another tragedy."
+    }
+   ],
+   "better": 0.53,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 0.47,
+    "added": 0.19
+   }
+  },
+  "g1ukrnci": {
+   "id": "g1ukrnci",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "text": "Slaughter serves as a showrunner and an executive producer on the series, and also wrote all six episodes with director Steph Green. It was Slaughter’s first stint as a screenwriter, and she paid special attention to certain elements of the book — particularly the story’s heavier elements.\n\n“It started before we even shot anything,” Slaughter told PEOPLE’s senior books editor Lizz Schumer during the event’s Q&A. “One of the deeper conversations I had before we signed on Steph Green, the director, who did such a wonderful job, was ‘How are we going to protect everybody on set, because we’re dealing with these heavy things?’” Slaughter says the crew was also “very protective” of child actors Drew Cheek and Audrey Grace Marshall, who play younger versions of Charlie and Sam.\n\nNeed your next page-turner? See which books our editors can’t put down with ⟦1⟧ — plus get PEOPLE News.\n\n“Normally I hate children, and babies in particular. They’re just so boneless and bewildered when they come out,” Slaughter jokes. “But these kids were great. … We just were so careful to make sure everybody felt protected.” As such, Slaughter made sure there were intimacy coordinators and a mental health expert on set. They also used body doubles while shooting some of the more intense scenes, so the child actresses “weren’t actually in these situations” themselves."
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "plain_is_better"
+  }
+ },
+ "composeMeta": {
+  "model": "gpt-5.4-mini",
+  "ms": 2285,
+  "jev": {
+   "model": "jev-1.14.0",
+   "calls": 0,
+   "questions": 0,
+   "inputTokens": 0,
+   "wallMs": 0,
+   "serverMs": null,
+   "costUsd": 0
+  }
+ },
+ "runs": [
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T08:02:24.214Z",
+   "added": {
+    "elements": 47,
+    "page": true,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 4
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 6602,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:02:29.820Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2280,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:02:35.161Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2088,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:02:40.750Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2166,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.84; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.84",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99 | advertising 0.96; task 0.11; help 0.02; promotion 0.73 | advertising 0.95; task 0.09; help 0.02; ad 0.95",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:02:46.341Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2166,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.87; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.87",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.98; task 0.08; help 0.02; ad 0.98 | advertising 0.97; task 0.10; help 0.02; promotion 0.77 | advertising 0.95; task 0.09; help 0.02; ad 0.95",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 10,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:02:51.928Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2163,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.83; ads, teasers and popups 1.00; task 0.08; help 0.02; app banner 0.83",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.01; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.01; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99 | advertising 0.94; task 0.11; help 0.02; promotion 0.69 | advertising 0.93; task 0.09; help 0.02; ad 0.93",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:02:57.496Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2173,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.88; ads, teasers and popups 1.00; task 0.08; help 0.02; app banner 0.88",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.98; task 0.07; help 0.02; ad 0.98 | advertising 0.93; task 0.09; help 0.02; ad 0.93 | advertising 0.93; task 0.09; help 0.02; ad 0.93",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:03:03.066Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2212,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.89; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.89",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99 | advertising 0.94; task 0.10; help 0.02; promotion 0.73 | advertising 0.94; task 0.10; help 0.02; ad 0.94",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 10,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:03:08.666Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2181,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.88; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.88",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.98; task 0.07; help 0.02; ad 0.98 | advertising 0.94; task 0.09; help 0.02; ad 0.94 | advertising 0.94; task 0.09; help 0.02; ad 0.94",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:03:14.238Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2177,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 16,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:03:19.805Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2207,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:03:25.405Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2181,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 16,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:03:31.021Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2182,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.98; task 0.07; help 0.01; ad 0.98",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.96; task 0.09; help 0.02; promotion 0.73 | advertising 0.95; task 0.09; help 0.02; ad 0.95 | advertising 0.93; task 0.09; help 0.02; ad 0.93",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:03:36.615Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2200,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.95; task 0.08; help 0.02; ad 0.95 | advertising 0.93; task 0.09; help 0.02; ad 0.93 | advertising 0.92; task 0.10; help 0.02; promotion 0.79",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:03:42.199Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2184,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.01; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.98; task 0.08; help 0.01; ad 0.98",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.94; task 0.09; help 0.02; ad 0.94 | advertising 0.93; task 0.11; help 0.02; promotion 0.71 | advertising 0.92; task 0.10; help 0.02; ad 0.92",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T08:03:51.599Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 5383,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:03:57.263Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2192,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:04:02.890Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2119,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:04:08.851Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2625,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.89; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.89",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.98; task 0.07; help 0.02; ad 0.98 | advertising 0.94; task 0.10; help 0.02; ad 0.94 | advertising 0.94; task 0.08; help 0.02; ad 0.94",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:04:15.031Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2612,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.86; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.86",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.01; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.06; help 0.01; ad 0.99 | advertising 0.94; task 0.10; help 0.02; promotion 0.77 | advertising 0.94; task 0.11; help 0.02; ad 0.94",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 10,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:04:21.024Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2584,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 48 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.86; ads, teasers and popups 1.00; task 0.08; help 0.02; app banner 0.86",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.01; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99 | advertising 0.94; task 0.10; help 0.02; promotion 0.70 | advertising 0.94; task 0.10; help 0.02; ad 0.94",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:04:27.011Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2560,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.85; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.85",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.01; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.98; task 0.06; help 0.02; ad 0.98 | advertising 0.93; task 0.09; help 0.02; ad 0.93 | advertising 0.93; task 0.08; help 0.03; ad 0.93",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:04:33.004Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2687,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.88; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.88",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99 | advertising 0.94; task 0.10; help 0.02; ad 0.94 | advertising 0.93; task 0.11; help 0.02; promotion 0.74",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked floating panel toward the bottom edge",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 10,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:04:38.945Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2478,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 5 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.86; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.86",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99 | advertising 0.95; task 0.11; help 0.02; promotion 0.64 | advertising 0.93; task 0.10; help 0.02; ad 0.93",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 8,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:04:44.919Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2587,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 16,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:04:50.874Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2604,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 18,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:04:56.818Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2627,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.11 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     }
+    ],
+    "checksFailed": 16,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:05:02.627Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2244,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.87; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.87",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.01; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.01; ad 0.99 | advertising 0.94; task 0.10; help 0.03; ad 0.94 | advertising 0.93; task 0.11; help 0.02; promotion 0.72",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:05:08.211Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2195,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.86; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.86",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99 | advertising 0.95; task 0.11; help 0.02; promotion 0.68 | advertising 0.94; task 0.10; help 0.02; ad 0.94",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 28,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:05:13.856Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2233,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 0,
+     "kept": 4,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 45 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "heading_scale",
+      "status": "applied",
+      "reason": "2 headings raised against body 18 px (levels 2, 3)",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "unpinned top bar",
+      "source": "layout"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.84; ads, teasers and popups 1.00; task 0.07; help 0.02; app banner 0.84",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99 | advertising 0.95; task 0.10; help 0.02; promotion 0.74 | advertising 0.95; task 0.09; help 0.02; ad 0.95",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 11,
+     "protected": 29,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  }
+ ],
+ "replicaHash": "sha256:59f3847abb0459e367c8117b9086db4df4814ae1f30433df3cfe5efdb6e872ff"
+}

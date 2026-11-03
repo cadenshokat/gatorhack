@@ -37,7 +37,7 @@ pnpm --filter @webable/study dev          # http://127.0.0.1:5190/  (a preview: 
 | Frame runtime | `src/frame` | Loaded first by every copy (`/_study/frame.js`). Measures taps, misses, scrolling, "answer seen"; blocks links the same way in both conditions; in the adapted condition starts the real engine and UI from `apps/extension/src`. |
 | Stand-in | `src/shim`, `src/replay` | `globalThis.chrome` for the engine: messaging answered locally, storage in memory, zoom passed to the shell, model answers replayed from `replicas/<id>/fixtures.json`. |
 | Copies | `replicas/<id>` | `manifest.json`, `task.json`, `site/` (served at the original path and under `/_r/<id>/`), `fixtures.json`. `reference/` holds the live captures and is never served or committed. |
-| Tools | `scripts/` | `capture/` (copy a live page), `record.mjs` / `replay-check.mjs` (model answers), `invites.mjs`, `export.mjs`. |
+| Tools | `scripts/` | `capture/` (copy a live page), `record.mjs` / `replay-check.mjs` (model answers), `depth.mjs` (where a task's answer sits in each version), `e2e.mjs` (the whole study; `--human` paces it like a person), `invites.mjs`, `export.mjs`. |
 
 Build with `--mode e2e` (the scripts do): the in-page UI then uses open shadow roots so taps and scrolling inside the
 simplified page can be measured.
@@ -49,6 +49,9 @@ simplified page can be measured.
    read a few elements differently; `--add` keeps the Chromium answers and adds only new ones), then
    `node scripts/replay-check.mjs <replica ids>` with `--engine chromium` and `--engine webkit` (no misses allowed in
    the canonical setting). Re-record after any change to `apps/extension/src` or `packages/core/src`, or to a copy.
+   **Task depth (from 4.2.0):** `node scripts/depth.mjs <id> --scan` lists the text found in both versions with its
+   depth in each; pick the answer where they agree (within 0.5 screens at the typical text size), then
+   `node scripts/depth.mjs <ids> --fits typical,large` checks the task as written.
 2. **Storage.** `supabase/migrations/*.sql` lives in the existing WebAble Supabase project (applied 27 Oct 2026; checked
    with the public key: insert only, no read/update/delete, forged withdrawals refused, withdrawal needs the session's
    secret). Put the URL and publishable key in `.env.local` (see `.env.example`) along with the agreement details;

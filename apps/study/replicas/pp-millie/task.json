@@ -1,0 +1,25 @@
+{
+  "id": "entertainment-A",
+  "replicaId": "pp-millie",
+  "family": "entertainment",
+  "set": "A",
+  "kind": "find",
+  "title": "Find out in what year Millie Bobby Brown moved to her farm in Georgia",
+  "context": "An article on the PEOPLE website, about Millie Bobby Brown's animal rescue.",
+  "prompt": "Find out in what year Millie Bobby Brown moved to her farm in Georgia",
+  "question": "In what year did Millie Bobby Brown move to her farm in Georgia?",
+  "short": "Year Millie Bobby Brown moved to her farm",
+  "label": "PEOPLE, the article about Millie Bobby Brown's animal rescue",
+  "tag": "the Millie Bobby Brown article",
+  "choices": [
+    "2019",
+    "2020",
+    "2022",
+    "2023"
+  ],
+  "correct": 2,
+  "answerText": "in rural Georgia in 2022",
+  "answerTextSimplified": "Georgia in 2022",
+  "answerSelector": "#mntl-sc-block_2-0",
+  "answerDepthScreens": 1.73
+}

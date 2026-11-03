@@ -1,15 +1,84 @@
-# WebAble mobile study: protocol `mobile-replica-4.1.0`
+# WebAble mobile study: protocol `mobile-replica-4.2.0`
 
-*Revised 2 Nov 2026 (evening): 4.1.0 (recipes in place of the football pages, the round ratings in words, captions and
-comments kept small on the simplified page) on 4.0.0 (Caden's first in-person pilot: shorter, find-the-answer tasks,
-live AI fitted to the person), on 3.0.0 (the committee's review of 28 Oct), on 2.1.0 (outcome tasks, every scale point
-labelled, 28 Oct 2026), on 2.0.0, itself on 1.0.0 (27 Oct 2026). The code is in `apps/study`; this file is the
-protocol, the measures and the analysis plan. When the code and this file disagree, fix one of them before collecting
-data. Change the protocol version for any change to pages, tasks, wording, scoring or engine. Choices still open for
-Caden and Dr. Rani are in `docs/STUDY-DECISIONS.md`. Sections below 0 still describe 3.0.0 where 4.0.0 and 4.1.0 do not
-say otherwise.*
+*Revised 3 Nov 2026 (night): 4.2.0 (three busy websites a round, each task's answer at the same depth in both
+versions, the answer's depth recorded per website) on 4.1.0 (recipes in place of the football pages, the round ratings
+in words, captions and comments kept small on the simplified page) on 4.0.0 (Caden's first in-person pilot: shorter,
+find-the-answer tasks, live AI fitted to the person), on 3.0.0 (the committee's review of 28 Oct), on 2.1.0 (outcome
+tasks, every scale point labelled, 28 Oct 2026), on 2.0.0, itself on 1.0.0 (27 Oct 2026). The code is in
+`apps/study`; this file is the protocol, the measures and the analysis plan. When the code and this file disagree, fix
+one of them before collecting data. Change the protocol version for any change to pages, tasks, wording, scoring or
+engine. Choices still open for Caden and Dr. Rani are in `docs/STUDY-DECISIONS.md`. Sections below 0 still describe
+3.0.0 where 4.0.0 to 4.2.0 do not say otherwise.*
 
 ## 0. What changed
+
+### In 4.2.0
+
+From Caden's design review (3 Nov 2026, about 2 am), before any participant:
+
+- **Three websites a round, all busy.** Each round has a news story (AP News, as before), a health article and an
+  entertainment story, one of each family, in a shuffled order: 6 scored websites a person in place of 4, so each
+  condition has 3 tasks per person instead of 2. The recipes are dropped: a recipe page is laid out the way people
+  expect (ingredients, then steps), so it tests little. The new families are sites with ads between paragraphs,
+  sticky video and bars (pages, tasks and validation below). The study now takes about 20 minutes, and
+  the start page and the agreement say so.
+- **Each answer sits at the same depth in both versions.** Before, the simplified page moved the answer up by 1 to 3
+  screens (the recipes' ingredients from 3.9 screens down to 0.7), so part of WebAble's advantage was less scrolling.
+  Each task's answer now sits where the two versions match: `scripts/depth.mjs` measures the answer's top, in
+  screens of the study's 664 px website frame, on the original page and on the adapted one (the simplified page,
+  recorded AI answers, the typical text size). Rules: the adapted depth within 0.5 screens of the original; the
+  original between 1.3 and 2.8 screens (past the first screen, so finding it takes looking); set A and B within 0.5
+  of each other; the answer once on the page; a fact a reader would not already know. `depth.mjs --scan` lists every
+  block of text with both depths. On AP the two versions agree for the first 2 screens and part company below (ads
+  between paragraphs), so both AP questions come from the story's second paragraph (1.40 screens in both originals;
+  1.12 and 1.24 adapted): "How many space agencies joined forces for the mission?" (5) and "How many years ago did
+  van Gogh see the sky that may have inspired the painting?" (137).
+- **The six websites** (depth in screens of the 664 px frame, the answer's top; adapted = the simplified page with the
+  recorded AI answers; matched at the typical text size, shown also at the large one):
+
+  | Family | Set | Copy (`replicas/`) | Question (answer) | Original | Adapted | Diff | Adapted, large |
+  |---|---|---|---|---|---|---|---|
+  | news | A | `ap-vangogh` (AP News) | How many years ago did van Gogh see the sky that may have inspired the painting? (137) | 1.40 | 1.24 | −0.16 | 2.99 |
+  | news | B | `ap-mars` (AP News) | How many space agencies joined forces for the mission? (5) | 1.40 | 1.12 | −0.28 | 2.48 |
+  | health | A | `hc-fiber-sleep` (Health.com) | How much fiber does the article say to aim for each day? (25 to 38 grams) | 1.74 | 1.24 | −0.50 | 3.06 |
+  | health | B | `hc-whole-grains` (Health.com) | How many servings of whole grains do U.S. guidelines recommend each day? (2 to 4 servings) | 1.55 | 1.15 | −0.40 | 2.68 |
+  | entertainment | A | `pp-millie` (PEOPLE) | In what year did Millie Bobby Brown move to her farm in Georgia? (2022) | 2.20 | 1.73 | −0.47 | 4.60 |
+  | entertainment | B | `pp-karin` (PEOPLE) | In what year did Karin Slaughter's novel The Good Daughter come out? (2017) | 2.29 | 2.07 | −0.22 | 5.31 |
+
+  What makes them busy: AP as before (7–9 ads, a video ad, a sticky header); Health.com a fixed header, 9 ads between
+  paragraphs and one fixed at the bottom; PEOPLE a fixed app banner and header (a third of the first screen), an ad
+  fixed at the bottom, a floating video player (a still in the copy) and about 10 ads between paragraphs. Every copy:
+  no requests to other sites, no missing files, all behaviour checks pass, the simplified page opens and keeps the
+  article's paragraphs, and the recorded AI answers replay with no misses in Chromium and WebKit in every recorded
+  setting. Pixel differences from the live pages are over target in places and are the ad slots (the live screenshot
+  draws them blank) and PEOPLE's playing video (a still in the copy): first screen 0–0.3% (Health.com) and 4.6–4.8%
+  (PEOPLE); full page 1.2–3.9% (PEOPLE) and 8.4–12.9% (Health.com). Left out of the copies, as on Allrecipes: PEOPLE's
+  late "Become a PEOPLE VIP" pop-up and an occasional full-screen ad; Health.com's endless feed of further articles.
+
+  Known limits of the matching, to report:
+  - The adapted answer sits a little higher on every page (0.16 to 0.50 screens, about a third of a screen on
+    average): the simplified page drops the site's header and banner above the story. Every page is within the 0.5
+    rule; the fiber page is on it (−0.50; −0.502 unrounded).
+  - On PEOPLE and Health.com only the top of the story matches: below the first ad, every paragraph sits 0.6 to 5
+    screens deeper on the original. So the PEOPLE answers are in the first paragraph, and the Health.com answers in
+    the "At a glance" box near the top. The Health.com facts are repeated further down the article (fiber at about
+    9 phone screens, whole grains at about 5.7); the box comes first in both versions and is where depth is measured.
+    The whole grains article also says "the average of three daily servings recommended" further down, which is
+    within the right answer.
+  - The fiber amount (25 to 38 grams) is the U.S. guideline, which some people may know; `answer_seen` shows whether
+    the answer was ever on screen, so a right answer without it can be counted as a guess.
+  - The Karin Slaughter article is about a crime thriller series and mentions "a brutal act of violence" in its plot
+    summary.
+  - Tried and dropped: Healthline (blocked the capture browser after a few loads); WebMD and Verywell Health (WebAble's
+    simplified page left out the article's paragraphs: its AI rewrite replaced a long article body with a short table,
+    and its checks test numbers and links but not that the text is still there; an engine fault to fix after the
+    study, not before it); five other PEOPLE articles and two other Health.com articles (no fact at matched depth).
+- **The answer's depth for each person** (`metrics.answerDepth`, export `answer_depth`). Depth can be matched only at
+  one text size: larger text makes the simplified page longer (at the large setting the AP answers sit 2.5 and 3.0
+  screens down instead of 1.4). So each website records how far down the answer started, in the version and at the
+  text size the person saw, for the analysis to adjust for.
+- **The rewrites go out together, websites load ahead, the recipes open on the study link** (late on 2 Nov; see the
+  last three points of 4.1.0).
 
 ### In 4.1.0
 

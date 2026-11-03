@@ -1,0 +1,25 @@
+{
+  "id": "health-B",
+  "replicaId": "hc-whole-grains",
+  "family": "health",
+  "set": "B",
+  "kind": "find",
+  "title": "Find out how many servings of whole grains U.S. guidelines recommend each day",
+  "context": "An article on the Health.com website, about whole grains and heart health.",
+  "prompt": "Find out how many servings of whole grains U.S. guidelines recommend each day",
+  "question": "How many servings of whole grains do U.S. guidelines recommend each day?",
+  "short": "Whole grain servings recommended each day",
+  "label": "Health.com, the article about whole grains",
+  "tag": "the whole grains article",
+  "choices": [
+    "1 to 2 servings",
+    "2 to 4 servings",
+    "7 to 9 servings",
+    "10 to 12 servings"
+  ],
+  "correct": 1,
+  "answerText": "just two to four servings",
+  "answerTextSimplified": "two to four servings",
+  "answerSelector": "#mntl-sc-block_1-0 li:nth-of-type(2)",
+  "answerDepthScreens": 1.22
+}

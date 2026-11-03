@@ -1,0 +1,4809 @@
+{
+ "v": "study-fixtures.1",
+ "replicaId": "hc-fiber-sleep",
+ "version": "3",
+ "servePath": "/higher-fiber-intake-deep-sleep-12120564",
+ "originalHost": "www.health.com",
+ "engineCommit": "f37c9bf7c6565091834717601777a781bf68efcc",
+ "serverCommit": "f37c9bf7c6565091834717601777a781bf68efcc",
+ "models": {
+  "jev": "jev-1.14.0",
+  "compose": "gpt-5.4-mini"
+ },
+ "recordedAt": "2026-11-03T08:22:45.018Z",
+ "matrix": {
+  "fits": [
+   "typical",
+   "rosa",
+   "reader",
+   "large",
+   "calm"
+  ],
+  "heights": [
+   664,
+   568,
+   760
+  ],
+  "engines": [
+   "chromium",
+   "webkit"
+  ],
+  "canonical": {
+   "fit": "typical",
+   "h": 664
+  }
+ },
+ "understand": {
+  "page": {
+   "purpose": {
+    "kind": "article",
+    "p": 0.93,
+    "probs": {
+     "record_stats": 0,
+     "scoreboard": 0,
+     "schedule": 0,
+     "standings": 0,
+     "roster": 0,
+     "article": 0.93,
+     "news_index": 0,
+     "recipe": 0,
+     "product": 0,
+     "search_results": 0,
+     "form_task": 0,
+     "checkout": 0,
+     "sign_in": 0,
+     "account_dashboard": 0,
+     "bill_statement": 0,
+     "appointment": 0,
+     "status_lookup": 0,
+     "info_guide": 0.07,
+     "faq": 0,
+     "directory_listing": 0,
+     "location_hours": 0,
+     "calendar_dates": 0,
+     "comparison": 0,
+     "video": 0,
+     "gallery": 0,
+     "home_portal": 0,
+     "course_lesson": 0,
+     "course_overview": 0,
+     "live_blog": 0,
+     "product_listing": 0,
+     "game_detail": 0,
+     "other": 0
+    }
+   },
+   "mainRegion": {
+    "id": "n146",
+    "p": 0.83,
+    "probs": {
+     "n19": 0.02,
+     "n144": 0.015,
+     "n145": 0.06,
+     "n146": 0.9,
+     "none": 0.005
+    }
+   },
+   "mainPick": {
+    "id": "none",
+    "p": 0.95,
+    "probs": {
+     "n9": 0.01,
+     "n21": 0,
+     "n24": 0,
+     "n25": 0,
+     "n26": 0,
+     "n41": 0,
+     "n48": 0,
+     "n59": 0,
+     "n67": 0,
+     "n71": 0,
+     "n78": 0,
+     "n84": 0,
+     "n87": 0,
+     "n89": 0,
+     "n91": 0,
+     "n94": 0.02,
+     "n95": 0.01,
+     "n97": 0.01,
+     "none": 0.95
+    }
+   },
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 5,
+    "questions": 200,
+    "inputTokens": 99346,
+    "wallMs": 927,
+    "serverMs": 172,
+    "costUsd": 0.0041725320000000005
+   },
+   "ids": {
+    "n4": [
+     "a|link|Visit HEALTH's homepage|banner|header logo|this website|",
+     true
+    ],
+    "n6": [
+     "div|region|Top Stories High-Protein, High-Fiber Foods Bananas vs. Sweet… · High-Protein, High-Fiber Foods / Bananas vs.…|none|top stories||",
+     true
+    ],
+    "n9": [
+     "a|link|High-Protein, High-Fiber Foods|none|document card no image|this website|",
+     true
+    ],
+    "n13": [
+     "div|region|Ad|none|mm ads mob banner fixed||",
+     true
+    ],
+    "n15": [
+     "div|region||none|mob banner fixed wrapper gpt||",
+     true
+    ],
+    "n17": [
+     "iframe|none|Advertisement|none|||inline_frame",
+     true
+    ],
+    "n19": [
+     "h1|heading level 1|Eating More [name] the Day May Help You Sleep Better at Night, According to Research|main|article heading headline||",
+     true
+    ],
+    "n21": [
+     "a|link|[name] MS, RDN, LD|main|item name|this website|",
+     true
+    ],
+    "n24": [
+     "a|link|[name]|main|item name|this website|",
+     true
+    ],
+    "n25": [
+     "a|link|Add Us On|main|follow profile link|another website|",
+     true
+    ],
+    "n26": [
+     "div|button||main|follow profile tooltip||",
+     true
+    ],
+    "n28": [
+     "figcaption|text|Eating more fiber rich foods, such as berries, could help support sleep. [name] / Contributor…|main|primary image figure||",
+     true
+    ],
+    "n29": [
+     "span|text|Eating more fiber rich foods, such as berries, could help support sleep.|main|figure article caption||",
+     true
+    ],
+    "n143": [
+     "div|region|Plant Foods and [name] With Sleep… · 1 / minimally processed foods / REM sleep|main|page content||",
+     true
+    ],
+    "n33": [
+     "li|text|What we’re talking about : New research suggests that a diet that includes a variety…|main|||",
+     true
+    ],
+    "n37": [
+     "div|region||main|mm ads mob sticky||",
+     true
+    ],
+    "n39": [
+     "iframe|none|Advertisement|main|||ad_network",
+     false
+    ],
+    "n41": [
+     "span|button|1|main|tooltip||",
+     true
+    ],
+    "n42": [
+     "div|region||main|mm ads mob fixed sticky||",
+     false
+    ],
+    "n44": [
+     "iframe|none|Advertisement|main|||ad_network",
+     false
+    ],
+    "n48": [
+     "a|link|minimally processed foods|main|link|this website|",
+     true
+    ],
+    "n49": [
+     "div|region||main|mm ads mob fixed sticky||",
+     false
+    ],
+    "n51": [
+     "iframe|none|Advertisement|main|||ad_network",
+     false
+    ],
+    "n55": [
+     "div|region||main|mm ads mob fixed sticky||",
+     false
+    ],
+    "n57": [
+     "iframe|none|Advertisement|main|||ad_network",
+     false
+    ],
+    "n59": [
+     "a|link|REM sleep|main|link|this website|",
+     true
+    ],
+    "n64": [
+     "iframe|none|Advertisement|main|||ad_network",
+     false
+    ],
+    "n67": [
+     "a|link|[name], RDN, LDN|main||another website|",
+     true
+    ],
+    "n71": [
+     "span|button|2|main|tooltip||",
+     true
+    ],
+    "n78": [
+     "span|button|3|main|tooltip||",
+     true
+    ],
+    "n84": [
+     "a|link|[name], MS, RD|main|link|another website|",
+     true
+    ],
+    "n87": [
+     "a|link|Wellness|main|link breadcrumbs|this website|",
+     true
+    ],
+    "n89": [
+     "a|link|Nutrition|main|link breadcrumbs|this website|",
+     true
+    ],
+    "n91": [
+     "a|link|Eat Well|main|link breadcrumbs|this website|",
+     true
+    ],
+    "n94": [
+     "button|button|Thumbs Up|main|article feedback up button||",
+     true
+    ],
+    "n95": [
+     "button|button|Thumbs Down|main|article feedback down button||",
+     true
+    ],
+    "n96": [
+     "div|region|Links: 3 Sources|main|article sources||",
+     true
+    ],
+    "n97": [
+     "div|button|3 Sources|main|article sources wrapper||",
+     true
+    ],
+    "n137": [
+     "li|text|Contact|contentinfo|footer links item||",
+     true
+    ],
+    "n138": [
+     "a|link|Contact|contentinfo|footer links link utility|this website|",
+     true
+    ],
+    "n144": [
+     "div|region holding links x3|By [name] MS, RDN, LD [name]… · [name] MS, RDN,… / [name] / Add Us…|main|article||",
+     true
+    ],
+    "n145": [
+     "div|region holding pictures x1|Eating more fiber rich foods, such as berries,…|main|figure article primary image||",
+     true
+    ],
+    "n146": [
+     "div|region holding headings x3, paragraphs x18, video or embed x7, lists x1, buttons x2, links x7|Plant Foods and [name] With Sleep… · 1 / minimally processed foods / REM sleep|main|article content||",
+     true
+    ]
+   }
+  },
+  "elements": [
+   {
+    "id": "n4",
+    "fp": "a|link|Visit HEALTH's homepage|banner|header logo|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n4",
+     "role": "navigation",
+     "roleP": 1,
+     "roleProbs": {
+      "navigation": 1
+     },
+     "task": 0.1,
+     "main": 0,
+     "help": 0.02,
+     "fine": "site_logo",
+     "fineP": 0.97,
+     "importance": 1.01
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n6",
+    "fp": "div|region|Top Stories High-Protein, High-Fiber Foods Bananas vs. Sweet… · High-Protein, High-Fiber Foods / Bananas vs.…|none|top stories||",
+    "uniq": true,
+    "j": {
+     "id": "n6",
+     "role": "other",
+     "roleP": 0.55,
+     "roleProbs": {
+      "main_content": 0.05,
+      "other": 0.55,
+      "navigation": 0.03,
+      "popup_overlay": 0.05,
+      "recommendations": 0.29
+     },
+     "task": 0.11,
+     "main": 0,
+     "help": 0.02,
+     "fine": "ticker",
+     "fineP": 0.55,
+     "importance": 0.08
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n9",
+    "fp": "a|link|High-Protein, High-Fiber Foods|none|document card no image|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n9",
+     "role": "advertising",
+     "roleP": 0.4,
+     "roleProbs": {
+      "navigation": 0.03,
+      "popup_overlay": 0.34,
+      "advertising": 0.4,
+      "recommendations": 0.11,
+      "other": 0.06
+     },
+     "task": 0.09,
+     "main": 0.03,
+     "help": 0.03,
+     "fine": "popup",
+     "fineP": 0.34,
+     "importance": 0.05
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n13",
+    "fp": "div|region|Ad|none|mm ads mob banner fixed||",
+    "uniq": true,
+    "j": {
+     "id": "n13",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.03,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.99,
+     "importance": 0.02
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n15",
+    "fp": "div|region||none|mob banner fixed wrapper gpt||",
+    "uniq": true,
+    "j": {
+     "id": "n15",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.03,
+     "fine": "advertising",
+     "fineP": 0.99,
+     "importance": 0.02
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n17",
+    "fp": "iframe|none|Advertisement|none|||inline_frame",
+    "uniq": true,
+    "j": {
+     "id": "n17",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.03,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.99,
+     "importance": 0.02,
+     "paidAsStoryP": 0.09
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n19",
+    "fp": "h1|heading level 1|Eating More [name] the Day May Help You Sleep Better at Night, According to Research|main|article heading headline||",
+    "uniq": true,
+    "j": {
+     "id": "n19",
+     "role": "main_content",
+     "roleP": 1,
+     "roleProbs": {
+      "main_content": 1
+     },
+     "task": 0.98,
+     "main": 0,
+     "help": 0.01,
+     "fine": "headline",
+     "fineP": 0.92,
+     "importance": 3.94
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n21",
+    "fp": "a|link|[name] MS, RDN, LD|main|item name|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n21",
+     "role": "main_content",
+     "roleP": 0.85,
+     "roleProbs": {
+      "main_content": 0.85,
+      "other": 0.04
+     },
+     "task": 0.44,
+     "main": 0.05,
+     "help": 0.14,
+     "fine": "byline",
+     "fineP": 0.61,
+     "importance": 2.13
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n24",
+    "fp": "a|link|[name]|main|item name|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n24",
+     "role": "main_content",
+     "roleP": 0.41,
+     "roleProbs": {
+      "main_content": 0.41,
+      "action_button": 0.05,
+      "navigation": 0.1,
+      "recommendations": 0.11,
+      "other": 0.21
+     },
+     "task": 0.66,
+     "main": 0.06,
+     "help": 0.04,
+     "fine": "body_text",
+     "fineP": 0.36,
+     "importance": 2.87
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n25",
+    "fp": "a|link|Add Us On|main|follow profile link|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n25",
+     "role": "other",
+     "roleP": 0.85,
+     "roleProbs": {
+      "action_button": 0.03,
+      "help_contact": 0.05,
+      "other": 0.85,
+      "account_utility": 0.04
+     },
+     "task": 0.09,
+     "main": 0.03,
+     "help": 0.06,
+     "fine": "social_share",
+     "fineP": 0.85,
+     "importance": 0.33
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n26",
+    "fp": "div|button||main|follow profile tooltip||",
+    "uniq": true,
+    "j": {
+     "id": "n26",
+     "role": "action_button",
+     "roleP": 0.41,
+     "roleProbs": {
+      "main_content": 0.03,
+      "action_button": 0.41,
+      "other": 0.29,
+      "account_utility": 0.2
+     },
+     "task": 0.18,
+     "main": 0.06,
+     "help": 0.05,
+     "fine": "secondary_action",
+     "fineP": 0.41,
+     "importance": 0.96
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n28",
+    "fp": "figcaption|text|Eating more fiber rich foods, such as berries, could help support sleep. [name] / Contributor…|main|primary image figure||",
+    "uniq": true,
+    "j": {
+     "id": "n28",
+     "role": "main_content",
+     "roleP": 1,
+     "roleProbs": {
+      "main_content": 1
+     },
+     "task": 0.89,
+     "main": 0,
+     "help": 0.02,
+     "fine": "caption",
+     "fineP": 0.92,
+     "importance": 2.61
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n29",
+    "fp": "span|text|Eating more fiber rich foods, such as berries, could help support sleep.|main|figure article caption||",
+    "uniq": true,
+    "j": {
+     "id": "n29",
+     "role": "main_content",
+     "roleP": 0.97,
+     "roleProbs": {
+      "main_content": 0.97
+     },
+     "task": 0.94,
+     "main": 0,
+     "help": 0.02,
+     "fine": "body_text",
+     "fineP": 0.44,
+     "importance": 3.35
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n143",
+    "fp": "div|region|Plant Foods and [name] With Sleep… · 1 / minimally processed foods / REM sleep|main|page content||",
+    "uniq": true,
+    "j": {
+     "id": "n143",
+     "role": "main_content",
+     "roleP": 0.91,
+     "roleProbs": {
+      "main_content": 0.91,
+      "other": 0.05
+     },
+     "task": 0.96,
+     "main": 0,
+     "help": 0.02,
+     "fine": "body_text",
+     "fineP": 0.91,
+     "importance": 3.89
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n33",
+    "fp": "li|text|What we’re talking about : New research suggests that a diet that includes a variety…|main|||",
+    "uniq": true,
+    "j": {
+     "id": "n33",
+     "role": "main_content",
+     "roleP": 0.93,
+     "roleProbs": {
+      "main_content": 0.93,
+      "other": 0.03
+     },
+     "task": 0.86,
+     "main": 0,
+     "help": 0.03,
+     "fine": "body_text",
+     "fineP": 0.67,
+     "importance": 3.44
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n37",
+    "fp": "div|region||main|mm ads mob sticky||",
+    "uniq": true,
+    "j": {
+     "id": "n37",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.11
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n39",
+    "fp": "iframe|none|Advertisement|main|||ad_network",
+    "uniq": false,
+    "j": {
+     "id": "n39",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.04,
+     "paidAsStoryP": 0.14
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n41",
+    "fp": "span|button|1|main|tooltip||",
+    "uniq": true,
+    "j": {
+     "id": "n41",
+     "role": "other",
+     "roleP": 0.37,
+     "roleProbs": {
+      "main_content": 0.23,
+      "action_button": 0.11,
+      "navigation": 0.05,
+      "help_contact": 0.13,
+      "other": 0.37
+     },
+     "task": 0.46,
+     "main": 0.05,
+     "help": 0.28,
+     "fine": "other",
+     "fineP": 0.24,
+     "importance": 1.85
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n42",
+    "fp": "div|region||main|mm ads mob fixed sticky||",
+    "uniq": false,
+    "j": {
+     "id": "n42",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.99,
+     "importance": 0.22
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n44",
+    "fp": "iframe|none|Advertisement|main|||ad_network",
+    "uniq": false,
+    "j": {
+     "id": "n44",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.04,
+     "paidAsStoryP": 0.2
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n48",
+    "fp": "a|link|minimally processed foods|main|link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n48",
+     "role": "main_content",
+     "roleP": 0.57,
+     "roleProbs": {
+      "main_content": 0.57,
+      "action_button": 0.05,
+      "navigation": 0.08,
+      "recommendations": 0.07,
+      "other": 0.19
+     },
+     "task": 0.69,
+     "main": 0.05,
+     "help": 0.03,
+     "fine": "body_text",
+     "fineP": 0.57,
+     "importance": 2.34
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n49",
+    "fp": "div|region||main|mm ads mob fixed sticky||",
+    "uniq": false,
+    "j": {
+     "id": "n49",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.07,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.16
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n51",
+    "fp": "iframe|none|Advertisement|main|||ad_network",
+    "uniq": false,
+    "j": {
+     "id": "n51",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.03,
+     "paidAsStoryP": 0.17
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n55",
+    "fp": "div|region||main|mm ads mob fixed sticky||",
+    "uniq": false,
+    "j": {
+     "id": "n55",
+     "role": "advertising",
+     "roleP": 0.99,
+     "roleProbs": {
+      "advertising": 0.99
+     },
+     "task": 0.08,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 0.99,
+     "importance": 0.2
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n57",
+    "fp": "iframe|none|Advertisement|main|||ad_network",
+    "uniq": false,
+    "j": {
+     "id": "n57",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.05,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.03,
+     "paidAsStoryP": 0.15
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n59",
+    "fp": "a|link|REM sleep|main|link|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n59",
+     "role": "main_content",
+     "roleP": 0.68,
+     "roleProbs": {
+      "main_content": 0.68,
+      "action_button": 0.03,
+      "navigation": 0.05,
+      "help_contact": 0.03,
+      "recommendations": 0.06,
+      "other": 0.13
+     },
+     "task": 0.7,
+     "main": 0.05,
+     "help": 0.05,
+     "fine": "body_text",
+     "fineP": 0.68,
+     "importance": 2.56
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n64",
+    "fp": "iframe|none|Advertisement|main|||ad_network",
+    "uniq": false,
+    "j": {
+     "id": "n64",
+     "role": "advertising",
+     "roleP": 1,
+     "roleProbs": {
+      "advertising": 1
+     },
+     "task": 0.04,
+     "main": 0,
+     "help": 0.02,
+     "fine": "advertising",
+     "fineP": 1,
+     "importance": 0.03,
+     "paidAsStoryP": 0.16
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n67",
+    "fp": "a|link|[name], RDN, LDN|main||another website|",
+    "uniq": true,
+    "j": {
+     "id": "n67",
+     "role": "main_content",
+     "roleP": 0.58,
+     "roleProbs": {
+      "main_content": 0.58,
+      "action_button": 0.04,
+      "help_contact": 0.13,
+      "recommendations": 0.05,
+      "other": 0.14
+     },
+     "task": 0.33,
+     "main": 0.05,
+     "help": 0.1,
+     "fine": "byline",
+     "fineP": 0.24,
+     "importance": 1.88
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n71",
+    "fp": "span|button|2|main|tooltip||",
+    "uniq": true,
+    "j": {
+     "id": "n71",
+     "role": "navigation",
+     "roleP": 0.39,
+     "roleProbs": {
+      "main_content": 0.05,
+      "action_button": 0.07,
+      "navigation": 0.39,
+      "help_contact": 0.03,
+      "other": 0.32
+     },
+     "task": 0.44,
+     "main": 0.05,
+     "help": 0.19,
+     "fine": "pagination",
+     "fineP": 0.29,
+     "importance": 1.68
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n78",
+    "fp": "span|button|3|main|tooltip||",
+    "uniq": true,
+    "j": {
+     "id": "n78",
+     "role": "other",
+     "roleP": 0.35,
+     "roleProbs": {
+      "main_content": 0.3,
+      "action_button": 0.05,
+      "navigation": 0.14,
+      "help_contact": 0.03,
+      "other": 0.35
+     },
+     "task": 0.46,
+     "main": 0.04,
+     "help": 0.21,
+     "fine": "rating",
+     "fineP": 0.3,
+     "importance": 1.68
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n84",
+    "fp": "a|link|[name], MS, RD|main|link|another website|",
+    "uniq": true,
+    "j": {
+     "id": "n84",
+     "role": "main_content",
+     "roleP": 0.67,
+     "roleProbs": {
+      "main_content": 0.67,
+      "action_button": 0.04,
+      "help_contact": 0.08,
+      "recommendations": 0.03,
+      "other": 0.12
+     },
+     "task": 0.27,
+     "main": 0.04,
+     "help": 0.1,
+     "fine": "byline",
+     "fineP": 0.35,
+     "importance": 1.56
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n87",
+    "fp": "a|link|Wellness|main|link breadcrumbs|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n87",
+     "role": "navigation",
+     "roleP": 0.99,
+     "roleProbs": {
+      "navigation": 0.99
+     },
+     "task": 0.14,
+     "main": 0.04,
+     "help": 0.04,
+     "fine": "breadcrumb",
+     "fineP": 0.99,
+     "importance": 1.4
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n89",
+    "fp": "a|link|Nutrition|main|link breadcrumbs|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n89",
+     "role": "navigation",
+     "roleP": 0.97,
+     "roleProbs": {
+      "navigation": 0.97
+     },
+     "task": 0.13,
+     "main": 0.03,
+     "help": 0.03,
+     "fine": "breadcrumb",
+     "fineP": 0.97,
+     "importance": 1.42
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n91",
+    "fp": "a|link|Eat Well|main|link breadcrumbs|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n91",
+     "role": "navigation",
+     "roleP": 0.96,
+     "roleProbs": {
+      "navigation": 0.96
+     },
+     "task": 0.18,
+     "main": 0.06,
+     "help": 0.05,
+     "fine": "breadcrumb",
+     "fineP": 0.96,
+     "importance": 1.36
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n94",
+    "fp": "button|button|Thumbs Up|main|article feedback up button||",
+    "uniq": true,
+    "j": {
+     "id": "n94",
+     "role": "action_button",
+     "roleP": 0.8,
+     "roleProbs": {
+      "main_content": 0.06,
+      "action_button": 0.8,
+      "other": 0.11
+     },
+     "task": 0.43,
+     "main": 0.04,
+     "help": 0.04,
+     "fine": "secondary_action",
+     "fineP": 0.8,
+     "importance": 1.72
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n95",
+    "fp": "button|button|Thumbs Down|main|article feedback down button||",
+    "uniq": true,
+    "j": {
+     "id": "n95",
+     "role": "action_button",
+     "roleP": 0.84,
+     "roleProbs": {
+      "main_content": 0.07,
+      "action_button": 0.84,
+      "other": 0.05
+     },
+     "task": 0.48,
+     "main": 0.03,
+     "help": 0.05,
+     "fine": "secondary_action",
+     "fineP": 0.84,
+     "importance": 1.86
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n96",
+    "fp": "div|region|Links: 3 Sources|main|article sources||",
+    "uniq": true,
+    "j": {
+     "id": "n96",
+     "role": "recommendations",
+     "roleP": 0.72,
+     "roleProbs": {
+      "main_content": 0.11,
+      "recommendations": 0.72,
+      "other": 0.13
+     },
+     "task": 0.67,
+     "main": 0,
+     "help": 0.03,
+     "fine": "related_links",
+     "fineP": 0.69,
+     "importance": 2.34
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n97",
+    "fp": "div|button|3 Sources|main|article sources wrapper||",
+    "uniq": true,
+    "j": {
+     "id": "n97",
+     "role": "action_button",
+     "roleP": 0.56,
+     "roleProbs": {
+      "main_content": 0.03,
+      "action_button": 0.56,
+      "navigation": 0.03,
+      "help_contact": 0.12,
+      "recommendations": 0.12,
+      "other": 0.07
+     },
+     "task": 0.65,
+     "main": 0.07,
+     "help": 0.04,
+     "fine": "secondary_action",
+     "fineP": 0.53,
+     "importance": 2.23
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n137",
+    "fp": "li|text|Contact|contentinfo|footer links item||",
+    "uniq": true,
+    "j": {
+     "id": "n137",
+     "role": "help_contact",
+     "roleP": 0.92,
+     "roleProbs": {
+      "help_contact": 0.92,
+      "legal_footer": 0.04
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.87,
+     "fine": "contact_info",
+     "fineP": 0.92,
+     "importance": 1.02
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n138",
+    "fp": "a|link|Contact|contentinfo|footer links link utility|this website|",
+    "uniq": true,
+    "j": {
+     "id": "n138",
+     "role": "help_contact",
+     "roleP": 0.97,
+     "roleProbs": {
+      "help_contact": 0.97
+     },
+     "task": 0.06,
+     "main": 0,
+     "help": 0.9,
+     "fine": "contact_info",
+     "fineP": 0.97,
+     "importance": 1.01
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n144",
+    "fp": "div|region holding links x3|By [name] MS, RDN, LD [name]… · [name] MS, RDN,… / [name] / Add Us…|main|article||",
+    "uniq": true,
+    "j": {
+     "id": "n144",
+     "role": "main_content",
+     "roleP": 0.47,
+     "roleProbs": {
+      "main_content": 0.47,
+      "action_button": 0.04,
+      "navigation": 0.09,
+      "recommendations": 0.15,
+      "legal_footer": 0.03,
+      "other": 0.04
+     },
+     "task": 0.36,
+     "main": 0,
+     "help": 0.12,
+     "fine": "byline",
+     "fineP": 0.3,
+     "importance": 2.34
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n145",
+    "fp": "div|region holding pictures x1|Eating more fiber rich foods, such as berries,…|main|figure article primary image||",
+    "uniq": true,
+    "j": {
+     "id": "n145",
+     "role": "main_content",
+     "roleP": 0.98,
+     "roleProbs": {
+      "main_content": 0.98
+     },
+     "task": 0.92,
+     "main": 0,
+     "help": 0.02,
+     "fine": "lead_image",
+     "fineP": 0.59,
+     "importance": 3.06
+    },
+    "from": "canonical"
+   },
+   {
+    "id": "n146",
+    "fp": "div|region holding headings x3, paragraphs x18, video or embed x7, lists x1, buttons x2, links x7|Plant Foods and [name] With Sleep… · 1 / minimally processed foods / REM sleep|main|article content||",
+    "uniq": true,
+    "j": {
+     "id": "n146",
+     "role": "main_content",
+     "roleP": 0.78,
+     "roleProbs": {
+      "main_content": 0.78,
+      "other": 0.17
+     },
+     "task": 0.97,
+     "main": 0,
+     "help": 0.04,
+     "fine": "body_text",
+     "fineP": 0.78,
+     "importance": 3.96
+    },
+    "from": "canonical"
+   }
+  ]
+ },
+ "meaning": {
+  "cc95bb2f29382195f6a2c4d9ce38741ac0210fbc4b32e440bcdc877ec2871ec8": {
+   "leadsWithMain": 0.89,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1110,
+    "wallMs": 113,
+    "serverMs": 56,
+    "costUsd": 0.000046620000000000004
+   }
+  },
+  "4e7ce57e6ae7eec2e752bf9cdd6839d66035cd280a7d495419973a02cb3a4457": {
+   "leadsWithMain": 0.94,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1050,
+    "wallMs": 94,
+    "serverMs": 44,
+    "costUsd": 0.00004410000000000001
+   }
+  },
+  "162ab28214f627d431e1c28c22947f6682e5ac63960bf56e043dbcfcbaa0f46f": {
+   "leadsWithMain": 0.96,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1078,
+    "wallMs": 87,
+    "serverMs": 36,
+    "costUsd": 0.000045276000000000005
+   }
+  },
+  "9580ee74d42f21b80f110978439b01f1048271fcc48cebb1e8fbfaa741b40303": {
+   "leadsWithMain": 0.9,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1077,
+    "wallMs": 88,
+    "serverMs": 39,
+    "costUsd": 0.00004523400000000001
+   }
+  },
+  "bdce5c52839c940d68171857bef8b3db878aba49102463cda0382c1bce0e608f": {
+   "leadsWithMain": 0.92,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1111,
+    "wallMs": 87,
+    "serverMs": 36,
+    "costUsd": 0.00004666200000000001
+   }
+  },
+  "c39cf4f9b819ebe42719705153f02a7422baf2d99d7c502e93a8a05e5bdc8455": {
+   "leadsWithMain": 0.89,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1116,
+    "wallMs": 83,
+    "serverMs": 36,
+    "costUsd": 0.00004687200000000001
+   }
+  },
+  "39e24104e76fad0859383844a137e770eb0e1574bfb0cf827592ea746c3f8fe8": {
+   "leadsWithMain": 0.92,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1078,
+    "wallMs": 86,
+    "serverMs": 34,
+    "costUsd": 0.000045276000000000005
+   }
+  },
+  "7fe154be06b13e8f17c63add5805b650b74792b3fa0b442f6c39cc0330a7dc5d": {
+   "leadsWithMain": 0.95,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1100,
+    "wallMs": 91,
+    "serverMs": 42,
+    "costUsd": 0.000046200000000000005
+   }
+  },
+  "77a255503efede2bd938ad2030e95b20335a6333decd1203dac02614690417f1": {
+   "leadsWithMain": 0.93,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1085,
+    "wallMs": 98,
+    "serverMs": 44,
+    "costUsd": 0.000045570000000000006
+   }
+  },
+  "be474617a1f9e19d46ce379c768d04660436051370fd2358448ee41ea1eadd71": {
+   "leadsWithMain": 0.91,
+   "missingMain": 0.03,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1102,
+    "wallMs": 145,
+    "serverMs": 31,
+    "costUsd": 0.000046284000000000006
+   }
+  },
+  "cd431b9c21b7fe23109a7cb1a40ac9252ffe90dfc6ff1822e16159311f62a8ff": {
+   "leadsWithMain": 0.93,
+   "missingMain": 0.02,
+   "pass": true,
+   "metrics": {
+    "model": "jev-1.14.0",
+    "calls": 1,
+    "questions": 2,
+    "inputTokens": 1083,
+    "wallMs": 92,
+    "serverMs": 43,
+    "costUsd": 0.000045486000000000005
+   }
+  }
+ },
+ "overlayClose": {},
+ "compose": {
+  "g15ffycd": {
+   "id": "g15ffycd",
+   "ok": true,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "text": "Fiber’s link to sleep may be due to its effect on blood sugar, said ⟦1⟧, a registered dietitian who focuses on sleep support.\n\n“When you include fiber-rich foods at dinner or as part of a bedtime snack, you slow down glucose absorption, which can prevent middle-of-the-night blood sugar drops,” Meyer explained.\n\nWhen those drops happen, the body does not just wait them out. Instead, a blood sugar drop triggers adrenaline and cortisol as a survival response. That can lead to a faster heart rate, night sweats, and hunger pangs that interrupt your sleep, Meyer said.\n\nFiber-rich foods may also affect sleep through the gut microbiome. When gut bacteria break down fiber, they make short-chain fatty acids [small acids made by gut bacteria], which may help control nervous system processes involved in sleep.2"
+    }
+   ],
+   "better": 0.59,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 0.61,
+    "added": 0.09
+   }
+  },
+  "gk7pfpb": {
+   "id": "gk7pfpb",
+   "ok": true,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1"
+     ],
+     "text": "Experts said fiber may be a reasonable, low-risk step that could support better sleep. But you shouldn’t treat it as a fix for poor sleep based on this study alone."
+    },
+    {
+     "k": "keyfacts",
+     "src": [
+      "u2"
+     ],
+     "title": "How much fiber",
+     "icon": "calculator",
+     "rows": [
+      {
+       "label": "Study limit",
+       "value": "The research doesn’t say how much fiber you would need to eat to see a possible sleep benefit.",
+       "icon": "circle-help"
+      },
+      {
+       "label": "Daily goal",
+       "value": "Adults should aim for about 25 to 38 grams per day, depending on age and sex.",
+       "icon": "calendar"
+      }
+     ]
+    },
+    {
+     "k": "points",
+     "src": [
+      "u3",
+      "u4"
+     ],
+     "title": "Why eat more fiber",
+     "items": [
+      {
+       "icon": "leaf",
+       "title": "Food sources",
+       "text": "Vegetables, fruits, legumes, and whole grains are all good sources."
+      },
+      {
+       "icon": "sparkles",
+       "title": "Sleep support",
+       "text": "The study suggests that eating a mix of these foods may help sleep more."
+      },
+      {
+       "icon": "stethoscope",
+       "title": "Digestion",
+       "text": "Fiber helps keep digestion healthy."
+      },
+      {
+       "icon": "brain",
+       "title": "Other benefits",
+       "text": "It feeds helpful gut bacteria, helps you feel full between meals, and supports healthy blood sugar and cholesterol levels. That is why it is an important part of a balanced diet, no matter what it does for sleep, said dietitian ⟦1⟧."
+      }
+     ]
+    }
+   ],
+   "better": 0.7,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 0.32,
+    "added": 0.1
+   }
+  },
+  "g1q5k0y5": {
+   "id": "g1q5k0y5",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "points",
+     "src": [
+      "u1"
+     ],
+     "title": null,
+     "items": [
+      {
+       "icon": "leaf",
+       "title": "What we’re talking about",
+       "text": "New research says a diet with lots of different plant foods and more fiber may help you sleep more deeply."
+      },
+      {
+       "icon": "heart-pulse",
+       "title": "Why it matters",
+       "text": "Deep sleep is the most physically restorative part of the sleep cycle."
+      },
+      {
+       "icon": "lightbulb",
+       "title": "What you can do",
+       "text": "Try to include a mix of plant foods and aim for around 25 to 38 grams of fiber a day. That may help with sleep and with other parts of health."
+      }
+     ]
+    },
+    {
+     "k": "prose",
+     "src": [
+      "u2",
+      "u3",
+      "u4"
+     ],
+     "text": "What you eat during the day may do more than fuel your body—it could also affect how well you sleep that night.\n\nA recent study published in Nature Health⟦1⟧ found that higher fiber intake was linked to a small but measurable increase in time spent in deep sleep, the most physically restorative sleep stage.\n\nThe finding does not show that fiber alone fixes sleep, but it adds to more research suggesting that diet may play an important role in sleep."
+    }
+   ],
+   "better": null,
+   "checks": {
+    "covered": true,
+    "numbersKept": false,
+    "noNewNumbers": true,
+    "linksKept": false,
+    "quotesKept": true,
+    "dropped": 1,
+    "added": 1
+   },
+   "reason": "numbers"
+  },
+  "g18bxmru": {
+   "id": "g18bxmru",
+   "ok": true,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u5"
+     ],
+     "text": "Previous research has linked diets rich in fiber and ⟦1⟧ with better sleep, the researchers noted. However, they said most studies haven’t objectively measured sleep stages or accounted for other differences that might influence both diet and sleep.\n\nThe new study aimed to do both. Nearly 3,600 predominantly healthy adults logged their meals in real time through a mobile app and wore devices capable of distinguishing among sleep stages. The participants, whose average age was 53, were split roughly evenly between men and women. Altogether, they contributed 4,793 days of dietary and sleep data—the equivalent of about 13 years.\n\nThe researchers then examined how day-to-day changes in diet related to sleep hours later, while accounting for what the person had eaten and how they had slept the previous day.\n\nThey found that eating a greater variety of plant foods was associated with a lower nighttime heart rate. Meal timing also appeared to matter: Higher-calorie evening meals were linked to more sleep but a higher heart rate, while earlier dinners were associated with shorter sleep but healthier regulation of heart rate.\n\nOne of the clearest associations involved fiber—although the differences were small. Eating more fiber relative to total calorie intake was associated with 0.59 percentage points more time spent in deep sleep and 0.76 percentage points more in ⟦2⟧, which plays an important role in brain health and function."
+    },
+    {
+     "k": "definitions",
+     "src": [
+      "u5"
+     ],
+     "title": null,
+     "items": [
+      {
+       "term": "REM sleep",
+       "meaning": "a dream sleep stage"
+      }
+     ]
+    },
+    {
+     "k": "prose",
+     "src": [
+      "u6",
+      "u7"
+     ],
+     "text": "Notably, 25 of the 32 dietary factors studied—including carbohydrates, protein, and fat—weren’t consistently linked to sleep.\n\nKeep in mind, however, that the study doesn’t prove that eating more fiber and a variety of plant foods directly improves sleep. Although the study’s design helped limit the influence of other variables that could affect the results, it couldn’t rule them out entirely. Randomized trials are needed to determine whether dietary changes can actually improve sleep—and who might benefit the most."
+    }
+   ],
+   "better": 0.54,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 0.07,
+    "added": 0.23
+   }
+  },
+  "g1ygn2ut": {
+   "id": "g1ygn2ut",
+   "ok": false,
+   "blocks": [
+    {
+     "k": "prose",
+     "src": [
+      "u1",
+      "u2",
+      "u3",
+      "u4",
+      "u5",
+      "u6",
+      "u7",
+      "u8",
+      "u9"
+     ],
+     "text": "Fiber may help with sleep because it can affect blood sugar, said ⟦1⟧, a registered dietitian who focuses on sleep support.\n\nMeyer said that fiber-rich foods at dinner or in a bedtime snack slow how fast glucose is absorbed. That can help prevent blood sugar drops in the middle of the night.\n\nIf those drops happen, the body does not just wait them out. Instead, the drop can trigger adrenaline and cortisol as a survival response. That may lead to a faster heart rate, night sweats, and hunger pangs that wake you up.\n\nFiber-rich foods may also affect sleep through the gut microbiome. When gut bacteria break down fiber, they make short-chain fatty acids. These may help control nervous system processes involved in sleep.\n\nExperts said not to treat fiber as a cure for bad sleep based on the study alone. Still, eating more fiber may be a low-risk step that could support better sleep.\n\nThe research does not say how much fiber you need for a possible sleep benefit. Current guidelines say adults should aim for about 25 to 38 grams per day, depending on age and sex.\n\nGood sources include vegetables, fruits, legumes, and whole grains. The study suggests that eating a mix of these foods may help sleep even more.\n\nBeyond possible sleep benefits, there are other reasons to eat more high-fiber foods. Fiber supports healthy digestion, feeds helpful gut bacteria, helps you feel full between meals, and supports healthy blood sugar and cholesterol levels. That is why it is an important part of a balanced diet, no matter how it affects sleep, said dietitian ⟦2⟧.\n\n**Read More:**"
+    }
+   ],
+   "better": 0.35,
+   "checks": {
+    "covered": true,
+    "numbersKept": true,
+    "noNewNumbers": true,
+    "linksKept": true,
+    "quotesKept": true,
+    "dropped": 0.56,
+    "added": 0.06
+   },
+   "reason": "plain_is_better"
+  }
+ },
+ "composeMeta": {
+  "model": "gpt-5.4-mini",
+  "ms": 4465,
+  "jev": {
+   "model": "jev-1.14.0",
+   "calls": 1,
+   "questions": 6,
+   "inputTokens": 4070,
+   "wallMs": 117,
+   "serverMs": 61,
+   "costUsd": 0.00017094
+  }
+ },
+ "runs": [
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T08:18:29.756Z",
+   "added": {
+    "elements": 43,
+    "page": true,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 4
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 7737,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 3,
+     "kept": 0,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T08:19:42.923Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 6028,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:19:48.255Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2084,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:19:53.601Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2054,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 26,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:19:58.939Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2028,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 31 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 25,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:20:04.300Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2073,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 31 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:20:09.623Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2032,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 31 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.06; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:20:18.273Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 1
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 5277,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 3 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 26 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:20:23.616Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2017,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 3 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 26 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:20:28.956Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2018,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 3 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 26 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 26,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:20:34.506Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2149,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 2,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:20:40.110Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2128,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 2,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:20:45.424Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2115,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 2,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:20:50.764Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2030,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 1,
+     "kept": 2,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.06; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:20:56.092Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2031,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:21:01.420Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2031,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 0,
+     "kept": 3,
+     "failed": 0
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.06; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 664,
+   "canonical": true,
+   "at": "2026-11-03T08:21:25.607Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 7726,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 1,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:21:31.032Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2105,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 1,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 26,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "typical",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:21:36.729Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2180,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 4.5:1 (large text 3:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:21:42.397Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2249,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 31 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:21:48.075Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2257,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 1,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 31 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 26,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "rosa",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:21:53.778Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2231,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 22,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 1,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 56 px on 31 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "steady_clicks",
+      "status": "applied",
+      "reason": "window 320 ms, radius 11 px",
+      "source": "fit"
+     },
+     {
+      "kind": "motion",
+      "status": "applied",
+      "reason": "reduce motion",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.06; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.09; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:21:59.467Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2228,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 3 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 26 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:22:05.160Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2205,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 3 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 26 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "reader",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:22:10.848Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2212,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "textScale": 1.25,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 24,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "applied",
+      "reason": "every text size ×1.25 at 100% zoom (planned 125%; a larger zoom scrolls sideways on this narrow screen)",
+      "source": "fit"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 15:1 (large text 7:1), 3 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 26 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.06; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 25,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:22:16.538Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2222,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 2,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:22:22.222Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 1,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2215,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 2,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "large",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:22:27.926Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2145,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 33.5,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.75 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "text_map",
+      "status": "reversed",
+      "reason": "every text size ×1.38 at 100% zoom (planned 175%; a larger zoom scrolls sideways on this narrow screen)"
+     },
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     }
+    ],
+    "checksFailed": 2,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 568,
+   "canonical": false,
+   "at": "2026-11-03T08:22:33.598Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2140,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 3,
+     "laidOut": 1,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 27,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 664,
+   "canonical": false,
+   "at": "2026-11-03T08:22:39.276Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2208,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.05; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.07; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 26,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  },
+  {
+   "fit": "calm",
+   "h": 760,
+   "canonical": false,
+   "at": "2026-11-03T08:22:44.962Z",
+   "added": {
+    "elements": 0,
+    "page": false,
+    "meaning": 0,
+    "overlayClose": 0,
+    "compose": 0
+   },
+   "errors": [],
+   "delivery": {
+    "engineCommit": "c34cc75096ac",
+    "fixturesVersion": "record",
+    "settleMs": 2208,
+    "phase": "calm",
+    "pageZoom": 1,
+    "textZoom": 1,
+    "bodyPxBefore": 18,
+    "bodyPxAfter": 16,
+    "simplified": {
+     "open": true,
+     "auto": true
+    },
+    "compose": {
+     "groups": 4,
+     "laidOut": 2,
+     "kept": 1,
+     "failed": 1
+    },
+    "ops": [
+     {
+      "kind": "weight",
+      "status": "applied",
+      "reason": "weight floor 500",
+      "source": "fit"
+     },
+     {
+      "kind": "contrast",
+      "status": "applied",
+      "reason": "floor 7:1 (large text 4.5:1), 1 colours",
+      "source": "fit"
+     },
+     {
+      "kind": "targets",
+      "status": "applied",
+      "reason": "hit area 44 px on 29 controls",
+      "source": "fit"
+     },
+     {
+      "kind": "focus_ring",
+      "status": "applied",
+      "reason": "two-tone focus ring",
+      "source": "fit"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.06; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 1.00; task 0.04; help 0.02; ad 1.00",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.07; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "dim",
+      "status": "applied",
+      "reason": "advertising 0.99; task 0.08; help 0.02; ad 0.99",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "tucked promotion bar toward the bottom edge",
+      "source": "jev"
+     },
+     {
+      "kind": "unobstruct",
+      "status": "applied",
+      "reason": "scroll padding for pinned bars (WCAG technique C43)"
+     }
+    ],
+    "checksFailed": 0,
+    "decisions": {
+     "folded": 12,
+     "protected": 26,
+     "promoted": 0
+    },
+    "overlays": 0,
+    "toasts": 0,
+    "offers": 0,
+    "replayMisses": [],
+    "delivered": true
+   }
+  }
+ ],
+ "replicaHash": "sha256:d8dbf124d4463345e871fb551f106d55a27a732a3aa20d5c6d111575d8264e6f"
+}

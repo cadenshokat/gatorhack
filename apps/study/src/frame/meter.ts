@@ -63,6 +63,8 @@ export class Meter {
   private lastPersonAt = -Infinity;
   private lastExpandFor = Number.NaN;
   private answerSeenAt: number | null = null;
+  /** The answer's depth in screens when the website opened (see FrameMetrics.answerDepth). */
+  private depthAtBegin: number | null = null;
   /** Every element of the answer (for 'go', every link to the destination) and those on screen now. */
   private answerEls: Element[] = [];
   private answerShownEls = new Set<Element>();
@@ -143,6 +145,7 @@ export class Meter {
     this.tracks = new Map();
     this.answerSeenAt = null;
     this.findAnswer();
+    this.depthAtBegin = this.answerDepth();
     window.clearInterval(this.poll);
     this.poll = window.setInterval(() => this.checkAnswer(), ANSWER_POLL_MS);
     this.checkAnswer();
@@ -167,6 +170,7 @@ export class Meter {
       scrollScreens,
       scrollReversals,
       answerSeenMs: this.answerSeenAt,
+      answerDepth: this.depthAtBegin,
       simplifiedAtEnd: this.covered(),
     });
   }
@@ -462,6 +466,40 @@ export class Meter {
       this.answerSeenAt = performance.now() - this.t0;
       window.clearInterval(this.poll);
     }
+  }
+
+  /**
+   * How far down the answer starts, in screens of what scrolls it: the simplified page's own scroller when it covers
+   * the page, else the page. null when the answer cannot be found.
+   */
+  private answerDepth(): number | null {
+    if (!this.task) return null;
+    let box: DOMRect | null = null;
+    let from: Node | null = null;
+    if (this.covered() && this.layer?.calm) {
+      const inLayer = this.task.answerTextSimplified ?? this.task.answerText;
+      const range = inLayer ? findTextRange(this.layer.calm, inLayer) : null;
+      if (range) {
+        box = range.getBoundingClientRect();
+        from = range.startContainer;
+      }
+    } else {
+      const el = this.answerEls.find((e) => e.isConnected) ?? null;
+      if (el) {
+        box = el.getBoundingClientRect();
+        from = el;
+      }
+    }
+    if (!box || !from) return null;
+    for (let n: Node | null = from.parentNode; n; n = n instanceof ShadowRoot ? n.host : n.parentNode) {
+      if (!(n instanceof Element)) continue;
+      const cs = getComputedStyle(n);
+      if (/(auto|scroll)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight + 1) {
+        const top = box.top - n.getBoundingClientRect().top + n.scrollTop;
+        return n.clientHeight > 0 ? top / n.clientHeight : null;
+      }
+    }
+    return window.innerHeight > 0 ? (box.top + window.scrollY) / window.innerHeight : null;
   }
 
   /** The part of the frame the simplified page shows: its host's box within the frame's viewport. */

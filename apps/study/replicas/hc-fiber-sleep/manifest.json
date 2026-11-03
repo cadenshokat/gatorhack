@@ -1,0 +1,402 @@
+{
+  "v": "replica.1",
+  "id": "hc-fiber-sleep",
+  "servePath": "/higher-fiber-intake-deep-sleep-12120564",
+  "file": "index.html",
+  "sourceUrl": "https://www.health.com/higher-fiber-intake-deep-sleep-12120564",
+  "originalHost": "www.health.com",
+  "siteName": "Health.com",
+  "capturedAt": "2026-11-03T08:18:17.177Z",
+  "capture": {
+    "tool": "scripts/capture/capture.mjs (playwright 1.64.1)",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+    "stateNotes": [
+      "The page after one scroll pass, back at the top: Health.com loads in-content ads and recirculation lists as you scroll. Live and copy are compared in this state.",
+      "As a first-time visitor in the US sees it on a phone: the header fixed at the top and the 320x50 adhesive ad fixed at the bottom. No consent or \"do not sell\" notice is shown (none appeared on any load from New York time and en-US), and no app banner.",
+      "Ad creatives frozen as captured (screenshots in each ad iframe's srcdoc; the iframe src is kept); Google Publisher Tag refresh stopped once the slots had filled. Live ads refresh and rotate.",
+      "Removed before the reference: Health.com's continuous scroll (the feed that appends the next articles below this one as you reach the end; present on some pages only), so the copy is the one article. Guarded against (removed if they appear, as on People): Flashtalking's full-screen interstitial ad and Piano's subscription modal; outstream video players (Primis, Connatix, Teads) blocked at capture so both pages carry display ads in their slots."
+    ]
+  },
+  "licence": "Copyright Health.com (People Inc., formerly Dotdash Meredith); all rights reserved. Article text and photos belong to Health.com and the credited photographers and agencies. Copied for a closed, non-commercial research study (noindex, served only behind study links); not for redistribution. Ad creatives and third-party widgets belong to their owners.",
+  "attribution": "Health.com, https://www.health.com/higher-fiber-intake-deep-sleep-12120564. Changed: scripts removed; behaviours re-created as local scripts; ads frozen as captured; files stored locally; in the adapted condition WebAble changes the page.",
+  "behaviours": [
+    "page",
+    "menu (header)",
+    "ad-slots (captured creatives in srcdoc)",
+    "fixed header and adhesive ad (CSS)"
+  ],
+  "removed": [
+    "site scripts (63)",
+    "third-party scripts and trackers from 29 hosts: aim-tag.hcn.health, ats-wrapper.privacymanager.io, b-code.liadm.com, btloader.com, c.amazon-adsystem.com, cdn.brandmetrics.com, cdn.id5-sync.com, collector.brandmetrics.com, config.aps.amazon-adsystem.com, connect.facebook.net, connectid.analytics.yahoo.com, d30qdagvt44524.cloudfront.net, dotdash-meredith.solutions.cdn.optable.co, forms.health.com, g.3gl.net, launchpad-wrapper.privacymanager.io, launchpad.privacymanager.io, news.google.com, oa.openxcdn.net, openads-cdn.adsrvr.org, sb.scorecardresearch.com, secure.cdn.fastclick.net, securepubads.g.doubleclick.net, static.chartbeat.com, static.cloudflareinsights.com, static.criteo.net, tags.crwdcntrl.net, tru.am, www.googletagmanager.com",
+    "noscript (6)",
+    "preload/prefetch/preconnect hints (2)",
+    "http-equiv meta (6)",
+    "inline event handlers (1)",
+    "iframe contents (21; src kept, local srcdoc: 9 snapshots)",
+    "continuous-scroll feed of further articles below this one (present on some pages only)",
+    "outstream video ad players (hosts blocked at capture)"
+  ],
+  "contentHash": "sha256:d8dbf124d4463345e871fb551f106d55a27a732a3aa20d5c6d111575d8264e6f",
+  "validation": {
+    "at": "2026-11-03T08:33:45.106Z",
+    "by": "scripts/capture/validate.mjs",
+    "served": "scripts/capture/lib/serve.mjs (frame.js stubbed)",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "liveCapturedAt": "2026-11-03T08:18:17.177Z",
+    "requests": {
+      "outside": 0,
+      "outsideHosts": {},
+      "missing": []
+    },
+    "frameTagFirst": true,
+    "pixels": {
+      "firstScreen": {
+        "pct": 0.28,
+        "target": 0.5,
+        "pass": true,
+        "size": [
+          1170,
+          2532
+        ],
+        "bandsCssPx": [
+          [
+            801,
+            843,
+            8163
+          ]
+        ]
+      },
+      "fullPage": {
+        "pct": 8.37,
+        "target": 2,
+        "pass": false,
+        "liveSize": [
+          390,
+          9665
+        ],
+        "copySize": [
+          390,
+          9665
+        ],
+        "bandsCssPx": [
+          [
+            4329,
+            4928,
+            176363
+          ],
+          [
+            5691,
+            5940,
+            56306
+          ],
+          [
+            3290,
+            3539,
+            54835
+          ],
+          [
+            6832,
+            7081,
+            25445
+          ],
+          [
+            794,
+            843,
+            2367
+          ]
+        ]
+      }
+    },
+    "layout": {
+      "scrollHeight": {
+        "live": 9665,
+        "copy": 9665,
+        "pass": true
+      },
+      "scrollWidth": {
+        "live": 390,
+        "copy": 390,
+        "pass": true
+      },
+      "links": {
+        "live": 86,
+        "copy": 86,
+        "pass": true
+      },
+      "visibleLinks": {
+        "live": 37,
+        "copy": 37,
+        "pass": true
+      },
+      "headings": {
+        "live": 4,
+        "copy": 4,
+        "pass": true
+      },
+      "headingOrder": {
+        "live": 4,
+        "copy": 4,
+        "pass": true
+      },
+      "tapTargets": {
+        "live": 41,
+        "copy": 41,
+        "pass": true
+      },
+      "tapUnder44": {
+        "live": 31,
+        "copy": 31,
+        "pass": true
+      },
+      "tapUnder24": {
+        "live": 22,
+        "copy": 22,
+        "pass": true
+      },
+      "bodyFontPx": {
+        "live": 18,
+        "copy": 18,
+        "pass": true
+      },
+      "paraFontPx": {
+        "live": 18,
+        "copy": 18,
+        "pass": true
+      },
+      "textUnder16Pct": {
+        "live": 13,
+        "copy": 13,
+        "pass": true
+      },
+      "fixedCoverTopPct": {
+        "live": 20.3,
+        "copy": 20.3,
+        "pass": true
+      },
+      "fixedCoverMidPct": {
+        "live": 20.3,
+        "copy": 20.3,
+        "pass": true
+      },
+      "visibleElements": {
+        "live": 294,
+        "copy": 294,
+        "pass": true
+      },
+      "imagesVisible": {
+        "live": 1,
+        "copy": 1,
+        "pass": true
+      },
+      "firstScreenText": {
+        "live": "415:2875863534",
+        "copy": "415:2875863534",
+        "pass": true
+      },
+      "loadedFontFamilies": {
+        "live": "DM Sans, Poppins",
+        "copy": "DM Sans, Poppins",
+        "pass": true
+      }
+    },
+    "widths": [
+      {
+        "w": 390,
+        "live": {
+          "scrollWidth": 390,
+          "scrollHeight": 8965,
+          "overflowing": 0
+        },
+        "copy": {
+          "scrollWidth": 390,
+          "scrollHeight": 9665,
+          "overflowing": 0,
+          "sample": []
+        },
+        "pass": true
+      },
+      {
+        "w": 312,
+        "live": {
+          "scrollWidth": 316,
+          "scrollHeight": 10093,
+          "overflowing": 34
+        },
+        "copy": {
+          "scrollWidth": 316,
+          "scrollHeight": 10793,
+          "overflowing": 34,
+          "sample": [
+            "div#mm-ads-mob-adhesive-banner-fixed-ad_1-0.comp.mm-ads-mob-adhesive-banner-fixed-ad 316",
+            "span#ad-label_1-0.comp.ad-label 316",
+            "div#mob-adhesive-banner-fixed.wrapper.gpt-requested 316",
+            "div#google_ads_iframe_3865/ddm.health.mob/tier1/structuredcontent/Wellness_0__container__ 318",
+            "iframe#google_ads_iframe_3865/ddm.health.mob/tier1/structuredcontent/Wellness_0 318",
+            "div#mm-ads-sc-sticky-square-ad_1-0.comp.mm-ads-sc-sticky-square-ad 316"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 260,
+        "live": {
+          "scrollWidth": 316,
+          "scrollHeight": 11665,
+          "overflowing": 108
+        },
+        "copy": {
+          "scrollWidth": 316,
+          "scrollHeight": 12365,
+          "overflowing": 108,
+          "sample": [
+            "div#mm-ads-mob-adhesive-banner-fixed-ad_1-0.comp.mm-ads-mob-adhesive-banner-fixed-ad 316",
+            "span#ad-label_1-0.comp.ad-label 316",
+            "div#mob-adhesive-banner-fixed.wrapper.gpt-requested 316",
+            "div#google_ads_iframe_3865/ddm.health.mob/tier1/structuredcontent/Wellness_0__container__ 318",
+            "iframe#google_ads_iframe_3865/ddm.health.mob/tier1/structuredcontent/Wellness_0 318",
+            "div#mm-ads-sc-sticky-square-ad_1-0.comp.mm-ads-sc-sticky-square-ad 316"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 223,
+        "live": {
+          "scrollWidth": 316,
+          "scrollHeight": 13308,
+          "overflowing": 108
+        },
+        "copy": {
+          "scrollWidth": 316,
+          "scrollHeight": 14008,
+          "overflowing": 108,
+          "sample": [
+            "div#mm-ads-mob-adhesive-banner-fixed-ad_1-0.comp.mm-ads-mob-adhesive-banner-fixed-ad 316",
+            "span#ad-label_1-0.comp.ad-label 316",
+            "div#mob-adhesive-banner-fixed.wrapper.gpt-requested 316",
+            "div#google_ads_iframe_3865/ddm.health.mob/tier1/structuredcontent/Wellness_0__container__ 318",
+            "iframe#google_ads_iframe_3865/ddm.health.mob/tier1/structuredcontent/Wellness_0 318",
+            "div#mm-ads-sc-sticky-square-ad_1-0.comp.mm-ads-sc-sticky-square-ad 316"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 195,
+        "live": {
+          "scrollWidth": 316,
+          "scrollHeight": 15243,
+          "overflowing": 115
+        },
+        "copy": {
+          "scrollWidth": 316,
+          "scrollHeight": 15943,
+          "overflowing": 115,
+          "sample": [
+            "div#mm-ads-mob-adhesive-banner-fixed-ad_1-0.comp.mm-ads-mob-adhesive-banner-fixed-ad 316",
+            "span#ad-label_1-0.comp.ad-label 316",
+            "div#mob-adhesive-banner-fixed.wrapper.gpt-requested 316",
+            "div#google_ads_iframe_3865/ddm.health.mob/tier1/structuredcontent/Wellness_0__container__ 318",
+            "iframe#google_ads_iframe_3865/ddm.health.mob/tier1/structuredcontent/Wellness_0 318",
+            "div#mm-ads-sc-sticky-square-ad_1-0.comp.mm-ads-sc-sticky-square-ad 316"
+          ]
+        },
+        "pass": true
+      }
+    ],
+    "behaviours": [
+      {
+        "name": "menu opens and closes",
+        "live": {
+          "openFullnav": true,
+          "openOverlay": true,
+          "openVisible": "visible",
+          "openTop": 61,
+          "openH": 783,
+          "closedFullnav": false,
+          "closedOverlay": false,
+          "closedVisible": "visible"
+        },
+        "copy": {
+          "openFullnav": true,
+          "openOverlay": true,
+          "openVisible": "visible",
+          "openTop": 61,
+          "openH": 783,
+          "closedFullnav": false,
+          "closedOverlay": false,
+          "closedVisible": "visible"
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "fixed layers while scrolling: header, adhesive ad",
+        "live": {
+          "y0_headerTop": 0,
+          "y0_headerH": 60,
+          "y0_adBottom": 844,
+          "y0_adH": 70,
+          "y900_headerTop": 0,
+          "y900_headerH": 60,
+          "y900_adBottom": 844,
+          "y900_adH": 70,
+          "y3000_headerTop": 0,
+          "y3000_headerH": 60,
+          "y3000_adBottom": 844,
+          "y3000_adH": 70,
+          "y1500_headerTop": 0,
+          "y1500_headerH": 60,
+          "y1500_adBottom": 844,
+          "y1500_adH": 70
+        },
+        "copy": {
+          "y0_headerTop": 0,
+          "y0_headerH": 60,
+          "y0_adBottom": 844,
+          "y0_adH": 70,
+          "y900_headerTop": 0,
+          "y900_headerH": 60,
+          "y900_adBottom": 844,
+          "y900_adH": 70,
+          "y3000_headerTop": 0,
+          "y3000_headerH": 60,
+          "y3000_adBottom": 844,
+          "y3000_adH": 70,
+          "y1500_headerTop": 0,
+          "y1500_headerH": 60,
+          "y1500_adBottom": 844,
+          "y1500_adH": 70
+        },
+        "pass": true,
+        "diffs": []
+      }
+    ],
+    "roundTrip": {
+      "mismatches": 0,
+      "rootCauses": 0,
+      "parserAdded": 0
+    },
+    "pass": {
+      "hard": true,
+      "pixels": false,
+      "layout": true,
+      "widths": true,
+      "behaviours": true
+    },
+    "notes": [
+      "First-screen pixels 0.28% (target 0.5%): the only band is 801-843 CSS px, the 320x50 adhesive ad at the bottom of the screen (its frozen creative paints slightly differently from the live frame).",
+      "Full-page pixels 8.37% (target 2%): every band is an in-content ad slot (250 or 600 px tall: 3290-3539, 4329-4928, 5691-5940, 6832-7081). The live full-page screenshot shows those cross-origin ad frames blank; the copy shows the creatives captured in each slot. Text, layout and everything else match (heights 9665/9665, links, headings, tap targets, fonts, fixed-layer cover, all widths, both behaviour checks pass)."
+    ]
+  }
+}

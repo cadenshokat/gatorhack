@@ -6,7 +6,7 @@
 
 import type { FitProfile, FittingRaw, ReaderProfile } from '@webable/core';
 
-export const PROTOCOL = 'mobile-replica-4.1.0';
+export const PROTOCOL = 'mobile-replica-4.2.0';
 
 /** The agreement's version, saved with "I agree to take part": the protocol's own number. */
 export const CONSENT_VERSION = PROTOCOL.replace(/^mobile-replica-/, '');
@@ -16,7 +16,7 @@ export const LAYOUT_WIDTH = 390;
 
 export type Condition = 'original' | 'adapted';
 export type SetId = 'A' | 'B';
-export type FamilyId = 'news' | 'recipe' | 'sports' | 'gov';
+export type FamilyId = 'news' | 'health' | 'entertainment' | 'recipe' | 'sports' | 'gov';
 
 /* ------------------------------------------------------------------ */
 /* Replicas                                                            */
@@ -212,6 +212,13 @@ export interface FrameMetrics {
   /** The answer's sentence was on screen at some point. */
   answerSeen: boolean;
   answerSeenMs: number | null;
+  /**
+   * From protocol 4.2.0: how far down the answer started when the website opened, in screens of this frame, in the
+   * version the person saw (the page, or WebAble's simplified page at their text size): 0 = on the first screen,
+   * 1.0 = at the top of the second. The tasks match it across versions at the typical text size; larger text makes
+   * the simplified page longer, so this is the per-person scroll distance to adjust for. null: not found.
+   */
+  answerDepth?: number | null;
   /** The simplified page was showing at end(). */
   simplifiedAtEnd: boolean;
   tapLog: TapRecord[]; // first 400

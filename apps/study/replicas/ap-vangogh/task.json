@@ -4,22 +4,22 @@
   "family": "news",
   "set": "A",
   "kind": "find",
-  "title": "Find out what year Kim went to France to look at the night sky",
+  "title": "Find out how many years ago van Gogh saw the sky that may have inspired the painting",
   "context": "A news story on the AP News website, about the painting The Starry Night.",
-  "prompt": "Find out what year Kim went to France to look at the night sky",
-  "question": "What year did Kim go to France to look at the night sky?",
-  "short": "Year Kim went to France",
+  "prompt": "Find out how many years ago van Gogh saw the sky that may have inspired the painting",
+  "question": "How many years ago did van Gogh see the sky that may have inspired the painting?",
+  "short": "Years since van Gogh saw that sky",
   "label": "AP News, the story about the painting The Starry Night",
   "tag": "the Starry Night story",
   "choices": [
-    "1889",
-    "2003",
-    "2019",
-    "2026"
+    "37",
+    "100",
+    "137",
+    "200"
   ],
   "correct": 2,
-  "answerText": "Kim traveled to France in 2019",
-  "answerTextSimplified": "2019",
-  "answerSelector": ".RichTextStoryBody > p:nth-of-type(12)",
-  "answerDepthScreens": 3.57
+  "answerText": "French asylum 137 years ago",
+  "answerTextSimplified": "137 years ago",
+  "answerSelector": "bsp-story-page > div > div:nth-of-type(3) > p:nth-of-type(2)",
+  "answerDepthScreens": 1.1
 }

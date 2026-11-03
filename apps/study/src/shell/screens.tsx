@@ -69,15 +69,15 @@ export function WelcomeScreen(props: { onStart: () => void; preview: boolean }):
           use on a phone.
         </p>
         <p>This study is for people aged 50 or over who often have trouble using websites.</p>
-        <p>This takes about 15 minutes.</p>
+        <p>This takes about 20 minutes.</p>
         <h2>What you will do</h2>
         <ol class="st-steps">
           <li>Read about the study and choose if you want to take part.</li>
           <li>Answer {ABOUT.length + 2} questions about you.</li>
           <li>Set up WebAble. Tell it what gets in your way on websites, and pick a text size.</li>
           <li>Try one website for practice.</li>
-          <li>Round 1. Find one answer on each of 2 websites. Then answer 2 questions.</li>
-          <li>Round 2. The same again on 2 different websites.</li>
+          <li>Round 1. Find one answer on each of 3 websites. Then answer 2 questions.</li>
+          <li>Round 2. The same again on 3 different websites.</li>
           <li>Answer 3 last questions.</li>
         </ol>
         <h2>You need</h2>
@@ -225,10 +225,10 @@ export function AgreeScreen(props: { onAgree: () => void; onDecline: () => void;
         <p>You will:</p>
         <ul class="st-list">
           <li>set up WebAble: say what gets in your way on websites, and pick a text size</li>
-          <li>find one answer on each of 5 websites, including one for practice</li>
+          <li>find one answer on each of 7 websites, including one for practice</li>
           <li>answer questions about you and about the websites</li>
         </ul>
-        <p>It takes about 15 minutes.</p>
+        <p>It takes about 20 minutes.</p>
         <p>
           In one round, WebAble changes the websites. In the other round, they look as they normally do. We will tell
           you which round was which at the end.
@@ -778,7 +778,7 @@ const DEVIATIONS: Array<{ id: string; label: string }> = [
 /** The realism question's way out ("I have not used the real websites before"), kept apart from the 1 to 7 answers. */
 const NOT_USED = 0;
 
-/** "the Mars story and the banana bread recipe". */
+/** "the Mars story, the sleep article and the Elba story". */
 function joinWords(xs: string[]): string {
   return xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : (xs[0] ?? '');
 }
@@ -794,7 +794,7 @@ export function FinalScreens(props: {
   adaptedRound: 1 | 2;
   /** Each round's websites, short ("the Mars story"), so the ratings say what was in each round. */
   rounds: [string[], string[]];
-  /** The real websites the copies came from ("AP News", "Allrecipes", …). */
+  /** The real websites the copies came from ("AP News", "People", …). */
   sources: string[];
   onDone: (f: FinalAnswers) => void;
   onLeave: () => void;

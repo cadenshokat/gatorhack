@@ -17,10 +17,12 @@ export const TASKS: TaskSpec[] = Object.values(taskFiles);
 /**
  * The families in each round. Protocol 4.0.0 dropped 'gov' (the park pages: WebAble barely changed them, and their
  * many look-alike sections confused people) to keep the study near 15 minutes; 4.1.0 put 'recipe' (Allrecipes) in
- * place of 'sports' (the Florida Gators football results confused people who do not follow football). The dropped
- * copies stay in replicas/.
+ * place of 'sports' (the Florida Gators football results confused people who do not follow football); 4.2.0 has three
+ * busy websites a round, news (AP), health and entertainment, in place of the recipes (a recipe page is laid out the
+ * way people expect, so it tests little), each with its answer at the same depth in both versions. The dropped copies
+ * stay in replicas/.
  */
-export const FAMILIES: FamilyId[] = ['news', 'recipe'];
+export const FAMILIES: FamilyId[] = ['news', 'health', 'entertainment'];
 
 export interface RoundPlan {
   condition: Condition;

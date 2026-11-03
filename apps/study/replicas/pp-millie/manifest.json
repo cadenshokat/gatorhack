@@ -1,0 +1,457 @@
+{
+  "v": "replica.1",
+  "id": "pp-millie",
+  "servePath": "/millie-bobby-brown-helps-hundreds-of-dogs-find-homes-at-animal-rescue-on-georgia-farm-12207442",
+  "file": "index.html",
+  "sourceUrl": "https://people.com/millie-bobby-brown-helps-hundreds-of-dogs-find-homes-at-animal-rescue-on-georgia-farm-12207442",
+  "originalHost": "people.com",
+  "siteName": "PEOPLE",
+  "capturedAt": "2026-11-03T07:51:33.960Z",
+  "capture": {
+    "tool": "scripts/capture/capture.mjs (playwright 1.64.1)",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+    "stateNotes": [
+      "The page after one scroll pass, back at the top: PEOPLE loads in-content ads, related stories and recirculation lists as you scroll. Live and copy are compared in this state.",
+      "As a first-time visitor in the US sees it on a phone: the AppsFlyer \"The PEOPLE app\" banner fixed at the top (shown on every load; its close button works), the header fixed under it, and the 320x50 adhesive ad fixed at the bottom. No consent or \"do not sell\" notice is shown (none appeared on any load from New York time and en-US).",
+      "EX.CO's video player floats at the bottom of the screen from the start, as live; frozen as captured (a still of the player; the video is not copied). Its close button (X) hides it (site/page.js).",
+      "Ad creatives frozen as captured (screenshots in each ad iframe's srcdoc; the iframe src is kept); Google Publisher Tag refresh stopped once the slots had filled. Live ads refresh and rotate.",
+      "Removed because it appears on some loads only, after some scrolling: Flashtalking's full-screen interstitial ad (it covered the whole screen on 3 of 4 trial loads, with an \"X\"). Removed because it appears late, after some time on the page: Piano's full-screen \"Become a PEOPLE VIP\" subscription modal (it locks scrolling, undone with it; it did not appear in four short trial loads, it did during the longer capture load). Outstream video players (Primis, Connatix, Teads) blocked at capture so both pages carry display ads in their slots."
+    ]
+  },
+  "licence": "Copyright PEOPLE (People Inc., formerly Dotdash Meredith); all rights reserved. Article text and photos belong to PEOPLE and the credited photographers and agencies. Copied for a closed, non-commercial research study (noindex, served only behind study links); not for redistribution. Ad creatives and third-party widgets belong to their owners.",
+  "attribution": "PEOPLE, https://people.com/millie-bobby-brown-helps-hundreds-of-dogs-find-homes-at-animal-rescue-on-georgia-farm-12207442. Changed: scripts removed; behaviours re-created as local scripts; ads frozen as captured; files stored locally; in the adapted condition WebAble changes the page.",
+  "behaviours": [
+    "page",
+    "app banner close",
+    "menu (header)",
+    "floating video close",
+    "ad-slots (captured creatives in srcdoc)",
+    "fixed header and adhesive ad (CSS)"
+  ],
+  "removed": [
+    "site scripts (85)",
+    "third-party scripts and trackers from 40 hosts: aim-tag.hcn.health, ats-wrapper.privacymanager.io, b-code.liadm.com, btloader.com, c.amazon-adsystem.com, c2.people.com, cdn.brandmetrics.com, cdn.ex.co, cdn.id5-sync.com, cdn.p-n.io, cdn.people.com, cdn.viafoura.net, collector.brandmetrics.com, config.aps.amazon-adsystem.com, connect.facebook.net, connectid.analytics.yahoo.com, d30qdagvt44524.cloudfront.net, dotdash-meredith.solutions.cdn.optable.co, forms.people.com, g.3gl.net, imasdk.googleapis.com, launchpad-wrapper.privacymanager.io, launchpad.privacymanager.io, news.google.com, oa.openxcdn.net, openads-cdn.adsrvr.org, player.ex.co, s0.2mdn.net, sb.scorecardresearch.com, secure.cdn.fastclick.net, securepubads.g.doubleclick.net, static.chartbeat.com, static.cloudflareinsights.com, static.criteo.net, tags.crwdcntrl.net, tru.am, websdk.appsflyer.com, www.google-analytics.com, www.googletagmanager.com, x.people.com",
+    "noscript (29)",
+    "preload/prefetch/preconnect hints (4)",
+    "http-equiv meta (6)",
+    "inline event handlers (1)",
+    "iframe contents (40; src kept, local srcdoc: 16 snapshots)",
+    "Flashtalking full-screen interstitial ad (appears on some loads only, after scrolling)",
+    "Piano \"Become a PEOPLE VIP\" subscription modal (appears after some time on the page)",
+    "outstream video ad players (hosts blocked at capture)"
+  ],
+  "contentHash": "sha256:1dcb1a42a4cdfb94137fd21589f2777a148317593a4c1e1cca9ab84fd5243fd8",
+  "validation": {
+    "at": "2026-11-03T08:00:31.398Z",
+    "by": "scripts/capture/validate.mjs",
+    "served": "scripts/capture/lib/serve.mjs (frame.js stubbed)",
+    "viewport": {
+      "w": 390,
+      "h": 844,
+      "dpr": 3
+    },
+    "liveCapturedAt": "2026-11-03T07:51:33.960Z",
+    "requests": {
+      "outside": 0,
+      "outsideHosts": {},
+      "missing": []
+    },
+    "frameTagFirst": true,
+    "pixels": {
+      "firstScreen": {
+        "pct": 4.56,
+        "target": 0.5,
+        "pass": false,
+        "size": [
+          1170,
+          2532
+        ],
+        "bandsCssPx": [
+          [
+            746,
+            844,
+            135084
+          ]
+        ]
+      },
+      "fullPage": {
+        "pct": 3.93,
+        "target": 2,
+        "pass": false,
+        "liveSize": [
+          390,
+          17606
+        ],
+        "copySize": [
+          390,
+          17606
+        ],
+        "bandsCssPx": [
+          [
+            5445,
+            5694,
+            74338
+          ],
+          [
+            13895,
+            14144,
+            71600
+          ],
+          [
+            3313,
+            3483,
+            50864
+          ],
+          [
+            11215,
+            11459,
+            23169
+          ],
+          [
+            8014,
+            8263,
+            19864
+          ],
+          [
+            746,
+            843,
+            15599
+          ],
+          [
+            2948,
+            2974,
+            5711
+          ],
+          [
+            10467,
+            10506,
+            1146
+          ]
+        ]
+      }
+    },
+    "layout": {
+      "scrollHeight": {
+        "live": 17606,
+        "copy": 17606,
+        "pass": true
+      },
+      "scrollWidth": {
+        "live": 390,
+        "copy": 390,
+        "pass": true
+      },
+      "links": {
+        "live": 150,
+        "copy": 150,
+        "pass": true
+      },
+      "visibleLinks": {
+        "live": 76,
+        "copy": 76,
+        "pass": true
+      },
+      "headings": {
+        "live": 12,
+        "copy": 12,
+        "pass": true
+      },
+      "headingOrder": {
+        "live": 12,
+        "copy": 12,
+        "pass": true
+      },
+      "tapTargets": {
+        "live": 131,
+        "copy": 131,
+        "pass": true
+      },
+      "tapUnder44": {
+        "live": 92,
+        "copy": 92,
+        "pass": true
+      },
+      "tapUnder24": {
+        "live": 56,
+        "copy": 56,
+        "pass": true
+      },
+      "bodyFontPx": {
+        "live": 18,
+        "copy": 18,
+        "pass": true
+      },
+      "paraFontPx": {
+        "live": 18,
+        "copy": 18,
+        "pass": true
+      },
+      "textUnder16Pct": {
+        "live": 22.6,
+        "copy": 22.6,
+        "pass": true
+      },
+      "fixedCoverTopPct": {
+        "live": 33.3,
+        "copy": 33.3,
+        "pass": true
+      },
+      "fixedCoverMidPct": {
+        "live": 33.3,
+        "copy": 33.3,
+        "pass": true
+      },
+      "visibleElements": {
+        "live": 942,
+        "copy": 946,
+        "pass": true
+      },
+      "imagesVisible": {
+        "live": 29,
+        "copy": 29,
+        "pass": true
+      },
+      "firstScreenText": {
+        "live": "502:2151945651",
+        "copy": "502:2151945651",
+        "pass": true
+      },
+      "loadedFontFamilies": {
+        "live": "Limerick Serial",
+        "copy": "Limerick Serial",
+        "pass": true
+      }
+    },
+    "widths": [
+      {
+        "w": 390,
+        "live": {
+          "scrollWidth": 390,
+          "scrollHeight": 17606,
+          "overflowing": 0
+        },
+        "copy": {
+          "scrollWidth": 390,
+          "scrollHeight": 17606,
+          "overflowing": 0,
+          "sample": []
+        },
+        "pass": true
+      },
+      {
+        "w": 312,
+        "live": {
+          "scrollWidth": 383,
+          "scrollHeight": 20490,
+          "overflowing": 47
+        },
+        "copy": {
+          "scrollWidth": 383,
+          "scrollHeight": 20513,
+          "overflowing": 54,
+          "sample": [
+            "div#mntl-utility-nav_1-0.comp.mntl-utility-nav 346",
+            "div#people-vf-trigger_1-0.comp.people-vf-trigger 346",
+            "vf-widget#vf-tray-trigger 346",
+            "div.vf-tray-trigger-widget 346",
+            "button.vf-button.vf-no-outline 346",
+            "svg.vf-icon.vf-icon_bell_icon 335"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 260,
+        "live": {
+          "scrollWidth": 383,
+          "scrollHeight": 21904,
+          "overflowing": 152
+        },
+        "copy": {
+          "scrollWidth": 383,
+          "scrollHeight": 21898,
+          "overflowing": 159,
+          "sample": [
+            "div#mntl-utility-nav_1-0.comp.mntl-utility-nav 346",
+            "div#people-vf-trigger_1-0.comp.people-vf-trigger 346",
+            "vf-widget#vf-tray-trigger 346",
+            "div.vf-tray-trigger-widget 346",
+            "button.vf-button.vf-no-outline 346",
+            "svg.vf-icon.vf-icon_bell_icon 335"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 223,
+        "live": {
+          "scrollWidth": 384,
+          "scrollHeight": 23423,
+          "overflowing": 185
+        },
+        "copy": {
+          "scrollWidth": 384,
+          "scrollHeight": 23407,
+          "overflowing": 192,
+          "sample": [
+            "div#mntl-utility-nav_1-0.comp.mntl-utility-nav 346",
+            "div#people-vf-trigger_1-0.comp.people-vf-trigger 346",
+            "vf-widget#vf-tray-trigger 346",
+            "div.vf-tray-trigger-widget 346",
+            "button.vf-button.vf-no-outline 346",
+            "svg.vf-icon.vf-icon_bell_icon 335"
+          ]
+        },
+        "pass": true
+      },
+      {
+        "w": 195,
+        "live": {
+          "scrollWidth": 383,
+          "scrollHeight": 25328,
+          "overflowing": 207
+        },
+        "copy": {
+          "scrollWidth": 383,
+          "scrollHeight": 25156,
+          "overflowing": 214,
+          "sample": [
+            "div#mntl-utility-nav_1-0.comp.mntl-utility-nav 346",
+            "div#people-vf-trigger_1-0.comp.people-vf-trigger 346",
+            "vf-widget#vf-tray-trigger 346",
+            "div.vf-tray-trigger-widget 346",
+            "button.vf-button.vf-no-outline 346",
+            "svg.vf-icon.vf-icon_bell_icon 335"
+          ]
+        },
+        "pass": true
+      }
+    ],
+    "behaviours": [
+      {
+        "name": "menu opens and closes",
+        "live": {
+          "openFullnav": true,
+          "openOverlay": true,
+          "openTop": 180,
+          "openH": 783,
+          "closedFullnav": false,
+          "closedOverlay": false,
+          "closedH": 0
+        },
+        "copy": {
+          "openFullnav": true,
+          "openOverlay": true,
+          "openTop": 178,
+          "openH": 783,
+          "closedFullnav": false,
+          "closedOverlay": false,
+          "closedH": 0
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "fixed layers while scrolling: app banner, header, adhesive ad",
+        "live": {
+          "y0_headerTop": 117,
+          "y0_headerH": 60,
+          "y0_banner": true,
+          "y0_bannerTop": 0,
+          "y0_bannerBoxH": 117,
+          "y0_adBottom": 844,
+          "y900_headerTop": 117,
+          "y900_headerH": 60,
+          "y900_banner": true,
+          "y900_bannerTop": 0,
+          "y900_bannerBoxH": 117,
+          "y900_adBottom": 844,
+          "y3000_headerTop": 117,
+          "y3000_headerH": 60,
+          "y3000_banner": true,
+          "y3000_bannerTop": 0,
+          "y3000_bannerBoxH": 117,
+          "y3000_adBottom": 844,
+          "y1500_headerTop": 117,
+          "y1500_headerH": 60,
+          "y1500_banner": true,
+          "y1500_bannerTop": 0,
+          "y1500_bannerBoxH": 117,
+          "y1500_adBottom": 844
+        },
+        "copy": {
+          "y0_headerTop": 117,
+          "y0_headerH": 60,
+          "y0_banner": true,
+          "y0_bannerTop": 0,
+          "y0_bannerBoxH": 117,
+          "y0_adBottom": 844,
+          "y900_headerTop": 117,
+          "y900_headerH": 60,
+          "y900_banner": true,
+          "y900_bannerTop": 0,
+          "y900_bannerBoxH": 117,
+          "y900_adBottom": 844,
+          "y3000_headerTop": 117,
+          "y3000_headerH": 60,
+          "y3000_banner": true,
+          "y3000_bannerTop": 0,
+          "y3000_bannerBoxH": 117,
+          "y3000_adBottom": 844,
+          "y1500_headerTop": 117,
+          "y1500_headerH": 60,
+          "y1500_banner": true,
+          "y1500_bannerTop": 0,
+          "y1500_bannerBoxH": 117,
+          "y1500_adBottom": 844
+        },
+        "pass": true,
+        "diffs": []
+      },
+      {
+        "name": "app banner close button",
+        "live": {
+          "beforeBanner": true,
+          "beforeHeaderTop": 117,
+          "afterBanner": false,
+          "afterHeaderTop": 0,
+          "afterBoxH": 0,
+          "heightChange": -117
+        },
+        "copy": {
+          "beforeBanner": true,
+          "beforeHeaderTop": 117,
+          "afterBanner": false,
+          "afterHeaderTop": 0,
+          "afterBoxH": 0,
+          "heightChange": -117
+        },
+        "pass": true,
+        "diffs": []
+      }
+    ],
+    "roundTrip": {
+      "mismatches": 0,
+      "rootCauses": 0,
+      "parserAdded": 0
+    },
+    "pass": {
+      "hard": true,
+      "pixels": false,
+      "layout": true,
+      "widths": true,
+      "behaviours": true
+    },
+    "notes": [
+      "First-screen pixels (about 4.5-5%, target 0.5%): all of it is the band 746-844 CSS px, the EX.CO video player floating at the bottom of the screen. Live shows a frame of its playing video; the copy shows the player as captured (a still; the video stream is not copied). The rest of the first screen matches.",
+      "Full-page pixel bands are the in-content ad slots (each about 250 px tall): the live full-page screenshot and the copy's captured creatives differ there (ads rotate and cross-origin frames paint differently in a full-page shot).",
+      "The app banner is 117 or 119 px tall depending on the load (its text wraps differently); the checks compare within 2 px."
+    ]
+  }
+}

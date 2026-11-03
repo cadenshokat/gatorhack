@@ -132,6 +132,7 @@ export interface Counts {
   scrollScreens: number;
   scrollReversals: number;
   answerSeenMs: number | null;
+  answerDepth: number | null;
   simplifiedAtEnd: boolean;
 }
 
@@ -153,6 +154,7 @@ export function aggregate(taps: readonly TapRecord[], c: Counts): FrameMetrics {
     scrollReversals: c.scrollReversals,
     answerSeen: c.answerSeenMs !== null,
     answerSeenMs: c.answerSeenMs === null ? null : Math.round(c.answerSeenMs),
+    answerDepth: c.answerDepth === null ? null : r2(c.answerDepth),
     simplifiedAtEnd: c.simplifiedAtEnd,
     tapLog: taps.slice(0, TAP_LOG_MAX).map((t) => {
       const out: TapRecord = { t: Math.round(t.t), x: Math.round(t.x), y: Math.round(t.y), layer: t.layer, hit: t.hit, activated: t.activated, distPx: t.distPx === null ? null : Math.round(t.distPx * 10) / 10 };

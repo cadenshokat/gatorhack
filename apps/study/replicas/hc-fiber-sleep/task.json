@@ -1,0 +1,25 @@
+{
+  "id": "health-A",
+  "replicaId": "hc-fiber-sleep",
+  "family": "health",
+  "set": "A",
+  "kind": "find",
+  "title": "Find out how much fiber the article says to aim for each day",
+  "context": "An article on the Health.com website, about fiber and sleep.",
+  "prompt": "Find out how much fiber the article says to aim for each day",
+  "question": "How much fiber does the article say to aim for each day?",
+  "short": "Fiber to aim for each day",
+  "label": "Health.com, the article about fiber and sleep",
+  "tag": "the fiber article",
+  "choices": [
+    "8 to 12 grams",
+    "12 to 18 grams",
+    "25 to 38 grams",
+    "45 to 60 grams"
+  ],
+  "correct": 2,
+  "answerText": "around 25 to 38 grams of fiber",
+  "answerTextSimplified": "25 to 38 grams",
+  "answerSelector": "#mntl-sc-block_1-0 li:nth-of-type(3)",
+  "answerDepthScreens": 1.37
+}

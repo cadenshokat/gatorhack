@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Walks the whole participant flow (protocol 4.1.0) on emulated phones and checks what gets saved. Run with the dev
+// Walks the whole participant flow (protocol 4.2.0) on emulated phones and checks what gets saved. Run with the dev
 // server up:
 //
 //   node scripts/e2e.mjs [--base http://127.0.0.1:5190] [--browsers webkit,chromium] [--seq 0,1,2,3]
@@ -13,7 +13,7 @@
 // (?seq=0..3) and browser: first someone the study is not for (stopped right after the age and trouble questions, nothing
 // kept), then one whole run as someone it is for: welcome, agreement, who the study is for, about you, Set up WebAble
 // (what gets in the way, text size, light or dark, and, only when live AI is configured, how they like information and
-// words), the practice website, round 1 (2 websites, then 2 statements), the break, round 2, the 3 last questions.
+// words), the practice website, round 1 (3 websites, then 2 statements), the break, round 2, the 3 last questions.
 //
 // Every website is a 'find' task. Each one ends a different way on purpose: the practice and most websites with the right
 // answer, one after detours (a Pause, "Go back to the website", "No, keep looking"), one with "I cannot find it" and
@@ -32,7 +32,7 @@ function arg(name, fallback) {
   return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
-const PROTOCOL = 'mobile-replica-4.1.0';
+const PROTOCOL = 'mobile-replica-4.2.0';
 const base = arg('base', 'http://127.0.0.1:5190');
 const browsers = arg('browsers', 'webkit,chromium').split(',');
 const seqs = arg('seq', '1').split(',').map(Number);
@@ -45,8 +45,8 @@ mkdirSync(out, { recursive: true });
 
 /** Live AI can take ~25 s behind a website's card; wait this long for "Open the website". */
 const CARD_MS = 45000;
-/** Per round: how many websites there are (protocol 4.1.0: news and recipe). */
-const PER_ROUND = 2;
+/** Per round: how many websites there are (protocol 4.2.0: news, health and entertainment). */
+const PER_ROUND = 3;
 /** The ease and statements answers the run gives, as the buttons say them and as saved (1 = Very easy). */
 const EASE = { name: 'Somewhat easy', value: 3 };
 const UMUX = {
@@ -358,10 +358,10 @@ async function fullRun(page, seq, which, shots) {
   await page.screenshot({ path: join(shots, 'setup-summary.png') });
   await tapText(page, 'Go to the practice website');
 
-  // Practice, then round 1 (2 websites, 2 statements), the break, round 2, the last questions.
+  // Practice, then round 1 (3 websites, 2 statements), the break, round 2, the last questions.
   intended.push({ ...(await runTask(page, 'practice', shots, 'answer')), round: 0 });
   await heading(page, 'Round 1', 15000);
-  const modes = { 1: ['detours', 'answer'], 2: ['cannot', 'answer'] };
+  const modes = { 1: ['detours', 'answer', 'answer'], 2: ['cannot', 'answer', 'answer'] };
   for (const r of [1, 2]) {
     const text = await page.locator('main').innerText();
     const n = Number(/(?:There are|Round 2 has) (\d+)/.exec(text)?.[1] ?? 0);
@@ -373,7 +373,7 @@ async function fullRun(page, seq, which, shots) {
     await umux(page, r);
     if (r === 1) await heading(page, 'Round 1 is finished', 10000);
   }
-  // Last questions (4.1.0): blind first (Yes adds a text screen), then how much they liked each round, in words.
+  // Last questions (4.1.0 on): blind first (Yes adds a text screen), then how much they liked each round, in words.
   await heading(page, 'Did the 2 rounds feel different?', 10000);
   await choose(page, 'Yes');
   await heading(page, 'What was different? (optional)', 10000);
@@ -395,7 +395,7 @@ function check(which, run, seq) {
   const { rec, live, dark, intended, doneText } = run;
   if (!rec) return fail(`${which}: nothing saved`);
   if (rec.protocol !== PROTOCOL) fail(`${which}: protocol ${rec.protocol}, not ${PROTOCOL}`);
-  if (rec.consent?.version !== '4.1.0' || rec.eligible !== true) fail(`${which}: consent not saved as 4.1.0 with eligibility (${JSON.stringify(rec.consent)})`);
+  if (rec.consent?.version !== '4.2.0' || rec.eligible !== true) fail(`${which}: consent not saved as 4.2.0 with eligibility (${JSON.stringify(rec.consent)})`);
   if (rec.sequence !== seq) fail(`${which}: sequence ${rec.sequence}, not ${seq}`);
   if (rec.stage !== 'done' || !rec.finishedAt) fail(`${which}: study not saved as finished (stage ${rec.stage})`);
 
@@ -544,6 +544,7 @@ for (const seq of seqs) {
           misses: t.metrics?.misses,
           scroll: t.metrics?.scrollScreens,
           seen: t.metrics?.answerSeen,
+          depth: t.metrics?.answerDepth ?? '',
           ease: t.seq,
           simplified: t.delivery?.simplified?.open ?? '',
           text: t.delivery?.textScale ?? '',

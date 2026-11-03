@@ -1,0 +1,25 @@
+{
+  "id": "entertainment-B",
+  "replicaId": "pp-karin",
+  "family": "entertainment",
+  "set": "B",
+  "kind": "find",
+  "title": "Find out in what year Karin Slaughter's novel The Good Daughter came out",
+  "context": "An article on the PEOPLE website, about a new TV series made from Karin Slaughter's novel.",
+  "prompt": "Find out in what year Karin Slaughter's novel The Good Daughter came out",
+  "question": "In what year did Karin Slaughter's novel The Good Daughter come out?",
+  "short": "Year The Good Daughter came out",
+  "label": "PEOPLE, the article about the TV series The Good Daughter",
+  "tag": "the Good Daughter article",
+  "choices": [
+    "2015",
+    "2017",
+    "2019",
+    "2021"
+  ],
+  "correct": 1,
+  "answerText": "2017 crime thriller",
+  "answerTextSimplified": "2017 crime thriller",
+  "answerSelector": "#mntl-sc-block_2-0",
+  "answerDepthScreens": 1.8
+}

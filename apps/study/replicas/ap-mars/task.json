@@ -4,22 +4,22 @@
   "family": "news",
   "set": "B",
   "kind": "find",
-  "title": "Find out how many days the rover Idefix will spend driving on Phobos",
+  "title": "Find out how many space agencies are working together on this mission",
   "context": "A news story on the AP News website, about a spacecraft going to Mars.",
-  "prompt": "Find out how many days the rover Idefix will spend driving on Phobos",
-  "question": "How many days will the rover Idefix spend driving on Phobos?",
-  "short": "Days Idefix drives on Phobos",
+  "prompt": "Find out how many space agencies are working together on this mission",
+  "question": "How many space agencies joined forces for the mission?",
+  "short": "Space agencies on the mission",
   "label": "AP News, the story about a spacecraft going to Mars",
   "tag": "the Mars story",
   "choices": [
     "2",
-    "10",
-    "50",
-    "100"
+    "3",
+    "5",
+    "8"
   ],
-  "correct": 3,
-  "answerText": "around Phobos for 100 days",
-  "answerTextSimplified": "100 days",
-  "answerSelector": ".RichTextStoryBody > p:nth-of-type(12)",
-  "answerDepthScreens": 4.11
+  "correct": 2,
+  "answerText": "Five of the world’s space agencies",
+  "answerTextSimplified": "space agencies",
+  "answerSelector": "bsp-story-page > div > div:nth-of-type(3) > p:nth-of-type(2)",
+  "answerDepthScreens": 1.1
 }

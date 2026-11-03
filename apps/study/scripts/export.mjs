@@ -274,7 +274,7 @@ for (const s of sessions.values()) {
       seq_as_asked: t.seq, seq_scale: t.seqScale ?? 'difficult-1', seq: seqEasy(t),
       taps: m.taps, misses: m.misses, near_misses: m.nearMisses, activations: m.activations, link_attempts: m.linkAttempts,
       repeat_taps: m.repeatTaps, rage: m.rageEpisodes, debounced: m.debounced, expands: m.expands,
-      scroll_screens: m.scrollScreens, scroll_reversals: m.scrollReversals, answer_seen: m.answerSeen, answer_seen_s: m.answerSeenMs != null ? m.answerSeenMs / 1000 : null,
+      scroll_screens: m.scrollScreens, scroll_reversals: m.scrollReversals, answer_seen: m.answerSeen, answer_seen_s: m.answerSeenMs != null ? m.answerSeenMs / 1000 : null, answer_depth: m.answerDepth ?? null,
       simplified_at_end: m.simplifiedAtEnd, pinch_used: t.pinch?.used, pinch_max: t.pinch?.maxScale, pinch_s: t.pinch ? t.pinch.zoomedMs / 1000 : null,
       ready_ms: t.readyMs, preload_ms: t.preloadMs ?? null, ready_late: t.readyLate, orientation_changes: t.orientationChanges,
       delivered: d.delivered ?? null, page_zoom: d.pageZoom ?? null, body_px_after: d.bodyPxAfter ?? null,
